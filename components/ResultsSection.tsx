@@ -36,7 +36,7 @@ export default function ResultsSection() {
       <div className="relative z-10 max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
           <p className="section-label mb-4">Résultats</p>
-          <h2 className="font-[family-name:var(--font-barlow)] font-black text-[clamp(2.5rem,6vw,5rem)] uppercase leading-none text-white">
+          <h2 style={{background:'linear-gradient(120deg,#f5f5f0 30%,#c9a84c 65%,#e8c76a 100%)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text',fontFamily:'var(--font-bebas)'}} className="text-[clamp(2.5rem,6vw,5rem)] uppercase leading-none">
             LA PREUVE <span className="text-[#c9a84c]">PAR L&apos;ACTION</span>
           </h2>
         </div>
@@ -63,11 +63,11 @@ export default function ResultsSection() {
                     Après
                   </div>
                 </div>
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#c9a84c] text-black font-[family-name:var(--font-barlow)] font-black text-xl px-3 py-1 z-10">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#c9a84c] text-black font-[family-name:var(--font-bebas)] font-black text-xl px-3 py-1 z-10">
                   {r.badge}
                 </div>
               </div>
-              <h3 className="font-[family-name:var(--font-barlow)] font-black text-2xl uppercase tracking-wider text-white mb-1">
+              <h3 className="font-[family-name:var(--font-bebas)] font-black text-2xl uppercase tracking-wider text-white mb-1">
                 {r.name}
               </h3>
               <p className="text-white/60 text-xs mb-1">{r.detail}</p>
@@ -79,3 +79,5 @@ export default function ResultsSection() {
     </section>
   );
 }
+
+

@@ -27,7 +27,7 @@ export default function ProcessSection() {
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
           <p className="section-label mb-4">Le Processus</p>
-          <h2 className="font-[family-name:var(--font-barlow)] font-black text-[clamp(2.5rem,6vw,5rem)] uppercase leading-none text-white">
+          <h2 style={{background:'linear-gradient(120deg,#f5f5f0 30%,#c9a84c 65%,#e8c76a 100%)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text',fontFamily:'var(--font-bebas)'}} className="text-[clamp(2.5rem,6vw,5rem)] uppercase leading-none">
             COMMENT ÇA <span className="text-[#c9a84c]">MARCHE</span>
           </h2>
         </div>
@@ -39,9 +39,9 @@ export default function ProcessSection() {
                 <div className="hidden lg:block absolute top-6 left-full w-full h-px bg-gradient-to-r from-[#c9a84c]/40 to-transparent z-0" />
               )}
               <div className="relative z-10 w-12 h-12 border border-[#c9a84c]/40 flex items-center justify-center mb-6">
-                <span className="font-[family-name:var(--font-barlow)] font-black text-[#c9a84c] text-lg">{s.num}</span>
+                <span className="font-[family-name:var(--font-bebas)] font-black text-[#c9a84c] text-lg">{s.num}</span>
               </div>
-              <h3 className="font-[family-name:var(--font-barlow)] font-black text-xl uppercase tracking-wider text-white mb-3">
+              <h3 className="font-[family-name:var(--font-bebas)] font-black text-xl uppercase tracking-wider text-white mb-3">
                 {s.title}
               </h3>
               <p className="text-white/50 text-sm leading-relaxed">{s.text}</p>
@@ -52,3 +52,5 @@ export default function ProcessSection() {
     </section>
   );
 }
+
+

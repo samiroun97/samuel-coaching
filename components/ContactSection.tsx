@@ -16,7 +16,7 @@ export default function ContactSection() {
         {/* Left */}
         <div>
           <p className="section-label mb-4">Prêt ?</p>
-          <h2 className="font-[family-name:var(--font-barlow)] font-black text-[clamp(2.5rem,5vw,4.5rem)] uppercase leading-none text-white mb-6">
+          <h2 style={{background:'linear-gradient(120deg,#f5f5f0 30%,#c9a84c 65%,#e8c76a 100%)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text',fontFamily:'var(--font-bebas)'}} className="text-[clamp(2.5rem,5vw,4.5rem)] uppercase leading-none mb-6">
             TON MEILLEUR<br />
             <span className="text-[#c9a84c]">SELF T&apos;ATTEND</span>
           </h2>
@@ -97,10 +97,12 @@ export default function ContactSection() {
           </div>
           <div className="absolute bottom-6 left-6">
             <p className="text-white/40 text-[0.6rem] tracking-widest uppercase mb-1">Coach certifié</p>
-            <p className="font-[family-name:var(--font-barlow)] font-black text-4xl uppercase text-white tracking-wider">SAMUEL</p>
+            <p className="font-[family-name:var(--font-bebas)] font-black text-4xl uppercase text-white tracking-wider">SAMUEL</p>
           </div>
         </div>
       </div>
     </section>
   );
 }
+
+

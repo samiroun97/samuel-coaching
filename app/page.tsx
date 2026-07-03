@@ -1,3 +1,5 @@
+import SplashScreen from "@/components/SplashScreen";
+import CursorSpotlight from "@/components/CursorSpotlight";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import StatsSection from "@/components/StatsSection";
@@ -15,6 +17,8 @@ import Footer from "@/components/Footer";
 export default function Home() {
   return (
     <>
+      <SplashScreen />
+      <CursorSpotlight />
       <Navbar />
       <main>
         <HeroSection />

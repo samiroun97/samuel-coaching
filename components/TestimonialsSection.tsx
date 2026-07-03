@@ -49,7 +49,7 @@ export default function TestimonialsSection() {
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
           <p className="section-label mb-4">Témoignages</p>
-          <h2 className="font-[family-name:var(--font-barlow)] font-black text-[clamp(2.5rem,6vw,5rem)] uppercase leading-none text-white">
+          <h2 style={{background:'linear-gradient(120deg,#f5f5f0 30%,#c9a84c 65%,#e8c76a 100%)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text',fontFamily:'var(--font-bebas)'}} className="text-[clamp(2.5rem,6vw,5rem)] uppercase leading-none">
             ILS L&apos;ONT <span className="text-[#c9a84c]">VÉCU</span>
           </h2>
         </div>
@@ -89,3 +89,5 @@ export default function TestimonialsSection() {
     </section>
   );
 }
+
+

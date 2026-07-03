@@ -7,7 +7,7 @@ export default function Footer() {
         <div className="grid md:grid-cols-3 gap-12 mb-12">
           {/* Brand */}
           <div>
-            <p className="font-[family-name:var(--font-barlow)] font-black text-2xl tracking-[0.2em] text-white mb-3">SAMUEL</p>
+            <p className="font-[family-name:var(--font-bebas)] font-black text-2xl tracking-[0.2em] text-white mb-3">SAMUEL</p>
             <p className="section-label text-[0.6rem] mb-6">Fitness · Transformation · Excellence</p>
             <div className="flex gap-4">
               {["Instagram", "TikTok", "YouTube"].map((s) => (
@@ -78,3 +78,4 @@ export default function Footer() {
     </footer>
   );
 }
+

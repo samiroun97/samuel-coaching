@@ -55,7 +55,7 @@ export default function ProgramsSection() {
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
           <p className="section-label mb-4">Programmes</p>
-          <h2 className="font-[family-name:var(--font-barlow)] font-black text-[clamp(2.5rem,6vw,5rem)] uppercase leading-none text-white">
+          <h2 style={{background:'linear-gradient(120deg,#f5f5f0 30%,#c9a84c 65%,#e8c76a 100%)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text',fontFamily:'var(--font-bebas)'}} className="text-[clamp(2.5rem,6vw,5rem)] uppercase leading-none">
             CHOISIS TON <span className="text-[#c9a84c]">NIVEAU</span>
           </h2>
           <p className="text-white/40 text-sm mt-4">
@@ -80,7 +80,7 @@ export default function ProgramsSection() {
               )}
 
               <p className="section-label text-[0.65rem] mb-2">{p.duration}</p>
-              <h3 className="font-[family-name:var(--font-barlow)] font-black text-4xl uppercase tracking-wider text-white mb-6">
+              <h3 className="font-[family-name:var(--font-bebas)] font-black text-4xl uppercase tracking-wider text-white mb-6">
                 {p.name}
               </h3>
 
@@ -94,7 +94,7 @@ export default function ProgramsSection() {
               </ul>
 
               <div className="border-t border-white/10 pt-6 mb-6">
-                <p className={`font-[family-name:var(--font-barlow)] font-black text-4xl ${p.highlight ? "text-[#c9a84c]" : "text-white"}`}>
+                <p className={`font-[family-name:var(--font-bebas)] font-black text-4xl ${p.highlight ? "text-[#c9a84c]" : "text-white"}`}>
                   {p.price}
                 </p>
                 <p className="text-white/40 text-xs mt-1">{p.sub}</p>
@@ -117,3 +117,5 @@ export default function ProgramsSection() {
     </section>
   );
 }
+
+

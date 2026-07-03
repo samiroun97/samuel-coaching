@@ -17,7 +17,7 @@ export default function GallerySection() {
           <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent" />
           <div className="absolute inset-0 bg-[#0a0a0a]/40 group-hover:bg-[#0a0a0a]/20 transition-colors duration-500" />
           <div className="absolute inset-0 flex items-end justify-start p-6">
-            <span className="font-[family-name:var(--font-barlow)] font-black text-2xl tracking-[0.15em] uppercase text-white">
+            <span className="font-[family-name:var(--font-bebas)] font-black text-2xl tracking-[0.15em] uppercase text-white">
               {item.label}
             </span>
           </div>
@@ -26,3 +26,4 @@ export default function GallerySection() {
     </section>
   );
 }
+

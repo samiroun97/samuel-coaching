@@ -28,7 +28,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
         <Link
           href="/"
-          className="font-[family-name:var(--font-barlow)] font-black text-xl tracking-[0.2em] text-white"
+          className="font-[family-name:var(--font-bebas)] font-black text-xl tracking-[0.2em] text-white"
         >
           SAMUEL
         </Link>
@@ -102,3 +102,4 @@ export default function Navbar() {
     </nav>
   );
 }
+
