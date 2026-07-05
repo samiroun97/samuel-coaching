@@ -4,10 +4,7 @@ import ScrollReveal from "./ScrollReveal";
 
 const gradientStyle = {
   fontFamily: "var(--font-bebas)",
-  background: "linear-gradient(120deg, #f5f5f0 30%, #c9a84c 65%, #e8c76a 100%)",
-  WebkitBackgroundClip: "text" as const,
-  WebkitTextFillColor: "transparent" as const,
-  backgroundClip: "text" as const,
+  color: "#c9a84c",
 };
 
 function Counter({ target, suffix = "" }: { target: number; suffix?: string }) {
@@ -19,6 +16,7 @@ function Counter({ target, suffix = "" }: { target: number; suffix?: string }) {
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting && !started.current) {
         started.current = true;
+        if (target === 0) return;
         const duration = 1800;
         const start = performance.now();
         const tick = (now: number) => {
@@ -35,27 +33,32 @@ function Counter({ target, suffix = "" }: { target: number; suffix?: string }) {
   }, [target]);
 
   return (
-    <div ref={ref} style={{ ...gradientStyle, fontSize: "clamp(3rem,7vw,5rem)", lineHeight: 1 }}>
+    <div ref={ref} style={{ ...gradientStyle, fontSize: "clamp(2rem,4vw,3rem)", lineHeight: 1 }}>
       {count}{suffix}
     </div>
   );
 }
 
 const stats = [
-  { value: 200, suffix: "+", label: "Clients Transformés" },
-  { value: 8, suffix: " ans", label: "D'Expérience" },
-  { value: 94, suffix: "%", label: "Taux de Réussite" },
+  { value: 15, suffix: " ANS", label: "De Pratique" },
   { value: 3, suffix: "", label: "Disciplines Maîtrisées" },
+  { value: 100, suffix: "%", label: "Sur-Mesure" },
+  { value: 0, suffix: "", label: "Méthode Miracle" },
 ];
 
 export default function StatsSection() {
   return (
-    <section className="bg-[#0f0d07] border-y border-[#c9a84c]/10">
-      <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 divide-x divide-[#c9a84c]/10">
+    <section className="bg-[#0f0d07] border-y border-[#c9a84c]/10 py-14">
+      <div className="max-w-6xl mx-auto px-6 flex items-center justify-center gap-0">
         {stats.map((s, i) => (
-          <ScrollReveal key={s.label} delay={i * 0.1} className="flex flex-col items-center justify-center py-12 px-6 text-center gap-3">
-            <Counter target={s.value} suffix={s.suffix} />
-            <p className="section-label text-[0.6rem]">{s.label}</p>
+          <ScrollReveal key={s.label} delay={i * 0.1} className="flex items-center gap-0">
+            <div className="flex flex-col items-center gap-2 px-10">
+              <Counter target={s.value} suffix={s.suffix} />
+              <p className="text-[0.6rem] tracking-[0.2em] text-white/40 uppercase text-center">{s.label}</p>
+            </div>
+            {i < stats.length - 1 && (
+              <div className="w-px h-14 bg-[#c9a84c]/20 flex-shrink-0" />
+            )}
           </ScrollReveal>
         ))}
       </div>

@@ -14,7 +14,6 @@ export default function Navbar() {
 
   const links = [
     { label: "Méthode", href: "#methode" },
-    { label: "Résultats", href: "#resultats" },
     { label: "Programmes", href: "#programmes" },
     { label: "Contact", href: "#contact" },
   ];
@@ -26,11 +25,8 @@ export default function Navbar() {
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
-        <Link
-          href="/"
-          className="font-[family-name:var(--font-bebas)] font-black text-xl tracking-[0.2em] text-white"
-        >
-          SAMUEL
+        <Link href="/" style={{ fontFamily: "var(--font-bebas)", filter: "blur(0.3px)", letterSpacing: "0.18em" }} className="text-2xl text-white hover:opacity-70 transition-opacity duration-300">
+          SAMUEL<span style={{ color: "#c9a84c" }}>.</span><span style={{ color: "#c9a84c" }}>COACHING</span>
         </Link>
 
         <ul className="hidden md:flex items-center gap-8">

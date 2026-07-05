@@ -7,6 +7,8 @@ export default function ContactSection() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const message = `Bonjour Samuel 👋\n\n*Prénom :* ${form.prenom}\n*Objectif :* ${form.objectif}\n*Message :* ${form.message}`;
+    window.open(`https://wa.me/41798617518?text=${encodeURIComponent(message)}`, "_blank");
     setSent(true);
   };
 
@@ -90,14 +92,10 @@ export default function ContactSection() {
         {/* Right — Samuel image */}
         <div className="relative hidden md:block">
           <div
-            className="aspect-[3/4] bg-cover bg-center"
+            className="aspect-[3/4] bg-cover bg-center overflow-hidden relative"
             style={{ backgroundImage: "url('/photos/samuel-contact.jpg')" }}
           >
-            <div className="absolute inset-0 bg-gradient-to-l from-transparent to-[#0f0d07]/60" />
-          </div>
-          <div className="absolute bottom-6 left-6">
-            <p className="text-white/40 text-[0.6rem] tracking-widest uppercase mb-1">Coach certifié</p>
-            <p className="font-[family-name:var(--font-bebas)] font-black text-4xl uppercase text-white tracking-wider">SAMUEL</p>
+            <div className="absolute inset-0" style={{ background: "linear-gradient(to right, #0f0d07 0%, #0f0d07 10%, transparent 55%)" }} />
           </div>
         </div>
       </div>

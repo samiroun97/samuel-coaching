@@ -18,11 +18,18 @@ export default function HeroSection() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       <div ref={bgRef} className="absolute inset-0 scale-110">
-        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "url('/photos/hero.jpg')" }} />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/60 via-[#0a0a0a]/20 to-[#0a0a0a]" />
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+          src="/videos/hero.mp4"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/70 via-[#0a0a0a]/50 to-[#0a0a0a]" />
       </div>
 
-      <div className="relative z-10 text-center max-w-5xl mx-auto px-6 pt-24">
+      <div className="relative z-10 text-center max-w-5xl mx-auto px-6 pt-24 -mt-24">
         <div style={{ opacity: 1, transform: "translateY(0)", animation: "fadeInUp 1s ease 0.2s both" }}>
           <p className="section-label mb-8">Coach Fitness & Transformation Personnelle</p>
         </div>
@@ -35,7 +42,7 @@ export default function HeroSection() {
 
         <div className="flex items-center gap-4 justify-center my-4" style={{ animation: "fadeInUp 1s ease 0.5s both" }}>
           <div className="h-px flex-1 max-w-[120px] bg-gradient-to-r from-transparent to-[#c9a84c]" />
-          <span className="section-label text-[0.6rem]">EST. 2020</span>
+          <span className="section-label text-[0.6rem]">EST. 2025</span>
           <div className="h-px flex-1 max-w-[120px] bg-gradient-to-l from-transparent to-[#c9a84c]" />
         </div>
 
@@ -51,22 +58,13 @@ export default function HeroSection() {
           Pas de compromis. Juste la transformation que tu mérites.
         </p>
 
-        <div className="flex flex-col sm:flex-row gap-4 justify-center" style={{ animation: "fadeInUp 1s ease 0.8s both" }}>
+        <div className="flex justify-center" style={{ animation: "fadeInUp 1s ease 0.8s both" }}>
           <a href="#contact"
             className="group relative bg-[#c9a84c] text-black text-xs font-bold tracking-[0.25em] uppercase px-10 py-4 overflow-hidden hover:scale-105 transition-transform duration-300">
             <span className="relative z-10">Je commence maintenant</span>
             <div className="absolute inset-0 bg-[#e8c76a] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
           </a>
-          <a href="#resultats"
-            className="group border border-white/20 text-white text-xs font-semibold tracking-[0.25em] uppercase px-10 py-4 hover:border-[#c9a84c] hover:text-[#c9a84c] transition-all duration-300">
-            Voir les résultats
-          </a>
         </div>
-      </div>
-
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 animate-scroll">
-        <span className="section-label text-[0.55rem]">Scroll</span>
-        <div className="w-px h-14 bg-gradient-to-b from-[#c9a84c] to-transparent" />
       </div>
     </section>
   );

@@ -1,50 +1,46 @@
 const programs = [
   {
-    name: "STARTER",
-    duration: "⏱ 4 SEMAINES",
+    label: "45 MINUTES",
+    name: "BILAN GRATUIT",
+    price: "Gratuit",
+    sub: "Sans engagement",
     features: [
-      "Bilan physique complet",
-      "Programme entraînement sur mesure",
-      "Plan nutritionnel de base",
-      "2 appels de suivi / mois",
-      "Accès à l'app de suivi",
+      "Évaluation métabolique",
+      "Bilan général",
+      "Analyse des objectifs",
     ],
-    price: "297€",
-    sub: "paiement unique",
-    cta: "Commencer ici",
+    cta: "RÉSERVER MON BILAN",
     highlight: false,
   },
   {
-    name: "TRANSFORM",
-    duration: "⏱ 12 SEMAINES",
+    label: "1 MOIS",
+    name: "SUIVI",
+    price: "390 CHF",
+    sub: "1 mois de suivi",
     features: [
-      "Tout le programme Starter",
-      "Coaching mental hebdomadaire",
-      "Plan nutrition avancé + recettes",
-      "Appels illimités en semaine",
-      "Suivi quotidien sur WhatsApp",
-      "Accès communauté privée",
+      "Bilan physique complet",
+      "Programme d'entraînement sur mesure",
+      "Plan nutritionnel de base",
+      "1 entraînement en présentiel / semaine",
+      "Accès à l'app de suivi",
     ],
-    price: "697€",
-    sub: "ou 3 × 240€",
-    cta: "Je veux transformer ma vie",
+    cta: "COMMENCER",
     highlight: true,
-    badge: "⚡ Populaire",
+    badge: "POPULAIRE",
   },
   {
-    name: "ELITE",
-    duration: "⏱ 6 MOIS",
+    label: "À LA SÉANCE",
+    name: "PRÉSENTIEL",
+    price: "80 CHF",
+    sub: "par séance",
     features: [
-      "Tout le programme Transform",
-      "Accès VIP 24/7 direct à Samuel",
-      "Séances en présentiel (Paris)",
-      "Analyse sanguine & morphologique",
-      "Programme voyage inclus",
-      "Suivi post-programme à vie",
+      "Entraînement en présentiel",
+      "Objectif précis défini avec toi",
+      "Programme d'entraînement sur mesure",
+      "Plan nutritionnel de base",
+      "Accès à l'app de suivi",
     ],
-    price: "1 997€",
-    sub: "ou 6 × 360€",
-    cta: "Accès Elite",
+    cta: "RÉSERVER UNE SÉANCE",
     highlight: false,
   },
 ];
@@ -55,11 +51,11 @@ export default function ProgramsSection() {
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
           <p className="section-label mb-4">Programmes</p>
-          <h2 style={{background:'linear-gradient(120deg,#f5f5f0 30%,#c9a84c 65%,#e8c76a 100%)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text',fontFamily:'var(--font-bebas)'}} className="text-[clamp(2.5rem,6vw,5rem)] uppercase leading-none">
-            CHOISIS TON <span className="text-[#c9a84c]">NIVEAU</span>
+          <h2 style={{ fontFamily: "var(--font-bebas)", background: "linear-gradient(120deg,#f5f5f0 30%,#c9a84c 65%,#e8c76a 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }} className="text-[clamp(2.5rem,6vw,5rem)] uppercase leading-none">
+            CHOISIS TON NIVEAU
           </h2>
           <p className="text-white/40 text-sm mt-4">
-            Chaque programme est personnalisé. Ces formules sont des points de départ, pas des cases.
+            Chaque formule est personnalisée. Ces offres sont des points de départ, pas des cases.
           </p>
         </div>
 
@@ -79,8 +75,8 @@ export default function ProgramsSection() {
                 </div>
               )}
 
-              <p className="section-label text-[0.65rem] mb-2">{p.duration}</p>
-              <h3 className="font-[family-name:var(--font-bebas)] font-black text-4xl uppercase tracking-wider text-white mb-6">
+              <p className="section-label text-[0.65rem] mb-2">{p.label}</p>
+              <h3 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl uppercase tracking-wider text-white mb-6">
                 {p.name}
               </h3>
 
@@ -94,7 +90,7 @@ export default function ProgramsSection() {
               </ul>
 
               <div className="border-t border-white/10 pt-6 mb-6">
-                <p className={`font-[family-name:var(--font-bebas)] font-black text-4xl ${p.highlight ? "text-[#c9a84c]" : "text-white"}`}>
+                <p style={{ fontFamily: "var(--font-bebas)" }} className={`text-4xl ${p.highlight ? "text-[#c9a84c]" : "text-white"}`}>
                   {p.price}
                 </p>
                 <p className="text-white/40 text-xs mt-1">{p.sub}</p>
@@ -113,9 +109,11 @@ export default function ProgramsSection() {
             </div>
           ))}
         </div>
+
+        <p className="text-center text-white/30 text-xs tracking-wide mt-10">
+          Toutes les formules incluent l&apos;accès direct à l&apos;app de suivi.
+        </p>
       </div>
     </section>
   );
 }
-
-

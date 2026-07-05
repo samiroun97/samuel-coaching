@@ -1,29 +1,35 @@
-const items = [
-  { label: "FORCE", img: "/photos/force.jpg" },
-  { label: "EXCELLENCE", img: "/photos/excellence.jpg" },
-  { label: "DISCIPLINE", img: "/photos/discipline.jpg" },
-  { label: "PROGRESSION", img: "/photos/progression.jpg" },
-];
+"use client";
+
+const words = ["FORCE", "EXCELLENCE", "DISCIPLINE", "PROGRESSION", "FORCE", "EXCELLENCE", "DISCIPLINE", "PROGRESSION"];
 
 export default function GallerySection() {
   return (
-    <section className="grid grid-cols-2 md:grid-cols-4">
-      {items.map((item) => (
-        <div key={item.label} className="relative aspect-square overflow-hidden group">
-          <div
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-700 group-hover:scale-105"
-            style={{ backgroundImage: `url('${item.img}')` }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent" />
-          <div className="absolute inset-0 bg-[#0a0a0a]/40 group-hover:bg-[#0a0a0a]/20 transition-colors duration-500" />
-          <div className="absolute inset-0 flex items-end justify-start p-6">
-            <span className="font-[family-name:var(--font-bebas)] font-black text-2xl tracking-[0.15em] uppercase text-white">
-              {item.label}
-            </span>
-          </div>
-        </div>
-      ))}
-    </section>
+    <div className="overflow-hidden py-4 bg-[#0a0a0a] border-y border-[#c9a84c]/10">
+      <div
+        className="flex whitespace-nowrap"
+        style={{ animation: "marquee 20s linear infinite" }}
+      >
+        {[...words, ...words].map((word, i) => (
+          <span
+            key={i}
+            style={{
+              fontFamily: "var(--font-bebas)",
+              color: "rgba(255,255,255,0.3)",
+              fontSize: "clamp(0.9rem, 2vw, 1.2rem)",
+              letterSpacing: "0.25em",
+            }}
+            className="mx-16 flex-shrink-0"
+          >
+            {word}
+          </span>
+        ))}
+      </div>
+      <style>{`
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+      `}</style>
+    </div>
   );
 }
-

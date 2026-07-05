@@ -29,44 +29,37 @@ export default function SplashScreen() {
       style={{ opacity: fading ? 0 : 1, transition: "opacity 0.7s ease" }}
     >
       <div className="text-center px-6">
-        <p
-          className="section-label mb-10"
-          style={{ opacity: progress > 20 ? 1 : 0, transition: "opacity 0.6s ease" }}
-        >
+
+        <p className="text-[#c9a84c] text-[0.65rem] tracking-[0.4em] uppercase mb-10"
+          style={{ opacity: progress > 15 ? 1 : 0, transition: "opacity 0.6s ease" }}>
           FITNESS · TRANSFORMATION · EXCELLENCE
         </p>
 
-        <h1
-          style={{
-            fontFamily: "var(--font-bebas)",
-            background: "linear-gradient(120deg, #f5f5f0 30%, #c9a84c 65%, #e8c76a 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-            fontSize: "clamp(5rem, 18vw, 12rem)",
-            lineHeight: 1,
-            opacity: progress > 10 ? 1 : 0,
-            transform: progress > 10 ? "translateY(0)" : "translateY(20px)",
-            transition: "opacity 0.8s ease, transform 0.8s ease",
-          }}
-        >
-          SAMUEL.
-        </h1>
+        <div style={{ opacity: progress > 5 ? 1 : 0, transform: progress > 5 ? "translateY(0)" : "translateY(30px)", transition: "opacity 0.8s ease, transform 0.8s ease" }}>
+          <div style={{ lineHeight: 1 }}>
+            <span style={{ fontFamily: "var(--font-bebas)", fontSize: "clamp(3rem, 12vw, 8rem)", color: "white", letterSpacing: "0.1em", filter: "blur(0.3px)" }}>
+              SAMUEL
+            </span>
+            <span style={{ fontFamily: "var(--font-bebas)", fontSize: "clamp(3rem, 12vw, 8rem)", color: "#c9a84c", filter: "blur(0.3px)" }}>.</span>
+            <div style={{ fontSize: "clamp(0.6rem, 2vw, 1rem)", letterSpacing: "0.5em", color: "#c9a84c", fontWeight: 200, marginTop: "0.5rem" }}>
+              COACHING
+            </div>
+          </div>
+        </div>
 
         <div className="mt-14 w-56 mx-auto">
           <div className="h-px bg-white/10 relative overflow-hidden">
             <div
-              className="absolute left-0 top-0 h-full bg-gradient-to-r from-[#c9a84c] to-[#e8c76a]"
+              className="absolute left-0 top-0 h-full bg-[#c9a84c]"
               style={{ width: `${progress}%`, transition: "width 0.05s linear" }}
             />
           </div>
-          <p
-            className="text-white/20 text-[0.6rem] tracking-[0.3em] uppercase mt-3 text-center"
-            style={{ opacity: progress > 30 ? 1 : 0, transition: "opacity 0.4s ease" }}
-          >
+          <p className="text-white/30 text-[0.55rem] tracking-[0.35em] uppercase mt-3 text-center"
+            style={{ opacity: progress > 20 ? 1 : 0, transition: "opacity 0.4s ease" }}>
             Chargement
           </p>
         </div>
+
       </div>
     </div>
   );
