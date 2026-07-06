@@ -9,48 +9,223 @@ type Profile = {
   duree_seance: string; lieu_entrainement: string;
   blessures: string; alimentation: string; sommeil_stress: string; objectifs: string;
 };
+type Goals = { calories: number; proteines: number; glucides: number; lipides: number };
+type Food  = { calories: number; proteines: number; glucides: number; lipides: number };
+type Log   = { date: string; calories_burned: number };
+
+const today = () => new Date().toISOString().split("T")[0];
+
+function bmr(p: Profile) {
+  const base = 10 * p.poids + 6.25 * p.taille - 5 * p.age;
+  return Math.round(p.sexe === "Femme" ? base - 161 : base + 5);
+}
+
+function CalRing({ consumed, tdee }: { consumed: number; tdee: number }) {
+  const r = 90, circ = 2 * Math.PI * r;
+  const pct   = tdee > 0 ? Math.min(consumed / tdee, 1.3) : 0;
+  const over  = consumed > tdee;
+  const color = over ? "#e07070" : consumed / tdee > 0.85 ? "#c9a84c" : "#7eb8a0";
+  const dash  = circ * Math.min(pct, 1);
+  const balance = consumed - tdee;
+
+  return (
+    <div className="relative flex items-center justify-center" style={{ width: 220, height: 220 }}>
+      <svg width="220" height="220" className="-rotate-90">
+        <circle cx="110" cy="110" r={r} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="10"/>
+        <circle cx="110" cy="110" r={r} fill="none" stroke={color} strokeWidth="10"
+          strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
+          style={{ transition: "stroke-dasharray 0.6s ease" }}/>
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+        <p style={{ fontFamily: "var(--font-bebas)" }} className="text-5xl text-white tracking-wide leading-none">{consumed.toLocaleString("fr-FR")}</p>
+        <p className="text-[0.45rem] tracking-[0.2em] uppercase text-white/30 mt-1">kcal consommés</p>
+        <div className="w-8 h-px bg-white/10 my-2"/>
+        <p style={{ fontFamily: "var(--font-bebas)", color }} className="text-xl tracking-wide leading-none">{tdee.toLocaleString("fr-FR")}</p>
+        <p className="text-[0.42rem] tracking-[0.18em] uppercase mt-0.5" style={{ color: "rgba(255,255,255,0.25)" }}>TDEE</p>
+        {consumed > 0 && (
+          <p className={`text-[0.5rem] font-bold tracking-wider mt-2 ${over ? "text-[#e07070]" : "text-[#7eb8a0]"}`}>
+            {over ? "+" : ""}{balance.toLocaleString("fr-FR")} kcal
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function MiniBar({ label, consumed, goal, color }: { label: string; consumed: number; goal: number; color: string }) {
+  const pct = goal > 0 ? Math.min(consumed / goal, 1) : 0;
+  return (
+    <div>
+      <div className="flex justify-between text-[0.48rem] tracking-wider mb-1.5">
+        <span className="uppercase text-white/30">{label}</span>
+        <span style={{ color }}>{consumed}g <span className="text-white/20">/ {goal}g</span></span>
+      </div>
+      <div className="h-1 bg-white/5">
+        <div className="h-full transition-all duration-500" style={{ width: `${pct * 100}%`, backgroundColor: color }}/>
+      </div>
+    </div>
+  );
+}
 
 export default function AccueilPage() {
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile,  setProfile]  = useState<Profile | null>(null);
+  const [consumed, setConsumed] = useState({ calories: 0, proteines: 0, glucides: 0, lipides: 0 });
+  const [goals,    setGoals]    = useState<Goals>({ calories: 2200, proteines: 150, glucides: 220, lipides: 70 });
+  const [neat,     setNeat]     = useState(0);
+  const [eat,      setEat]      = useState(0);
+  const [bodyFat,  setBodyFat]  = useState<number | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
       if (!data.user) return;
-      const { data: p } = await supabase
-        .from("profiles").select("*").eq("id", data.user.id).single();
-      setProfile(p);
+      const { data: p } = await supabase.from("profiles").select("*").eq("id", data.user.id).single();
+      if (p) setProfile(p as Profile);
     });
+
+    // Nutrition
+    try {
+      const g = localStorage.getItem("nutrition_goals");
+      if (g) setGoals(JSON.parse(g));
+      const f = localStorage.getItem(`nutrition_${today()}`);
+      if (f) {
+        const foods: Food[] = JSON.parse(f);
+        setConsumed(foods.reduce((acc, x) => ({
+          calories: acc.calories + x.calories,
+          proteines: acc.proteines + x.proteines,
+          glucides: acc.glucides + x.glucides,
+          lipides: acc.lipides + x.lipides,
+        }), { calories: 0, proteines: 0, glucides: 0, lipides: 0 }));
+      }
+    } catch { /* ignore */ }
+
+    // Steps → NEAT
+    try {
+      const steps = parseInt(localStorage.getItem(`steps_${today()}`) ?? "0") || 0;
+      const poids = (() => { try { return JSON.parse(localStorage.getItem("nutrition_goals") ?? "{}"); } catch { return {}; } })();
+      // We'll recalc with profile once loaded, store steps for now
+      setNeat(Math.round(steps * 0.04));
+    } catch { /* ignore */ }
+
+    // EAT (workouts today)
+    try {
+      const logs: Log[] = JSON.parse(localStorage.getItem("programme_logs") ?? "[]");
+      const todayEat = logs
+        .filter(l => l.date.startsWith(today()))
+        .reduce((s, l) => s + l.calories_burned, 0);
+      setEat(todayEat);
+    } catch { /* ignore */ }
+
+    // Body fat
+    try {
+      const bfHistory = JSON.parse(localStorage.getItem("bodyfat_history") ?? "[]");
+      if (bfHistory[0]?.body_fat) setBodyFat(bfHistory[0].body_fat);
+    } catch { /* ignore */ }
   }, []);
+
+  // Recalc NEAT with actual weight once profile loaded
+  useEffect(() => {
+    if (!profile) return;
+    try {
+      const steps = parseInt(localStorage.getItem(`steps_${today()}`) ?? "0") || 0;
+      setNeat(Math.round(steps * 0.04 * (profile.poids / 70)));
+    } catch { /* ignore */ }
+  }, [profile]);
 
   if (!profile) return (
     <div className="flex items-center justify-center h-64">
-      <div className="w-5 h-5 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin" />
+      <div className="w-5 h-5 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>
     </div>
   );
 
-  const bodyFatHistory = (() => {
-    try { return JSON.parse(localStorage.getItem("bodyfat_history") ?? "[]"); } catch { return []; }
-  })();
-  const latestBodyFat = bodyFatHistory[0]?.body_fat ?? null;
+  const bmrVal  = bmr(profile);
+  const tdee    = bmrVal + neat + eat;
+  const balance = consumed.calories - tdee;
+  const surplus = balance > 0;
 
   return (
     <div className="p-8 max-w-3xl">
-      <div className="mb-10">
-        <p className="text-[0.55rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-2">Espace client</p>
+
+      {/* ── Header ── */}
+      <div className="mb-8">
+        <p className="text-[0.55rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-1">Espace client</p>
         <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-5xl text-white tracking-wide">
           {profile.prenom} {profile.nom}
         </h1>
-        <p className="text-white/30 text-xs mt-1">{profile.sexe}</p>
+        <p className="text-white/30 text-xs mt-1 capitalize">
+          {new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}
+        </p>
       </div>
 
-      {/* Quick stats */}
+      {/* ── CICO Hero ── */}
+      <div className="border border-white/10 bg-[#111] p-6 mb-4">
+        <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-6">Bilan calorique du jour</p>
+        <div className="flex items-center gap-8">
+
+          {/* Ring */}
+          <div className="shrink-0">
+            <CalRing consumed={consumed.calories} tdee={tdee}/>
+          </div>
+
+          {/* TDEE breakdown + macros */}
+          <div className="flex-1 min-w-0">
+
+            {/* TDEE breakdown */}
+            <div className="mb-5">
+              <p className="text-[0.5rem] tracking-[0.18em] uppercase text-white/20 mb-3">Dépense totale (TDEE)</p>
+              <div className="flex flex-col gap-2">
+                {[
+                  { label: "BMR", val: bmrVal, desc: "Métabolisme de base", color: "#c9a84c" },
+                  { label: "NEAT", val: neat, desc: "Activité quotidienne · pas", color: "#7eb8a0" },
+                  { label: "EAT", val: eat, desc: "Entraînements du jour", color: "#a08ec9" },
+                ].map(row => (
+                  <div key={row.label} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1 h-4" style={{ backgroundColor: row.color }}/>
+                      <div>
+                        <span className="text-[0.5rem] tracking-[0.15em] uppercase font-bold" style={{ color: row.color }}>{row.label}</span>
+                        <span className="text-[0.45rem] text-white/20 ml-1.5">{row.desc}</span>
+                      </div>
+                    </div>
+                    <span style={{ fontFamily: "var(--font-bebas)" }} className="text-lg text-white/70 tracking-wide">{row.val.toLocaleString("fr-FR")}</span>
+                  </div>
+                ))}
+                <div className="border-t border-white/5 pt-2 flex items-center justify-between mt-1">
+                  <span className="text-[0.5rem] tracking-[0.15em] uppercase text-white/40">Total TDEE</span>
+                  <span style={{ fontFamily: "var(--font-bebas)" }} className="text-xl text-white tracking-wide">{tdee.toLocaleString("fr-FR")} <span className="text-sm text-white/30">kcal</span></span>
+                </div>
+              </div>
+            </div>
+
+            {/* Macros */}
+            <div className="flex flex-col gap-2.5">
+              <MiniBar label="Protéines" consumed={consumed.proteines} goal={goals.proteines} color="#c9a84c"/>
+              <MiniBar label="Glucides"  consumed={consumed.glucides}  goal={goals.glucides}  color="#7eb8a0"/>
+              <MiniBar label="Lipides"   consumed={consumed.lipides}   goal={goals.lipides}   color="#e07070"/>
+            </div>
+          </div>
+        </div>
+
+        {/* Balance banner */}
+        {consumed.calories > 0 && (
+          <div className={`mt-5 px-4 py-2.5 border flex items-center justify-between ${surplus ? "border-[#e07070]/20 bg-[#e07070]/5" : "border-[#7eb8a0]/20 bg-[#7eb8a0]/5"}`}>
+            <span className="text-[0.55rem] tracking-[0.15em] uppercase" style={{ color: surplus ? "#e07070" : "#7eb8a0" }}>
+              {surplus ? "Surplus calorique" : "Déficit calorique"}
+            </span>
+            <span style={{ fontFamily: "var(--font-bebas)", color: surplus ? "#e07070" : "#7eb8a0" }} className="text-xl tracking-wide">
+              {surplus ? "+" : ""}{balance.toLocaleString("fr-FR")} kcal
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* ── Quick stats ── */}
       <div className="grid grid-cols-4 gap-3 mb-6">
         {[
-          { label: "Âge", val: `${profile.age} ans` },
-          { label: "Poids", val: `${profile.poids} kg` },
-          { label: "Taille", val: `${profile.taille} cm` },
-          { label: "Body fat", val: latestBodyFat !== null ? `${latestBodyFat}%` : "—" },
-        ].map((s) => (
+          { label: "Poids",    val: `${profile.poids} kg` },
+          { label: "Taille",   val: `${profile.taille} cm` },
+          { label: "Body fat", val: bodyFat !== null ? `${bodyFat}%` : "—" },
+          { label: "Objectif", val: `${goals.calories} kcal` },
+        ].map(s => (
           <div key={s.label} className="border border-white/10 bg-[#111] p-4">
             <p className="text-[0.5rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1.5">{s.label}</p>
             <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-white tracking-wide">{s.val}</p>
@@ -58,18 +233,18 @@ export default function AccueilPage() {
         ))}
       </div>
 
-      {/* Training + Health */}
+      {/* ── Profil entraînement ── */}
       <div className="grid md:grid-cols-2 gap-4 mb-4">
         <div className="border border-white/10 bg-[#111] p-6">
           <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Entraînement</p>
           <div className="flex flex-col gap-3">
             {[
-              { label: "Niveau", val: profile.niveau_activite },
-              { label: "Expérience", val: profile.experience },
-              { label: "Séances / sem.", val: `${profile.seances_par_semaine}x` },
-              { label: "Durée", val: profile.duree_seance },
-              { label: "Lieu", val: profile.lieu_entrainement },
-            ].map((r) => (
+              { label: "Niveau",       val: profile.niveau_activite },
+              { label: "Expérience",   val: profile.experience },
+              { label: "Séances/sem.", val: `${profile.seances_par_semaine}×` },
+              { label: "Durée",        val: profile.duree_seance },
+              { label: "Lieu",         val: profile.lieu_entrainement },
+            ].map(r => (
               <div key={r.label} className="flex justify-between items-start border-b border-white/5 pb-2.5 last:border-0 last:pb-0">
                 <span className="text-[0.55rem] tracking-wider uppercase text-white/25 shrink-0">{r.label}</span>
                 <span className="text-xs text-white/60 text-right ml-4">{r.val}</span>
@@ -79,13 +254,13 @@ export default function AccueilPage() {
         </div>
 
         <div className="border border-white/10 bg-[#111] p-6">
-          <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Santé</p>
+          <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Santé & objectifs</p>
           <div className="flex flex-col gap-4">
             {[
-              { label: "Blessures", val: profile.blessures },
-              { label: "Alimentation", val: profile.alimentation },
-              { label: "Sommeil & stress", val: profile.sommeil_stress },
-            ].map((r) => (
+              { label: "Blessures",      val: profile.blessures },
+              { label: "Alimentation",   val: profile.alimentation },
+              { label: "Sommeil/stress", val: profile.sommeil_stress },
+            ].map(r => (
               <div key={r.label}>
                 <p className="text-[0.5rem] tracking-[0.18em] uppercase text-white/25 mb-1">{r.label}</p>
                 <p className="text-xs text-white/55 leading-relaxed">{r.val}</p>
@@ -95,23 +270,23 @@ export default function AccueilPage() {
         </div>
       </div>
 
-      {/* Objectives */}
       <div className="border border-white/10 bg-[#111] p-6 mb-6">
         <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-3">Objectifs</p>
         <p className="text-sm text-white/55 leading-relaxed">{profile.objectifs}</p>
       </div>
 
-      {/* Actions */}
+      {/* ── Actions ── */}
       <div className="flex gap-4">
         <Link href="/dashboard/onboarding"
           className="flex-1 border border-white/10 text-white/40 text-[0.6rem] tracking-[0.15em] uppercase py-4 text-center hover:border-white/20 hover:text-white/60 transition-colors">
           Modifier mon profil
         </Link>
-        <a href="https://wa.me/41798617518" target="_blank" rel="noopener noreferrer"
+        <Link href="/dashboard/coach"
           className="flex-1 bg-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.15em] uppercase py-4 text-center hover:bg-[#e2c97e] transition-colors">
           Contacter Samuel →
-        </a>
+        </Link>
       </div>
+
     </div>
   );
 }
