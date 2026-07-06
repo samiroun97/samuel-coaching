@@ -94,7 +94,7 @@ export default function OnboardingPage() {
       taille: parseFloat(form.taille), seances_par_semaine: parseInt(form.seances_par_semaine),
       updated_at: new Date().toISOString(),
     });
-    if (error) { setError("Erreur lors de la sauvegarde."); setLoading(false); }
+    if (error) { setError(`Erreur: ${error.message}`); setLoading(false); }
     else router.push("/dashboard");
   };
 
