@@ -54,21 +54,43 @@ function validateStep(step: number, form: typeof initialForm): string | null {
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
-  const [visited, setVisited] = useState<number[]>([0]);
+  const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState(initialForm);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) router.push("/login");
+    supabase.auth.getUser().then(async ({ data }) => {
+      if (!data.user) { router.push("/login"); return; }
+      const { data: profile } = await supabase
+        .from("profiles").select("*").eq("id", data.user.id).single();
+      if (profile?.prenom) {
+        setForm({
+          nom: profile.nom || "",
+          prenom: profile.prenom || "",
+          age: profile.age?.toString() || "",
+          poids: profile.poids?.toString() || "",
+          taille: profile.taille?.toString() || "",
+          sexe: profile.sexe || "",
+          niveau_activite: profile.niveau_activite || "",
+          experience: profile.experience || "",
+          seances_par_semaine: profile.seances_par_semaine?.toString() || "",
+          duree_seance: profile.duree_seance || "",
+          lieu_entrainement: profile.lieu_entrainement || "",
+          blessures: profile.blessures || "",
+          alimentation: profile.alimentation || "",
+          sommeil_stress: profile.sommeil_stress || "",
+          objectifs: profile.objectifs || "",
+        });
+        setIsEditing(true);
+      }
     });
   }, [router]);
 
   const set = (key: string, val: string) => setForm((f) => ({ ...f, [key]: val }));
 
   const goToStep = (i: number) => {
-    if (i > step) return;
+    if (!isEditing && i > step) return;
     setError("");
     setStep(i);
   };
@@ -77,9 +99,7 @@ export default function OnboardingPage() {
     const err = validateStep(step, form);
     if (err) { setError(err); return; }
     setError("");
-    const nextStep = step + 1;
-    setStep(nextStep);
-    setVisited(v => v.includes(nextStep) ? v : [...v, nextStep]);
+    setStep(step + 1);
   };
 
   const handleSubmit = async () => {
@@ -109,10 +129,12 @@ export default function OnboardingPage() {
     <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-6 py-16">
       <div className="w-full max-w-lg">
 
-        {/* Logo */}
-        <div style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl tracking-[0.2em] text-white text-center mb-10">
+        <div style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl tracking-[0.2em] text-white text-center mb-2">
           SAMUEL<span style={{ color: "#c9a84c" }}>.</span><span style={{ color: "#c9a84c" }}>COACHING</span>
         </div>
+        <p className="text-center text-[0.55rem] tracking-[0.2em] uppercase text-white/30 mb-10">
+          {isEditing ? "Modifier mon profil" : "Compléter mon profil"}
+        </p>
 
         {/* Steps indicator */}
         <div className="flex items-start justify-between mb-10 w-full px-4">
@@ -120,19 +142,19 @@ export default function OnboardingPage() {
             <div key={s} className="flex flex-col items-center gap-2">
               <button
                 onClick={() => goToStep(i)}
-                disabled={i > step}
+                disabled={!isEditing && i > step}
                 className={`w-9 h-9 rounded-full border-2 flex items-center justify-center text-xs font-bold transition-all duration-300 ${
                   i === step
                     ? "border-[#c9a84c] bg-[#c9a84c] text-black"
-                    : i < step
+                    : isEditing || i < step
                     ? "border-[#c9a84c] text-[#c9a84c] bg-transparent cursor-pointer hover:bg-[#c9a84c]/10"
                     : "border-white/20 text-white/20 cursor-default"
                 }`}
               >
-                {i < step ? "✓" : i + 1}
+                {isEditing || i < step ? "✓" : i + 1}
               </button>
               <span className={`text-[0.5rem] tracking-widest uppercase text-center transition-colors duration-300 ${
-                i === step ? "text-[#c9a84c]" : i < step ? "text-white/40" : "text-white/20"
+                i === step ? "text-[#c9a84c]" : isEditing || i < step ? "text-white/40" : "text-white/20"
               }`}>
                 {s}
               </span>
@@ -142,7 +164,6 @@ export default function OnboardingPage() {
 
         <div className="bg-[#111] border border-white/10 p-8">
 
-          {/* STEP 0 */}
           {step === 0 && (
             <div className="flex flex-col gap-5">
               <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl tracking-wider text-white mb-2">TON IDENTITÉ</h2>
@@ -164,12 +185,11 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {/* STEP 1 */}
           {step === 1 && (
             <div className="flex flex-col gap-5">
               <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl tracking-wider text-white mb-2">TON ENTRAÎNEMENT</h2>
               <div>
-                <label className={labelClass}>Niveau d'activité général</label>
+                <label className={labelClass}>Niveau d&apos;activité général</label>
                 <div className="flex flex-col gap-2">
                   {niveauOptions.map(o => (
                     <button key={o.label} type="button" onClick={() => set("niveau_activite", o.label)}
@@ -199,7 +219,7 @@ export default function OnboardingPage() {
                 </div>
               </div>
               <div>
-                <label className={labelClass}>Lieu d'entraînement</label>
+                <label className={labelClass}>Lieu d&apos;entraînement</label>
                 <div className="flex gap-2 flex-wrap">
                   {lieuOptions.map(o => <button key={o} type="button" onClick={() => set("lieu_entrainement", o)} className={chipClass(form.lieu_entrainement === o)}>{o}</button>)}
                 </div>
@@ -207,7 +227,6 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {/* STEP 2 */}
           {step === 2 && (
             <div className="flex flex-col gap-5">
               <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl tracking-wider text-white mb-2">TA SANTÉ</h2>
@@ -228,7 +247,6 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {/* STEP 3 */}
           {step === 3 && (
             <div className="flex flex-col gap-5">
               <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl tracking-wider text-white mb-2">TES OBJECTIFS</h2>
@@ -242,20 +260,28 @@ export default function OnboardingPage() {
           {error && <p className="text-red-400 text-xs mt-4 border border-red-400/20 bg-red-400/5 px-3 py-2">{error}</p>}
         </div>
 
-        {/* Navigation */}
         <div className="flex gap-4 mt-6">
           {step > 0 && (
-            <button onClick={() => { setError(""); setStep(s => s - 1); }} className="flex-1 border border-white/10 text-white/50 text-xs tracking-[0.15em] uppercase py-4 hover:border-white/30 hover:text-white transition-colors">
+            <button onClick={() => { setError(""); setStep(s => s - 1); }}
+              className="flex-1 border border-white/10 text-white/50 text-xs tracking-[0.15em] uppercase py-4 hover:border-white/30 hover:text-white transition-colors">
               ← Retour
             </button>
           )}
+          {isEditing && step > 0 && (
+            <button onClick={() => { setError(""); router.push("/dashboard"); }}
+              className="border border-white/10 text-white/30 text-xs tracking-[0.15em] uppercase py-4 px-5 hover:border-white/20 hover:text-white/50 transition-colors">
+              Annuler
+            </button>
+          )}
           {step < steps.length - 1 ? (
-            <button onClick={next} className="flex-1 bg-[#c9a84c] text-black text-xs font-bold tracking-[0.15em] uppercase py-4 hover:bg-[#e2c97e] transition-colors">
+            <button onClick={next}
+              className="flex-1 bg-[#c9a84c] text-black text-xs font-bold tracking-[0.15em] uppercase py-4 hover:bg-[#e2c97e] transition-colors">
               Suivant →
             </button>
           ) : (
-            <button onClick={handleSubmit} disabled={loading} className="flex-1 bg-[#c9a84c] text-black text-xs font-bold tracking-[0.15em] uppercase py-4 hover:bg-[#e2c97e] transition-colors disabled:opacity-50">
-              {loading ? "Enregistrement..." : "Terminer ✓"}
+            <button onClick={handleSubmit} disabled={loading}
+              className="flex-1 bg-[#c9a84c] text-black text-xs font-bold tracking-[0.15em] uppercase py-4 hover:bg-[#e2c97e] transition-colors disabled:opacity-50">
+              {loading ? "Enregistrement..." : isEditing ? "Enregistrer ✓" : "Terminer ✓"}
             </button>
           )}
         </div>
