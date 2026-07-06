@@ -28,7 +28,7 @@ const DAY_LABELS = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
 function macroKcal(g: Goals) { return Math.round(g.proteines*4 + g.glucides*4 + g.lipides*9); }
 
 function adjustCalories(draft: Goals, newCal: number): Goals {
-  newCal = Math.max(500, Math.round(newCal));
+  newCal = Math.max(0, Math.round(newCal));
   const curKcal = macroKcal(draft);
   const out = { ...draft, calories: newCal };
   if (curKcal > 0) {
@@ -175,6 +175,7 @@ export default function NutritionPage() {
   const [showAdd,   setShowAdd]   = useState(false);
   const [showGoals, setShowGoals] = useState(false);
   const [goalDraft, setGoalDraft] = useState<Goals>(defaultGoals);
+  const [rawGoal,   setRawGoal]   = useState({ calories: "2200", proteines: "150", glucides: "220", lipides: "70" });
   const [water,     setWater]     = useState(0);
   const [savedMeals, setSavedMeals] = useState<SavedMeal[]>([]);
   const [pastHistory, setPastHistory] = useState<DayHistory[]>([]);
@@ -324,6 +325,27 @@ export default function NutritionPage() {
     setQuery(""); setResults([]); setSelected(null); setQuantity("100"); setSelectedSaved(null);
   };
 
+  const syncRaw = (g: Goals) => setRawGoal({
+    calories:  g.calories.toString(),
+    proteines: g.proteines.toString(),
+    glucides:  g.glucides.toString(),
+    lipides:   g.lipides.toString(),
+  });
+
+  const commitCalories = () => {
+    const val = parseInt(rawGoal.calories);
+    if (isNaN(val) || val <= 0) { syncRaw(goalDraft); return; }
+    const next = adjustCalories(goalDraft, val);
+    setGoalDraft(next); syncRaw(next);
+  };
+
+  const commitMacro = (key: MacroKey) => {
+    const val = parseInt(rawGoal[key]);
+    if (isNaN(val) || val < 0) { syncRaw(goalDraft); return; }
+    const next = adjustMacro(goalDraft, key, val);
+    setGoalDraft(next); syncRaw(next);
+  };
+
   const kcalFromMacros = macroKcal(goalDraft);
   const isCoherent     = Math.abs(kcalFromMacros - goalDraft.calories) <= 5;
 
@@ -347,7 +369,7 @@ export default function NutritionPage() {
             {new Date().toLocaleDateString("fr-FR",{ weekday:"long", day:"numeric", month:"long" })}
           </p>
         </div>
-        <button onClick={() => { setGoalDraft(goals); setShowGoals(true); }}
+        <button onClick={() => { setGoalDraft(goals); syncRaw(goals); setShowGoals(true); }}
           className="text-[0.55rem] tracking-[0.15em] uppercase text-white/30 border border-white/10 px-4 py-2 hover:text-white/60 hover:border-white/20 transition-colors">
           Mes objectifs
         </button>
@@ -672,7 +694,10 @@ export default function NutritionPage() {
             </div>
             <div className="mb-5">
               <label className={labelCls}>Calories totales (kcal)</label>
-              <input className={inputCls} type="number" value={goalDraft.calories} onChange={e => setGoalDraft(adjustCalories(goalDraft,+e.target.value))}/>
+              <input className={inputCls} type="number" value={rawGoal.calories}
+                onChange={e => setRawGoal(r => ({ ...r, calories: e.target.value }))}
+                onBlur={commitCalories}
+                onKeyDown={e => { if (e.key === "Enter") commitCalories(); }}/>
               <p className="text-[0.5rem] text-white/20 mt-1">Modifier les calories redistribue les macros proportionnellement</p>
             </div>
             <div className="flex flex-col gap-4 mb-5">
@@ -682,7 +707,10 @@ export default function NutritionPage() {
                     <label className="text-[0.55rem] tracking-[0.2em] uppercase block" style={{ color }}>{label} (g)</label>
                     <span className="text-[0.5rem] text-white/20">{Math.round(goalDraft[key]*CAL[key])} kcal</span>
                   </div>
-                  <input className={inputCls} type="number" value={goalDraft[key]} onChange={e => setGoalDraft(adjustMacro(goalDraft,key,+e.target.value))}/>
+                  <input className={inputCls} type="number" value={rawGoal[key]}
+                    onChange={e => setRawGoal(r => ({ ...r, [key]: e.target.value }))}
+                    onBlur={() => commitMacro(key)}
+                    onKeyDown={e => { if (e.key === "Enter") commitMacro(key); }}/>
                   <p className="text-[0.5rem] text-white/15 mt-1">Les autres macros s&apos;ajustent pour rester à {goalDraft.calories} kcal</p>
                 </div>
               ))}
