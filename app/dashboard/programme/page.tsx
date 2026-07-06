@@ -11,10 +11,11 @@ export default function ProgrammePage() {
       <div className="border border-white/10 bg-[#111] p-12 flex flex-col items-center text-center">
         <div className="w-14 h-14 border border-white/10 flex items-center justify-center mb-6">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="6" cy="12" r="2.5"/>
-            <circle cx="18" cy="12" r="2.5"/>
-            <path d="M8.5 12h7"/>
-            <path d="M2 12h1.5M20.5 12H22"/>
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <line x1="10" y1="9" x2="8" y2="9"/>
           </svg>
         </div>
         <p className="text-[0.55rem] tracking-[0.25em] text-[#c9a84c] uppercase mb-3">Bientôt disponible</p>
