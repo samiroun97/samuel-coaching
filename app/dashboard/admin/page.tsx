@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
@@ -14,11 +14,13 @@ type Client = {
   sommeil_stress: string; objectifs: string; updated_at: string;
 };
 type Seance = { id: string; titre: string; type_seance: string | null; date_prevue: string | null; description: string | null; exercices: string | null; assigned_to_email: string };
+type DirectMsg = { id: string; from_email: string; to_email: string; content: string; created_at: string };
 
 const imc = (p: number, t: number) => (p / ((t / 100) ** 2)).toFixed(1);
 
 export default function AdminPage() {
   const router = useRouter();
+  const [page,     setPage]     = useState<"clients" | "messages">("clients");
   const [clients,  setClients]  = useState<Client[]>([]);
   const [selected, setSelected] = useState<Client | null>(null);
   const [seances,  setSeances]  = useState<Seance[]>([]);
@@ -29,6 +31,13 @@ export default function AdminPage() {
   const [saving,  setSaving]  = useState(false);
   const [saveErr, setSaveErr] = useState("");
 
+  // Messages
+  const [allMsgs,       setAllMsgs]       = useState<DirectMsg[]>([]);
+  const [msgClient,     setMsgClient]     = useState<string | null>(null);
+  const [replyInput,    setReplyInput]    = useState("");
+  const [replySending,  setReplySending]  = useState(false);
+  const msgBottom = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -36,9 +45,23 @@ export default function AdminPage() {
 
       const { data, error } = await supabase.from("profiles").select("*").order("updated_at", { ascending: false });
       if (!error && data) setClients(data as Client[]);
+
+      const { data: msgs } = await supabase.from("messages").select("*").order("created_at", { ascending: true });
+      setAllMsgs((msgs ?? []) as DirectMsg[]);
       setLoading(false);
     })();
   }, [router]);
+
+  useEffect(() => {
+    const channel = supabase.channel("admin_messages")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, payload => {
+        setAllMsgs(prev => [...prev, payload.new as DirectMsg]);
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
+  useEffect(() => { msgBottom.current?.scrollIntoView({ behavior: "smooth" }); }, [allMsgs, msgClient]);
 
   const selectClient = async (c: Client) => {
     setSelected(c); setTab("profil"); setForm({ titre: "", type_seance: "", date_prevue: "", description: "", exercices: "" }); setSaveErr("");
@@ -69,6 +92,34 @@ export default function AdminPage() {
     setSeances(s => s.filter(x => x.id !== id));
   };
 
+  // Conversations groupées par client
+  const conversations = (() => {
+    const map = new Map<string, { msgs: DirectMsg[]; clientName: string }>();
+    for (const m of allMsgs) {
+      const clientEmail = m.from_email === SAMUEL_EMAIL ? m.to_email : m.from_email;
+      if (clientEmail === SAMUEL_EMAIL) continue;
+      if (!map.has(clientEmail)) {
+        const profile = clients.find(c => c.email === clientEmail);
+        map.set(clientEmail, { msgs: [], clientName: profile ? `${profile.prenom} ${profile.nom}` : clientEmail });
+      }
+      map.get(clientEmail)!.msgs.push(m);
+    }
+    return [...map.entries()]
+      .map(([email, { msgs, clientName }]) => ({ email, msgs, clientName, lastMsg: msgs[msgs.length - 1] }))
+      .sort((a, b) => new Date(b.lastMsg.created_at).getTime() - new Date(a.lastMsg.created_at).getTime());
+  })();
+
+  const activeConv = msgClient ? conversations.find(c => c.email === msgClient) : null;
+
+  const sendReply = async () => {
+    const text = replyInput.trim();
+    if (!text || replySending || !msgClient) return;
+    setReplySending(true);
+    setReplyInput("");
+    await supabase.from("messages").insert({ from_email: SAMUEL_EMAIL, to_email: msgClient, content: text });
+    setReplySending(false);
+  };
+
   const inputCls = "w-full bg-[#0a0a0a] border border-white/10 text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
   const labelCls = "text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c] block mb-1.5";
 
@@ -81,19 +132,34 @@ export default function AdminPage() {
   return (
     <div className="flex h-screen overflow-hidden">
 
-      {/* ── Client list ── */}
-      <div className={`flex flex-col border-r border-white/5 bg-[#0a0a0a] transition-all ${selected ? "w-72 shrink-0" : "flex-1"}`}>
+      {/* ── Left panel ── */}
+      <div className={`flex flex-col border-r border-white/5 bg-[#0a0a0a] transition-all ${(selected || msgClient) ? "w-72 shrink-0" : "flex-1"}`}>
         <div className="px-6 pt-8 pb-5 border-b border-white/5">
           <p className="text-[0.55rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-2">Administration</p>
-          <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-white tracking-wide">CLIENTS</h1>
-          <p className="text-white/30 text-xs mt-1">{clients.length} client{clients.length > 1 ? "s" : ""} inscrit{clients.length > 1 ? "s" : ""}</p>
+          <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-white tracking-wide">
+            {page === "clients" ? "CLIENTS" : "MESSAGES"}
+          </h1>
+          <p className="text-white/30 text-xs mt-1">
+            {page === "clients"
+              ? `${clients.length} client${clients.length > 1 ? "s" : ""} inscrit${clients.length > 1 ? "s" : ""}`
+              : `${conversations.length} conversation${conversations.length > 1 ? "s" : ""}`}
+          </p>
+          {/* Page switcher */}
+          <div className="flex mt-4 border border-white/10">
+            {(["clients", "messages"] as const).map(p => (
+              <button key={p} onClick={() => { setPage(p); setSelected(null); setMsgClient(null); }}
+                className={`flex-1 py-2 text-[0.55rem] tracking-[0.12em] uppercase transition-colors ${page === p ? "bg-[#c9a84c] text-black font-bold" : "text-white/30 hover:text-white/60"}`}>
+                {p === "messages" && conversations.length > 0 ? `Messages (${conversations.length})` : p.charAt(0).toUpperCase() + p.slice(1)}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto py-3 px-3">
-          {clients.length === 0 ? (
+          {/* ── Liste clients ── */}
+          {page === "clients" && (clients.length === 0 ? (
             <div className="p-8 text-center">
               <p className="text-white/20 text-xs">Aucun client inscrit</p>
-              <p className="text-white/10 text-[0.55rem] mt-1">Les clients apparaîtront ici après leur inscription</p>
             </div>
           ) : clients.map(c => {
             const isSelected = selected?.id === c.id;
@@ -115,7 +181,30 @@ export default function AdminPage() {
                 </div>
               </button>
             );
-          })}
+          }))}
+
+          {/* ── Liste conversations ── */}
+          {page === "messages" && (conversations.length === 0 ? (
+            <div className="p-8 text-center">
+              <p className="text-white/20 text-xs">Aucun message reçu</p>
+            </div>
+          ) : conversations.map(conv => {
+            const isActive = msgClient === conv.email;
+            return (
+              <button key={conv.email} onClick={() => setMsgClient(conv.email)}
+                className={`w-full text-left px-4 py-3.5 mb-1.5 border transition-all ${isActive ? "border-[#c9a84c]/30 bg-[#c9a84c]/5" : "border-white/5 hover:border-white/10 hover:bg-white/[0.02]"}`}>
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <p className={`text-sm font-medium truncate ${isActive ? "text-white" : "text-white/70"}`}>{conv.clientName}</p>
+                  <span className="text-[0.42rem] text-white/20 shrink-0">
+                    {new Date(conv.lastMsg.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
+                  </span>
+                </div>
+                <p className="text-[0.5rem] text-white/25 truncate leading-relaxed">
+                  {conv.lastMsg.from_email === SAMUEL_EMAIL ? "Vous : " : ""}{conv.lastMsg.content}
+                </p>
+              </button>
+            );
+          }))}
         </div>
       </div>
 
@@ -266,12 +355,78 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* ── Empty state when nothing selected ── */}
-      {!selected && clients.length > 0 && (
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-white/10 text-sm">Sélectionne un client</p>
+      {/* ── Panneau conversation ── */}
+      {page === "messages" && msgClient && activeConv && (
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Header conv */}
+          <div className="px-8 pt-6 pb-4 border-b border-white/5 flex items-center justify-between shrink-0">
+            <div>
+              <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-white tracking-wide">{activeConv.clientName}</h2>
+              <p className="text-[0.5rem] text-white/25 tracking-wider mt-0.5">{msgClient}</p>
+            </div>
+            <button onClick={() => setMsgClient(null)} className="text-white/20 hover:text-white/50 transition-colors">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
           </div>
+
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto px-8 py-6 flex flex-col gap-3">
+            {activeConv.msgs.map(m => {
+              const isMe = m.from_email === SAMUEL_EMAIL;
+              return (
+                <div key={m.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
+                  {!isMe && (
+                    <div className="w-6 h-6 border border-white/10 flex items-center justify-center mr-2.5 mt-0.5 shrink-0">
+                      <span className="text-[0.5rem] text-white/40 font-bold">
+                        {activeConv.clientName.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  )}
+                  <div className="max-w-sm">
+                    <div className={`px-4 py-3 text-xs leading-relaxed whitespace-pre-line ${
+                      isMe ? "bg-[#c9a84c] text-black" : "bg-[#111] border border-white/10 text-white/60"
+                    }`}>
+                      {m.content}
+                    </div>
+                    <p className={`text-[0.4rem] text-white/15 mt-1 tracking-wider ${isMe ? "text-right" : ""}`}>
+                      {new Date(m.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+            <div ref={msgBottom}/>
+          </div>
+
+          {/* Reply input */}
+          <div className="border-t border-white/5 px-8 py-4 flex gap-3 shrink-0">
+            <input
+              value={replyInput}
+              onChange={e => setReplyInput(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendReply(); } }}
+              placeholder={`Répondre à ${activeConv.clientName}…`}
+              disabled={replySending}
+              className="flex-1 bg-[#111] border border-white/10 text-white placeholder-white/20 text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors disabled:opacity-50"
+            />
+            <button onClick={sendReply} disabled={!replyInput.trim() || replySending}
+              className="bg-[#c9a84c] text-black px-6 py-3 text-[0.6rem] font-bold tracking-[0.15em] uppercase hover:bg-[#e2c97e] transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+              Envoyer
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Empty state ── */}
+      {page === "clients" && !selected && clients.length > 0 && (
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-white/10 text-sm">Sélectionne un client</p>
+        </div>
+      )}
+      {page === "messages" && !msgClient && (
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-white/10 text-sm">Sélectionne une conversation</p>
         </div>
       )}
     </div>
