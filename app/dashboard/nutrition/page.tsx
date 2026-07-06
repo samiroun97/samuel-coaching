@@ -294,7 +294,9 @@ export default function NutritionPage() {
     } else if (modalMode === "search" && selected && computed) {
       setFoods(f => [...f, { id:Date.now().toString(), repas, name:selected.product_name, ...computed }]);
     } else if (modalMode === "saved" && selectedSaved) {
-      setFoods(f => [...f, { id:Date.now().toString(), repas, ...selectedSaved }]);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { id: _sid, ...savedData } = selectedSaved;
+      setFoods(f => [...f, { id:Date.now().toString(), repas, ...savedData }]);
     } else return;
     resetModal();
   };

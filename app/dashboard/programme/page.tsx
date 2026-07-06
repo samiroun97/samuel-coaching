@@ -231,6 +231,7 @@ export default function ProgrammePage() {
             );
           })}
         </div>
+      )}
 
       {/* ── Historique séances ── */}
       {loggedWorkouts.length > 0 && (
