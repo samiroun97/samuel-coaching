@@ -224,13 +224,25 @@ export default function AccueilPage() {
           { label: "Poids",    val: `${profile.poids} kg` },
           { label: "Taille",   val: `${profile.taille} cm` },
           { label: "Body fat", val: bodyFat !== null ? `${bodyFat}%` : "—" },
-          { label: "Objectif", val: `${goals.calories} kcal` },
-        ].map(s => (
-          <div key={s.label} className="border border-white/10 bg-[#111] p-4">
-            <p className="text-[0.5rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1.5">{s.label}</p>
-            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-white tracking-wide">{s.val}</p>
-          </div>
-        ))}
+          {
+            label: consumed.calories > 0
+              ? Math.abs(balance) <= 100 ? "Maintenance" : surplus ? "Surplus" : "Déficit"
+              : "Balance",
+            val: consumed.calories > 0
+              ? `${surplus ? "+" : ""}${balance.toLocaleString("fr-FR")} kcal`
+              : "—",
+          },
+        ].map((s, i) => {
+          const isBalance = i === 3 && consumed.calories > 0;
+          const balColor  = Math.abs(balance) <= 100 ? "#7eb8a0" : surplus ? "#e07070" : "#7eb8a0";
+          return (
+            <div key={s.label} className={`border p-4 ${isBalance ? "bg-[#111]" : "border-white/10 bg-[#111]"}`}
+              style={isBalance ? { borderColor: `${balColor}30` } : {}}>
+              <p className="text-[0.5rem] tracking-[0.2em] uppercase mb-1.5" style={{ color: isBalance ? balColor : "#c9a84c" }}>{s.label}</p>
+              <p style={{ fontFamily: "var(--font-bebas)", color: isBalance ? balColor : "white" }} className="text-2xl tracking-wide">{s.val}</p>
+            </div>
+          );
+        })}
       </div>
 
       {/* ── Profil entraînement ── */}
