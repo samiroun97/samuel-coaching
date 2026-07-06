@@ -46,7 +46,11 @@ export default function SuiviPage() {
   const [estimating, setEstimating] = useState(false);
   const [result,     setResult]     = useState<{ body_fat_percentage: number; note: string; points_forts?: string; points_faibles?: string; conseils?: string } | null>(null);
   const [error,      setError]      = useState("");
-  const [showUpload, setShowUpload] = useState(false);
+  const [showUpload,  setShowUpload]  = useState(false);
+  const [showManual,  setShowManual]  = useState(false);
+  const [manualVal,   setManualVal]   = useState("");
+  const [editingId,   setEditingId]   = useState<string | null>(null);
+  const [editingVal,  setEditingVal]  = useState("");
   const fileRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   useEffect(() => {
@@ -115,6 +119,30 @@ export default function SuiviPage() {
     localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
   };
 
+  const saveManual = () => {
+    const val = parseFloat(manualVal.replace(",", "."));
+    if (isNaN(val) || val <= 0 || val > 60) return;
+    const entry: BodyFatEntry = {
+      id: Date.now().toString(),
+      date: new Date().toISOString(),
+      body_fat: +val.toFixed(1),
+      note: "Saisie manuelle",
+    };
+    const next = [entry, ...history];
+    setHistory(next);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
+    setManualVal(""); setShowManual(false);
+  };
+
+  const saveEdit = (id: string) => {
+    const val = parseFloat(editingVal.replace(",", "."));
+    if (isNaN(val) || val <= 0 || val > 60) { setEditingId(null); return; }
+    const next = history.map(e => e.id === id ? { ...e, body_fat: +val.toFixed(1) } : e);
+    setHistory(next);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
+    setEditingId(null);
+  };
+
   const chartData = [...history].reverse().slice(-10);
 
   return (
@@ -152,16 +180,42 @@ export default function SuiviPage() {
             <p className="text-[0.45rem] text-white/20 mt-1.5 tracking-wider">Fais ta première estimation ci-contre</p>
           )}
         </div>
-        <button
-          onClick={() => { setShowUpload(v => !v); setResult(null); setError(""); }}
-          className={`text-[0.6rem] font-bold tracking-[0.15em] uppercase px-5 py-3 transition-colors flex-shrink-0 ml-4 ${
-            needsEstimation
-              ? "bg-[#c9a84c] text-black hover:bg-[#e2c97e]"
-              : "border border-white/10 text-white/40 hover:border-white/20 hover:text-white/60"
-          }`}>
-          {showUpload ? "Annuler" : needsEstimation ? "Nouvelle estimation →" : "Estimer quand même"}
-        </button>
+        <div className="flex flex-col gap-2 ml-4 flex-shrink-0">
+          <button
+            onClick={() => { setShowUpload(v => !v); setShowManual(false); setResult(null); setError(""); }}
+            className={`text-[0.6rem] font-bold tracking-[0.15em] uppercase px-5 py-3 transition-colors ${
+              needsEstimation
+                ? "bg-[#c9a84c] text-black hover:bg-[#e2c97e]"
+                : "border border-white/10 text-white/40 hover:border-white/20 hover:text-white/60"
+            }`}>
+            {showUpload ? "Annuler" : needsEstimation ? "Nouvelle estimation →" : "Estimer quand même"}
+          </button>
+          <button
+            onClick={() => { setShowManual(v => !v); setShowUpload(false); setManualVal(""); }}
+            className="border border-white/10 text-white/30 text-[0.55rem] tracking-[0.12em] uppercase px-5 py-2 hover:border-white/20 hover:text-white/50 transition-colors">
+            {showManual ? "Annuler" : "Saisir manuellement"}
+          </button>
+        </div>
       </div>
+
+      {/* ── Saisie manuelle ── */}
+      {showManual && (
+        <div className="border border-white/10 bg-[#111] p-5 mb-6 flex items-center gap-3">
+          <p className="text-[0.55rem] tracking-[0.15em] uppercase text-white/30 flex-shrink-0">Body fat %</p>
+          <input
+            type="number" min="1" max="60" step="0.1" placeholder="ex : 18.5"
+            autoFocus
+            className="flex-1 bg-[#0a0a0a] border border-white/10 text-white text-sm px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 transition-colors placeholder-white/15"
+            value={manualVal}
+            onChange={e => setManualVal(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter") saveManual(); if (e.key === "Escape") setShowManual(false); }}
+          />
+          <button onClick={saveManual}
+            className="bg-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.15em] uppercase px-5 py-2.5 hover:bg-[#e2c97e] transition-colors">
+            Enregistrer →
+          </button>
+        </div>
+      )}
 
       {/* ── Upload & Estimation ── */}
       {showUpload && (
@@ -296,13 +350,28 @@ export default function SuiviPage() {
                 </div>
                 <div className="flex items-center gap-3 ml-4 flex-shrink-0">
                   <div className="text-right">
-                    <div className="flex items-baseline gap-1 justify-end">
-                      <span style={{ fontFamily: "var(--font-bebas)" }} className={`text-2xl tracking-wide leading-none ${i === 0 ? "text-white" : "text-white/40"}`}>
-                        {entry.body_fat}
-                      </span>
-                      <span className="text-[0.45rem] text-white/25">%</span>
-                    </div>
-                    {diff !== null && (
+                    {editingId === entry.id ? (
+                      <input
+                        type="number" min="1" max="60" step="0.1" autoFocus
+                        className="w-16 bg-[#0a0a0a] border border-[#c9a84c]/40 text-[#c9a84c] text-center text-sm py-0.5 focus:outline-none"
+                        value={editingVal}
+                        onChange={e => setEditingVal(e.target.value)}
+                        onBlur={() => saveEdit(entry.id)}
+                        onKeyDown={e => { if (e.key === "Enter") saveEdit(entry.id); if (e.key === "Escape") setEditingId(null); }}
+                      />
+                    ) : (
+                      <div className="flex items-baseline gap-1 justify-end cursor-pointer group/edit"
+                        onClick={() => { setEditingId(entry.id); setEditingVal(entry.body_fat.toString()); }}>
+                        <span style={{ fontFamily: "var(--font-bebas)" }} className={`text-2xl tracking-wide leading-none transition-colors ${i === 0 ? "text-white group-hover/edit:text-[#c9a84c]" : "text-white/40 group-hover/edit:text-white/70"}`}>
+                          {entry.body_fat}
+                        </span>
+                        <span className="text-[0.45rem] text-white/25">%</span>
+                        <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-white/15 group-hover/edit:text-[#c9a84c] transition-colors ml-0.5 mb-0.5">
+                          <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                      </div>
+                    )}
+                    {diff !== null && editingId !== entry.id && (
                       <span className={`text-[0.42rem] tracking-wider ${diff < 0 ? "text-[#7eb8a0]" : diff > 0 ? "text-[#e07070]" : "text-white/20"}`}>
                         {diff < 0 ? "▼" : diff > 0 ? "▲" : "—"}{Math.abs(diff)}%
                       </span>
