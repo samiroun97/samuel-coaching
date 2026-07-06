@@ -97,7 +97,7 @@ export default function NutritionPage() {
   const [aiError,     setAiError]     = useState("");
   const [listening,   setListening]   = useState(false);
   const photoRef       = useRef<HTMLInputElement>(null);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<{ start(): void; stop(): void } | null>(null);
 
   /* search mode state */
   const [query,    setQuery]    = useState("");
@@ -161,12 +161,13 @@ export default function NutritionPage() {
 
   /* ─── voice ─── */
   const startVoice = () => {
-    const SR = (window as typeof window & { SpeechRecognition?: typeof SpeechRecognition; webkitSpeechRecognition?: typeof SpeechRecognition }).SpeechRecognition
-             || (window as typeof window & { webkitSpeechRecognition?: typeof SpeechRecognition }).webkitSpeechRecognition;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SR) { setAiError("Reconnaissance vocale non supportée."); return; }
     const rec = new SR();
     rec.lang = "fr-FR"; rec.continuous = false; rec.interimResults = false;
-    rec.onresult = (ev: SpeechRecognitionEvent) => { setDescription(ev.results[0][0].transcript); setListening(false); };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    rec.onresult = (ev: any) => { setDescription(ev.results[0][0].transcript); setListening(false); };
     rec.onerror  = () => setListening(false);
     rec.onend    = () => setListening(false);
     recognitionRef.current = rec; rec.start(); setListening(true);
