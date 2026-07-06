@@ -26,19 +26,37 @@ const meals: { key: Repas; label: string }[] = [
 const DAY_LABELS = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
 
 function macroKcal(g: Goals) { return Math.round(g.proteines*4 + g.glucides*4 + g.lipides*9); }
-function adjustCalories(draft: Goals, newCal: number, locked: Set<MacroKey>): Goals {
-  newCal = Math.max(0, Math.round(newCal));
-  const lockedKcal = Array.from(locked).reduce((s,k) => s + draft[k]*CAL[k], 0);
-  const available  = Math.max(0, newCal - lockedKcal);
-  const unlocked   = (["proteines","glucides","lipides"] as MacroKey[]).filter(k => !locked.has(k));
-  const curKcal    = unlocked.reduce((s,k) => s + draft[k]*CAL[k], 0);
+
+function adjustCalories(draft: Goals, newCal: number): Goals {
+  newCal = Math.max(500, Math.round(newCal));
+  const curKcal = macroKcal(draft);
   const out = { ...draft, calories: newCal };
-  if (curKcal > 0) unlocked.forEach(k => { out[k] = Math.max(0, Math.round((available * (draft[k]*CAL[k]/curKcal)) / CAL[k])); });
+  if (curKcal > 0) {
+    const scale = newCal / curKcal;
+    out.proteines = Math.max(0, Math.round(draft.proteines * scale));
+    out.glucides  = Math.max(0, Math.round(draft.glucides  * scale));
+    out.lipides   = Math.max(0, Math.round(draft.lipides   * scale));
+  } else {
+    out.proteines = Math.round(newCal * 0.25 / 4);
+    out.glucides  = Math.round(newCal * 0.50 / 4);
+    out.lipides   = Math.round(newCal * 0.25 / 9);
+  }
   return out;
 }
+
 function adjustMacro(draft: Goals, key: MacroKey, grams: number): Goals {
-  const out = { ...draft, [key]: Math.max(0, Math.round(grams)) };
-  out.calories = macroKcal(out);
+  grams = Math.max(0, Math.round(grams));
+  const thisKcal  = grams * CAL[key];
+  const remaining = Math.max(0, draft.calories - thisKcal);
+  const others    = (["proteines","glucides","lipides"] as MacroKey[]).filter(k => k !== key);
+  const othersKcal = others.reduce((s,k) => s + draft[k]*CAL[k], 0);
+  const out = { ...draft, [key]: grams };
+  if (othersKcal > 0) {
+    others.forEach(k => { out[k] = Math.max(0, Math.round((remaining * (draft[k]*CAL[k]/othersKcal)) / CAL[k])); });
+  } else {
+    others.forEach(k => { out[k] = Math.max(0, Math.round((remaining/2) / CAL[k])); });
+  }
+  out.calories = draft.calories;
   return out;
 }
 
@@ -157,7 +175,6 @@ export default function NutritionPage() {
   const [showAdd,   setShowAdd]   = useState(false);
   const [showGoals, setShowGoals] = useState(false);
   const [goalDraft, setGoalDraft] = useState<Goals>(defaultGoals);
-  const [locked,    setLocked]    = useState<Set<MacroKey>>(new Set());
   const [water,     setWater]     = useState(0);
   const [savedMeals, setSavedMeals] = useState<SavedMeal[]>([]);
   const [pastHistory, setPastHistory] = useState<DayHistory[]>([]);
@@ -309,7 +326,6 @@ export default function NutritionPage() {
 
   const kcalFromMacros = macroKcal(goalDraft);
   const isCoherent     = Math.abs(kcalFromMacros - goalDraft.calories) <= 5;
-  const toggleLock     = (k: MacroKey) => setLocked(s => { const n=new Set(s); n.has(k)?n.delete(k):n.add(k); return n; });
 
   const inputCls = "w-full bg-[#0a0a0a] border border-white/10 text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
   const labelCls = "text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c] block mb-1.5";
@@ -331,7 +347,7 @@ export default function NutritionPage() {
             {new Date().toLocaleDateString("fr-FR",{ weekday:"long", day:"numeric", month:"long" })}
           </p>
         </div>
-        <button onClick={() => { setGoalDraft(goals); setLocked(new Set()); setShowGoals(true); }}
+        <button onClick={() => { setGoalDraft(goals); setShowGoals(true); }}
           className="text-[0.55rem] tracking-[0.15em] uppercase text-white/30 border border-white/10 px-4 py-2 hover:text-white/60 hover:border-white/20 transition-colors">
           Mes objectifs
         </button>
@@ -656,26 +672,18 @@ export default function NutritionPage() {
             </div>
             <div className="mb-5">
               <label className={labelCls}>Calories totales (kcal)</label>
-              <input className={inputCls} type="number" value={goalDraft.calories} onChange={e => setGoalDraft(adjustCalories(goalDraft,+e.target.value,locked))}/>
-              <p className="text-[0.5rem] text-white/20 mt-1">Modifier les calories recalcule les macros proportionnellement (hors verrous)</p>
+              <input className={inputCls} type="number" value={goalDraft.calories} onChange={e => setGoalDraft(adjustCalories(goalDraft,+e.target.value))}/>
+              <p className="text-[0.5rem] text-white/20 mt-1">Modifier les calories redistribue les macros proportionnellement</p>
             </div>
             <div className="flex flex-col gap-4 mb-5">
               {macroConfig.map(({ key, label, color }) => (
                 <div key={key}>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="text-[0.55rem] tracking-[0.2em] uppercase block" style={{ color }}>{label} (g)</label>
-                    <button onClick={() => toggleLock(key)}
-                      className={`flex items-center gap-1 text-[0.5rem] tracking-wider uppercase px-2 py-0.5 border transition-colors ${locked.has(key)?"border-[#c9a84c]/40 text-[#c9a84c]":"border-white/10 text-white/20 hover:text-white/40"}`}>
-                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                        {locked.has(key)
-                          ? <><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></>
-                          : <><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 019.9-1"/></>}
-                      </svg>
-                      {locked.has(key)?"Verrouillé":"Verrouiller"}
-                    </button>
+                    <span className="text-[0.5rem] text-white/20">{Math.round(goalDraft[key]*CAL[key])} kcal</span>
                   </div>
                   <input className={inputCls} type="number" value={goalDraft[key]} onChange={e => setGoalDraft(adjustMacro(goalDraft,key,+e.target.value))}/>
-                  <p className="text-[0.5rem] text-white/15 mt-1">= {Math.round(goalDraft[key]*CAL[key])} kcal</p>
+                  <p className="text-[0.5rem] text-white/15 mt-1">Les autres macros s&apos;ajustent pour rester à {goalDraft.calories} kcal</p>
                 </div>
               ))}
             </div>
