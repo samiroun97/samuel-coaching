@@ -132,6 +132,7 @@ export default function NutritionPage() {
         method:"POST", headers:{"Content-Type":"application/json"},
         body: JSON.stringify({ type:"text", text:description }),
       });
+      if (!res.ok) { const t = await res.text(); throw new Error(t || `Erreur ${res.status}`); }
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setAiResult(data);
@@ -149,6 +150,7 @@ export default function NutritionPage() {
           method:"POST", headers:{"Content-Type":"application/json"},
           body: JSON.stringify({ type:"photo", image:reader.result }),
         });
+        if (!res.ok) { const t = await res.text(); throw new Error(t || `Erreur ${res.status}`); }
         const data = await res.json();
         if (data.error) throw new Error(data.error);
         setAiResult(data);
