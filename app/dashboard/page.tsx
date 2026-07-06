@@ -15,7 +15,13 @@ type Log   = { date: string; calories_burned: number };
 
 const today = () => new Date().toISOString().split("T")[0];
 
-function bmr(p: Profile) {
+function bmr(p: Profile, bodyFatPct: number | null): number {
+  if (bodyFatPct !== null) {
+    // Katch-McArdle : basé sur la masse maigre (LBM)
+    const lbm = p.poids * (1 - bodyFatPct / 100);
+    return Math.round(370 + 21.6 * lbm);
+  }
+  // Mifflin-St Jeor : estimation sans composition corporelle
   const base = 10 * p.poids + 6.25 * p.taille - 5 * p.age;
   return Math.round(p.sexe === "Femme" ? base - 161 : base + 5);
 }
@@ -137,7 +143,7 @@ export default function AccueilPage() {
     </div>
   );
 
-  const bmrVal  = bmr(profile);
+  const bmrVal  = bmr(profile, bodyFat);
   const tdee    = bmrVal + neat + eat;
   const balance = consumed.calories - tdee;
   const surplus = balance > 0;
@@ -174,7 +180,7 @@ export default function AccueilPage() {
               <p className="text-[0.5rem] tracking-[0.18em] uppercase text-white/20 mb-3">Dépense totale (TDEE)</p>
               <div className="flex flex-col gap-2">
                 {[
-                  { label: "BMR", val: bmrVal, desc: "Métabolisme de base", color: "#c9a84c" },
+                  { label: "BMR", val: bmrVal, desc: bodyFat !== null ? "Katch-McArdle · masse maigre" : "Mifflin-St Jeor · estimation", color: "#c9a84c" },
                   { label: "NEAT", val: neat, desc: "Activité quotidienne · pas", color: "#7eb8a0" },
                   { label: "EAT", val: eat, desc: "Entraînements du jour", color: "#a08ec9" },
                 ].map(row => (
