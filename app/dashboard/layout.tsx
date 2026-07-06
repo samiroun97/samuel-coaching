@@ -35,7 +35,7 @@ const navItems = [
   { label: "Nutrition", href: "/dashboard/nutrition",  icon: "nutrition" },
   { label: "Programme", href: "/dashboard/programme",  icon: "programme" },
   { label: "Suivi",     href: "/dashboard/suivi",      icon: "suivi" },
-  { label: "Coach IA",  href: "/dashboard/coach",      icon: "coach" },
+  { label: "Messages",  href: "/dashboard/coach",      icon: "coach" },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
