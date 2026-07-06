@@ -177,11 +177,10 @@ export default function ProgrammePage() {
       <div className="border border-white/10 bg-[#111] p-5 mb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            {/* Shoe icon */}
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7eb8a0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M2 18h20v1.5a.5.5 0 01-.5.5H2.5a.5.5 0 01-.5-.5V18z"/>
-              <path d="M2 18c0-2 1.5-3.5 4-4.5l1.5-5.5h5l1.5 4.5 5 1.5.5 4H2z"/>
-              <path d="M11 13.5l.3-5"/>
+            {/* Footprints icon */}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7eb8a0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <ellipse cx="8.5" cy="16" rx="2.5" ry="3.5" transform="rotate(-10 8.5 16)"/>
+              <ellipse cx="15.5" cy="8" rx="2.5" ry="3.5" transform="rotate(10 15.5 8)"/>
             </svg>
             <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c]">Pas aujourd&apos;hui</p>
           </div>
