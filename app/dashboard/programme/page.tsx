@@ -188,20 +188,16 @@ export default function ProgrammePage() {
         </button>
       </div>
 
-      {/* ── Programme assigné ── */}
-      <div className="mb-8">
-        <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Mon programme</p>
-        {!dbReady ? (
-          <div className="border border-[#e07070]/20 bg-[#e07070]/5 p-4 text-xs text-[#e07070]">
-            La table <code>programme_seances</code> n&apos;existe pas encore — exécute le SQL fourni dans Supabase.
-          </div>
-        ) : assignedSeances.length === 0 ? (
-          <div className="border border-white/10 bg-[#111] p-8 text-center">
-            <p className="text-white/20 text-xs">Aucun programme assigné pour l&apos;instant</p>
-            <p className="text-white/10 text-[0.55rem] mt-1">Samuel t&apos;enverra ton programme ici</p>
-          </div>
-        ) : (
-          assignedSeances.map(s => {
+      {/* ── Programme assigné (visible uniquement si des séances existent) ── */}
+      {!dbReady && (
+        <div className="border border-[#e07070]/20 bg-[#e07070]/5 p-4 text-xs text-[#e07070] mb-8">
+          La table <code>programme_seances</code> n&apos;existe pas encore — exécute le SQL fourni dans Supabase.
+        </div>
+      )}
+      {dbReady && assignedSeances.length > 0 && (
+        <div className="mb-8">
+          <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Mon programme</p>
+          {assignedSeances.map(s => {
             const done = doneIds.includes(s.id);
             return (
               <div key={s.id} className={`border bg-[#111] mb-3 transition-opacity ${done ? "border-[#7eb8a0]/20 opacity-50" : "border-white/10"}`}>
@@ -233,9 +229,8 @@ export default function ProgrammePage() {
                 )}
               </div>
             );
-          })
-        )}
-      </div>
+          })}
+        </div>
 
       {/* ── Historique séances ── */}
       {loggedWorkouts.length > 0 && (

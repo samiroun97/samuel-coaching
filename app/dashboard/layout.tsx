@@ -4,6 +4,8 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
+const SAMUEL_EMAIL = "sam97waelti@gmail.com";
+
 function NavIcon({ name }: { name: string }) {
   const p = {
     width: 17, height: 17, viewBox: "0 0 24 24", fill: "none",
@@ -21,28 +23,32 @@ function NavIcon({ name }: { name: string }) {
       return <svg {...p}><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>;
     case "coach":
       return <svg {...p}><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>;
+    case "admin":
+      return <svg {...p}><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>;
     default:
       return null;
   }
 }
 
 const navItems = [
-  { label: "Accueil", href: "/dashboard", icon: "home" },
-  { label: "Nutrition", href: "/dashboard/nutrition", icon: "nutrition" },
-  { label: "Programme", href: "/dashboard/programme", icon: "programme" },
-  { label: "Suivi", href: "/dashboard/suivi", icon: "suivi" },
-  { label: "Coach IA", href: "/dashboard/coach", icon: "coach" },
+  { label: "Accueil",   href: "/dashboard",            icon: "home" },
+  { label: "Nutrition", href: "/dashboard/nutrition",  icon: "nutrition" },
+  { label: "Programme", href: "/dashboard/programme",  icon: "programme" },
+  { label: "Suivi",     href: "/dashboard/suivi",      icon: "suivi" },
+  { label: "Coach IA",  href: "/dashboard/coach",      icon: "coach" },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [ready, setReady] = useState(false);
+  const [ready,     setReady]     = useState(false);
+  const [isSamuel,  setIsSamuel]  = useState(false);
   const isOnboarding = pathname === "/dashboard/onboarding";
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
       if (!data.user) { router.push("/login"); return; }
+      setIsSamuel(data.user.email === SAMUEL_EMAIL);
       if (!isOnboarding) {
         const { data: profile } = await supabase
           .from("profiles").select("prenom").eq("id", data.user.id).single();
@@ -85,6 +91,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </Link>
             );
           })}
+          {isSamuel && (
+            <Link href="/dashboard/admin"
+              className={`flex items-center gap-3 px-3 py-2.5 text-[0.6rem] tracking-[0.12em] uppercase transition-all duration-150 border-l-2 mt-2 ${
+                pathname === "/dashboard/admin"
+                  ? "text-[#c9a84c] bg-[#c9a84c]/5 border-[#c9a84c]"
+                  : "text-white/30 hover:text-white/60 hover:bg-white/[0.03] border-transparent"
+              }`}>
+              <NavIcon name="admin" />
+              Clients
+            </Link>
+          )}
         </nav>
 
         <div className="px-2 py-4 border-t border-white/5">

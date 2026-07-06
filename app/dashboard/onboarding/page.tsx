@@ -109,7 +109,7 @@ export default function OnboardingPage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     const { error } = await supabase.from("profiles").upsert({
-      id: user.id, ...form,
+      id: user.id, email: user.email, ...form,
       age: parseInt(form.age), poids: parseFloat(form.poids),
       taille: parseFloat(form.taille), seances_par_semaine: parseInt(form.seances_par_semaine),
       updated_at: new Date().toISOString(),
