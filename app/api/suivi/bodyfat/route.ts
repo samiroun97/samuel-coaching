@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     const client = new Anthropic({ apiKey });
     const response = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 300,
+      max_tokens: 600,
       messages: [
         {
           role: "user",
@@ -48,15 +48,20 @@ export async function POST(req: NextRequest) {
             ...imageContent,
             {
               type: "text",
-              text: `Tu es un expert en composition corporelle. Analyse ces photos et estime le taux de masse grasse (body fat %).
+              text: `Tu es un expert en composition corporelle et coaching fitness. Analyse ces photos corporelles.
 ${profileStr}
 Nombre de photos fournies : ${imageContent.length}/5 (face, dos, profil, jambe avant, jambe arrière).
 
-Prends en compte le profil et les photos disponibles. Sois précis mais prudent dans ton estimation.
 Retourne UNIQUEMENT ce JSON valide, sans texte avant ni après :
-{"body_fat_percentage": 18.5, "note": "Estimation basée sur la répartition adipeuse visible..."}
+{
+  "body_fat_percentage": 18.5,
+  "note": "Estimation basée sur la répartition adipeuse visible (max 80 car.)",
+  "points_forts": "1-2 phrases courtes sur les points forts visibles (muscles, proportions, etc.)",
+  "points_faibles": "1-2 phrases courtes sur les zones à améliorer (stockage graisseux, etc.)",
+  "conseils": "1-2 phrases courtes de conseil pratique personnalisé"
+}
 
-body_fat_percentage = nombre décimal réaliste (ex: 15.0, 22.5). note = explication courte (max 80 caractères).`,
+Sois direct, bienveillant et concret. Chaque champ texte max 120 caractères.`,
             },
           ],
         },

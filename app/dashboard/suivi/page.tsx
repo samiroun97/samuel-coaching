@@ -44,7 +44,7 @@ export default function SuiviPage() {
   const [history,    setHistory]    = useState<BodyFatEntry[]>([]);
   const [photos,     setPhotos]     = useState<Record<string, string>>({});
   const [estimating, setEstimating] = useState(false);
-  const [result,     setResult]     = useState<{ body_fat_percentage: number; note: string } | null>(null);
+  const [result,     setResult]     = useState<{ body_fat_percentage: number; note: string; points_forts?: string; points_faibles?: string; conseils?: string } | null>(null);
   const [error,      setError]      = useState("");
   const [showUpload, setShowUpload] = useState(false);
   const fileRefs = useRef<Record<string, HTMLInputElement | null>>({});
@@ -209,16 +209,42 @@ export default function SuiviPage() {
 
           {result ? (
             <div className="flex flex-col gap-3">
+              {/* Score */}
               <div className="border border-[#c9a84c]/20 bg-[#c9a84c]/5 p-4 flex items-center justify-between">
                 <div>
                   <p className="text-[0.5rem] tracking-[0.15em] uppercase text-[#c9a84c] mb-1">Estimation IA</p>
-                  <p className="text-[0.55rem] text-white/40 italic max-w-xs leading-relaxed">{result.note}</p>
+                  <p className="text-[0.55rem] text-white/40 italic leading-relaxed">{result.note}</p>
                 </div>
                 <div className="text-right ml-4 flex-shrink-0">
                   <p style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-white tracking-wide leading-none">{result.body_fat_percentage}</p>
                   <p className="text-[0.45rem] tracking-[0.15em] uppercase text-white/30">% body fat</p>
                 </div>
               </div>
+
+              {/* Analyse physique */}
+              {(result.points_forts || result.points_faibles || result.conseils) && (
+                <div className="border border-white/10 bg-[#0a0a0a] divide-y divide-white/5">
+                  {result.points_forts && (
+                    <div className="flex gap-3 px-4 py-3">
+                      <span className="text-[#7eb8a0] text-[0.5rem] tracking-[0.15em] uppercase flex-shrink-0 w-20 pt-0.5">Points forts</span>
+                      <p className="text-[0.55rem] text-white/50 leading-relaxed">{result.points_forts}</p>
+                    </div>
+                  )}
+                  {result.points_faibles && (
+                    <div className="flex gap-3 px-4 py-3">
+                      <span className="text-[#e07070] text-[0.5rem] tracking-[0.15em] uppercase flex-shrink-0 w-20 pt-0.5">À travailler</span>
+                      <p className="text-[0.55rem] text-white/50 leading-relaxed">{result.points_faibles}</p>
+                    </div>
+                  )}
+                  {result.conseils && (
+                    <div className="flex gap-3 px-4 py-3">
+                      <span className="text-[#c9a84c] text-[0.5rem] tracking-[0.15em] uppercase flex-shrink-0 w-20 pt-0.5">Conseils</span>
+                      <p className="text-[0.55rem] text-white/50 leading-relaxed">{result.conseils}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="flex gap-2">
                 <button onClick={() => setResult(null)}
                   className="flex-1 border border-white/10 text-white/40 text-[0.55rem] tracking-[0.15em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors">
