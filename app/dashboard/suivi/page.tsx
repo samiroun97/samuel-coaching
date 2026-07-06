@@ -49,8 +49,10 @@ export default function SuiviPage() {
   const [showUpload,  setShowUpload]  = useState(false);
   const [showManual,  setShowManual]  = useState(false);
   const [manualVal,   setManualVal]   = useState("");
+  const [manualDate,  setManualDate]  = useState("");
   const [editingId,   setEditingId]   = useState<string | null>(null);
   const [editingVal,  setEditingVal]  = useState("");
+  const [editingDate, setEditingDate] = useState<string | null>(null);
   const fileRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   useEffect(() => {
@@ -119,19 +121,22 @@ export default function SuiviPage() {
     localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
   };
 
+  const todayInputDate = () => new Date().toISOString().split("T")[0];
+
   const saveManual = () => {
     const val = parseFloat(manualVal.replace(",", "."));
     if (isNaN(val) || val <= 0 || val > 60) return;
+    const dateStr = manualDate || todayInputDate();
     const entry: BodyFatEntry = {
       id: Date.now().toString(),
-      date: new Date().toISOString(),
+      date: new Date(dateStr + "T12:00:00").toISOString(),
       body_fat: +val.toFixed(1),
       note: "Saisie manuelle",
     };
-    const next = [entry, ...history];
+    const next = [entry, ...history].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     setHistory(next);
     localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
-    setManualVal(""); setShowManual(false);
+    setManualVal(""); setManualDate(""); setShowManual(false);
   };
 
   const saveEdit = (id: string) => {
@@ -141,6 +146,16 @@ export default function SuiviPage() {
     setHistory(next);
     localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
     setEditingId(null);
+  };
+
+  const saveEditDate = (id: string, dateVal: string) => {
+    if (!dateVal) { setEditingDate(null); return; }
+    const next = history
+      .map(e => e.id === id ? { ...e, date: new Date(dateVal + "T12:00:00").toISOString() } : e)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    setHistory(next);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
+    setEditingDate(null);
   };
 
   const chartData = [...history].reverse().slice(-10);
@@ -201,17 +216,29 @@ export default function SuiviPage() {
       {/* ── Saisie manuelle ── */}
       {showManual && (
         <div className="border border-white/10 bg-[#111] p-5 mb-6 flex items-center gap-3">
-          <p className="text-[0.55rem] tracking-[0.15em] uppercase text-white/30 flex-shrink-0">Body fat %</p>
-          <input
-            type="number" min="1" max="60" step="0.1" placeholder="ex : 18.5"
-            autoFocus
-            className="flex-1 bg-[#0a0a0a] border border-white/10 text-white text-sm px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 transition-colors placeholder-white/15"
-            value={manualVal}
-            onChange={e => setManualVal(e.target.value)}
-            onKeyDown={e => { if (e.key === "Enter") saveManual(); if (e.key === "Escape") setShowManual(false); }}
-          />
+          <div className="flex flex-col gap-1 flex-shrink-0">
+            <p className="text-[0.5rem] tracking-[0.15em] uppercase text-white/25">Body fat %</p>
+            <input
+              type="number" min="1" max="60" step="0.1" placeholder="18.5"
+              autoFocus
+              className="w-24 bg-[#0a0a0a] border border-white/10 text-white text-sm px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 transition-colors placeholder-white/15"
+              value={manualVal}
+              onChange={e => setManualVal(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter") saveManual(); if (e.key === "Escape") setShowManual(false); }}
+            />
+          </div>
+          <div className="flex flex-col gap-1 flex-1">
+            <p className="text-[0.5rem] tracking-[0.15em] uppercase text-white/25">Date</p>
+            <input
+              type="date"
+              max={todayInputDate()}
+              className="w-full bg-[#0a0a0a] border border-white/10 text-white/60 text-sm px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
+              value={manualDate || todayInputDate()}
+              onChange={e => setManualDate(e.target.value)}
+            />
+          </div>
           <button onClick={saveManual}
-            className="bg-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.15em] uppercase px-5 py-2.5 hover:bg-[#e2c97e] transition-colors">
+            className="bg-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.15em] uppercase px-5 py-2.5 hover:bg-[#e2c97e] transition-colors flex-shrink-0 self-end">
             Enregistrer →
           </button>
         </div>
@@ -343,9 +370,26 @@ export default function SuiviPage() {
             return (
               <div key={entry.id} className="flex items-start justify-between px-5 py-3.5 border-b border-white/5 last:border-0 group">
                 <div className="flex-1 min-w-0">
-                  <p className="text-[0.55rem] tracking-wider text-white/40 capitalize mb-0.5">
-                    {new Date(entry.date).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
-                  </p>
+                  {editingDate === entry.id ? (
+                    <input
+                      type="date" autoFocus
+                      max={todayInputDate()}
+                      className="bg-[#0a0a0a] border border-[#c9a84c]/40 text-[#c9a84c] text-[0.55rem] px-2 py-1 focus:outline-none mb-0.5"
+                      defaultValue={entry.date.split("T")[0]}
+                      onBlur={e => saveEditDate(entry.id, e.target.value)}
+                      onKeyDown={e => { if (e.key === "Enter") saveEditDate(entry.id, (e.target as HTMLInputElement).value); if (e.key === "Escape") setEditingDate(null); }}
+                    />
+                  ) : (
+                    <div className="flex items-center gap-1.5 cursor-pointer group/date mb-0.5"
+                      onClick={() => setEditingDate(entry.id)}>
+                      <p className="text-[0.55rem] tracking-wider text-white/40 capitalize group-hover/date:text-white/60 transition-colors">
+                        {new Date(entry.date).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                      </p>
+                      <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-white/15 group-hover/date:text-[#c9a84c] transition-colors flex-shrink-0">
+                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </svg>
+                    </div>
+                  )}
                   <p className="text-[0.5rem] text-white/20 italic truncate">{entry.note}</p>
                 </div>
                 <div className="flex items-center gap-3 ml-4 flex-shrink-0">
