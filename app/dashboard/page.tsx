@@ -206,7 +206,7 @@ export default function AccueilPage() {
         </div>
 
         {/* Balance banner */}
-        {consumed.calories > 0 && (
+        {tdee > 0 && (
           <div className={`mt-5 px-4 py-2.5 border flex items-center justify-between ${surplus ? "border-[#e07070]/20 bg-[#e07070]/5" : "border-[#7eb8a0]/20 bg-[#7eb8a0]/5"}`}>
             <span className="text-[0.55rem] tracking-[0.15em] uppercase" style={{ color: surplus ? "#e07070" : "#7eb8a0" }}>
               {surplus ? "Surplus calorique" : "Déficit calorique"}
@@ -225,15 +225,11 @@ export default function AccueilPage() {
           { label: "Taille",   val: `${profile.taille} cm` },
           { label: "Body fat", val: bodyFat !== null ? `${bodyFat}%` : "—" },
           {
-            label: consumed.calories > 0
-              ? Math.abs(balance) <= 100 ? "Maintenance" : surplus ? "Surplus" : "Déficit"
-              : "Balance",
-            val: consumed.calories > 0
-              ? `${surplus ? "+" : ""}${balance.toLocaleString("fr-FR")} kcal`
-              : "—",
+            label: Math.abs(balance) <= 100 ? "Maintenance" : surplus ? "Surplus" : "Déficit",
+            val: `${surplus ? "+" : ""}${balance.toLocaleString("fr-FR")} kcal`,
           },
         ].map((s, i) => {
-          const isBalance = i === 3 && consumed.calories > 0;
+          const isBalance = i === 3;
           const balColor  = Math.abs(balance) <= 100 ? "#7eb8a0" : surplus ? "#e07070" : "#7eb8a0";
           return (
             <div key={s.label} className={`border p-4 ${isBalance ? "bg-[#111]" : "border-white/10 bg-[#111]"}`}
