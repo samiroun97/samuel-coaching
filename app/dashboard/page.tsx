@@ -28,9 +28,10 @@ export default function AccueilPage() {
     </div>
   );
 
-  const imc = profile.poids && profile.taille
-    ? (profile.poids / Math.pow(profile.taille / 100, 2)).toFixed(1)
-    : "—";
+  const bodyFatHistory = (() => {
+    try { return JSON.parse(localStorage.getItem("bodyfat_history") ?? "[]"); } catch { return []; }
+  })();
+  const latestBodyFat = bodyFatHistory[0]?.body_fat ?? null;
 
   return (
     <div className="p-8 max-w-3xl">
@@ -48,7 +49,7 @@ export default function AccueilPage() {
           { label: "Âge", val: `${profile.age} ans` },
           { label: "Poids", val: `${profile.poids} kg` },
           { label: "Taille", val: `${profile.taille} cm` },
-          { label: "IMC", val: imc },
+          { label: "Body fat", val: latestBodyFat !== null ? `${latestBodyFat}%` : "—" },
         ].map((s) => (
           <div key={s.label} className="border border-white/10 bg-[#111] p-4">
             <p className="text-[0.5rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1.5">{s.label}</p>
