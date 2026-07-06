@@ -298,8 +298,8 @@ export default function NutritionPage() {
 
       {/* ══ ADD FOOD MODAL ══ */}
       {showAdd && (
-        <div className="fixed inset-0 bg-black/75 z-50 flex items-end justify-center" onClick={resetModal}>
-          <div className="bg-[#0f0f0f] border border-white/10 w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/75 z-50 flex items-center justify-center px-4" onClick={resetModal}>
+          <div className="bg-[#0f0f0f] border border-white/10 w-full max-w-lg h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
 
             {/* Header */}
             <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-white/5">
