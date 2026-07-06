@@ -154,7 +154,7 @@ export default function ProgrammePage() {
             </div>
           </div>
           {todayWorkouts.map(w => (
-            <div key={w.id} className="flex items-center justify-between px-5 py-3 border-b border-white/5 last:border-0 group">
+            <div key={w.id} className="flex items-center justify-between px-5 py-3 border-b border-white/5 last:border-0">
               <div>
                 <p className="text-xs text-white/70">{w.activity}</p>
                 <p className="text-[0.5rem] text-white/25 mt-0.5">{w.duration_minutes} min{w.description ? ` · ${w.description}` : ""}</p>
@@ -162,7 +162,7 @@ export default function ProgrammePage() {
               <div className="flex items-center gap-3">
                 <span className="text-xs text-white/50">{w.calories_burned} kcal</span>
                 <button onClick={() => removeWorkout(w.id)}
-                  className="text-white/10 hover:text-[#e07070] transition-colors opacity-0 group-hover:opacity-100">
+                  className="text-white/20 hover:text-[#e07070] transition-colors">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                     <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                   </svg>
@@ -362,7 +362,7 @@ export default function ProgrammePage() {
                   <span className="text-[0.55rem] tracking-wider text-white/30">{dayCal} kcal</span>
                 </div>
                 {dayWorkouts.map(w => (
-                  <div key={w.id} className="flex items-center justify-between px-5 py-2.5 border-b border-white/5 last:border-0 group">
+                  <div key={w.id} className="flex items-center justify-between px-5 py-2.5 border-b border-white/5 last:border-0">
                     <div>
                       <p className="text-xs text-white/60">{w.activity}</p>
                       <p className="text-[0.5rem] text-white/20 mt-0.5">{w.duration_minutes} min</p>
@@ -370,7 +370,7 @@ export default function ProgrammePage() {
                     <div className="flex items-center gap-3">
                       <span className="text-xs text-white/40">{w.calories_burned} kcal</span>
                       <button onClick={() => removeWorkout(w.id)}
-                        className="text-white/10 hover:text-[#e07070] transition-colors opacity-0 group-hover:opacity-100">
+                        className="text-white/20 hover:text-[#e07070] transition-colors">
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                           <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                         </svg>
