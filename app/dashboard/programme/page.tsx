@@ -15,19 +15,19 @@ const DURATIONS = [
   { label: "2h",     min: 120 },
 ];
 
-const STEP_GOAL = 10000;
-
 const todayStr = () => new Date().toISOString().split("T")[0];
 
-/* NEAT from steps: ~0.04 kcal/step scaled by weight */
 const neatFromSteps = (steps: number, poids: number) =>
   Math.round(steps * 0.04 * (poids / 70));
 
 export default function ProgrammePage() {
-  const [profile,     setProfile]     = useState<Profile | null>(null);
-  const [workouts,    setWorkouts]    = useState<LoggedWorkout[]>([]);
-  const [steps,       setSteps]       = useState(0);
-  const [stepsInput,  setStepsInput]  = useState("0");
+  const [profile,      setProfile]      = useState<Profile | null>(null);
+  const [workouts,     setWorkouts]     = useState<LoggedWorkout[]>([]);
+  const [steps,        setSteps]        = useState(0);
+  const [stepsInput,   setStepsInput]   = useState("0");
+  const [stepGoal,     setStepGoal]     = useState(10000);
+  const [goalInput,    setGoalInput]    = useState("10000");
+  const [editingGoal,  setEditingGoal]  = useState(false);
 
   /* form */
   const [activity,    setActivity]    = useState("");
@@ -48,8 +48,10 @@ export default function ProgrammePage() {
     })();
     const saved  = localStorage.getItem("programme_logs");
     const savedS = localStorage.getItem(`steps_${todayStr()}`);
+    const savedG = localStorage.getItem("steps_goal");
     if (saved)  setWorkouts(JSON.parse(saved));
     if (savedS) { const n = parseInt(savedS); setSteps(n); setStepsInput(n.toString()); }
+    if (savedG) { const g = parseInt(savedG); setStepGoal(g); setGoalInput(g.toString()); }
   }, []);
 
   const saveSteps = (n: number) => {
@@ -59,12 +61,18 @@ export default function ProgrammePage() {
     localStorage.setItem(`steps_${todayStr()}`, clamped.toString());
   };
 
-  const todayWorkouts  = workouts.filter(w => w.date.startsWith(todayStr()));
-  const eatCal         = todayWorkouts.reduce((s, w) => s + w.calories_burned, 0);
-  const neatCal        = neatFromSteps(steps, profile?.poids ?? 70);
-  const totalCal       = eatCal + neatCal;
-  const stepsPct       = Math.min((steps / STEP_GOAL) * 100, 100);
-  const stepsKm        = (steps * 0.0007).toFixed(1);
+  const saveGoal = (g: number) => {
+    const clamped = Math.max(1000, g);
+    setStepGoal(clamped); setGoalInput(clamped.toString()); setEditingGoal(false);
+    localStorage.setItem("steps_goal", clamped.toString());
+  };
+
+  const todayWorkouts = workouts.filter(w => w.date.startsWith(todayStr()));
+  const eatCal        = todayWorkouts.reduce((s, w) => s + w.calories_burned, 0);
+  const neatCal       = neatFromSteps(steps, profile?.poids ?? 70);
+  const totalCal      = eatCal + neatCal;
+  const stepsPct      = Math.min((steps / stepGoal) * 100, 100);
+  const stepsKm       = (steps * 0.0007).toFixed(1);
 
   const estimate = async () => {
     if (!activity.trim() || !durationMin) return;
@@ -169,10 +177,11 @@ export default function ProgrammePage() {
       <div className="border border-white/10 bg-[#111] p-5 mb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7eb8a0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M13 4a1 1 0 102 0 1 1 0 00-2 0"/>
-              <path d="M7.5 17.5L9 13l3 2 2.5-5 3 7"/>
-              <path d="M6 8c0 1.1.9 2 2 2s2-.9 2-2"/>
+            {/* Shoe icon */}
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7eb8a0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2 18h20v1.5a.5.5 0 01-.5.5H2.5a.5.5 0 01-.5-.5V18z"/>
+              <path d="M2 18c0-2 1.5-3.5 4-4.5l1.5-5.5h5l1.5 4.5 5 1.5.5 4H2z"/>
+              <path d="M11 13.5l.3-5"/>
             </svg>
             <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c]">Pas aujourd&apos;hui</p>
           </div>
@@ -193,16 +202,35 @@ export default function ProgrammePage() {
           </div>
         </div>
 
-        {/* Progress bar */}
         <div className="h-1.5 bg-white/5 mb-2">
-          <div className="h-full transition-all duration-500 rounded-full" style={{ width: `${stepsPct}%`, backgroundColor: steps >= STEP_GOAL ? "#c9a84c" : "#7eb8a0" }}/>
+          <div className="h-full transition-all duration-500 rounded-full" style={{ width: `${stepsPct}%`, backgroundColor: steps >= stepGoal ? "#c9a84c" : "#7eb8a0" }}/>
         </div>
-        <div className="flex justify-between text-[0.45rem] text-white/20 tracking-wider">
+
+        <div className="flex items-center justify-between text-[0.45rem] text-white/20 tracking-wider">
           <span>{steps.toLocaleString("fr-FR")} pas</span>
-          <span className={steps >= STEP_GOAL ? "text-[#c9a84c]" : ""}>
-            {steps >= STEP_GOAL ? "Objectif atteint ✓" : `${(STEP_GOAL - steps).toLocaleString("fr-FR")} pas restants`}
+          <span className={steps >= stepGoal ? "text-[#c9a84c]" : ""}>
+            {steps >= stepGoal ? "Objectif atteint ✓" : `${(stepGoal - steps).toLocaleString("fr-FR")} restants`}
           </span>
-          <span>Objectif : 10 000</span>
+          {/* Objectif modifiable */}
+          <div className="flex items-center gap-1">
+            <span>Objectif :</span>
+            {editingGoal ? (
+              <input
+                type="number" autoFocus
+                className="w-16 bg-[#0a0a0a] border border-[#c9a84c]/40 text-[#c9a84c] text-center text-[0.45rem] py-0.5 focus:outline-none"
+                value={goalInput}
+                onChange={e => setGoalInput(e.target.value)}
+                onBlur={() => saveGoal(parseInt(goalInput) || 10000)}
+                onKeyDown={e => { if (e.key === "Enter") saveGoal(parseInt(goalInput) || 10000); if (e.key === "Escape") setEditingGoal(false); }}
+              />
+            ) : (
+              <button onClick={() => { setEditingGoal(true); setGoalInput(stepGoal.toString()); }}
+                className="text-white/30 hover:text-[#c9a84c] transition-colors underline decoration-dotted">
+                {stepGoal.toLocaleString("fr-FR")}
+              </button>
+            )}
+            <span>pas</span>
+          </div>
         </div>
       </div>
 
