@@ -177,12 +177,7 @@ export default function ProgrammePage() {
       <div className="border border-white/10 bg-[#111] p-5 mb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            {/* Footprints icon */}
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7eb8a0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <ellipse cx="8.5" cy="16" rx="2.5" ry="3.5" transform="rotate(-10 8.5 16)"/>
-              <ellipse cx="15.5" cy="8" rx="2.5" ry="3.5" transform="rotate(10 15.5 8)"/>
-            </svg>
-            <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c]">Pas aujourd&apos;hui</p>
+<p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c]">Pas aujourd&apos;hui</p>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[0.55rem] text-white/30">{stepsKm} km</span>
