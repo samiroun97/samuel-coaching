@@ -8,6 +8,8 @@ type LoggedWorkout = {
   duration_minutes: number; description: string;
   calories_burned: number; note: string;
 };
+type PerfRecord = { date: string; calories: number; duration: number; description: string };
+type PerfHistory = Record<string, PerfRecord[]>;
 
 const DURATIONS = [
   { label: "15 min", min: 15 }, { label: "30 min", min: 30 }, { label: "45 min", min: 45 },
@@ -30,6 +32,7 @@ export default function ProgrammePage() {
   const [editingGoal,  setEditingGoal]  = useState(false);
 
   /* form */
+  const [perfHistory, setPerfHistory] = useState<PerfHistory>({});
   const [activity,    setActivity]    = useState("");
   const [durationMin, setDurationMin] = useState(60);
   const [description, setDescription] = useState("");
@@ -49,9 +52,11 @@ export default function ProgrammePage() {
     const saved  = localStorage.getItem("programme_logs");
     const savedS = localStorage.getItem(`steps_${todayStr()}`);
     const savedG = localStorage.getItem("steps_goal");
+    const savedP = localStorage.getItem("perf_history");
     if (saved)  setWorkouts(JSON.parse(saved));
     if (savedS) { const n = parseInt(savedS); setSteps(n); setStepsInput(n.toString()); }
     if (savedG) { const g = parseInt(savedG); setStepGoal(g); setGoalInput(g.toString()); }
+    if (savedP) setPerfHistory(JSON.parse(savedP));
   }, []);
 
   const saveSteps = (n: number) => {
@@ -102,6 +107,15 @@ export default function ProgrammePage() {
     const next = [entry, ...workouts].slice(0, 50);
     setWorkouts(next);
     localStorage.setItem("programme_logs", JSON.stringify(next));
+
+    // Historique perfs par activité
+    const key = activity.trim().toLowerCase();
+    const rec: PerfRecord = { date: entry.date, calories: calResult.calories_brulees, duration: durationMin, description };
+    const prevPerf = perfHistory[key] ?? [];
+    const newPerf = { ...perfHistory, [key]: [rec, ...prevPerf].slice(0, 5) };
+    setPerfHistory(newPerf);
+    localStorage.setItem("perf_history", JSON.stringify(newPerf));
+
     setActivity(""); setDurationMin(60); setDescription(""); setCalResult(null); setCalError("");
   };
 
@@ -122,6 +136,10 @@ export default function ProgrammePage() {
     recognitionRef.current = rec; rec.start(); setListening(true);
   };
   const stopVoice = () => { recognitionRef.current?.stop(); setListening(false); };
+
+  const lastPerf = activity.trim()
+    ? (perfHistory[activity.trim().toLowerCase()]?.[0] ?? null)
+    : null;
 
   const chip = (active: boolean) =>
     `px-3 py-2 text-[0.6rem] tracking-[0.1em] uppercase border cursor-pointer transition-all ${active ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10" : "border-white/10 text-white/40 hover:border-white/30 hover:text-white/60"}`;
@@ -236,6 +254,18 @@ export default function ProgrammePage() {
           <label className="text-[0.55rem] tracking-[0.2em] uppercase text-white/40 block mb-1.5">Activité</label>
           <input className={inputCls} placeholder="Ex : musculation, boxe, natation, vélo…"
             value={activity} onChange={e => { setActivity(e.target.value); setCalResult(null); }}/>
+          {lastPerf && (
+            <div className="mt-1.5 flex items-center justify-between bg-[#0a0a0a] border border-white/5 px-3 py-2">
+              <span className="text-[0.5rem] tracking-wider text-white/25 uppercase">Dernière fois</span>
+              <div className="flex items-center gap-3">
+                <span className="text-[0.5rem] text-white/35">{lastPerf.duration} min</span>
+                <span className="text-[0.5rem] text-[#c9a84c]/70">{lastPerf.calories} kcal</span>
+                <span className="text-[0.45rem] text-white/20">
+                  {new Date(lastPerf.date).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
 
         <div>

@@ -15,6 +15,9 @@ type Client = {
 };
 type Seance = { id: string; titre: string; type_seance: string | null; date_prevue: string | null; description: string | null; exercices: string | null; assigned_to_email: string };
 type DirectMsg = { id: string; from_email: string; to_email: string; content: string; created_at: string };
+type DailySummary = { date: string; calories: number; proteines: number; glucides: number; lipides: number; workouts_count: number; steps: number };
+type MealPlan = { id: string; name: string; notes: string | null; is_active: boolean };
+type MealPlanItem = { id: string; plan_id: string; meal_type: string; name: string; calories: number; proteines: number; glucides: number; lipides: number };
 
 const imc = (p: number, t: number) => (p / ((t / 100) ** 2)).toFixed(1);
 
@@ -25,11 +28,23 @@ export default function AdminPage() {
   const [selected, setSelected] = useState<Client | null>(null);
   const [seances,  setSeances]  = useState<Seance[]>([]);
   const [loading,  setLoading]  = useState(true);
-  const [tab,      setTab]      = useState<"profil" | "programme">("profil");
+  const [tab,      setTab]      = useState<"profil" | "programme" | "repas">("profil");
 
   const [form,    setForm]    = useState({ titre: "", type_seance: "", date_prevue: "", description: "", exercices: "" });
   const [saving,  setSaving]  = useState(false);
   const [saveErr, setSaveErr] = useState("");
+
+  // Stats client
+  const [clientStats, setClientStats] = useState<DailySummary[]>([]);
+
+  // Plan repas
+  const [mealPlans,     setMealPlans]     = useState<MealPlan[]>([]);
+  const [mealItems,     setMealItems]     = useState<MealPlanItem[]>([]);
+  const [activePlanId,  setActivePlanId]  = useState<string | null>(null);
+  const [planName,      setPlanName]      = useState("");
+  const [planNotes,     setPlanNotes]     = useState("");
+  const [itemForm,      setItemForm]      = useState({ meal_type: "Petit-déjeuner", name: "", calories: "", proteines: "", glucides: "", lipides: "" });
+  const [planSaving,    setPlanSaving]    = useState(false);
 
   // Messages
   const [allMsgs,       setAllMsgs]       = useState<DirectMsg[]>([]);
@@ -63,10 +78,36 @@ export default function AdminPage() {
 
   useEffect(() => { msgBottom.current?.scrollIntoView({ behavior: "smooth" }); }, [allMsgs, msgClient]);
 
+  const loadMealPlans = async (clientId: string) => {
+    const { data: plans } = await supabase.from("meal_plans").select("*").eq("client_id", clientId).order("created_at", { ascending: false });
+    const planList = (plans ?? []) as MealPlan[];
+    setMealPlans(planList);
+    const active = planList.find(p => p.is_active);
+    setActivePlanId(active?.id ?? null);
+    if (active) {
+      const { data: items } = await supabase.from("meal_plan_items").select("*").eq("plan_id", active.id);
+      setMealItems((items ?? []) as MealPlanItem[]);
+    } else {
+      setMealItems([]);
+    }
+  };
+
   const selectClient = async (c: Client) => {
     setSelected(c); setTab("profil"); setForm({ titre: "", type_seance: "", date_prevue: "", description: "", exercices: "" }); setSaveErr("");
+    setClientStats([]); setMealPlans([]); setMealItems([]); setActivePlanId(null);
     const { data } = await supabase.from("programme_seances").select("*").eq("assigned_to_email", c.email).order("created_at", { ascending: false });
     setSeances((data ?? []) as Seance[]);
+
+    // Charger stats des 7 derniers jours
+    const since = new Date(); since.setDate(since.getDate() - 6);
+    const { data: stats } = await supabase.from("daily_summaries")
+      .select("date,calories,proteines,glucides,lipides,workouts_count,steps")
+      .eq("user_id", c.id)
+      .gte("date", since.toISOString().split("T")[0])
+      .order("date", { ascending: false });
+    setClientStats((stats ?? []) as DailySummary[]);
+
+    await loadMealPlans(c.id);
   };
 
   const sendSeance = async () => {
@@ -90,6 +131,45 @@ export default function AdminPage() {
   const deleteSeance = async (id: string) => {
     await supabase.from("programme_seances").delete().eq("id", id);
     setSeances(s => s.filter(x => x.id !== id));
+  };
+
+  const createPlan = async () => {
+    if (!selected || !planName.trim()) return;
+    setPlanSaving(true);
+    // Désactiver les anciens plans
+    await supabase.from("meal_plans").update({ is_active: false }).eq("client_id", selected.id);
+    const { data } = await supabase.from("meal_plans").insert({
+      client_id: selected.id, name: planName.trim(), notes: planNotes || null, is_active: true,
+    }).select().single();
+    if (data) {
+      setPlanName(""); setPlanNotes("");
+      await loadMealPlans(selected.id);
+    }
+    setPlanSaving(false);
+  };
+
+  const addPlanItem = async () => {
+    if (!activePlanId || !itemForm.name.trim()) return;
+    setPlanSaving(true);
+    const { data } = await supabase.from("meal_plan_items").insert({
+      plan_id: activePlanId,
+      meal_type: itemForm.meal_type,
+      name: itemForm.name.trim(),
+      calories: parseInt(itemForm.calories) || 0,
+      proteines: parseInt(itemForm.proteines) || 0,
+      glucides: parseInt(itemForm.glucides) || 0,
+      lipides: parseInt(itemForm.lipides) || 0,
+    }).select().single();
+    if (data) {
+      setMealItems(prev => [...prev, data as MealPlanItem]);
+      setItemForm(f => ({ ...f, name: "", calories: "", proteines: "", glucides: "", lipides: "" }));
+    }
+    setPlanSaving(false);
+  };
+
+  const deletePlanItem = async (id: string) => {
+    await supabase.from("meal_plan_items").delete().eq("id", id);
+    setMealItems(prev => prev.filter(i => i.id !== id));
   };
 
   // Conversations groupées par client
@@ -124,13 +204,13 @@ export default function AdminPage() {
   const labelCls = "text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c] block mb-1.5";
 
   if (loading) return (
-    <div className="flex items-center justify-center h-screen">
+    <div className="flex items-center justify-center h-full">
       <div className="w-6 h-6 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>
     </div>
   );
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-full overflow-hidden">
 
       {/* ── Left panel ── */}
       <div className={`flex flex-col border-r border-white/5 bg-[#0a0a0a] transition-all ${(selected || msgClient) ? "w-72 shrink-0" : "flex-1"}`}>
@@ -229,10 +309,14 @@ export default function AdminPage() {
 
           {/* Tabs */}
           <div className="flex border-b border-white/5 px-8">
-            {(["profil", "programme"] as const).map(t => (
-              <button key={t} onClick={() => setTab(t)}
-                className={`py-3 mr-6 text-[0.6rem] tracking-[0.15em] uppercase border-b-2 transition-colors ${tab === t ? "border-[#c9a84c] text-[#c9a84c]" : "border-transparent text-white/30 hover:text-white/50"}`}>
-                {t === "programme" ? `Programme (${seances.length})` : "Profil"}
+            {([
+              { key: "profil", label: "Profil" },
+              { key: "programme", label: `Programme (${seances.length})` },
+              { key: "repas", label: `Plan repas${activePlanId ? " ✓" : ""}` },
+            ] as const).map(({ key, label }) => (
+              <button key={key} onClick={() => setTab(key)}
+                className={`py-3 mr-6 text-[0.6rem] tracking-[0.15em] uppercase border-b-2 transition-colors ${tab === key ? "border-[#c9a84c] text-[#c9a84c]" : "border-transparent text-white/30 hover:text-white/50"}`}>
+                {label}
               </button>
             ))}
           </div>
@@ -263,12 +347,173 @@ export default function AdminPage() {
                   <p className="text-[0.5rem] tracking-[0.15em] uppercase text-[#c9a84c] mb-1">Objectifs</p>
                   <p className="text-xs text-white/60 leading-relaxed">{selected.objectifs || "—"}</p>
                 </div>
-                <div className="col-span-2 mt-2">
+                <div className="col-span-2 mt-2 flex gap-3">
                   <button onClick={() => setTab("programme")}
                     className="bg-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.2em] uppercase px-6 py-3 hover:bg-[#e2c97e] transition-colors">
                     Envoyer un programme →
                   </button>
+                  <button onClick={() => setTab("repas")}
+                    className="border border-[#c9a84c]/30 text-[#c9a84c] text-[0.6rem] tracking-[0.2em] uppercase px-6 py-3 hover:bg-[#c9a84c]/10 transition-colors">
+                    Plan repas →
+                  </button>
                 </div>
+
+                {/* Résumé 7 jours */}
+                {clientStats.length > 0 && (
+                  <div className="col-span-2 border border-white/5 bg-[#111] p-4">
+                    <p className="text-[0.5rem] tracking-[0.15em] uppercase text-[#c9a84c] mb-3">Résumé — 7 derniers jours</p>
+                    <div className="grid grid-cols-3 gap-3 mb-3">
+                      {[
+                        { label: "Moy. calories", val: Math.round(clientStats.reduce((s,d)=>s+d.calories,0)/clientStats.length) + " kcal" },
+                        { label: "Séances total", val: clientStats.reduce((s,d)=>s+d.workouts_count,0) },
+                        { label: "Moy. pas", val: Math.round(clientStats.reduce((s,d)=>s+d.steps,0)/clientStats.length).toLocaleString("fr-FR") },
+                      ].map(stat => (
+                        <div key={stat.label} className="text-center bg-[#0a0a0a] border border-white/5 py-3">
+                          <p style={{ fontFamily:"var(--font-bebas)" }} className="text-xl text-white tracking-wide">{stat.val}</p>
+                          <p className="text-[0.45rem] tracking-wider text-white/25 uppercase mt-0.5">{stat.label}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      {clientStats.map(d => (
+                        <div key={d.date} className="flex items-center justify-between py-1.5 border-b border-white/5 last:border-0">
+                          <span className="text-[0.5rem] text-white/30 capitalize">
+                            {new Date(d.date + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" })}
+                          </span>
+                          <div className="flex gap-4">
+                            <span className="text-[0.5rem] text-white/50">{d.calories} kcal</span>
+                            <span className="text-[0.5rem] text-[#c9a84c]/60">P {d.proteines}g</span>
+                            <span className="text-[0.5rem] text-white/25">{d.workouts_count} séance{d.workouts_count>1?"s":""}</span>
+                            <span className="text-[0.5rem] text-white/20">{d.steps.toLocaleString("fr-FR")} pas</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {clientStats.length === 0 && (
+                  <div className="col-span-2 border border-white/5 bg-[#111] px-4 py-3">
+                    <p className="text-[0.5rem] text-white/20">Aucune donnée de suivi (le client n&apos;a pas encore synchronisé)</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── REPAS TAB ── */}
+            {tab === "repas" && (
+              <div className="max-w-2xl flex flex-col gap-6">
+
+                {/* Créer un plan */}
+                <div className="border border-[#c9a84c]/20 bg-[#0f0d07] p-5">
+                  <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">
+                    {activePlanId ? "Plan actif" : `Créer un plan pour ${selected.prenom}`}
+                  </p>
+                  {!activePlanId ? (
+                    <div className="flex flex-col gap-3">
+                      <div>
+                        <label className={labelCls}>Nom du plan</label>
+                        <input className={inputCls} placeholder="Ex : Plan prise de masse — Semaine 1" value={planName}
+                          onChange={e => setPlanName(e.target.value)}/>
+                      </div>
+                      <div>
+                        <label className={labelCls}>Notes (optionnel)</label>
+                        <textarea className={`${inputCls} resize-none`} rows={2}
+                          placeholder="Conseils, timing, remarques…" value={planNotes}
+                          onChange={e => setPlanNotes(e.target.value)}/>
+                      </div>
+                      <button onClick={createPlan} disabled={planSaving || !planName.trim()}
+                        className="bg-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.2em] uppercase py-3 hover:bg-[#e2c97e] transition-colors disabled:opacity-40">
+                        Créer le plan →
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-white/60">{mealPlans.find(p=>p.id===activePlanId)?.name}</p>
+                      <button onClick={async () => {
+                        await supabase.from("meal_plans").update({ is_active: false }).eq("id", activePlanId);
+                        setActivePlanId(null); setMealItems([]); setMealPlans(p => p.map(x => x.id===activePlanId?{...x,is_active:false}:x));
+                      }} className="text-[0.55rem] tracking-wider uppercase text-[#e07070]/60 hover:text-[#e07070] transition-colors">
+                        Désactiver
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Ajouter des repas au plan actif */}
+                {activePlanId && (
+                  <div className="border border-white/10 bg-[#111] p-5 flex flex-col gap-4">
+                    <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c]">Ajouter un repas au plan</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className={labelCls}>Type de repas</label>
+                        <select className={`${inputCls} cursor-pointer`} value={itemForm.meal_type}
+                          onChange={e => setItemForm(f => ({ ...f, meal_type: e.target.value }))}>
+                          {["Petit-déjeuner","Déjeuner","Dîner","Collation"].map(t => <option key={t}>{t}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className={labelCls}>Nom du repas *</label>
+                        <input className={inputCls} placeholder="Ex : Riz + poulet grillé" value={itemForm.name}
+                          onChange={e => setItemForm(f => ({ ...f, name: e.target.value }))}/>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-4 gap-2">
+                      {[
+                        { key: "calories", label: "Calories", color: "text-white/40" },
+                        { key: "proteines", label: "Prot (g)", color: "text-[#c9a84c]" },
+                        { key: "glucides", label: "Gluc (g)", color: "text-[#7eb8a0]" },
+                        { key: "lipides", label: "Lip (g)", color: "text-[#e07070]" },
+                      ].map(({ key, label, color }) => (
+                        <div key={key}>
+                          <label className={`text-[0.5rem] tracking-wider uppercase block mb-1 ${color}`}>{label}</label>
+                          <input type="number" className={inputCls} value={itemForm[key as keyof typeof itemForm]}
+                            onChange={e => setItemForm(f => ({ ...f, [key]: e.target.value }))}/>
+                        </div>
+                      ))}
+                    </div>
+                    <button onClick={addPlanItem} disabled={planSaving || !itemForm.name.trim()}
+                      className="bg-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.2em] uppercase py-2.5 hover:bg-[#e2c97e] transition-colors disabled:opacity-40">
+                      Ajouter au plan →
+                    </button>
+                  </div>
+                )}
+
+                {/* Items du plan */}
+                {mealItems.length > 0 && (
+                  <div>
+                    <p className="text-[0.55rem] tracking-[0.2em] uppercase text-white/25 mb-3">Repas du plan ({mealItems.length})</p>
+                    {["Petit-déjeuner","Déjeuner","Dîner","Collation"].map(type => {
+                      const typeItems = mealItems.filter(i => i.meal_type === type);
+                      if (!typeItems.length) return null;
+                      return (
+                        <div key={type} className="mb-4">
+                          <p className="text-[0.5rem] tracking-wider uppercase text-[#c9a84c]/50 mb-1.5">{type}</p>
+                          <div className="flex flex-col gap-1">
+                            {typeItems.map(item => (
+                              <div key={item.id} className="flex items-center justify-between border border-white/10 bg-[#111] px-4 py-2.5">
+                                <div>
+                                  <p className="text-xs text-white/65">{item.name}</p>
+                                  <div className="flex gap-2 mt-0.5">
+                                    <span className="text-[0.45rem] text-white/30">{item.calories} kcal</span>
+                                    <span className="text-[0.45rem] text-[#c9a84c]/60">P {item.proteines}g</span>
+                                    <span className="text-[0.45rem] text-[#7eb8a0]/60">G {item.glucides}g</span>
+                                    <span className="text-[0.45rem] text-[#e07070]/60">L {item.lipides}g</span>
+                                  </div>
+                                </div>
+                                <button onClick={() => deletePlanItem(item.id)}
+                                  className="text-white/15 hover:text-[#e07070] transition-colors">
+                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                                  </svg>
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
 

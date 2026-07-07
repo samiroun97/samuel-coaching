@@ -1,14 +1,17 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
+import { supabase } from "@/lib/supabase";
 
-type Repas = "matin" | "midi" | "soir" | "snack";
-type Food  = { id: string; name: string; calories: number; proteines: number; glucides: number; lipides: number; repas: Repas };
+type Food  = { id: string; name: string; calories: number; proteines: number; glucides: number; lipides: number; repas?: string };
 type Goals = { calories: number; proteines: number; glucides: number; lipides: number };
 type MacroKey = "proteines" | "glucides" | "lipides";
 type AIResult = { name: string; calories: number; proteines: number; glucides: number; lipides: number };
+type IdeaResult = { name: string; description: string; calories: number; proteines: number; glucides: number; lipides: number };
 type OFFProduct = { product_name: string; brands?: string; nutriments: { "energy-kcal_100g"?: number; proteins_100g?: number; carbohydrates_100g?: number; fat_100g?: number } };
 type SavedMeal = { id: string; name: string; calories: number; proteines: number; glucides: number; lipides: number };
 type DayHistory = { date: string; label: string; calories: number };
+type MealPlanItem = { id: string; meal_type: string; name: string; calories: number; proteines: number; glucides: number; lipides: number };
+type MealPlan = { id: string; name: string; notes: string | null; items: MealPlanItem[] };
 
 const CAL: Record<MacroKey, number> = { proteines: 4, glucides: 4, lipides: 9 };
 const defaultGoals: Goals = { calories: 2200, proteines: 150, glucides: 220, lipides: 70 };
@@ -16,12 +19,6 @@ const macroConfig: { key: MacroKey; label: string; color: string }[] = [
   { key: "proteines", label: "Protéines", color: "#c9a84c" },
   { key: "glucides",  label: "Glucides",  color: "#7eb8a0" },
   { key: "lipides",   label: "Lipides",   color: "#e07070" },
-];
-const meals: { key: Repas; label: string }[] = [
-  { key: "matin", label: "Petit-déjeuner" },
-  { key: "midi",  label: "Déjeuner" },
-  { key: "soir",  label: "Dîner" },
-  { key: "snack", label: "Collation" },
 ];
 const DAY_LABELS = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
 
@@ -181,8 +178,15 @@ export default function NutritionPage() {
   const [pastHistory, setPastHistory] = useState<DayHistory[]>([]);
 
   const [modalMode, setModalMode] = useState<"ai"|"search"|"saved">("ai");
-  const [repas,       setRepas]       = useState<Repas>("matin");
+  const [ideas,       setIdeas]       = useState<IdeaResult[]>([]);
+  const [ideaLoading, setIdeaLoading] = useState(false);
+  const [ideaError,   setIdeaError]   = useState("");
+  const [mealPlan,    setMealPlan]    = useState<MealPlan | null>(null);
   const [description, setDescription] = useState("");
+  const userIdRef  = useRef("");
+  const syncTimer  = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const scanRef    = useRef<HTMLInputElement>(null);
+  const [scanError, setScanError] = useState("");
   const [aiResult,    setAiResult]    = useState<AIResult | null>(null);
   const [analyzing,   setAnalyzing]   = useState(false);
   const [aiError,     setAiError]     = useState("");
@@ -199,6 +203,22 @@ export default function NutritionPage() {
   const WATER_GOAL = 8;
 
   useEffect(() => {
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        userIdRef.current = user.id;
+        // Charger plan repas actif
+        const { data: plans } = await supabase
+          .from("meal_plans").select("id,name,notes").eq("client_id", user.id).eq("is_active", true).limit(1);
+        if (plans?.length) {
+          const plan = plans[0];
+          const { data: items } = await supabase
+            .from("meal_plan_items").select("*").eq("plan_id", plan.id);
+          setMealPlan({ ...plan, items: (items ?? []) as MealPlanItem[] });
+        }
+      }
+    })();
+
     const g = localStorage.getItem("nutrition_goals");
     const f = localStorage.getItem(`nutrition_${today}`);
     const w = localStorage.getItem(`hydration_${today}`);
@@ -220,9 +240,50 @@ export default function NutritionPage() {
   }, [today]);
 
   useEffect(() => { localStorage.setItem("nutrition_goals", JSON.stringify(goals)); }, [goals]);
-  useEffect(() => { localStorage.setItem(`nutrition_${today}`, JSON.stringify(foods)); }, [foods, today]);
+  useEffect(() => {
+    localStorage.setItem(`nutrition_${today}`, JSON.stringify(foods));
+    // Sync différé vers Supabase
+    clearTimeout(syncTimer.current);
+    syncTimer.current = setTimeout(async () => {
+      if (!userIdRef.current) return;
+      const t = foods.reduce((acc, f) => ({
+        calories: acc.calories + f.calories, proteines: acc.proteines + f.proteines,
+        glucides: acc.glucides + f.glucides, lipides: acc.lipides + f.lipides,
+      }), { calories: 0, proteines: 0, glucides: 0, lipides: 0 });
+      await supabase.from("daily_summaries").upsert({
+        user_id: userIdRef.current, date: today, ...t, updated_at: new Date().toISOString(),
+      }, { onConflict: "user_id,date" });
+    }, 3000);
+  }, [foods, today]);
   useEffect(() => { localStorage.setItem(`hydration_${today}`, water.toString()); }, [water, today]);
   useEffect(() => { localStorage.setItem("nutrition_saved_meals", JSON.stringify(savedMeals)); }, [savedMeals]);
+
+  const remaining = {
+    calories:  Math.max(0, goals.calories  - foods.reduce((s,f) => s+f.calories, 0)),
+    proteines: Math.max(0, goals.proteines - foods.reduce((s,f) => s+f.proteines, 0)),
+    glucides:  Math.max(0, goals.glucides  - foods.reduce((s,f) => s+f.glucides, 0)),
+    lipides:   Math.max(0, goals.lipides   - foods.reduce((s,f) => s+f.lipides, 0)),
+  };
+
+  const generateIdeas = async () => {
+    setIdeaLoading(true); setIdeaError(""); setIdeas([]);
+    try {
+      const res = await fetch("/api/nutrition/meal-idea", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ remaining }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setIdeas(data.ideas ?? []);
+    } catch (e: unknown) {
+      setIdeaError(e instanceof Error ? e.message : "Erreur IA");
+    }
+    setIdeaLoading(false);
+  };
+
+  const addFoodDirect = (item: Omit<IdeaResult, "description">) => {
+    setFoods(f => [...f, { id: Date.now().toString(), ...item }]);
+  };
 
   const totals = foods.reduce((acc,f) => ({
     calories:  acc.calories  + f.calories,
@@ -278,6 +339,38 @@ export default function NutritionPage() {
   };
   const stopVoice = () => { recognitionRef.current?.stop(); setListening(false); };
 
+  const handleScan = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setScanError(""); setSearching(true); setSelected(null);
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (!("BarcodeDetector" in window)) {
+        setScanError("Scan non supporté sur ce navigateur. Tape le code manuellement.");
+        setSearching(false); return;
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const detector = new (window as any).BarcodeDetector({ formats: ["ean_13", "ean_8", "upc_a", "upc_e", "code_128"] });
+      const bitmap = await createImageBitmap(file);
+      const barcodes = await detector.detect(bitmap);
+      if (!barcodes.length) { setScanError("Code-barres non détecté. Réessaie."); setSearching(false); return; }
+      const code: string = barcodes[0].rawValue;
+      const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${code}.json`);
+      const data = await res.json();
+      if (data.status === 1 && data.product?.nutriments) {
+        const p = data.product;
+        setSelected({ product_name: p.product_name || code, brands: p.brands, nutriments: p.nutriments });
+        setQuery(p.product_name || code);
+        setResults([]);
+      } else {
+        setQuery(code);
+        doSearch(code);
+      }
+    } catch { setScanError("Erreur lors du scan."); }
+    setSearching(false);
+    if (scanRef.current) scanRef.current.value = "";
+  };
+
   const doSearch = useCallback(async (q: string) => {
     setSearching(true);
     try {
@@ -308,13 +401,13 @@ export default function NutritionPage() {
 
   const addFood = () => {
     if (modalMode === "ai" && aiResult) {
-      setFoods(f => [...f, { id:Date.now().toString(), repas, ...aiResult }]);
+      setFoods(f => [...f, { id:Date.now().toString(), ...aiResult }]);
     } else if (modalMode === "search" && selected && computed) {
-      setFoods(f => [...f, { id:Date.now().toString(), repas, name:selected.product_name, ...computed }]);
+      setFoods(f => [...f, { id:Date.now().toString(), name:selected.product_name, ...computed }]);
     } else if (modalMode === "saved" && selectedSaved) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { id: _sid, ...savedData } = selectedSaved;
-      setFoods(f => [...f, { id:Date.now().toString(), repas, ...savedData }]);
+      setFoods(f => [...f, { id:Date.now().toString(), ...savedData }]);
     } else return;
     resetModal();
   };
@@ -395,42 +488,147 @@ export default function NutritionPage() {
         onAdd={() => setWater(w => Math.min(w+1, WATER_GOAL))}
         onRemove={() => setWater(w => Math.max(w-1, 0))}/>
 
+      {/* ── Plan de Samuel ── */}
+      {mealPlan && (
+        <div className="border border-[#c9a84c]/20 bg-[#0f0d07] mb-6">
+          <div className="flex items-center justify-between px-5 py-3 border-b border-[#c9a84c]/10">
+            <div>
+              <div className="flex items-center gap-2">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                <span style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[#c9a84c]">Plan de Samuel</span>
+              </div>
+              <p className="text-[0.5rem] tracking-wider text-[#c9a84c]/50 mt-0.5">{mealPlan.name}</p>
+            </div>
+            <span className="text-[0.5rem] tracking-wider text-[#c9a84c]/40">{mealPlan.items.length} repas</span>
+          </div>
+          {["Petit-déjeuner","Déjeuner","Dîner","Collation"].map(type => {
+            const typeItems = mealPlan.items.filter(i => i.meal_type === type);
+            if (!typeItems.length) return null;
+            return (
+              <div key={type} className="border-b border-[#c9a84c]/5 last:border-0">
+                <p className="px-5 pt-3 pb-1 text-[0.5rem] tracking-wider uppercase text-[#c9a84c]/40">{type}</p>
+                {typeItems.map(item => (
+                  <div key={item.id} className="flex items-center justify-between px-5 py-2.5 border-b border-white/[0.03] last:border-0">
+                    <div>
+                      <p className="text-xs text-white/65">{item.name}</p>
+                      <div className="flex gap-2 mt-0.5">
+                        <span className="text-[0.45rem] text-white/30">{item.calories} kcal</span>
+                        <span className="text-[0.45rem] text-[#c9a84c]/50">P {item.proteines}g</span>
+                        <span className="text-[0.45rem] text-[#7eb8a0]/50">G {item.glucides}g</span>
+                        <span className="text-[0.45rem] text-[#e07070]/50">L {item.lipides}g</span>
+                      </div>
+                    </div>
+                    <button onClick={() => addFoodDirect(item)}
+                      className="w-6 h-6 border border-[#c9a84c]/30 text-[#c9a84c] hover:bg-[#c9a84c]/10 transition-colors flex items-center justify-center text-sm shrink-0">
+                      +
+                    </button>
+                  </div>
+                ))}
+              </div>
+            );
+          })}
+          {mealPlan.notes && (
+            <p className="px-5 py-3 text-[0.5rem] text-[#c9a84c]/40 italic border-t border-[#c9a84c]/10">{mealPlan.notes}</p>
+          )}
+        </div>
+      )}
+
       <button onClick={() => setShowAdd(true)}
         className="w-full border border-[#c9a84c]/30 text-[#c9a84c] text-[0.6rem] tracking-[0.2em] uppercase py-3.5 hover:bg-[#c9a84c]/5 transition-colors mb-6 flex items-center justify-center gap-2">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Ajouter un repas
       </button>
 
-      {meals.map(({ key, label }) => {
-        const mf  = foods.filter(f => f.repas === key);
-        const cal = mf.reduce((s,f) => s+f.calories, 0);
-        return (
-          <div key={key} className="border border-white/10 bg-[#111] mb-3">
-            <div className="flex items-center justify-between px-5 py-3 border-b border-white/5">
-              <span style={{ fontFamily:"var(--font-bebas)" }} className="text-sm tracking-wider text-white">{label}</span>
-              <span className="text-[0.55rem] tracking-wider text-white/30">{cal} kcal</span>
+      {/* ── Idée repas ── */}
+      <div className="border border-white/10 bg-[#111] mb-6">
+        <div className="flex items-start justify-between px-5 py-4 border-b border-white/5">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2a7 7 0 017 7c0 4-3 6-3 9H8c0-3-3-5-3-9a7 7 0 017-7z"/>
+                <line x1="8" y1="22" x2="16" y2="22"/><line x1="12" y1="18" x2="12" y2="22"/>
+              </svg>
+              <span style={{ fontFamily:"var(--font-bebas)" }} className="text-sm tracking-wider text-white">Idée repas</span>
             </div>
-            {mf.length === 0
-              ? <p className="px-5 py-4 text-[0.6rem] tracking-wider text-white/20 uppercase">Aucun aliment ajouté</p>
-              : mf.map(f => (
-                <div key={f.id} className="flex items-center justify-between px-5 py-3 border-b border-white/5 last:border-0 group">
-                  <div>
-                    <p className="text-xs text-white/70">{f.name}</p>
-                    <p className="text-[0.55rem] text-white/25 mt-0.5">P {f.proteines}g · G {f.glucides}g · L {f.lipides}g</p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs text-white/50">{f.calories} kcal</span>
-                    <button onClick={() => setFoods(fs => fs.filter(x => x.id !== f.id))}
-                      className="text-white/10 hover:text-[#e07070] transition-colors opacity-0 group-hover:opacity-100">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                    </button>
+            {remaining.calories > 0 ? (
+              <p className="text-[0.5rem] tracking-wider text-white/25">
+                Budget · {remaining.calories} kcal · P {remaining.proteines}g · G {remaining.glucides}g · L {remaining.lipides}g
+              </p>
+            ) : (
+              <p className="text-[0.5rem] tracking-wider text-[#7eb8a0]/60">Objectif calorique atteint</p>
+            )}
+          </div>
+          {remaining.calories > 0 && (
+            <button onClick={generateIdeas} disabled={ideaLoading}
+              className="shrink-0 border border-[#c9a84c]/30 text-[#c9a84c] text-[0.55rem] tracking-[0.15em] uppercase px-3.5 py-2 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5">
+              {ideaLoading
+                ? <><div className="w-2.5 h-2.5 border border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>Génération…</>
+                : "Générer →"}
+            </button>
+          )}
+        </div>
+
+        {ideaError && (
+          <p className="px-5 py-3 text-[0.55rem] text-[#e07070]">{ideaError}</p>
+        )}
+
+        {!ideaLoading && ideas.length === 0 && !ideaError && remaining.calories > 0 && (
+          <p className="px-5 py-4 text-[0.6rem] tracking-wider text-white/20 uppercase">
+            Clique sur &ldquo;Générer&rdquo; pour des idées adaptées à ton budget
+          </p>
+        )}
+
+        {ideas.length > 0 && (
+          <div className="divide-y divide-white/5">
+            {ideas.map((idea, i) => (
+              <div key={i} className="flex items-start gap-3 px-5 py-4">
+                <div className="flex-1">
+                  <p className="text-xs text-white/70 mb-0.5">{idea.name}</p>
+                  <p className="text-[0.5rem] text-white/30 leading-relaxed mb-2">{idea.description}</p>
+                  <div className="flex gap-3">
+                    <span className="text-[0.5rem] text-white/40">{idea.calories} kcal</span>
+                    <span className="text-[0.5rem] text-[#c9a84c]/70">P {idea.proteines}g</span>
+                    <span className="text-[0.5rem] text-[#7eb8a0]/70">G {idea.glucides}g</span>
+                    <span className="text-[0.5rem] text-[#e07070]/70">L {idea.lipides}g</span>
                   </div>
                 </div>
-              ))
-            }
+                <button onClick={() => addFoodDirect(idea)}
+                  className="shrink-0 w-7 h-7 border border-[#c9a84c]/30 text-[#c9a84c] hover:bg-[#c9a84c]/10 transition-colors flex items-center justify-center text-sm">
+                  +
+                </button>
+              </div>
+            ))}
           </div>
-        );
-      })}
+        )}
+      </div>
+
+      {/* ── Aliments du jour ── */}
+      <div className="border border-white/10 bg-[#111] mb-6">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-white/5">
+          <span style={{ fontFamily:"var(--font-bebas)" }} className="text-sm tracking-wider text-white">Aliments du jour</span>
+          <span className="text-[0.55rem] tracking-wider text-white/30">{totals.calories} kcal</span>
+        </div>
+        {foods.length === 0
+          ? <p className="px-5 py-4 text-[0.6rem] tracking-wider text-white/20 uppercase">Aucun aliment ajouté</p>
+          : foods.map(f => (
+            <div key={f.id} className="flex items-center justify-between px-5 py-3 border-b border-white/5 last:border-0 group">
+              <div>
+                <p className="text-xs text-white/70">{f.name}</p>
+                <p className="text-[0.55rem] text-white/25 mt-0.5">P {f.proteines}g · G {f.glucides}g · L {f.lipides}g</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-white/50">{f.calories} kcal</span>
+                <button onClick={() => setFoods(fs => fs.filter(x => x.id !== f.id))}
+                  className="text-white/20 hover:text-[#e07070] transition-colors opacity-0 group-hover:opacity-100">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+            </div>
+          ))
+        }
+      </div>
 
       {/* ── Week history ── */}
       <div className="border border-white/10 bg-[#111] p-5 mt-6">
@@ -469,16 +667,6 @@ export default function NutritionPage() {
             </div>
 
             <div className="px-6 py-5 flex flex-col gap-5">
-
-              {/* Repas selector */}
-              <div className="flex gap-2 flex-wrap">
-                {meals.map(m => (
-                  <button key={m.key} type="button" onClick={() => setRepas(m.key)}
-                    className={`px-3 py-1.5 text-[0.6rem] tracking-[0.1em] uppercase border transition-all ${repas===m.key?"border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10":"border-white/10 text-white/40 hover:border-white/30"}`}>
-                    {m.label}
-                  </button>
-                ))}
-              </div>
 
               {/* Mode tabs */}
               <div className="flex border border-white/10">
@@ -579,11 +767,24 @@ export default function NutritionPage() {
               {/* ── SEARCH MODE ── */}
               {modalMode === "search" && (
                 <div className="flex flex-col gap-4">
-                  <div className="relative">
-                    <input className="w-full bg-[#0a0a0a] border border-white/10 text-white placeholder-white/20 text-sm pl-4 pr-10 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
-                      placeholder="Rechercher un aliment…" value={query} onChange={e => { setQuery(e.target.value); setSelected(null); }} autoFocus/>
-                    {searching && <div className="absolute right-3 top-1/2 -translate-y-1/2"><div className="w-3 h-3 border border-[#c9a84c] border-t-transparent rounded-full animate-spin"/></div>}
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <input className="w-full bg-[#0a0a0a] border border-white/10 text-white placeholder-white/20 text-sm pl-4 pr-10 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
+                        placeholder="Rechercher un aliment…" value={query} onChange={e => { setQuery(e.target.value); setSelected(null); setScanError(""); }} autoFocus/>
+                      {searching && <div className="absolute right-3 top-1/2 -translate-y-1/2"><div className="w-3 h-3 border border-[#c9a84c] border-t-transparent rounded-full animate-spin"/></div>}
+                    </div>
+                    <button onClick={() => scanRef.current?.click()} title="Scanner un code-barres"
+                      className="border border-white/10 text-white/40 hover:text-white/70 hover:border-white/20 transition-colors px-3 flex items-center">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3 5h2M3 5v2M21 5h-2M21 5v2M3 19h2M3 19v-2M21 19h-2M21 19v-2"/>
+                        <line x1="7" y1="8" x2="7" y2="16"/><line x1="10" y1="8" x2="10" y2="16"/>
+                        <line x1="13" y1="8" x2="13" y2="16"/><line x1="16" y1="8" x2="16" y2="11"/>
+                        <line x1="16" y1="13" x2="16" y2="16"/>
+                      </svg>
+                    </button>
+                    <input ref={scanRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleScan}/>
                   </div>
+                  {scanError && <p className="text-[0.55rem] text-[#e07070]">{scanError}</p>}
 
                   {results.length > 0 && !selected && (
                     <div className="flex flex-col border border-white/10 divide-y divide-white/5">
