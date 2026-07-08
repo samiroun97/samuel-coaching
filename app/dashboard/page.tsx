@@ -164,7 +164,12 @@ export default function AccueilPage() {
 
       {/* ── CICO Hero ── */}
       <div className="border border-white/10 bg-[#111] p-6 mb-4">
-        <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-6">Bilan calorique du jour</p>
+        <div className="flex items-center justify-between mb-6">
+          <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c]">Bilan calorique du jour</p>
+          <Link href="/dashboard/nutrition" className="text-[0.5rem] tracking-[0.15em] uppercase text-white/30 hover:text-[#c9a84c] transition-colors">
+            Gérer →
+          </Link>
+        </div>
         <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-8">
 
           {/* Ring */}
@@ -196,7 +201,12 @@ export default function AccueilPage() {
                   </div>
                 ))}
                 <div className="border-t border-white/5 pt-2 flex items-center justify-between mt-1">
-                  <span className="text-[0.5rem] tracking-[0.15em] uppercase text-white/40">Total TDEE</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-[0.5rem] tracking-[0.15em] uppercase text-white/40">Total TDEE</span>
+                    <Link href="/dashboard/nutrition" className="text-[0.45rem] tracking-[0.1em] uppercase text-[#c9a84c]/50 hover:text-[#c9a84c] transition-colors border border-[#c9a84c]/20 px-1.5 py-0.5">
+                      Modifier →
+                    </Link>
+                  </div>
                   <span style={{ fontFamily: "var(--font-bebas)" }} className="text-xl text-white tracking-wide">{tdee.toLocaleString("fr-FR")} <span className="text-sm text-white/30">kcal</span></span>
                 </div>
               </div>
@@ -222,6 +232,12 @@ export default function AccueilPage() {
             </span>
           </div>
         )}
+
+        <Link href="/dashboard/nutrition"
+          className="mt-4 flex items-center justify-center gap-2 w-full border border-[#c9a84c]/20 text-[#c9a84c] text-[0.55rem] tracking-[0.15em] uppercase py-3 hover:bg-[#c9a84c]/5 transition-colors">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Ajouter un repas / modifier mes objectifs
+        </Link>
       </div>
 
       {/* ── Quick stats ── */}
