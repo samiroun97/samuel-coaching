@@ -1,4 +1,4 @@
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next";
 import { Inter, Bebas_Neue } from "next/font/google";
 import "./globals.css";
 
@@ -8,11 +8,6 @@ const bebasNeue = Bebas_Neue({
   variable: "--font-bebas",
   weight: "400",
 });
-
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-};
 
 export const metadata: Metadata = {
   title: "Samuel Coaching — Fitness & Transformation Personnelle",
