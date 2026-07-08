@@ -32,7 +32,10 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { full_name: nom } },
+        options: {
+          data: { full_name: nom },
+          emailRedirectTo: "https://samuel-coaching-five.vercel.app/dashboard",
+        },
       });
       if (error) {
         setError(error.message);
