@@ -109,7 +109,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex">
-      <aside className="w-52 border-r border-white/5 flex flex-col fixed h-full z-10 bg-[#0a0a0a]">
+      <aside className="w-52 border-r border-white/5 hidden md:flex flex-col fixed h-full z-10 bg-[#0a0a0a]">
         <div className="px-5 py-5 border-b border-white/5">
           <Link href="/" style={{ fontFamily: "var(--font-bebas)" }}
             className="text-[1.05rem] tracking-[0.2em] text-white hover:text-white/80 transition-colors">
@@ -168,9 +168,38 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </aside>
 
-      <main className="ml-52 flex-1 h-screen overflow-y-auto">
+      <main className="ml-0 md:ml-52 flex-1 h-screen overflow-y-auto pb-16 md:pb-0">
         {children}
       </main>
+
+      {/* Bottom nav — mobile only */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0a0a0a] border-t border-white/5 flex z-10">
+        {navItems.map(({ label, href, icon }) => {
+          const active = pathname === href;
+          const showBadge = href === "/dashboard/coach" && unread;
+          return (
+            <Link key={href} href={href}
+              className={`flex-1 flex flex-col items-center gap-1 py-2.5 text-[0.45rem] tracking-[0.08em] uppercase transition-all ${
+                active ? "text-[#c9a84c]" : "text-white/25"
+              }`}>
+              <div className="relative">
+                <NavIcon name={icon}/>
+                {showBadge && <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#e07070]"/>}
+              </div>
+              {label}
+            </Link>
+          );
+        })}
+        {isSamuel && (
+          <Link href="/dashboard/admin"
+            className={`flex-1 flex flex-col items-center gap-1 py-2.5 text-[0.45rem] tracking-[0.08em] uppercase transition-all ${
+              pathname === "/dashboard/admin" ? "text-[#c9a84c]" : "text-white/25"
+            }`}>
+            <NavIcon name="admin"/>
+            Clients
+          </Link>
+        )}
+      </nav>
     </div>
   );
 }

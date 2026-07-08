@@ -167,11 +167,11 @@ export default function OnboardingPage() {
           {step === 0 && (
             <div className="flex flex-col gap-5">
               <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl tracking-wider text-white mb-2">TON IDENTITÉ</h2>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div><label className={labelClass}>Prénom</label><input className={inputClass} placeholder="Samuel" value={form.prenom} onChange={e => set("prenom", e.target.value)} /></div>
                 <div><label className={labelClass}>Nom</label><input className={inputClass} placeholder="Waelti" value={form.nom} onChange={e => set("nom", e.target.value)} /></div>
               </div>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-3 gap-3">
                 <div><label className={labelClass}>Âge</label><input className={inputClass} type="number" placeholder="28" value={form.age} onChange={e => set("age", e.target.value)} /></div>
                 <div><label className={labelClass}>Poids (kg)</label><input className={inputClass} type="number" placeholder="75" value={form.poids} onChange={e => set("poids", e.target.value)} /></div>
                 <div><label className={labelClass}>Taille (cm)</label><input className={inputClass} type="number" placeholder="178" value={form.taille} onChange={e => set("taille", e.target.value)} /></div>

@@ -165,7 +165,7 @@ export default function AccueilPage() {
       {/* ── CICO Hero ── */}
       <div className="border border-white/10 bg-[#111] p-6 mb-4">
         <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-6">Bilan calorique du jour</p>
-        <div className="flex items-center gap-8">
+        <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-8">
 
           {/* Ring */}
           <div className="shrink-0">
@@ -225,7 +225,7 @@ export default function AccueilPage() {
       </div>
 
       {/* ── Quick stats ── */}
-      <div className="grid grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         {[
           { label: "Poids",    val: `${profile.poids} kg` },
           { label: "Taille",   val: `${profile.taille} cm` },
