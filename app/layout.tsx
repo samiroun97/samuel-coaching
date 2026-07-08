@@ -13,6 +13,10 @@ export const metadata: Metadata = {
   title: "Samuel Coaching — Fitness & Transformation Personnelle",
   description:
     "Coach fitness d'élite à Lausanne. Transformation physique, mentale et lifestyle. Programmes sur mesure. Résultats réels.",
+  icons: {
+    icon: "/icons/icon-192.png",
+    apple: "/icons/apple-icon.png",
+  },
 };
 
 export default function RootLayout({
