@@ -451,13 +451,13 @@ export default function NutritionPage() {
   const avgCal = daysWithData.length ? Math.round(daysWithData.reduce((s,d) => s+d.calories,0)/daysWithData.length) : 0;
 
   return (
-    <div className="p-8 max-w-2xl">
+    <div className="p-4 sm:p-8 max-w-2xl">
 
       {/* Header */}
       <div className="flex items-end justify-between mb-10">
         <div>
           <p className="text-[0.55rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-2">Rubrique</p>
-          <h1 style={{ fontFamily:"var(--font-bebas)" }} className="text-5xl text-white tracking-wide">NUTRITION</h1>
+          <h1 style={{ fontFamily:"var(--font-bebas)" }} className="text-4xl sm:text-5xl text-white tracking-wide">NUTRITION</h1>
           <p className="text-white/30 text-xs mt-1 capitalize">
             {new Date().toLocaleDateString("fr-FR",{ weekday:"long", day:"numeric", month:"long" })}
           </p>

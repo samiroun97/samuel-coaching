@@ -40,14 +40,14 @@ export default function ProfilePage() {
   const lbl = "text-[0.55rem] tracking-[0.2em] uppercase text-white/40 block mb-1.5";
 
   return (
-    <div className="p-8 max-w-lg">
+    <div className="p-4 sm:p-8 max-w-lg">
       <p className="text-[0.55rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-2">Paramètres</p>
       <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-5xl text-white tracking-wide mb-10">MON PROFIL</h1>
 
       <div className="border border-white/10 bg-[#111] p-6 flex flex-col gap-5">
         <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c]">Informations personnelles</p>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className={lbl}>Prénom</label>
             <input className={inp} value={form.prenom} onChange={e => setForm(f => ({ ...f, prenom: e.target.value }))}/>
@@ -58,7 +58,7 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-3">
           <div>
             <label className={lbl}>Âge</label>
             <input type="number" className={inp} value={form.age} onChange={e => setForm(f => ({ ...f, age: e.target.value }))}/>

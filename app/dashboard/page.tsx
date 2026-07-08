@@ -35,8 +35,8 @@ function CalRing({ consumed, tdee }: { consumed: number; tdee: number }) {
   const balance = consumed - tdee;
 
   return (
-    <div className="relative flex items-center justify-center" style={{ width: 220, height: 220 }}>
-      <svg width="220" height="220" className="-rotate-90">
+    <div className="relative flex items-center justify-center w-[180px] h-[180px] sm:w-[220px] sm:h-[220px]">
+      <svg viewBox="0 0 220 220" className="-rotate-90 w-full h-full">
         <circle cx="110" cy="110" r={r} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="10"/>
         <circle cx="110" cy="110" r={r} fill="none" stroke={color} strokeWidth="10"
           strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
@@ -149,12 +149,12 @@ export default function AccueilPage() {
   const surplus = balance > 0;
 
   return (
-    <div className="p-8 max-w-3xl">
+    <div className="p-4 sm:p-8 max-w-3xl">
 
       {/* ── Header ── */}
-      <div className="mb-8">
+      <div className="mb-5 sm:mb-8">
         <p className="text-[0.55rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-1">Espace client</p>
-        <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-5xl text-white tracking-wide">
+        <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl sm:text-5xl text-white tracking-wide">
           {profile.prenom} {profile.nom}
         </h1>
         <p className="text-white/30 text-xs mt-1 capitalize">

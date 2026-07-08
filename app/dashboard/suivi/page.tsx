@@ -161,19 +161,19 @@ export default function SuiviPage() {
   const chartData = [...history].reverse().slice(-10);
 
   return (
-    <div className="p-8 max-w-2xl">
+    <div className="p-4 sm:p-8 max-w-2xl">
 
       {/* ── Header ── */}
-      <div className="mb-10">
+      <div className="mb-6 sm:mb-10">
         <p className="text-[0.55rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-2">Rubrique</p>
-        <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-5xl text-white tracking-wide">SUIVI</h1>
+        <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl sm:text-5xl text-white tracking-wide">SUIVI</h1>
         <p className="text-white/30 text-xs mt-1 capitalize">
           {new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}
         </p>
       </div>
 
       {/* ── Status card ── */}
-      <div className={`border p-5 mb-6 flex items-center justify-between ${needsEstimation ? "border-[#c9a84c]/30 bg-[#c9a84c]/5" : "border-white/10 bg-[#111]"}`}>
+      <div className={`border p-5 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 ${needsEstimation ? "border-[#c9a84c]/30 bg-[#c9a84c]/5" : "border-white/10 bg-[#111]"}`}>
         <div>
           <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1.5">Body fat actuel</p>
           {lastEntry ? (
