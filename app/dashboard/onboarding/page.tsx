@@ -109,7 +109,7 @@ export default function OnboardingPage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     const { error } = await supabase.from("profiles").upsert({
-      id: user.id, email: user.email, ...form,
+      id: user.id, ...form,
       age: parseInt(form.age), poids: parseFloat(form.poids),
       taille: parseFloat(form.taille), seances_par_semaine: parseInt(form.seances_par_semaine),
       updated_at: new Date().toISOString(),
@@ -126,7 +126,7 @@ export default function OnboardingPage() {
     }`;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-6 py-16">
+    <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-4 py-16 overflow-x-hidden">
       <div className="w-full max-w-lg">
 
         <div style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl tracking-[0.2em] text-white text-center mb-2">
@@ -202,19 +202,19 @@ export default function OnboardingPage() {
               </div>
               <div>
                 <label className={labelClass}>Expérience en musculation</label>
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-2">
                   {experienceOptions.map(o => <button key={o} type="button" onClick={() => set("experience", o)} className={chipClass(form.experience === o)}>{o}</button>)}
                 </div>
               </div>
               <div>
                 <label className={labelClass}>Séances / semaine</label>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   {["2", "3", "4", "5", "6"].map(n => <button key={n} type="button" onClick={() => set("seances_par_semaine", n)} className={chipClass(form.seances_par_semaine === n)}>{n}</button>)}
                 </div>
               </div>
               <div>
                 <label className={labelClass}>Durée par séance</label>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   {dureeOptions.map(o => <button key={o} type="button" onClick={() => set("duree_seance", o)} className={chipClass(form.duree_seance === o)}>{o}</button>)}
                 </div>
               </div>
