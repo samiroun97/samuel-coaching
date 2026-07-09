@@ -32,10 +32,11 @@ export default function ProgrammesPage() {
   const [sentTo,      setSentTo]      = useState<string | null>(null);
 
   const load = async () => {
-    const [{ data: c }, { data: s }] = await Promise.all([
-      supabase.from("profiles").select("id,email,prenom,nom,age,poids,taille,sexe,niveau_activite,experience,seances_par_semaine,duree_seance,lieu_entrainement,blessures,objectifs,pipeline_stage").order("updated_at", { ascending: false }),
+    const [{ data: c, error: cErr }, { data: s }] = await Promise.all([
+      supabase.from("profiles").select("*").order("updated_at", { ascending: false }),
       supabase.from("programme_seances").select("assigned_to_email"),
     ]);
+    if (cErr) setGenError(cErr.message);
     setClients((c ?? []) as Client[]);
     const counts = new Map<string, number>();
     for (const row of s ?? []) counts.set(row.assigned_to_email, (counts.get(row.assigned_to_email) ?? 0) + 1);
@@ -117,6 +118,7 @@ export default function ProgrammesPage() {
         </div>
 
         <div className="flex-1 overflow-y-auto py-2 px-2">
+          {genError && !selected && <p className="text-xs text-[#e07070] px-3 py-2">{genError}</p>}
           {list.length === 0 ? (
             <p className="text-white/20 text-xs text-center py-8">
               {filter === "sans" ? "Tous les clients ont un programme ✓" : "Aucun client avec programme"}
