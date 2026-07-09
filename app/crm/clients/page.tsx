@@ -166,11 +166,11 @@ export default function ClientsPage() {
   if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="w-5 h-5 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/></div>;
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-[calc(100dvh-50px-env(safe-area-inset-bottom))] md:h-screen overflow-hidden">
 
-      {/* ── Left: list ── */}
-      <div className={`flex flex-col border-r border-white/5 bg-[#0a0a0a] ${selected ? "w-72 shrink-0" : "flex-1"}`}>
-        <div className="px-5 pt-6 pb-4 border-b border-white/5">
+      {/* ── Left: list (plein écran sur mobile quand aucun client sélectionné) ── */}
+      <div className={`flex-col border-r border-white/5 bg-[#0a0a0a] ${selected ? "hidden md:flex w-72 shrink-0" : "flex flex-1"}`}>
+        <div className="px-4 md:px-5 pt-5 md:pt-6 pb-4 border-b border-white/5">
           <p className="text-[0.5rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-1">CRM</p>
           <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-white tracking-wide mb-3">CLIENTS</h1>
           <input className={`${inp} mb-3`} placeholder="Rechercher un client…" value={search} onChange={e => setSearch(e.target.value)}/>
@@ -219,14 +219,19 @@ export default function ClientsPage() {
         <div className="flex-1 flex flex-col overflow-hidden">
 
           {/* Header */}
-          <div className="px-8 pt-6 pb-4 border-b border-white/5 shrink-0">
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <p className="text-[0.45rem] tracking-[0.2em] text-white/25 uppercase">{selected.email}</p>
-                <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-white tracking-wide">{selected.prenom} {selected.nom}</h2>
+          <div className="px-4 md:px-8 pt-5 md:pt-6 pb-4 border-b border-white/5 shrink-0">
+            <div className="flex items-start justify-between mb-3 gap-2">
+              <div className="flex items-start gap-2 min-w-0">
+                <button onClick={() => setSelected(null)} className="md:hidden text-white/40 hover:text-white/70 transition-colors mt-1.5 shrink-0">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+                <div className="min-w-0">
+                <p className="text-[0.45rem] tracking-[0.2em] text-white/25 uppercase truncate">{selected.email}</p>
+                <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl md:text-4xl text-white tracking-wide">{selected.prenom} {selected.nom}</h2>
                 <p className="text-white/30 text-xs mt-0.5">{selected.age} ans · {selected.sexe} · {selected.poids} kg · {selected.taille} cm · IMC {imc(selected.poids, selected.taille)}</p>
+                </div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 shrink-0">
                 <Link href={`/crm/inbox?client=${encodeURIComponent(selected.email)}`}
                   className="flex items-center gap-1.5 px-3 py-1.5 border border-white/10 text-white/30 hover:text-white/70 hover:border-white/25 transition-all text-[0.45rem] tracking-[0.15em] uppercase">
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
@@ -269,7 +274,7 @@ export default function ClientsPage() {
           </div>
 
           {/* Tabs */}
-          <div className="flex border-b border-white/5 px-8 shrink-0 overflow-x-auto">
+          <div className="flex border-b border-white/5 px-4 md:px-8 shrink-0 overflow-x-auto">
             {([
               { key: "profil",     label: "Profil" },
               { key: "notes",      label: `Notes (${notes.length})` },
@@ -285,7 +290,7 @@ export default function ClientsPage() {
           </div>
 
           {/* Tab content */}
-          <div className="flex-1 overflow-y-auto px-8 py-6">
+          <div className="flex-1 overflow-y-auto px-4 md:px-8 py-5 md:py-6">
 
             {/* PROFIL */}
             {tab === "profil" && (
@@ -499,7 +504,7 @@ export default function ClientsPage() {
       )}
 
       {!selected && (
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 hidden md:flex items-center justify-center">
           <p className="text-white/10 text-sm">Sélectionne un client</p>
         </div>
       )}

@@ -143,11 +143,11 @@ export default function InboxPage() {
   if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="w-5 h-5 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/></div>;
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-[calc(100dvh-50px-env(safe-area-inset-bottom))] md:h-screen overflow-hidden">
 
-      {/* ── Left: conversation list ── */}
-      <div className="w-72 shrink-0 border-r border-white/5 flex flex-col bg-[#0a0a0a]">
-        <div className="px-5 pt-6 pb-4 border-b border-white/5">
+      {/* ── Left: conversation list (plein écran sur mobile quand aucune conv ouverte) ── */}
+      <div className={`${activeConv ? "hidden md:flex" : "flex"} w-full md:w-72 shrink-0 border-r border-white/5 flex-col bg-[#0a0a0a]`}>
+        <div className="px-4 md:px-5 pt-5 md:pt-6 pb-4 border-b border-white/5">
           <p className="text-[0.65rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-1">CRM</p>
           <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-white tracking-wide">INBOX</h1>
           <p className="text-white/30 text-xs mt-1">
@@ -191,11 +191,16 @@ export default function InboxPage() {
         <div className="flex-1 flex flex-col overflow-hidden">
 
           {/* Conv header + client mini-profile */}
-          <div className="border-b border-white/5 px-8 pt-5 pb-4 shrink-0">
-            <div className="flex items-start justify-between">
-              <div>
-                <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-white tracking-wide">{activeConv.name}</h2>
-                <p className="text-[0.48rem] text-white/25 tracking-wider mt-0.5">{activeEmail}</p>
+          <div className="border-b border-white/5 px-4 md:px-8 pt-4 md:pt-5 pb-4 shrink-0">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-start gap-2 min-w-0">
+                <button onClick={() => setActiveEmail(null)} className="md:hidden text-white/40 hover:text-white/70 transition-colors mt-1 shrink-0">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+                <div className="min-w-0">
+                  <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl md:text-3xl text-white tracking-wide truncate">{activeConv.name}</h2>
+                  <p className="text-[0.48rem] text-white/25 tracking-wider mt-0.5 truncate">{activeEmail}</p>
+                </div>
               </div>
               {activeEmail && (() => {
                 const isTreated = treated.has(activeEmail);
@@ -213,7 +218,7 @@ export default function InboxPage() {
               })()}
               {/* Mini profile */}
               {activeClient && (
-                <div className="flex items-center gap-4 text-right">
+                <div className="hidden md:flex items-center gap-4 text-right">
                   {activeClient.poids && (
                     <div>
                       <p className="text-[0.42rem] tracking-wider text-white/20 uppercase mb-0.5">Poids</p>
@@ -241,7 +246,7 @@ export default function InboxPage() {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-8 py-6 flex flex-col gap-3">
+          <div className="flex-1 overflow-y-auto px-3 md:px-8 py-4 md:py-6 flex flex-col gap-3">
             {activeConv.msgs.map(m => {
               const isMe = m.from_email === SAMUEL_EMAIL;
               return (
@@ -251,7 +256,7 @@ export default function InboxPage() {
                       <span className="text-[0.55rem] text-white/40 font-bold">{activeConv.name.charAt(0)}</span>
                     </div>
                   )}
-                  <div className="max-w-md">
+                  <div className="max-w-[85%] md:max-w-md">
                     {(() => {
                       // Body fat check-in partagé
                       const bfc = !isMe ? parseBFCheck(m.content) : null;
@@ -310,7 +315,7 @@ export default function InboxPage() {
           </div>
 
           {/* Templates + Reply */}
-          <div className="border-t border-white/5 px-8 py-4 shrink-0">
+          <div className="border-t border-white/5 px-3 md:px-8 py-3 md:py-4 shrink-0">
             {showTpls && (
               <div className="mb-3 flex flex-wrap gap-2">
                 {TEMPLATES.map(t => (
@@ -321,24 +326,24 @@ export default function InboxPage() {
                 ))}
               </div>
             )}
-            <div className="flex gap-3">
+            <div className="flex gap-2 md:gap-3">
               <button onClick={() => setShowTpls(v => !v)}
-                className={`shrink-0 px-3 py-3 border text-[0.48rem] tracking-wider uppercase transition-colors ${showTpls ? "border-[#c9a84c]/40 text-[#c9a84c]/70 bg-[#c9a84c]/5" : "border-white/10 text-white/25 hover:border-white/20"}`}>
+                className={`shrink-0 px-2.5 md:px-3 py-3 border text-[0.48rem] tracking-wider uppercase transition-colors ${showTpls ? "border-[#c9a84c]/40 text-[#c9a84c]/70 bg-[#c9a84c]/5" : "border-white/10 text-white/25 hover:border-white/20"}`}>
                 Templates
               </button>
               <input value={input} onChange={e => setInput(e.target.value)}
                 onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
                 placeholder={`Répondre à ${activeConv.name}…`} disabled={sending}
-                className="flex-1 bg-[#111] border border-white/10 text-white placeholder-white/20 text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors disabled:opacity-50"/>
+                className="flex-1 min-w-0 bg-[#111] border border-white/10 text-white placeholder-white/20 text-sm px-3 md:px-4 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors disabled:opacity-50"/>
               <button onClick={send} disabled={!input.trim() || sending}
-                className="bg-[#c9a84c] text-black px-6 py-3 text-[0.58rem] font-bold tracking-[0.15em] uppercase hover:bg-[#e2c97e] transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                className="bg-[#c9a84c] text-black px-4 md:px-6 py-3 text-[0.58rem] font-bold tracking-[0.15em] uppercase hover:bg-[#e2c97e] transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
                 Envoyer
               </button>
             </div>
           </div>
         </div>
       ) : (
-        <div className="flex-1 flex flex-col items-center justify-center gap-3">
+        <div className="flex-1 hidden md:flex flex-col items-center justify-center gap-3">
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
           </svg>

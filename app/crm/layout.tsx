@@ -97,7 +97,7 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
       <main className="ml-0 md:ml-56 flex-1 min-w-0 min-h-screen pb-16 md:pb-0">{children}</main>
 
       {/* Bottom nav — mobile only */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0a0a0a] border-t border-white/5 flex z-10">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0a0a0a] border-t border-white/5 flex z-10 pb-[env(safe-area-inset-bottom)]">
         {nav.map(({ href, label, icon, badge }) => {
           const active = pathname === href || (href !== "/crm" && pathname.startsWith(href));
           return (
