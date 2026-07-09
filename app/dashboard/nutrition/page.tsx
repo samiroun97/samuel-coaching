@@ -16,9 +16,9 @@ type MealPlan = { id: string; name: string; notes: string | null; items: MealPla
 const CAL: Record<MacroKey, number> = { proteines: 4, glucides: 4, lipides: 9 };
 const defaultGoals: Goals = { calories: 2200, proteines: 150, glucides: 220, lipides: 70 };
 const macroConfig: { key: MacroKey; label: string; color: string }[] = [
-  { key: "proteines", label: "Protéines", color: "#c9a84c" },
-  { key: "glucides",  label: "Glucides",  color: "#7eb8a0" },
-  { key: "lipides",   label: "Lipides",   color: "#e07070" },
+  { key: "proteines", label: "Protéines", color: "#F3F4F6" },
+  { key: "glucides",  label: "Glucides",  color: "#F97316" },
+  { key: "lipides",   label: "Lipides",   color: "#CA8A04" },
 ];
 const DAY_LABELS = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
 
@@ -87,8 +87,8 @@ function MacroBar({ label, consumed, goal, color }: { label: string; consumed: n
         <span className="text-[0.6rem] tracking-[0.15em] uppercase text-white/40">{label}</span>
         <span className="text-xs text-white/60">{consumed}<span className="text-white/25"> / {goal}g</span></span>
       </div>
-      <div className="h-1.5 bg-white/5 w-full">
-        <div className="h-full transition-all duration-700 rounded-full" style={{ width:`${pct}%`, backgroundColor:color }}/>
+      <div className="h-1.5 bg-white/5 w-full rounded-full">
+        <div className="h-full transition-all duration-700 rounded-full" style={{ width:`${pct}%`, backgroundColor:color, boxShadow:`0 0 8px ${color}80` }}/>
       </div>
     </div>
   );
@@ -104,7 +104,7 @@ function WaterTracker({ water, goal, onAdd, onRemove }: { water: number; goal: n
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4a9fd5" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 2C6 8 4 12 4 15a8 8 0 0016 0c0-3-2-7-8-13z"/>
           </svg>
-          <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c]">Hydratation</p>
+          <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Hydratation</p>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-[0.6rem] text-white/40">{liters}L / {goalLiters}L</span>
@@ -165,8 +165,45 @@ function WeekChart({ history, goal }: { history: DayHistory[]; goal: number }) {
   );
 }
 
+function DateNav({ date, onChange }: { date: string; onChange: (d: string) => void }) {
+  const todayD = new Date().toISOString().split("T")[0];
+  const isToday = date === todayD;
+  const move = (delta: number) => {
+    const d = new Date(date + "T12:00:00"); d.setDate(d.getDate() + delta);
+    onChange(d.toISOString().split("T")[0]);
+  };
+  const label = isToday ? "Aujourd'hui" : new Date(date + "T12:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+  return (
+    <div className="flex items-center gap-2 mb-6">
+      <button onClick={() => move(-1)} className="w-7 h-7 border border-white/10 text-white/40 hover:text-white/60 hover:border-white/20 transition-colors flex items-center justify-center shrink-0">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div className="flex-1 relative flex items-center justify-center gap-1.5 cursor-pointer group">
+        <input
+          type="date" value={date} max={todayD}
+          onChange={e => { if (e.target.value) onChange(e.target.value); }}
+          className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+        />
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-white/30 group-hover:text-white/50 transition-colors shrink-0">
+          <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        <p className="text-[0.6rem] tracking-[0.15em] uppercase text-white/50 group-hover:text-white/70 transition-colors capitalize select-none">{label}</p>
+      </div>
+      <button onClick={() => move(1)} disabled={isToday} className="w-7 h-7 border border-white/10 text-white/40 hover:text-white/60 hover:border-white/20 transition-colors flex items-center justify-center shrink-0 disabled:opacity-20 disabled:cursor-not-allowed">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      {!isToday && (
+        <button onClick={() => onChange(todayD)} className="text-[0.45rem] tracking-[0.12em] uppercase text-[#c9a84c] border border-[#c9a84c]/30 px-2 py-1 hover:bg-[#c9a84c]/10 transition-colors shrink-0">
+          Auj.
+        </button>
+      )}
+    </div>
+  );
+}
+
 export default function NutritionPage() {
-  const today = new Date().toISOString().split("T")[0];
+  const realToday = new Date().toISOString().split("T")[0];
+  const [selectedDate, setSelectedDate] = useState(realToday);
   const [goals,     setGoals]     = useState<Goals>(defaultGoals);
   const [foods,     setFoods]     = useState<Food[]>([]);
   const [showAdd,   setShowAdd]   = useState(false);
@@ -183,9 +220,10 @@ export default function NutritionPage() {
   const [ideaError,   setIdeaError]   = useState("");
   const [mealPlan,    setMealPlan]    = useState<MealPlan | null>(null);
   const [description, setDescription] = useState("");
-  const userIdRef  = useRef("");
-  const syncTimer  = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const scanRef    = useRef<HTMLInputElement>(null);
+  const userIdRef       = useRef("");
+  const syncTimer       = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const selectedDateRef = useRef(realToday);
+  const scanRef         = useRef<HTMLInputElement>(null);
   const [scanError, setScanError] = useState("");
   const [aiResult,    setAiResult]    = useState<AIResult | null>(null);
   const [analyzing,   setAnalyzing]   = useState(false);
@@ -218,16 +256,10 @@ export default function NutritionPage() {
         }
       }
     })();
-
     const g = localStorage.getItem("nutrition_goals");
-    const f = localStorage.getItem(`nutrition_${today}`);
-    const w = localStorage.getItem(`hydration_${today}`);
     const s = localStorage.getItem("nutrition_saved_meals");
     if (g) setGoals(JSON.parse(g));
-    if (f) setFoods(JSON.parse(f));
-    if (w) setWater(parseInt(w));
     if (s) setSavedMeals(JSON.parse(s));
-
     const hist: DayHistory[] = [];
     for (let i = 6; i >= 1; i--) {
       const d = new Date(); d.setDate(d.getDate() - i);
@@ -237,11 +269,19 @@ export default function NutritionPage() {
       hist.push({ date: dateStr, label: DAY_LABELS[d.getDay()], calories: cal });
     }
     setPastHistory(hist);
-  }, [today]);
+  }, []);
+
+  useEffect(() => {
+    selectedDateRef.current = selectedDate;
+    const f = localStorage.getItem(`nutrition_${selectedDate}`);
+    const w = localStorage.getItem(`hydration_${selectedDate}`);
+    setFoods(f ? JSON.parse(f) : []);
+    setWater(w ? parseInt(w) : 0);
+  }, [selectedDate]);
 
   useEffect(() => { localStorage.setItem("nutrition_goals", JSON.stringify(goals)); }, [goals]);
   useEffect(() => {
-    localStorage.setItem(`nutrition_${today}`, JSON.stringify(foods));
+    localStorage.setItem(`nutrition_${selectedDateRef.current}`, JSON.stringify(foods));
     // Sync différé vers Supabase
     clearTimeout(syncTimer.current);
     syncTimer.current = setTimeout(async () => {
@@ -251,11 +291,11 @@ export default function NutritionPage() {
         glucides: acc.glucides + f.glucides, lipides: acc.lipides + f.lipides,
       }), { calories: 0, proteines: 0, glucides: 0, lipides: 0 });
       await supabase.from("daily_summaries").upsert({
-        user_id: userIdRef.current, date: today, ...t, updated_at: new Date().toISOString(),
+        user_id: userIdRef.current, date: selectedDateRef.current, ...t, updated_at: new Date().toISOString(),
       }, { onConflict: "user_id,date" });
     }, 3000);
-  }, [foods, today]);
-  useEffect(() => { localStorage.setItem(`hydration_${today}`, water.toString()); }, [water, today]);
+  }, [foods]);
+  useEffect(() => { localStorage.setItem(`hydration_${selectedDateRef.current}`, water.toString()); }, [water]);
   useEffect(() => { localStorage.setItem("nutrition_saved_meals", JSON.stringify(savedMeals)); }, [savedMeals]);
 
   const remaining = {
@@ -292,7 +332,10 @@ export default function NutritionPage() {
     lipides:   acc.lipides   + f.lipides,
   }), { calories:0, proteines:0, glucides:0, lipides:0 });
 
-  const fullHistory: DayHistory[] = [...pastHistory, { date: today, label: "Auj", calories: totals.calories }];
+  const todayCalForChart = selectedDate === realToday
+    ? totals.calories
+    : (() => { const s = localStorage.getItem(`nutrition_${realToday}`); return s ? (JSON.parse(s) as Food[]).reduce((a, f) => a + f.calories, 0) : 0; })();
+  const fullHistory: DayHistory[] = [...pastHistory, { date: realToday, label: "Auj", calories: todayCalForChart }];
 
   const analyzeText = async () => {
     if (!description.trim()) return;
@@ -443,7 +486,7 @@ export default function NutritionPage() {
   const isCoherent     = Math.abs(kcalFromMacros - goalDraft.calories) <= 5;
 
   const inputCls = "w-full bg-[#0a0a0a] border border-white/10 text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
-  const labelCls = "text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c] block mb-1.5";
+  const labelCls = "text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] block mb-1.5";
   const tabCls   = (active: boolean, border = true) =>
     `flex-1 py-2 text-[0.6rem] tracking-[0.1em] uppercase transition-colors ${border ? "border-r border-white/10" : ""} ${active ? "bg-[#c9a84c]/10 text-[#c9a84c]" : "text-white/30 hover:text-white/50"}`;
 
@@ -454,19 +497,18 @@ export default function NutritionPage() {
     <div className="p-4 sm:p-8 max-w-2xl">
 
       {/* Header */}
-      <div className="flex items-end justify-between mb-10">
+      <div className="flex items-end justify-between mb-6">
         <div>
-          <p className="text-[0.55rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-2">Rubrique</p>
+          <p className="text-[0.7rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-2">Rubrique</p>
           <h1 style={{ fontFamily:"var(--font-bebas)" }} className="text-4xl sm:text-5xl text-white tracking-wide">NUTRITION</h1>
-          <p className="text-white/30 text-xs mt-1 capitalize">
-            {new Date().toLocaleDateString("fr-FR",{ weekday:"long", day:"numeric", month:"long" })}
-          </p>
         </div>
         <button onClick={() => { setGoalDraft(goals); syncRaw(goals); setShowGoals(true); }}
-          className="text-[0.55rem] tracking-[0.15em] uppercase text-white/30 border border-white/10 px-4 py-2 hover:text-white/60 hover:border-white/20 transition-colors">
+          className="text-[0.7rem] tracking-[0.15em] uppercase text-white/30 border border-white/10 px-4 py-2 hover:text-white/60 hover:border-white/20 transition-colors">
           Mes objectifs
         </button>
       </div>
+
+      <DateNav date={selectedDate} onChange={setSelectedDate} />
 
       <CalorieRing consumed={totals.calories} goal={goals.calories}/>
 
@@ -480,7 +522,7 @@ export default function NutritionPage() {
       </div>
 
       <div className="border border-white/10 bg-[#111] p-6 mb-6 flex flex-col gap-5">
-        <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1">Macronutriments</p>
+        <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1">Macronutriments</p>
         {macroConfig.map(m => <MacroBar key={m.key} label={m.label} consumed={totals[m.key]} goal={goals[m.key]} color={m.color}/>)}
       </div>
 
@@ -562,7 +604,7 @@ export default function NutritionPage() {
           </div>
           {remaining.calories > 0 && (
             <button onClick={generateIdeas} disabled={ideaLoading}
-              className="shrink-0 border border-[#c9a84c]/30 text-[#c9a84c] text-[0.55rem] tracking-[0.15em] uppercase px-3.5 py-2 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5">
+              className="shrink-0 border border-[#c9a84c]/30 text-[#c9a84c] text-[0.7rem] tracking-[0.15em] uppercase px-3.5 py-2 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5">
               {ideaLoading
                 ? <><div className="w-2.5 h-2.5 border border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>Génération…</>
                 : "Générer →"}
@@ -571,7 +613,7 @@ export default function NutritionPage() {
         </div>
 
         {ideaError && (
-          <p className="px-5 py-3 text-[0.55rem] text-[#e07070]">{ideaError}</p>
+          <p className="px-5 py-3 text-[0.7rem] text-[#e07070]">{ideaError}</p>
         )}
 
         {!ideaLoading && ideas.length === 0 && !ideaError && remaining.calories > 0 && (
@@ -607,8 +649,10 @@ export default function NutritionPage() {
       {/* ── Aliments du jour ── */}
       <div className="border border-white/10 bg-[#111] mb-6">
         <div className="flex items-center justify-between px-5 py-3 border-b border-white/5">
-          <span style={{ fontFamily:"var(--font-bebas)" }} className="text-sm tracking-wider text-white">Aliments du jour</span>
-          <span className="text-[0.55rem] tracking-wider text-white/30">{totals.calories} kcal</span>
+          <span style={{ fontFamily:"var(--font-bebas)" }} className="text-sm tracking-wider text-white">
+            {selectedDate === realToday ? "Aliments du jour" : `Aliments · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
+          </span>
+          <span className="text-[0.7rem] tracking-wider text-white/30">{totals.calories} kcal</span>
         </div>
         {foods.length === 0
           ? <p className="px-5 py-4 text-[0.6rem] tracking-wider text-white/20 uppercase">Aucun aliment ajouté</p>
@@ -616,7 +660,7 @@ export default function NutritionPage() {
             <div key={f.id} className="flex items-center justify-between px-5 py-3 border-b border-white/5 last:border-0 group">
               <div>
                 <p className="text-xs text-white/70">{f.name}</p>
-                <p className="text-[0.55rem] text-white/25 mt-0.5">P {f.proteines}g · G {f.glucides}g · L {f.lipides}g</p>
+                <p className="text-[0.7rem] text-white/25 mt-0.5">P {f.proteines}g · G {f.glucides}g · L {f.lipides}g</p>
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-xs text-white/50">{f.calories} kcal</span>
@@ -633,7 +677,7 @@ export default function NutritionPage() {
       {/* ── Week history ── */}
       <div className="border border-white/10 bg-[#111] p-5 mt-6">
         <div className="flex items-center justify-between mb-4">
-          <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c]">Cette semaine</p>
+          <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Cette semaine</p>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1"><div className="w-2 h-2 bg-[#c9a84c]"/><span className="text-[0.45rem] text-white/25">Objectif</span></div>
             <div className="flex items-center gap-1"><div className="w-2 h-2 bg-[#e07070]"/><span className="text-[0.45rem] text-white/25">Excédent</span></div>
@@ -720,7 +764,7 @@ export default function NutritionPage() {
                     <div className="flex flex-col gap-4">
                       <div className="border border-[#c9a84c]/20 bg-[#c9a84c]/5 p-4">
                         <div className="flex items-center justify-between mb-3">
-                          <p className="text-[0.55rem] tracking-[0.15em] uppercase text-[#c9a84c]">Estimation IA</p>
+                          <p className="text-[0.7rem] tracking-[0.15em] uppercase text-[#c9a84c]">Estimation IA</p>
                           <button onClick={() => setAiResult(null)} className="text-[0.5rem] tracking-wider uppercase text-white/25 hover:text-white/50 transition-colors">Réestimer</button>
                         </div>
                         <p className="text-xs text-white/70 mb-3">{aiResult.name}</p>
@@ -751,7 +795,7 @@ export default function NutritionPage() {
                       </div>
                       <div className="flex gap-2">
                         <button onClick={() => saveMeal(aiResult)} disabled={savedMeals.some(s => s.name === aiResult.name)}
-                          className="flex-1 border border-white/10 text-white/40 text-[0.55rem] tracking-[0.15em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-1.5">
+                          className="flex-1 border border-white/10 text-white/40 text-[0.7rem] tracking-[0.15em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-1.5">
                           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
                           {savedMeals.some(s => s.name === aiResult.name) ? "Déjà sauvegardé" : "Sauvegarder"}
                         </button>
@@ -784,7 +828,7 @@ export default function NutritionPage() {
                     </button>
                     <input ref={scanRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleScan}/>
                   </div>
-                  {scanError && <p className="text-[0.55rem] text-[#e07070]">{scanError}</p>}
+                  {scanError && <p className="text-[0.7rem] text-[#e07070]">{scanError}</p>}
 
                   {results.length > 0 && !selected && (
                     <div className="flex flex-col border border-white/10 divide-y divide-white/5">
@@ -793,9 +837,9 @@ export default function NutritionPage() {
                           className="flex items-center justify-between px-4 py-3 text-left hover:bg-white/[0.03] transition-colors">
                           <div>
                             <p className="text-xs text-white/70">{p.product_name}</p>
-                            {p.brands && <p className="text-[0.55rem] text-white/25 mt-0.5">{p.brands}</p>}
+                            {p.brands && <p className="text-[0.7rem] text-white/25 mt-0.5">{p.brands}</p>}
                           </div>
-                          <span className="text-[0.55rem] text-white/30 shrink-0 ml-4">{Math.round(p.nutriments["energy-kcal_100g"]??0)} kcal/100g</span>
+                          <span className="text-[0.7rem] text-white/30 shrink-0 ml-4">{Math.round(p.nutriments["energy-kcal_100g"]??0)} kcal/100g</span>
                         </button>
                       ))}
                     </div>
@@ -806,9 +850,9 @@ export default function NutritionPage() {
                       <div className="flex items-start justify-between">
                         <div>
                           <p className="text-xs text-white/70">{selected.product_name}</p>
-                          {selected.brands && <p className="text-[0.55rem] text-white/30 mt-0.5">{selected.brands}</p>}
+                          {selected.brands && <p className="text-[0.7rem] text-white/30 mt-0.5">{selected.brands}</p>}
                         </div>
-                        <button onClick={() => { setSelected(null); setQuery(""); }} className="text-[0.55rem] tracking-wider uppercase text-white/25 hover:text-white/50 transition-colors">Changer</button>
+                        <button onClick={() => { setSelected(null); setQuery(""); }} className="text-[0.7rem] tracking-wider uppercase text-white/25 hover:text-white/50 transition-colors">Changer</button>
                       </div>
                       <div><label className={labelCls}>Quantité (g)</label><input className={inputCls} type="number" value={quantity} onChange={e => setQuantity(e.target.value)}/></div>
                       <div className="grid grid-cols-4 gap-2">
@@ -826,7 +870,7 @@ export default function NutritionPage() {
                       </div>
                       <div className="flex gap-2">
                         <button onClick={() => saveMeal({ name: selected.product_name, ...computed })} disabled={savedMeals.some(s => s.name === selected.product_name)}
-                          className="flex-1 border border-white/10 text-white/40 text-[0.55rem] tracking-[0.15em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                          className="flex-1 border border-white/10 text-white/40 text-[0.7rem] tracking-[0.15em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
                           {savedMeals.some(s => s.name === selected.product_name) ? "Déjà sauvegardé" : "Sauvegarder"}
                         </button>
                         <button onClick={addFood} className="flex-1 bg-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.2em] uppercase py-2.5 hover:bg-[#e2c97e] transition-colors">
@@ -844,7 +888,7 @@ export default function NutritionPage() {
                   {savedMeals.length === 0 ? (
                     <div className="text-center py-10 border border-white/5">
                       <p className="text-white/20 text-xs mb-1">Aucun repas sauvegardé</p>
-                      <p className="text-white/10 text-[0.55rem]">Utilise l&apos;IA ou la recherche et clique sur &quot;Sauvegarder&quot;</p>
+                      <p className="text-white/10 text-[0.7rem]">Utilise l&apos;IA ou la recherche et clique sur &quot;Sauvegarder&quot;</p>
                     </div>
                   ) : (
                     <div className="flex flex-col gap-1.5">
@@ -905,7 +949,7 @@ export default function NutritionPage() {
               {macroConfig.map(({ key, label, color }) => (
                 <div key={key}>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-[0.55rem] tracking-[0.2em] uppercase block" style={{ color }}>{label} (g)</label>
+                    <label className="text-[0.7rem] tracking-[0.2em] uppercase block" style={{ color }}>{label} (g)</label>
                     <span className="text-[0.5rem] text-white/20">{Math.round(goalDraft[key]*CAL[key])} kcal</span>
                   </div>
                   <input className={inputCls} type="number" value={rawGoal[key]}

@@ -20,12 +20,14 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
   background: var(--bg);
   color: #ffffff;
   font-family: 'Inter', Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
 }
 
 .gold {

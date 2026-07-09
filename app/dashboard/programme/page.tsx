@@ -22,9 +22,46 @@ const todayStr = () => new Date().toISOString().split("T")[0];
 const neatFromSteps = (steps: number, poids: number) =>
   Math.round(steps * 0.04 * (poids / 70));
 
+function DateNav({ date, onChange }: { date: string; onChange: (d: string) => void }) {
+  const todayD = new Date().toISOString().split("T")[0];
+  const isToday = date === todayD;
+  const move = (delta: number) => {
+    const d = new Date(date + "T12:00:00"); d.setDate(d.getDate() + delta);
+    onChange(d.toISOString().split("T")[0]);
+  };
+  const label = isToday ? "Aujourd'hui" : new Date(date + "T12:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+  return (
+    <div className="flex items-center gap-2 mb-6">
+      <button onClick={() => move(-1)} className="w-7 h-7 border border-white/10 text-white/40 hover:text-white/60 hover:border-white/20 transition-colors flex items-center justify-center shrink-0">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div className="flex-1 relative flex items-center justify-center gap-1.5 cursor-pointer group">
+        <input
+          type="date" value={date} max={todayD}
+          onChange={e => { if (e.target.value) onChange(e.target.value); }}
+          className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+        />
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-white/30 group-hover:text-white/50 transition-colors shrink-0">
+          <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        <p className="text-[0.6rem] tracking-[0.15em] uppercase text-white/50 group-hover:text-white/70 transition-colors capitalize select-none">{label}</p>
+      </div>
+      <button onClick={() => move(1)} disabled={isToday} className="w-7 h-7 border border-white/10 text-white/40 hover:text-white/60 hover:border-white/20 transition-colors flex items-center justify-center shrink-0 disabled:opacity-20 disabled:cursor-not-allowed">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      {!isToday && (
+        <button onClick={() => onChange(todayD)} className="text-[0.45rem] tracking-[0.12em] uppercase text-[#c9a84c] border border-[#c9a84c]/30 px-2 py-1 hover:bg-[#c9a84c]/10 transition-colors shrink-0">
+          Auj.
+        </button>
+      )}
+    </div>
+  );
+}
+
 export default function ProgrammePage() {
   const [profile,      setProfile]      = useState<Profile | null>(null);
   const [workouts,     setWorkouts]     = useState<LoggedWorkout[]>([]);
+  const [selectedDate, setSelectedDate] = useState(todayStr());
   const [steps,        setSteps]        = useState(0);
   const [stepsInput,   setStepsInput]   = useState("0");
   const [stepGoal,     setStepGoal]     = useState(10000);
@@ -50,20 +87,24 @@ export default function ProgrammePage() {
       if (p) setProfile(p as Profile);
     })();
     const saved  = localStorage.getItem("programme_logs");
-    const savedS = localStorage.getItem(`steps_${todayStr()}`);
     const savedG = localStorage.getItem("steps_goal");
     const savedP = localStorage.getItem("perf_history");
     if (saved)  setWorkouts(JSON.parse(saved));
-    if (savedS) { const n = parseInt(savedS); setSteps(n); setStepsInput(n.toString()); }
     if (savedG) { const g = parseInt(savedG); setStepGoal(g); setGoalInput(g.toString()); }
     if (savedP) setPerfHistory(JSON.parse(savedP));
   }, []);
+
+  useEffect(() => {
+    const savedS = localStorage.getItem(`steps_${selectedDate}`);
+    if (savedS) { const n = parseInt(savedS); setSteps(n); setStepsInput(n.toString()); }
+    else { setSteps(0); setStepsInput("0"); }
+  }, [selectedDate]);
 
   const saveSteps = (n: number) => {
     const clamped = Math.max(0, n);
     setSteps(clamped);
     setStepsInput(clamped.toString());
-    localStorage.setItem(`steps_${todayStr()}`, clamped.toString());
+    localStorage.setItem(`steps_${selectedDate}`, clamped.toString());
   };
 
   const saveGoal = (g: number) => {
@@ -72,7 +113,7 @@ export default function ProgrammePage() {
     localStorage.setItem("steps_goal", clamped.toString());
   };
 
-  const todayWorkouts = workouts.filter(w => w.date.startsWith(todayStr()));
+  const todayWorkouts = workouts.filter(w => w.date.startsWith(selectedDate));
   const eatCal        = todayWorkouts.reduce((s, w) => s + w.calories_burned, 0);
   const neatCal       = neatFromSteps(steps, profile?.poids ?? 70);
   const totalCal      = eatCal + neatCal;
@@ -99,7 +140,7 @@ export default function ProgrammePage() {
     if (!activity.trim() || !calResult) return;
     const entry: LoggedWorkout = {
       id: Date.now().toString(),
-      date: new Date().toISOString(),
+      date: new Date(selectedDate + "T12:00:00").toISOString(),
       activity, duration_minutes: durationMin, description,
       calories_burned: calResult.calories_brulees,
       note: calResult.note,
@@ -146,26 +187,27 @@ export default function ProgrammePage() {
   const inputCls = "w-full bg-[#0a0a0a] border border-white/10 text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
 
   const pastDates = [...new Set(
-    workouts.filter(w => !w.date.startsWith(todayStr())).map(w => w.date.split("T")[0])
+    workouts.filter(w => !w.date.startsWith(selectedDate)).map(w => w.date.split("T")[0])
   )].slice(0, 6);
 
   return (
     <div className="p-4 sm:p-8 max-w-2xl">
 
       {/* Header */}
-      <div className="mb-6 sm:mb-10">
-        <p className="text-[0.55rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-2">Rubrique</p>
+      <div className="mb-6">
+        <p className="text-[0.7rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-2">Rubrique</p>
         <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl sm:text-5xl text-white tracking-wide">PROGRAMME</h1>
-        <p className="text-white/30 text-xs mt-1 capitalize">
-          {new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}
-        </p>
       </div>
+
+      <DateNav date={selectedDate} onChange={setSelectedDate} />
 
       {/* ── Séances du jour ── */}
       {todayWorkouts.length > 0 && (
         <div className="border border-white/10 bg-[#111] mb-6">
           <div className="flex items-center justify-between px-5 py-3 border-b border-white/5">
-            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-white">Séances du jour</p>
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-white">
+              {selectedDate === todayStr() ? "Séances du jour" : `Séances · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
+            </p>
             <div className="flex items-center gap-1.5">
               <span style={{ fontFamily: "var(--font-bebas)" }} className="text-lg text-[#c9a84c] tracking-wide">{eatCal}</span>
               <span className="text-[0.45rem] text-white/25 uppercase tracking-wider">kcal</span>
@@ -195,10 +237,12 @@ export default function ProgrammePage() {
       <div className="border border-white/10 bg-[#111] p-5 mb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-<p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c]">Pas aujourd&apos;hui</p>
+<p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">
+                  {selectedDate === todayStr() ? "Pas aujourd'hui" : `Pas · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
+                </p>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[0.55rem] text-white/30">{stepsKm} km</span>
+            <span className="text-[0.7rem] text-white/30">{stepsKm} km</span>
             <button onClick={() => saveSteps(steps - 500)} disabled={steps === 0}
               className="w-7 h-7 border border-white/10 text-white/40 hover:text-white/70 hover:border-white/20 transition-colors disabled:opacity-20 flex items-center justify-center text-sm">−</button>
             <input
@@ -248,10 +292,10 @@ export default function ProgrammePage() {
 
       {/* ── Formulaire séance ── */}
       <div className="border border-white/10 bg-[#111] p-6 mb-6 flex flex-col gap-5">
-        <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c]">Enregistrer une séance</p>
+        <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Enregistrer une séance</p>
 
         <div>
-          <label className="text-[0.55rem] tracking-[0.2em] uppercase text-white/40 block mb-1.5">Activité</label>
+          <label className="text-[0.7rem] tracking-[0.2em] uppercase text-white/40 block mb-1.5">Activité</label>
           <input className={inputCls} placeholder="Ex : musculation, boxe, natation, vélo…"
             value={activity} onChange={e => { setActivity(e.target.value); setCalResult(null); }}/>
           {lastPerf && (
@@ -269,7 +313,7 @@ export default function ProgrammePage() {
         </div>
 
         <div>
-          <label className="text-[0.55rem] tracking-[0.2em] uppercase text-white/40 block mb-2">Durée</label>
+          <label className="text-[0.7rem] tracking-[0.2em] uppercase text-white/40 block mb-2">Durée</label>
           <div className="flex flex-wrap gap-2">
             {DURATIONS.map(d => (
               <button key={d.min} onClick={() => { setDurationMin(d.min); setCalResult(null); }} className={chip(durationMin === d.min)}>
@@ -280,7 +324,7 @@ export default function ProgrammePage() {
         </div>
 
         <div>
-          <label className="text-[0.55rem] tracking-[0.2em] uppercase text-white/40 block mb-1.5">
+          <label className="text-[0.7rem] tracking-[0.2em] uppercase text-white/40 block mb-1.5">
             Décris ta séance <span className="text-white/20">(optionnel)</span>
           </label>
           <div className="relative">
@@ -306,7 +350,7 @@ export default function ProgrammePage() {
             <div className="border border-[#c9a84c]/20 bg-[#c9a84c]/5 p-4 flex items-center justify-between">
               <div>
                 <p className="text-[0.5rem] tracking-[0.15em] uppercase text-[#c9a84c] mb-1">Estimation IA</p>
-                <p className="text-[0.55rem] text-white/40 italic">{calResult.note}</p>
+                <p className="text-[0.7rem] text-white/40 italic">{calResult.note}</p>
               </div>
               <div className="text-right">
                 <p style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-white tracking-wide leading-none">{calResult.calories_brulees}</p>
@@ -315,7 +359,7 @@ export default function ProgrammePage() {
             </div>
             <div className="flex gap-2">
               <button onClick={() => setCalResult(null)}
-                className="flex-1 border border-white/10 text-white/40 text-[0.55rem] tracking-[0.15em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors">
+                className="flex-1 border border-white/10 text-white/40 text-[0.7rem] tracking-[0.15em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors">
                 Ré-estimer
               </button>
               <button onClick={addWorkout}
@@ -336,7 +380,7 @@ export default function ProgrammePage() {
 
       {/* ── EAT / NEAT / TOTAL ── */}
       <div className="border border-white/10 bg-[#111] p-5 mb-8">
-        <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Dépense du jour</p>
+        <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Dépense du jour</p>
         <div className="grid grid-cols-3 gap-3 mb-4">
           {/* EAT */}
           <div className="border border-white/5 bg-[#0a0a0a] py-4 px-3 text-center">
@@ -380,7 +424,7 @@ export default function ProgrammePage() {
       {/* ── Historique ── */}
       {pastDates.length > 0 && (
         <div>
-          <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Historique</p>
+          <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Historique</p>
           {pastDates.map(date => {
             const dayWorkouts = workouts.filter(w => w.date.startsWith(date));
             const dayCal = dayWorkouts.reduce((s, w) => s + w.calories_burned, 0);
@@ -388,8 +432,8 @@ export default function ProgrammePage() {
             return (
               <div key={date} className="border border-white/10 bg-[#111] mb-3">
                 <div className="flex items-center justify-between px-5 py-3 border-b border-white/5">
-                  <span className="text-[0.55rem] tracking-wider text-white/40 capitalize">{label}</span>
-                  <span className="text-[0.55rem] tracking-wider text-white/30">{dayCal} kcal</span>
+                  <span className="text-[0.7rem] tracking-wider text-white/40 capitalize">{label}</span>
+                  <span className="text-[0.7rem] tracking-wider text-white/30">{dayCal} kcal</span>
                 </div>
                 {dayWorkouts.map(w => (
                   <div key={w.id} className="flex items-center justify-between px-5 py-2.5 border-b border-white/5 last:border-0">
