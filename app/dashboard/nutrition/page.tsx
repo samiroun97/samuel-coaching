@@ -230,6 +230,7 @@ export default function NutritionPage() {
   const [aiError,     setAiError]     = useState("");
   const [listening,   setListening]   = useState(false);
   const photoRef       = useRef<HTMLInputElement>(null);
+  const galleryRef     = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<{ start(): void; stop(): void } | null>(null);
   const [query,    setQuery]    = useState("");
   const [results,  setResults]  = useState<OFFProduct[]>([]);
@@ -364,6 +365,7 @@ export default function NutritionPage() {
       } catch (e: unknown) { setAiError(e instanceof Error ? e.message : "Erreur analyse photo"); }
       setAnalyzing(false);
       if (photoRef.current) photoRef.current.value = "";
+      if (galleryRef.current) galleryRef.current.value = "";
     };
     reader.readAsDataURL(file);
   };
@@ -742,14 +744,24 @@ export default function NutritionPage() {
                     <p className="text-[0.5rem] text-white/20 mt-1">Tu peux aussi dicter en cliquant sur le micro</p>
                   </div>
 
-                  <button onClick={() => photoRef.current?.click()} disabled={analyzing}
-                    className="flex items-center justify-center gap-2 border border-white/10 text-white/40 text-[0.6rem] tracking-[0.1em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors disabled:opacity-40">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/>
-                    </svg>
-                    Prendre une photo du plat
-                  </button>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button onClick={() => photoRef.current?.click()} disabled={analyzing}
+                      className="flex items-center justify-center gap-2 border border-white/10 text-white/40 text-[0.6rem] tracking-[0.1em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors disabled:opacity-40">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/>
+                      </svg>
+                      Prendre une photo
+                    </button>
+                    <button onClick={() => galleryRef.current?.click()} disabled={analyzing}
+                      className="flex items-center justify-center gap-2 border border-white/10 text-white/40 text-[0.6rem] tracking-[0.1em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors disabled:opacity-40">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
+                      </svg>
+                      Choisir une photo
+                    </button>
+                  </div>
                   <input ref={photoRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={analyzePhoto}/>
+                  <input ref={galleryRef} type="file" accept="image/*" className="hidden" onChange={analyzePhoto}/>
 
                   {!aiResult && (
                     <button onClick={analyzeText} disabled={analyzing || !description.trim()}
