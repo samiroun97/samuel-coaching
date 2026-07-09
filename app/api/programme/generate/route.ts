@@ -3,6 +3,28 @@ import Anthropic from "@anthropic-ai/sdk";
 
 const SEANCE_TYPES = ["Haut du corps", "Bas du corps", "Full body", "Cardio", "Boxe", "Natation", "CrossFit", "Yoga", "Autre"];
 
+const SCHEMA = {
+  type: "object",
+  properties: {
+    seances: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          titre:       { type: "string" },
+          type_seance: { type: "string", enum: SEANCE_TYPES },
+          description: { type: "string" },
+          exercices:   { type: "string", description: "Un exercice par ligne, séparés par \\n" },
+        },
+        required: ["titre", "type_seance", "description", "exercices"],
+        additionalProperties: false,
+      },
+    },
+  },
+  required: ["seances"],
+  additionalProperties: false,
+} as const;
+
 export async function POST(req: NextRequest) {
   try {
     const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -28,26 +50,25 @@ Blessures / limitations : ${blessures || "aucune"}
 Règles :
 - Exactement ${nb} séances, adaptées à l'objectif et au niveau du client.
 - Respecte impérativement les blessures/limitations.
-- Adapte les exercices au lieu (maison = poids du corps/haltères, salle = machines/barres).
-- type_seance doit être l'une de ces valeurs : ${SEANCE_TYPES.join(", ")}.
+- Adapte les exercices au lieu (maison = poids du corps/haltères, salle = machines/barres, mixte = varie).
 - exercices : un exercice par ligne, format "Nom de l'exercice séries×répétitions (conseil court optionnel)". 5 à 8 exercices par séance (3 à 5 pour cardio).
 - description : 1 phrase — objectif de la séance et intensité.
-
-Retourne UNIQUEMENT ce JSON valide, sans texte autour :
-{"seances":[{"titre":"Séance 1 — Haut du corps","type_seance":"Haut du corps","description":"...","exercices":"Développé couché 4×8\\nTirage poulie 3×12"}]}`;
+- Tout en français.`;
 
     const client = new Anthropic({ apiKey });
     const response = await client.messages.create({
-      model: "claude-sonnet-5",
-      max_tokens: 3000,
+      model: "claude-opus-4-8",
+      max_tokens: 8000,
+      output_config: { format: { type: "json_schema", schema: SCHEMA } },
       messages: [{ role: "user", content: prompt }],
     });
 
-    const raw = response.content[0].type === "text" ? response.content[0].text.trim() : "";
-    const match = raw.match(/\{[\s\S]*\}/);
-    if (!match) return NextResponse.json({ error: "Réponse IA non parseable" }, { status: 500 });
+    const textBlock = response.content.find(b => b.type === "text");
+    if (!textBlock || textBlock.type !== "text") {
+      return NextResponse.json({ error: "Réponse IA vide" }, { status: 500 });
+    }
 
-    const parsed = JSON.parse(match[0]);
+    const parsed = JSON.parse(textBlock.text);
     if (!Array.isArray(parsed.seances) || parsed.seances.length === 0) {
       return NextResponse.json({ error: "Programme vide" }, { status: 500 });
     }
