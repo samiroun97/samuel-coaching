@@ -163,17 +163,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </Link>
             );
           })}
-          {isSamuel && (
-            <Link href="/dashboard/admin"
-              className={`flex items-center gap-3 px-3 py-2.5 text-[0.6rem] tracking-[0.12em] uppercase transition-all duration-150 border-l-2 mt-2 ${
-                pathname === "/dashboard/admin"
-                  ? "text-[#c9a84c] bg-[#c9a84c]/5 border-[#c9a84c]"
-                  : "text-white/30 hover:text-white/60 hover:bg-white/[0.03] border-transparent"
-              }`}>
-              <NavIcon name="admin"/>
-              Clients
-            </Link>
-          )}
         </nav>
 
         <div className="px-2 py-3 border-t border-white/5 flex flex-col gap-0.5">
@@ -287,15 +276,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </Link>
           );
         })}
-        {isSamuel && (
-          <Link href="/dashboard/admin"
-            className={`flex-1 flex flex-col items-center gap-1 py-2.5 text-[0.45rem] tracking-[0.08em] uppercase transition-all ${
-              pathname === "/dashboard/admin" ? "text-[#c9a84c]" : "text-white/25"
-            }`}>
-            <NavIcon name="admin"/>
-            Clients
-          </Link>
-        )}
       </nav>
     </div>
   );
