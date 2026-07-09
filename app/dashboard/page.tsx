@@ -88,6 +88,7 @@ export default function AccueilPage() {
   const [bodyFat,      setBodyFat]      = useState<number | null>(null);
   const [weightHist,   setWeightHist]   = useState<WeightEntry[]>([]);
   const [weightInput,  setWeightInput]  = useState("");
+  const [weightDate,   setWeightDate]   = useState(today());
   const [weightSaving, setWeightSaving] = useState(false);
   const [weightSaved,  setWeightSaved]  = useState(false);
   const [daysSinceBF,  setDaysSinceBF]  = useState<number | null>(null);
@@ -155,21 +156,30 @@ export default function AccueilPage() {
     } catch { /* ignore */ }
   }, []);
 
-  const alreadyWeighedToday = weightHist[0]?.date === today();
-  const lastWeight = weightHist[0]?.weight ?? profile?.poids ?? null;
-  const needsBF = daysSinceBF === null || daysSinceBF >= 14;
+  const lastWeight   = weightHist[0]?.weight ?? profile?.poids ?? null;
+  const needsBF      = daysSinceBF === null || daysSinceBF >= 14;
+  const entryForDate = weightHist.find(e => e.date === weightDate);
+
+  // Pré-remplir avec la pesée existante quand on change de date
+  useEffect(() => {
+    const e = weightHist.find(x => x.date === weightDate);
+    if (e) setWeightInput(String(e.weight));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [weightDate]);
 
   const saveWeight = async () => {
     const val = parseFloat(weightInput.replace(",", "."));
     if (isNaN(val) || val < 20 || val > 300 || !userId) return;
     setWeightSaving(true);
-    const entry: WeightEntry = { id: Date.now().toString(), date: today(), weight: +val.toFixed(1) };
-    const next = alreadyWeighedToday
-      ? [entry, ...weightHist.slice(1)]
-      : [entry, ...weightHist];
+    const entry: WeightEntry = { id: Date.now().toString(), date: weightDate, weight: +val.toFixed(1) };
+    const next = [entry, ...weightHist.filter(e => e.date !== weightDate)]
+      .sort((a, b) => b.date.localeCompare(a.date));
     setWeightHist(next);
     localStorage.setItem(`weight_history_${userId}`, JSON.stringify(next));
-    await supabase.from("profiles").update({ poids: val }).eq("id", userId);
+    // Le poids du profil ne suit que la pesée la plus récente
+    if (next[0]?.date === weightDate) {
+      await supabase.from("profiles").update({ poids: val }).eq("id", userId);
+    }
     setWeightSaving(false); setWeightSaved(true);
     setTimeout(() => setWeightSaved(false), 2000);
   };
@@ -211,16 +221,23 @@ export default function AccueilPage() {
         </p>
       </div>
 
-      {/* ── Pesée du jour ── */}
-      <div className={`border p-4 mb-4 flex items-center gap-4 ${alreadyWeighedToday ? "border-white/5 bg-[#0d0d0d]" : "border-[#c9a84c]/20 bg-[#c9a84c]/5"}`}>
-        <div className="flex-1 min-w-0">
-          <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-0.5">Pesée du jour</p>
-          {alreadyWeighedToday
-            ? <p className="text-[0.5rem] text-white/30 tracking-wider">✓ Enregistrée — {lastWeight} kg</p>
+      {/* ── Pesée (date sélectionnable) ── */}
+      <div className={`border p-4 mb-4 flex flex-wrap items-center gap-3 sm:gap-4 ${entryForDate ? "border-white/5 bg-[#0d0d0d]" : "border-[#c9a84c]/20 bg-[#c9a84c]/5"}`}>
+        <div className="flex-1 min-w-[130px]">
+          <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-0.5">
+            Pesée {weightDate === today() ? "du jour" : `· ${new Date(weightDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
+          </p>
+          {entryForDate
+            ? <p className="text-[0.5rem] text-white/30 tracking-wider">✓ Enregistrée — {entryForDate.weight} kg</p>
             : <p className="text-[0.5rem] text-white/30 tracking-wider">Dernière : {lastWeight ? `${lastWeight} kg` : "—"}</p>
           }
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 flex-wrap">
+          <input
+            type="date" value={weightDate} max={today()}
+            onChange={e => { if (e.target.value) setWeightDate(e.target.value); }}
+            className="bg-[#0a0a0a] border border-white/10 text-white/60 text-[0.7rem] px-2 py-1.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
+          />
           <input
             type="number" min="20" max="300" step="0.1"
             value={weightInput}
@@ -234,7 +251,7 @@ export default function AccueilPage() {
             className={`text-[0.55rem] font-bold tracking-[0.12em] uppercase px-4 py-1.5 transition-colors disabled:opacity-30 ${
               weightSaved ? "bg-[#7eb8a0] text-black" : "bg-[#c9a84c] text-black hover:bg-[#e2c97e]"
             }`}>
-            {weightSaved ? "✓" : alreadyWeighedToday ? "Modifier" : "Enregistrer"}
+            {weightSaved ? "✓" : entryForDate ? "Modifier" : "Enregistrer"}
           </button>
         </div>
       </div>
