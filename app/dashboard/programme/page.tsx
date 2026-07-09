@@ -10,6 +10,7 @@ type LoggedWorkout = {
 };
 type PerfRecord = { date: string; calories: number; duration: number; description: string };
 type PerfHistory = Record<string, PerfRecord[]>;
+type CoachSeance = { id: string; titre: string; type_seance: string | null; date_prevue: string | null; description: string | null; exercices: string | null };
 
 const DURATIONS = [
   { label: "15 min", min: 15 }, { label: "30 min", min: 30 }, { label: "45 min", min: 45 },
@@ -67,6 +68,8 @@ export default function ProgrammePage() {
   const [stepGoal,     setStepGoal]     = useState(10000);
   const [goalInput,    setGoalInput]    = useState("10000");
   const [editingGoal,  setEditingGoal]  = useState(false);
+  const [coachSeances, setCoachSeances] = useState<CoachSeance[]>([]);
+  const [openSeance,   setOpenSeance]   = useState<string | null>(null);
 
   /* form */
   const [perfHistory, setPerfHistory] = useState<PerfHistory>({});
@@ -85,6 +88,11 @@ export default function ProgrammePage() {
       if (!user) return;
       const { data: p } = await supabase.from("profiles").select("poids,taille,age,sexe").eq("id", user.id).single();
       if (p) setProfile(p as Profile);
+      if (user.email) {
+        const { data: cs } = await supabase.from("programme_seances").select("*")
+          .eq("assigned_to_email", user.email).order("created_at", { ascending: true });
+        setCoachSeances((cs ?? []) as CoachSeance[]);
+      }
     })();
     const saved  = localStorage.getItem("programme_logs");
     const savedG = localStorage.getItem("steps_goal");
@@ -198,6 +206,52 @@ export default function ProgrammePage() {
         <p className="text-[0.7rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-2">Rubrique</p>
         <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl sm:text-5xl text-white tracking-wide">PROGRAMME</h1>
       </div>
+
+      {/* ── Mon programme (séances envoyées par Samuel) ── */}
+      {coachSeances.length > 0 && (
+        <div className="border border-[#c9a84c]/20 bg-[#0f0d07] mb-6">
+          <div className="px-5 py-3 border-b border-[#c9a84c]/10 flex items-center justify-between">
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[#c9a84c]">Mon programme</p>
+            <span className="text-[0.45rem] text-white/25 uppercase tracking-wider">{coachSeances.length} séance{coachSeances.length > 1 ? "s" : ""} · par Samuel</span>
+          </div>
+          {coachSeances.map(s => {
+            const open = openSeance === s.id;
+            return (
+              <div key={s.id} className="border-b border-white/5 last:border-0">
+                <button onClick={() => setOpenSeance(open ? null : s.id)}
+                  className="w-full text-left px-5 py-3 flex items-center justify-between gap-2 hover:bg-white/[0.02] transition-colors">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      {s.type_seance && <span className="text-[0.42rem] tracking-wider uppercase text-[#c9a84c] border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">{s.type_seance}</span>}
+                      <p className="text-xs text-white/70 truncate">{s.titre}</p>
+                    </div>
+                    {s.date_prevue && <p className="text-[0.48rem] text-white/25 mt-0.5">{new Date(s.date_prevue + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</p>}
+                  </div>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+                    className={`text-white/25 shrink-0 transition-transform ${open ? "rotate-180" : ""}`}>
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </button>
+                {open && (
+                  <div className="px-5 pb-4">
+                    {s.description && <p className="text-[0.65rem] text-white/40 leading-relaxed mb-2">{s.description}</p>}
+                    {s.exercices && (
+                      <div className="flex flex-col gap-1.5">
+                        {s.exercices.split("\n").filter(l => l.trim()).map((ex, i) => (
+                          <div key={i} className="flex items-start gap-2">
+                            <span className="w-1 h-1 rounded-full bg-[#c9a84c]/50 mt-1.5 shrink-0"/>
+                            <p className="text-xs text-white/55 leading-relaxed">{ex}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       <DateNav date={selectedDate} onChange={setSelectedDate} />
 
