@@ -12,6 +12,17 @@ type SavedMeal = { id: string; name: string; calories: number; proteines: number
 type DayHistory = { date: string; label: string; calories: number };
 type MealPlanItem = { id: string; meal_type: string; name: string; calories: number; proteines: number; glucides: number; lipides: number };
 type MealPlan = { id: string; name: string; notes: string | null; items: MealPlanItem[] };
+type MiniProfile = { poids: number; taille: number; age: number; sexe: string };
+
+// Même calcul que l'accueil : Katch-McArdle si body fat connu, sinon Mifflin-St Jeor
+function bmr(p: MiniProfile, bodyFatPct: number | null): number {
+  if (bodyFatPct !== null) {
+    const lbm = p.poids * (1 - bodyFatPct / 100);
+    return Math.round(370 + 21.6 * lbm);
+  }
+  const base = 10 * p.poids + 6.25 * p.taille - 5 * p.age;
+  return Math.round(p.sexe === "Femme" ? base - 161 : base + 5);
+}
 
 const CAL: Record<MacroKey, number> = { proteines: 4, glucides: 4, lipides: 9 };
 const defaultGoals: Goals = { calories: 2200, proteines: 150, glucides: 220, lipides: 70 };
@@ -213,6 +224,10 @@ export default function NutritionPage() {
   const [water,     setWater]     = useState(0);
   const [savedMeals, setSavedMeals] = useState<SavedMeal[]>([]);
   const [pastHistory, setPastHistory] = useState<DayHistory[]>([]);
+  const [calRef,      setCalRef]      = useState<"objectif" | "tdee">("objectif");
+  const [miniProfile, setMiniProfile] = useState<MiniProfile | null>(null);
+  const [bodyFat,     setBodyFat]     = useState<number | null>(null);
+  const [tdeeParts,   setTdeeParts]   = useState({ neat: 0, eat: 0 });
 
   const [modalMode, setModalMode] = useState<"ai"|"search"|"saved">("ai");
   const [ideas,       setIdeas]       = useState<IdeaResult[]>([]);
@@ -246,6 +261,14 @@ export default function NutritionPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         userIdRef.current = user.id;
+        // Profil + body fat pour le calcul du TDEE
+        const { data: p } = await supabase.from("profiles").select("poids,taille,age,sexe").eq("id", user.id).single();
+        if (p) setMiniProfile(p as MiniProfile);
+        try {
+          const bfRaw = localStorage.getItem(`bodyfat_history_${user.id}`) ?? localStorage.getItem("bodyfat_history");
+          const bfHist: { body_fat?: number }[] = bfRaw ? JSON.parse(bfRaw) : [];
+          if (bfHist[0]?.body_fat) setBodyFat(bfHist[0].body_fat);
+        } catch { /* ignore */ }
         // Charger plan repas actif
         const { data: plans } = await supabase
           .from("meal_plans").select("id,name,notes").eq("client_id", user.id).eq("is_active", true).limit(1);
@@ -259,8 +282,10 @@ export default function NutritionPage() {
     })();
     const g = localStorage.getItem("nutrition_goals");
     const s = localStorage.getItem("nutrition_saved_meals");
+    const r = localStorage.getItem("nutrition_cal_ref");
     if (g) setGoals(JSON.parse(g));
     if (s) setSavedMeals(JSON.parse(s));
+    if (r === "tdee" || r === "objectif") setCalRef(r);
     const hist: DayHistory[] = [];
     for (let i = 6; i >= 1; i--) {
       const d = new Date(); d.setDate(d.getDate() - i);
@@ -281,6 +306,18 @@ export default function NutritionPage() {
   }, [selectedDate]);
 
   useEffect(() => { localStorage.setItem("nutrition_goals", JSON.stringify(goals)); }, [goals]);
+  useEffect(() => { localStorage.setItem("nutrition_cal_ref", calRef); }, [calRef]);
+
+  // NEAT (pas) + EAT (entraînements) du jour sélectionné, comme sur l'accueil
+  useEffect(() => {
+    try {
+      const steps = parseInt(localStorage.getItem(`steps_${selectedDate}`) ?? "0") || 0;
+      const neat  = Math.round(steps * 0.04 * ((miniProfile?.poids ?? 70) / 70));
+      const logs: { date: string; calories_burned: number }[] = JSON.parse(localStorage.getItem("programme_logs") ?? "[]");
+      const eat   = logs.filter(l => l.date.startsWith(selectedDate)).reduce((s, l) => s + l.calories_burned, 0);
+      setTdeeParts({ neat, eat });
+    } catch { setTdeeParts({ neat: 0, eat: 0 }); }
+  }, [selectedDate, miniProfile]);
   useEffect(() => {
     localStorage.setItem(`nutrition_${selectedDateRef.current}`, JSON.stringify(foods));
     // Sync différé vers Supabase
@@ -495,6 +532,12 @@ export default function NutritionPage() {
   const daysWithData = fullHistory.filter(d => d.calories > 0);
   const avgCal = daysWithData.length ? Math.round(daysWithData.reduce((s,d) => s+d.calories,0)/daysWithData.length) : 0;
 
+  // Référence calorique : objectif fixe ou TDEE du jour
+  const bmrVal    = miniProfile ? bmr(miniProfile, bodyFat) : 0;
+  const tdee      = bmrVal > 0 ? bmrVal + tdeeParts.neat + tdeeParts.eat : 0;
+  const useTdee   = calRef === "tdee" && tdee > 0;
+  const calTarget = useTdee ? tdee : goals.calories;
+
   return (
     <div className="p-4 sm:p-8 max-w-2xl">
 
@@ -512,10 +555,31 @@ export default function NutritionPage() {
 
       <DateNav date={selectedDate} onChange={setSelectedDate} />
 
-      <CalorieRing consumed={totals.calories} goal={goals.calories}/>
+      {/* Référence du compteur : objectif fixe ou dépense réelle (TDEE) */}
+      <div className="flex justify-center mb-5">
+        <div className="flex border border-white/10">
+          <button onClick={() => setCalRef("objectif")}
+            className={`px-4 py-1.5 text-[0.55rem] tracking-[0.15em] uppercase transition-colors ${!useTdee ? "bg-[#c9a84c]/10 text-[#c9a84c]" : "text-white/30 hover:text-white/50"}`}>
+            Objectif
+          </button>
+          <button onClick={() => setCalRef("tdee")} disabled={tdee <= 0}
+            title={tdee <= 0 ? "Profil incomplet" : "Dépense totale du jour : métabolisme + activité + sport"}
+            className={`px-4 py-1.5 text-[0.55rem] tracking-[0.15em] uppercase border-l border-white/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${useTdee ? "bg-[#7eb8a0]/10 text-[#7eb8a0]" : "text-white/30 hover:text-white/50"}`}>
+            TDEE
+          </button>
+        </div>
+      </div>
+
+      <CalorieRing consumed={totals.calories} goal={calTarget}/>
+
+      {useTdee && (
+        <p className="text-center text-[0.5rem] tracking-[0.12em] uppercase text-white/25 mt-4">
+          Métabolisme {bmrVal} · Activité {tdeeParts.neat} · Sport {tdeeParts.eat} kcal
+        </p>
+      )}
 
       <div className="flex justify-center gap-8 mt-6 mb-8">
-        {[{ label:"Objectif", val:goals.calories }, { label:"Consommé", val:totals.calories }, { label:"Restant", val:Math.max(goals.calories-totals.calories,0) }].map(s => (
+        {[{ label: useTdee ? "TDEE" : "Objectif", val:calTarget }, { label:"Consommé", val:totals.calories }, { label:"Restant", val:Math.max(calTarget-totals.calories,0) }].map(s => (
           <div key={s.label} className="text-center">
             <p style={{ fontFamily:"var(--font-bebas)" }} className="text-2xl text-white tracking-wide leading-none">{s.val}</p>
             <p className="text-[0.5rem] tracking-[0.15em] uppercase text-white/25 mt-1">{s.label}</p>
