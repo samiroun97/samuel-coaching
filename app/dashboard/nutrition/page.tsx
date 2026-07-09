@@ -8,7 +8,9 @@ type MacroKey = "proteines" | "glucides" | "lipides";
 type AIResult = { name: string; calories: number; proteines: number; glucides: number; lipides: number };
 type IdeaResult = { name: string; description: string; calories: number; proteines: number; glucides: number; lipides: number };
 type OFFProduct = { product_name: string; brands?: string; nutriments: { "energy-kcal_100g"?: number; proteins_100g?: number; carbohydrates_100g?: number; fat_100g?: number } };
-type SavedMeal = { id: string; name: string; calories: number; proteines: number; glucides: number; lipides: number };
+// base_qty/unit : produit dont les macros valent pour une quantité de base (ex. 100 ml) — la quantité est choisie à l'ajout.
+// Sans base_qty : repas à portion fixe (comportement historique).
+type SavedMeal = { id: string; name: string; calories: number; proteines: number; glucides: number; lipides: number; base_qty?: number; unit?: string };
 type DayHistory = { date: string; label: string; calories: number };
 type MealPlanItem = { id: string; meal_type: string; name: string; calories: number; proteines: number; glucides: number; lipides: number };
 type MealPlan = { id: string; name: string; notes: string | null; items: MealPlanItem[] };
@@ -253,6 +255,10 @@ export default function NutritionPage() {
   const [selected, setSelected] = useState<OFFProduct|null>(null);
   const [quantity, setQuantity] = useState("100");
   const [selectedSaved, setSelectedSaved] = useState<SavedMeal|null>(null);
+  const [savedQty,      setSavedQty]      = useState("100");
+  const [showNewProd,   setShowNewProd]   = useState(false);
+  const emptyProd = { name: "", base: "100", unit: "g", calories: "", proteines: "", glucides: "", lipides: "" };
+  const [newProd,       setNewProd]       = useState(emptyProd);
 
   const WATER_GOAL = 8;
 
@@ -477,19 +483,40 @@ export default function NutritionPage() {
     lipides:   Math.round((selected.nutriments.fat_100g??0)*factor),
   } : null;
 
-  const saveMeal = (meal: { name: string; calories: number; proteines: number; glucides: number; lipides: number }) => {
+  const saveMeal = (meal: { name: string; calories: number; proteines: number; glucides: number; lipides: number; base_qty?: number; unit?: string }) => {
     setSavedMeals(s => [...s, { id: Date.now().toString(), ...meal }]);
   };
+
+  const createProduct = () => {
+    const base = parseFloat(newProd.base.replace(",", "."));
+    if (!newProd.name.trim() || !base || base <= 0) return;
+    saveMeal({
+      name: newProd.name.trim(),
+      calories:  parseFloat(newProd.calories.replace(",", "."))  || 0,
+      proteines: parseFloat(newProd.proteines.replace(",", ".")) || 0,
+      glucides:  parseFloat(newProd.glucides.replace(",", "."))  || 0,
+      lipides:   parseFloat(newProd.lipides.replace(",", "."))   || 0,
+      base_qty: base, unit: newProd.unit,
+    });
+    setShowNewProd(false); setNewProd(emptyProd);
+  };
+
+  // Macros du produit sauvegardé, recalculées pour la quantité choisie
+  const savedFactor   = selectedSaved?.base_qty ? (parseFloat(savedQty.replace(",", ".")) || 0) / selectedSaved.base_qty : 1;
+  const savedComputed = selectedSaved ? {
+    calories:  Math.round(selectedSaved.calories  * savedFactor),
+    proteines: Math.round(selectedSaved.proteines * savedFactor),
+    glucides:  Math.round(selectedSaved.glucides  * savedFactor),
+    lipides:   Math.round(selectedSaved.lipides   * savedFactor),
+  } : null;
 
   const addFood = () => {
     if (modalMode === "ai" && aiResult) {
       setFoods(f => [...f, { id:Date.now().toString(), ...aiResult }]);
     } else if (modalMode === "search" && selected && computed) {
       setFoods(f => [...f, { id:Date.now().toString(), name:selected.product_name, ...computed }]);
-    } else if (modalMode === "saved" && selectedSaved) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { id: _sid, ...savedData } = selectedSaved;
-      setFoods(f => [...f, { id:Date.now().toString(), ...savedData }]);
+    } else if (modalMode === "saved" && selectedSaved && savedComputed) {
+      setFoods(f => [...f, { id:Date.now().toString(), name:selectedSaved.name, ...savedComputed }]);
     } else return;
     resetModal();
   };
@@ -498,6 +525,7 @@ export default function NutritionPage() {
     setShowAdd(false); setModalMode("ai");
     setDescription(""); setAiResult(null); setAiError(""); setListening(false);
     setQuery(""); setResults([]); setSelected(null); setQuantity("100"); setSelectedSaved(null);
+    setSavedQty("100"); setShowNewProd(false); setNewProd(emptyProd);
   };
 
   const syncRaw = (g: Goals) => setRawGoal({
@@ -945,7 +973,14 @@ export default function NutritionPage() {
                         ))}
                       </div>
                       <div className="flex gap-2">
-                        <button onClick={() => saveMeal({ name: selected.product_name, ...computed })} disabled={savedMeals.some(s => s.name === selected.product_name)}
+                        <button onClick={() => saveMeal({
+                            name: selected.product_name,
+                            calories:  selected.nutriments["energy-kcal_100g"] ?? 0,
+                            proteines: selected.nutriments.proteins_100g ?? 0,
+                            glucides:  selected.nutriments.carbohydrates_100g ?? 0,
+                            lipides:   selected.nutriments.fat_100g ?? 0,
+                            base_qty: 100, unit: "g",
+                          })} disabled={savedMeals.some(s => s.name === selected.product_name)}
                           className="flex-1 border border-white/10 text-white/40 text-[0.7rem] tracking-[0.15em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
                           {savedMeals.some(s => s.name === selected.product_name) ? "Déjà sauvegardé" : "Sauvegarder"}
                         </button>
@@ -961,22 +996,75 @@ export default function NutritionPage() {
               {/* ── SAVED MEALS MODE ── */}
               {modalMode === "saved" && (
                 <div className="flex flex-col gap-4">
-                  {savedMeals.length === 0 ? (
+
+                  {/* Créer un produit avec macros pour une quantité de base */}
+                  {!showNewProd ? (
+                    <button onClick={() => { setShowNewProd(true); setSelectedSaved(null); }}
+                      className="border border-dashed border-white/15 text-white/35 text-[0.6rem] tracking-[0.12em] uppercase py-2.5 hover:border-[#c9a84c]/40 hover:text-[#c9a84c]/70 transition-colors">
+                      + Créer un produit
+                    </button>
+                  ) : (
+                    <div className="border border-[#c9a84c]/20 bg-[#0f0d07] p-4 flex flex-col gap-3">
+                      <div className="flex items-center justify-between">
+                        <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c]">Nouveau produit</p>
+                        <button onClick={() => { setShowNewProd(false); setNewProd(emptyProd); }} className="text-white/25 hover:text-white/50 transition-colors">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                      </div>
+                      <div><label className={labelCls}>Nom</label><input className={inputCls} placeholder="Skyr nature, boisson protéinée…" value={newProd.name} onChange={e => setNewProd(p => ({ ...p, name: e.target.value }))}/></div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div><label className={labelCls}>Quantité de base</label><input className={inputCls} type="number" placeholder="100" value={newProd.base} onChange={e => setNewProd(p => ({ ...p, base: e.target.value }))}/></div>
+                        <div>
+                          <label className={labelCls}>Unité</label>
+                          <div className="flex gap-2">
+                            {["g", "ml"].map(u => (
+                              <button key={u} onClick={() => setNewProd(p => ({ ...p, unit: u }))}
+                                className={`flex-1 py-2.5 text-xs border transition-all ${newProd.unit === u ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/5" : "border-white/10 text-white/30 hover:border-white/20"}`}>
+                                {u}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-[0.5rem] text-white/25">Macros pour {newProd.base || "?"} {newProd.unit} :</p>
+                      <div className="grid grid-cols-4 gap-2">
+                        {([
+                          { key: "calories",  label: "Kcal", color: "text-white/40" },
+                          { key: "proteines", label: "Prot", color: "text-[#c9a84c]" },
+                          { key: "glucides",  label: "Gluc", color: "text-[#7eb8a0]" },
+                          { key: "lipides",   label: "Lip",  color: "text-[#e07070]" },
+                        ] as const).map(({ key, label, color }) => (
+                          <div key={key}>
+                            <label className={`text-[0.48rem] tracking-wider uppercase block mb-1 ${color}`}>{label}</label>
+                            <input className={inputCls} type="number" inputMode="decimal" placeholder="0" value={newProd[key]} onChange={e => setNewProd(p => ({ ...p, [key]: e.target.value }))}/>
+                          </div>
+                        ))}
+                      </div>
+                      <button onClick={createProduct} disabled={!newProd.name.trim() || !(parseFloat(newProd.base.replace(",", ".")) > 0)}
+                        className="bg-[#c9a84c] text-black text-[0.58rem] font-bold tracking-[0.18em] uppercase py-2.5 hover:bg-[#e2c97e] transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                        Enregistrer le produit →
+                      </button>
+                    </div>
+                  )}
+
+                  {savedMeals.length === 0 && !showNewProd ? (
                     <div className="text-center py-10 border border-white/5">
                       <p className="text-white/20 text-xs mb-1">Aucun repas sauvegardé</p>
-                      <p className="text-white/10 text-[0.7rem]">Utilise l&apos;IA ou la recherche et clique sur &quot;Sauvegarder&quot;</p>
+                      <p className="text-white/10 text-[0.7rem]">Crée un produit ci-dessus, ou utilise l&apos;IA / la recherche et clique sur &quot;Sauvegarder&quot;</p>
                     </div>
                   ) : (
                     <div className="flex flex-col gap-1.5">
                       {savedMeals.map(meal => (
-                        <div key={meal.id} onClick={() => setSelectedSaved(s => s?.id === meal.id ? null : meal)}
+                        <div key={meal.id} onClick={() => { setShowNewProd(false); setSelectedSaved(s => s?.id === meal.id ? null : meal); setSavedQty(String(meal.base_qty ?? "")); }}
                           className={`flex items-center justify-between px-4 py-3 border cursor-pointer transition-all ${selectedSaved?.id === meal.id ? "border-[#c9a84c] bg-[#c9a84c]/5" : "border-white/10 hover:border-white/20"}`}>
                           <div>
                             <p className="text-xs text-white/70">{meal.name}</p>
-                            <p className="text-[0.5rem] text-white/25 mt-0.5">P {meal.proteines}g · G {meal.glucides}g · L {meal.lipides}g</p>
+                            <p className="text-[0.5rem] text-white/25 mt-0.5">
+                              {meal.base_qty ? `Pour ${meal.base_qty} ${meal.unit ?? "g"} · ` : ""}P {Math.round(meal.proteines)}g · G {Math.round(meal.glucides)}g · L {Math.round(meal.lipides)}g
+                            </p>
                           </div>
                           <div className="flex items-center gap-3">
-                            <span className="text-xs text-white/40">{meal.calories} kcal</span>
+                            <span className="text-xs text-white/40">{Math.round(meal.calories)} kcal</span>
                             <button onClick={e => { e.stopPropagation(); setSavedMeals(s => s.filter(m => m.id !== meal.id)); if (selectedSaved?.id === meal.id) setSelectedSaved(null); }}
                               className="text-white/15 hover:text-[#e07070] transition-colors">
                               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -986,9 +1074,32 @@ export default function NutritionPage() {
                       ))}
                     </div>
                   )}
+
+                  {/* Quantité + macros recalculées pour les produits à quantité de base */}
+                  {selectedSaved?.base_qty && savedComputed && (
+                    <div className="border border-[#c9a84c]/20 bg-[#c9a84c]/5 p-4 flex flex-col gap-4">
+                      <div><label className={labelCls}>Quantité ({selectedSaved.unit ?? "g"})</label>
+                        <input className={inputCls} type="number" inputMode="decimal" value={savedQty} onChange={e => setSavedQty(e.target.value)}/>
+                      </div>
+                      <div className="grid grid-cols-4 gap-2">
+                        {[
+                          { label:"Calories",  val:savedComputed.calories,  color:"text-white/60" },
+                          { label:"Protéines", val:savedComputed.proteines, color:"text-[#c9a84c]" },
+                          { label:"Glucides",  val:savedComputed.glucides,  color:"text-[#7eb8a0]" },
+                          { label:"Lipides",   val:savedComputed.lipides,   color:"text-[#e07070]" },
+                        ].map(s => (
+                          <div key={s.label} className="text-center bg-[#0a0a0a] border border-white/10 py-3">
+                            <p style={{ fontFamily:"var(--font-bebas)" }} className={`text-xl tracking-wide ${s.color}`}>{s.val}</p>
+                            <p className="text-[0.45rem] text-white/20 mt-0.5">{s.label}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {selectedSaved && (
                     <button onClick={addFood} className="bg-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] transition-colors">
-                      Ajouter &quot;{selectedSaved.name}&quot; au journal →
+                      Ajouter &quot;{selectedSaved.name}&quot;{selectedSaved.base_qty ? ` (${savedQty || 0} ${selectedSaved.unit ?? "g"})` : ""} au journal →
                     </button>
                   )}
                 </div>
