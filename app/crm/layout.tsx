@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { startStateSync } from "@/lib/syncStorage";
 
 const SAMUEL_EMAIL = "sam97waelti@gmail.com";
 
@@ -33,6 +34,9 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user || user.email !== SAMUEL_EMAIL) { router.push("/login"); return; }
+
+      // Sync multi-appareils (conversations traitées, etc.)
+      await startStateSync(user.id);
 
       // Count conversations where last message is from client (not Samuel)
       const { data: msgs } = await supabase.from("messages").select("from_email,to_email,created_at").order("created_at", { ascending: true });

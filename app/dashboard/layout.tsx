@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { startStateSync } from "@/lib/syncStorage";
 
 const SAMUEL_EMAIL = "sam97waelti@gmail.com";
 
@@ -79,6 +80,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           .from("profiles").select("prenom").eq("id", data.user.id).single();
         if (!profile?.prenom) { router.push("/dashboard/onboarding"); return; }
       }
+
+      // Sync multi-appareils : rapatrier l'état du compte avant d'afficher les pages
+      await startStateSync(data.user.id);
 
       // Vérifier messages non lus (pour clients, pas pour Samuel)
       if (email !== SAMUEL_EMAIL) {
