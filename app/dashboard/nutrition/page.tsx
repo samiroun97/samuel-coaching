@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
+import { apiPost } from "@/lib/apiClient";
 
 type Food  = { id: string; name: string; calories: number; proteines: number; glucides: number; lipides: number; repas?: string };
 type Goals = { calories: number; proteines: number; glucides: number; lipides: number };
@@ -352,10 +353,7 @@ export default function NutritionPage() {
   const generateIdeas = async () => {
     setIdeaLoading(true); setIdeaError(""); setIdeas([]);
     try {
-      const res = await fetch("/api/nutrition/meal-idea", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ remaining }),
-      });
+      const res = await apiPost("/api/nutrition/meal-idea", { remaining });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setIdeas(data.ideas ?? []);
@@ -385,7 +383,7 @@ export default function NutritionPage() {
     if (!description.trim()) return;
     setAnalyzing(true); setAiError(""); setAiResult(null);
     try {
-      const res = await fetch("/api/nutrition/analyze", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ type:"text", text:description }) });
+      const res = await apiPost("/api/nutrition/analyze", { type: "text", text: description });
       if (!res.ok) { const t = await res.text(); throw new Error(t || `Erreur ${res.status}`); }
       const data = await res.json();
       if (data.error) throw new Error(data.error);
@@ -394,13 +392,28 @@ export default function NutritionPage() {
     setAnalyzing(false);
   };
 
+  const compressImage = (dataUrl: string): Promise<string> =>
+    new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(800 / img.width, 800 / img.height, 1);
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.floor(img.width * scale);
+        canvas.height = Math.floor(img.height * scale);
+        canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", 0.65));
+      };
+      img.src = dataUrl;
+    });
+
   const analyzePhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return;
     setAnalyzing(true); setAiError(""); setAiResult(null); setDescription("Photo analysée par l'IA");
     const reader = new FileReader();
     reader.onloadend = async () => {
       try {
-        const res = await fetch("/api/nutrition/analyze", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ type:"photo", image:reader.result }) });
+        const compressed = await compressImage(reader.result as string);
+        const res = await apiPost("/api/nutrition/analyze", { type: "photo", image: compressed });
         if (!res.ok) { const t = await res.text(); throw new Error(t || `Erreur ${res.status}`); }
         const data = await res.json();
         if (data.error) throw new Error(data.error);

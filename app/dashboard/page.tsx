@@ -26,7 +26,7 @@ function bmr(p: Profile, bodyFatPct: number | null): number {
   return Math.round(p.sexe === "Femme" ? base - 161 : base + 5);
 }
 
-function CalRing({ consumed, tdee }: { consumed: number; tdee: number }) {
+function CalRing({ consumed, tdee, label = "TDEE" }: { consumed: number; tdee: number; label?: string }) {
   const r = 90, circ = 2 * Math.PI * r;
   const pct     = tdee > 0 ? Math.min(consumed / tdee, 1.3) : 0;
   const over    = consumed > tdee;
@@ -48,7 +48,7 @@ function CalRing({ consumed, tdee }: { consumed: number; tdee: number }) {
         <p className="text-[0.42rem] tracking-[0.2em] uppercase text-white/30 mt-1">kcal consommés</p>
         <div className="w-8 h-px bg-white/10 my-2"/>
         <p style={{ fontFamily: "var(--font-bebas)", color }} className="text-lg tracking-wide leading-none">{tdee.toLocaleString("fr-FR")}</p>
-        <p className="text-[0.4rem] tracking-[0.18em] uppercase mt-0.5" style={{ color: "rgba(255,255,255,0.25)" }}>TDEE</p>
+        <p className="text-[0.4rem] tracking-[0.18em] uppercase mt-0.5" style={{ color: "rgba(255,255,255,0.25)" }}>{label}</p>
         {consumed > 0 && (
           <p className="text-[0.45rem] font-bold tracking-wider mt-1.5" style={{ color }}>
             {over ? "+" : ""}{balance.toLocaleString("fr-FR")} kcal
@@ -92,6 +92,7 @@ export default function AccueilPage() {
   const [weightSaving, setWeightSaving] = useState(false);
   const [weightSaved,  setWeightSaved]  = useState(false);
   const [daysSinceBF,  setDaysSinceBF]  = useState<number | null>(null);
+  const [calView,      setCalView]      = useState<"tdee" | "goal">("tdee");
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
@@ -201,7 +202,8 @@ export default function AccueilPage() {
 
   const bmrVal     = bmr(profile, bodyFat);
   const tdee       = bmrVal + neat + eat;
-  const balance    = consumed.calories - tdee;
+  const refCal     = calView === "goal" ? goals.calories : tdee;
+  const balance    = consumed.calories - refCal;
   const surplus    = balance > 0;
   const isMaint    = Math.abs(balance) <= 100;
   const bannerColor = isMaint ? "#c9a84c" : surplus ? "#e07070" : "#7eb8a0";
@@ -260,52 +262,94 @@ export default function AccueilPage() {
 {/* ── CICO Hero ── */}
       <div className="border border-white/10 bg-[#111] p-6 mb-4">
         <div className="flex items-center justify-between mb-6">
-          <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Bilan calorique du jour</p>
-          <Link href="/dashboard/nutrition" className="text-[0.5rem] tracking-[0.15em] uppercase text-white/30 hover:text-[#c9a84c] transition-colors">
-            Gérer →
+          <Link href="/dashboard/nutrition" className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] hover:text-[#e2c97e] transition-colors">
+            Bilan calorique du jour
           </Link>
         </div>
         <div className="flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-8">
 
           {/* Ring */}
           <div className="shrink-0 flex justify-center">
-            <CalRing consumed={consumed.calories} tdee={tdee}/>
+            <CalRing consumed={consumed.calories} tdee={refCal} label={calView === "goal" ? "Objectif" : "TDEE"}/>
           </div>
 
-          {/* TDEE breakdown + macros */}
+          {/* Right panel */}
           <div className="flex-1 min-w-0 w-full sm:w-auto">
 
-            {/* TDEE breakdown */}
-            <div className="mb-5">
-              <p className="text-[0.5rem] tracking-[0.18em] uppercase text-white/20 mb-3">Dépense totale (TDEE)</p>
-              <div className="flex flex-col gap-2">
-                {[
-                  { label: "BMR",  val: bmrVal, desc: "Métabolisme de base",   color: "#c9a84c" },
-                  { label: "NEAT", val: neat,   desc: "Activité quotidienne",  color: "#7eb8a0" },
-                  { label: "EAT",  val: eat,    desc: "Entraînement",          color: "#a08ec9" },
-                ].map(row => (
-                  <div key={row.label} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-1 h-5" style={{ backgroundColor: row.color }}/>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-sm tracking-[0.12em] uppercase font-bold" style={{ color: row.color }}>{row.label}</span>
-                        <span className="text-[0.5rem] text-white/30">{row.desc}</span>
+            {/* Toggle vue */}
+            <div className="flex gap-1.5 mb-4">
+              {([["tdee", "TDEE"], ["goal", "Objectif"]] as const).map(([key, label]) => (
+                <button key={key} onClick={() => setCalView(key)}
+                  className={`px-3 py-1.5 text-[0.5rem] tracking-[0.12em] uppercase border transition-all ${calView === key ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10" : "border-white/10 text-white/30 hover:border-white/20 hover:text-white/50"}`}>
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {calView === "tdee" ? (
+              /* ── Vue TDEE ── */
+              <div className="mb-5">
+                <Link href="/dashboard/programme" className="text-[0.5rem] tracking-[0.18em] uppercase text-white/20 hover:text-white/40 transition-colors mb-3 block">Dépense totale (TDEE)</Link>
+                <div className="flex flex-col gap-2">
+                  {[
+                    { label: "BMR",  val: bmrVal, desc: "Métabolisme de base",   color: "#c9a84c" },
+                    { label: "NEAT", val: neat,   desc: "Activité quotidienne",  color: "#7eb8a0" },
+                    { label: "EAT",  val: eat,    desc: "Entraînement",          color: "#a08ec9" },
+                  ].map(row => (
+                    <div key={row.label} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1 h-5" style={{ backgroundColor: row.color }}/>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-sm tracking-[0.12em] uppercase font-bold" style={{ color: row.color }}>{row.label}</span>
+                          <span className="text-[0.5rem] text-white/30">{row.desc}</span>
+                        </div>
                       </div>
+                      <span style={{ fontFamily: "var(--font-bebas)" }} className="text-xl text-white/70 tracking-wide">{row.val.toLocaleString("fr-FR")}</span>
                     </div>
-                    <span style={{ fontFamily: "var(--font-bebas)" }} className="text-xl text-white/70 tracking-wide">{row.val.toLocaleString("fr-FR")}</span>
-                  </div>
-                ))}
-                <div className="border-t border-white/5 pt-2 flex items-center justify-between mt-1">
-                  <div className="flex items-center gap-3">
+                  ))}
+                  <div className="border-t border-white/5 pt-2 flex items-center justify-between mt-1">
                     <span className="text-[0.5rem] tracking-[0.15em] uppercase text-white/40">Total TDEE</span>
-                    <Link href="/dashboard/nutrition" className="text-[0.45rem] tracking-[0.1em] uppercase text-[#c9a84c]/50 hover:text-[#c9a84c] transition-colors border border-[#c9a84c]/20 px-1.5 py-0.5">
-                      Modifier →
-                    </Link>
+                    <span style={{ fontFamily: "var(--font-bebas)" }} className="text-xl text-white tracking-wide">{tdee.toLocaleString("fr-FR")} <span className="text-sm text-white/30">kcal</span></span>
                   </div>
-                  <span style={{ fontFamily: "var(--font-bebas)" }} className="text-xl text-white tracking-wide">{tdee.toLocaleString("fr-FR")} <span className="text-sm text-white/30">kcal</span></span>
                 </div>
               </div>
-            </div>
+            ) : (
+              /* ── Vue Objectif ── */
+              <div className="mb-5">
+                <p className="text-[0.5rem] tracking-[0.18em] uppercase text-white/20 mb-3">Calories · objectif vs consommé</p>
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1 h-5 bg-[#c9a84c]"/>
+                      <span className="text-[0.5rem] text-white/30">Objectif journalier</span>
+                    </div>
+                    <span style={{ fontFamily: "var(--font-bebas)" }} className="text-xl text-white/70 tracking-wide">{goals.calories.toLocaleString("fr-FR")}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1 h-5" style={{ backgroundColor: consumed.calories > goals.calories ? "#e07070" : "#7eb8a0" }}/>
+                      <span className="text-[0.5rem] text-white/30">Consommés aujourd&apos;hui</span>
+                    </div>
+                    <span style={{ fontFamily: "var(--font-bebas)" }} className="text-xl text-white/70 tracking-wide">{consumed.calories.toLocaleString("fr-FR")}</span>
+                  </div>
+                  <div className="mt-1 h-1 bg-white/5 rounded-full overflow-hidden">
+                    <div className="h-full rounded-full transition-all duration-500"
+                      style={{
+                        width: `${Math.min(goals.calories > 0 ? (consumed.calories / goals.calories) * 100 : 0, 100)}%`,
+                        backgroundColor: consumed.calories > goals.calories ? "#e07070" : "#7eb8a0",
+                      }}/>
+                  </div>
+                  <div className="border-t border-white/5 pt-2 flex items-center justify-between mt-1">
+                    <span className="text-[0.5rem] tracking-[0.15em] uppercase text-white/40">
+                      {consumed.calories > goals.calories ? "Surplus" : "Restant"}
+                    </span>
+                    <span style={{ fontFamily: "var(--font-bebas)" }} className={`text-xl tracking-wide ${consumed.calories > goals.calories ? "text-[#e07070]" : "text-[#7eb8a0]"}`}>
+                      {Math.abs(goals.calories - consumed.calories).toLocaleString("fr-FR")} <span className="text-sm text-white/30">kcal</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Macros */}
             <div className="flex flex-col gap-2.5">
@@ -317,7 +361,7 @@ export default function AccueilPage() {
         </div>
 
         {/* Balance banner */}
-        {tdee > 0 && (
+        {refCal > 0 && (
           <div className="mt-5 px-4 py-2.5 border flex items-center justify-between"
             style={{ borderColor: `${bannerColor}25`, backgroundColor: `${bannerColor}08` }}>
             <span className="text-[0.7rem] tracking-[0.15em] uppercase" style={{ color: bannerColor }}>{bannerLabel}</span>

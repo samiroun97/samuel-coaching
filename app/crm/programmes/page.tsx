@@ -2,6 +2,7 @@
 export const dynamic = "force-dynamic";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { apiPost } from "@/lib/apiClient";
 
 const SEANCE_TYPES = ["Haut du corps","Bas du corps","Full body","Cardio","Boxe","Natation","CrossFit","Yoga","Autre"];
 
@@ -57,10 +58,7 @@ export default function ProgrammesPage() {
     if (!selected || generating) return;
     setGenerating(true); setGenError("");
     try {
-      const res = await fetch("/api/programme/generate", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ profile: selected }),
-      });
+      const res = await apiPost("/api/programme/generate", { profile: selected });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Erreur génération");
       setDrafts((data.seances as SeanceDraft[]).map(s => ({ ...emptySeance(), ...s })));

@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
+import { apiPost } from "@/lib/apiClient";
 
 const SAMUEL_EMAIL = "sam97waelti@gmail.com";
 
@@ -19,19 +20,17 @@ const SLOTS = [
   { key: "jambe_arriere", label: "Jambe arrière" },
 ];
 
-const resizeImage = (dataUrl: string, maxW = 900, maxH = 1400): Promise<string> =>
+const resizeImage = (dataUrl: string, maxW = 512, maxH = 768): Promise<string> =>
   new Promise(resolve => {
     const img = new Image();
     img.onload = () => {
       let { width, height } = img;
-      if (width > maxW || height > maxH) {
-        const scale = Math.min(maxW / width, maxH / height);
-        width = Math.floor(width * scale); height = Math.floor(height * scale);
-      }
+      const scale = Math.min(maxW / width, maxH / height, 1);
+      width = Math.floor(width * scale); height = Math.floor(height * scale);
       const canvas = document.createElement("canvas");
       canvas.width = width; canvas.height = height;
       canvas.getContext("2d")!.drawImage(img, 0, 0, width, height);
-      resolve(canvas.toDataURL("image/jpeg", 0.82));
+      resolve(canvas.toDataURL("image/jpeg", 0.55));
     };
     img.src = dataUrl;
   });
@@ -152,10 +151,7 @@ export default function SuiviPage() {
     if (photoCount === 0) { setError("Ajoute au moins une photo."); return; }
     setEstimating(true); setError(""); setResult(null);
     try {
-      const res = await fetch("/api/suivi/bodyfat", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ photos: Object.values(photos), profile }),
-      });
+      const res = await apiPost("/api/suivi/bodyfat", { photos: Object.values(photos), profile });
       if (!res.ok) throw new Error(await res.text() || `Erreur ${res.status}`);
       const data = await res.json();
       if (data.error) throw new Error(data.error);
@@ -240,19 +236,7 @@ export default function SuiviPage() {
     setEditingBFDate(null);
   };
 
-  const wChartData  = [...weightHist].reverse().slice(-12);
   const bfChartData = [...bfHist].reverse().slice(-10);
-
-  const recapRows = (() => {
-    const map = new Map<string, { date: string; weight?: number; bf?: number }>();
-    weightHist.slice(0, 10).forEach(e => { map.set(e.date, { date: e.date, weight: e.weight }); });
-    bfHist.slice(0, 10).forEach(e => {
-      const d = e.date.split("T")[0];
-      const ex = map.get(d);
-      map.set(d, { date: d, weight: ex?.weight, bf: e.body_fat });
-    });
-    return [...map.values()].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 12);
-  })();
 
   return (
     <div className="p-4 sm:p-8 max-w-2xl">
@@ -347,13 +331,18 @@ export default function SuiviPage() {
 
         {/* Encadré explicatif */}
         <div className="border-t border-white/5 px-5 py-4 bg-[#0a0a0a]/60">
-          <p className="text-[0.55rem] tracking-[0.15em] uppercase text-white/30 mb-2">Pourquoi c'est important ?</p>
-          <p className="text-[0.65rem] text-white/35 leading-relaxed">
-            Connaître ton taux de masse grasse permet de calculer ta masse maigre réelle, et donc d'affiner ton BMR via la formule{" "}
-            <span className="text-[#c9a84c]/70">Katch-McArdle</span> — bien plus précise que les estimations classiques basées uniquement sur le poids.
-            Deux personnes au même poids peuvent avoir des métabolismes très différents. Suivre cette évolution toutes les 2 semaines révèle si tu perds
-            du gras, prends du muscle, ou les deux — indépendamment de la balance.
-          </p>
+          <p className="text-[0.55rem] tracking-[0.15em] uppercase text-white/30 mb-3">Pourquoi suivre ton taux de masse grasse plutôt que juste ton poids ?</p>
+          <div className="flex flex-col gap-2.5">
+            <p className="text-[0.65rem] text-white/35 leading-relaxed">
+              Ta balance ne te dit qu&apos;un chiffre : ton poids total. Mais deux personnes qui pèsent 70 kg peuvent avoir un corps complètement différent — l&apos;une avec plus de muscle, l&apos;autre avec plus de gras. Résultat : leur corps ne brûle pas les mêmes calories au quotidien, même à poids égal.
+            </p>
+            <p className="text-[0.65rem] text-white/35 leading-relaxed">
+              En connaissant ton taux de masse grasse, on peut calculer précisément combien de calories ton corps brûle au repos (ton métabolisme de base) — de façon bien plus juste qu&apos;avec le poids seul.
+            </p>
+            <p className="text-[0.65rem] text-white/35 leading-relaxed">
+              C&apos;est aussi le meilleur moyen de savoir si tu progresses vraiment. Si tu perds du gras et prends du muscle en même temps, ton poids sur la balance peut rester identique... alors que ton corps change complètement. En suivant ton taux de masse grasse toutes les 2 semaines, tu vois ta vraie évolution même quand le chiffre sur la balance ne bouge pas.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -482,66 +471,11 @@ export default function SuiviPage() {
         </div>
       )}
 
-      {/* ── Graphiques évolution ── */}
-      {(wChartData.length > 1 || bfChartData.length > 1) && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-          {wChartData.length > 1 && (
-            <div className="border border-white/10 bg-[#111] p-4">
-              <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-3">Évolution poids</p>
-              <LineChart data={wChartData.map(e => ({ id: e.id, date: e.date + "T12:00:00", val: e.weight }))} unit="kg" color="#F3F4F6"/>
-            </div>
-          )}
-          {bfChartData.length > 1 && (
-            <div className="border border-white/10 bg-[#111] p-4">
-              <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-3">Évolution body fat</p>
-              <LineChart data={bfChartData.map(e => ({ id: e.id, date: e.date, val: e.body_fat }))} unit="%" color="#c9a84c"/>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── Tableau récap ── */}
-      {recapRows.length > 0 && (
-        <div className="border border-white/10 bg-[#111] mb-4">
-          <div className="px-5 py-3 border-b border-white/5">
-            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-white">Tableau de progression</p>
-          </div>
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-white/5">
-                <th className="text-left px-5 py-2 text-[0.45rem] tracking-[0.18em] uppercase text-white/25 font-normal">Date</th>
-                <th className="text-right px-4 py-2 text-[0.45rem] tracking-[0.18em] uppercase text-[#F3F4F6]/50 font-normal">Poids</th>
-                <th className="text-right px-4 py-2 text-[0.45rem] tracking-[0.18em] uppercase text-[#c9a84c]/60 font-normal">Body fat</th>
-                <th className="text-right px-5 py-2 text-[0.45rem] tracking-[0.18em] uppercase text-white/20 font-normal">Δ Poids</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recapRows.map((row, i) => {
-                const prev   = recapRows[i + 1];
-                const deltaW = prev?.weight && row.weight ? +(row.weight - prev.weight).toFixed(1) : null;
-                return (
-                  <tr key={row.date} className="border-b border-white/5 last:border-0">
-                    <td className="px-5 py-3 text-[0.55rem] text-white/40 capitalize">
-                      {new Date(row.date + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      {row.weight ? <span className="text-sm text-white/70 font-medium">{row.weight} <span className="text-[0.45rem] text-white/25">kg</span></span> : <span className="text-white/15 text-xs">—</span>}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      {row.bf ? <span className="text-sm text-[#c9a84c]/80 font-medium">{row.bf} <span className="text-[0.45rem] text-[#c9a84c]/40">%</span></span> : <span className="text-white/15 text-xs">—</span>}
-                    </td>
-                    <td className="px-5 py-3 text-right">
-                      {deltaW !== null ? (
-                        <span className={`text-[0.5rem] font-bold tracking-wider ${deltaW < 0 ? "text-[#7eb8a0]" : deltaW > 0 ? "text-[#e07070]" : "text-white/20"}`}>
-                          {deltaW > 0 ? "+" : ""}{deltaW} kg
-                        </span>
-                      ) : <span className="text-white/15 text-xs">—</span>}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+      {/* ── Graphique évolution body fat ── */}
+      {bfChartData.length > 1 && (
+        <div className="border border-white/10 bg-[#111] p-4 mb-4">
+          <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-3">Évolution body fat</p>
+          <LineChart data={bfChartData.map(e => ({ id: e.id, date: e.date, val: e.body_fat }))} unit="%" color="#c9a84c" glow/>
         </div>
       )}
 
@@ -663,9 +597,9 @@ function FeedbackRow({ color, label, text }: { color: string; label: string; tex
   );
 }
 
-function LineChart({ data, unit, color }: { data: { id: string; date: string; val: number }[]; unit: string; color: string }) {
-  const W = 400, H = 110;
-  const PAD = { top: 10, right: 10, bottom: 28, left: 32 };
+function LineChart({ data, unit, color, glow }: { data: { id: string; date: string; val: number }[]; unit: string; color: string; glow?: boolean }) {
+  const W = 400, H = 120;
+  const PAD = { top: 14, right: 14, bottom: 28, left: 32 };
   const vals = data.map(d => d.val);
   const minV = Math.max(0, Math.min(...vals) - (unit === "%" ? 2 : 1));
   const maxV = Math.max(...vals) + (unit === "%" ? 2 : 1);
@@ -674,9 +608,18 @@ function LineChart({ data, unit, color }: { data: { id: string; date: string; va
   const toX = (i: number) => PAD.left + (data.length > 1 ? (i / (data.length - 1)) * innerW : innerW / 2);
   const toY = (v: number) => PAD.top + (1 - (v - minV) / (maxV - minV)) * innerH;
   const pts = data.map((d, i) => `${toX(i)},${toY(d.val)}`).join(" ");
+  const filterId = `glow-${color.replace("#", "")}`;
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: 110 }}>
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: 120 }}>
+      {glow && (
+        <defs>
+          <filter id={filterId} x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="4" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+      )}
       {[0, 0.5, 1].map(t => {
         const y = PAD.top + t * innerH;
         const v = maxV - t * (maxV - minV);
@@ -687,11 +630,13 @@ function LineChart({ data, unit, color }: { data: { id: string; date: string; va
           </g>
         );
       })}
-      <polygon points={`${toX(0)},${H - PAD.bottom} ${pts} ${toX(data.length - 1)},${H - PAD.bottom}`} fill={`${color}12`}/>
-      <polyline points={pts} fill="none" stroke={color} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round"/>
+      <polygon points={`${toX(0)},${H - PAD.bottom} ${pts} ${toX(data.length - 1)},${H - PAD.bottom}`} fill={`${color}18`}/>
+      {glow && <polyline points={pts} fill="none" stroke={color} strokeWidth="4" strokeLinejoin="round" strokeLinecap="round" opacity="0.25"/>}
+      <polyline points={pts} fill="none" stroke={color} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" filter={glow ? `url(#${filterId})` : undefined}/>
       {data.map((d, i) => (
         <g key={d.id}>
-          <circle cx={toX(i)} cy={toY(d.val)} r="3" fill={color}/>
+          {glow && <circle cx={toX(i)} cy={toY(d.val)} r="7" fill={color} opacity="0.15"/>}
+          <circle cx={toX(i)} cy={toY(d.val)} r="3" fill={color} filter={glow ? `url(#${filterId})` : undefined}/>
           <text x={toX(i)} y={H - PAD.bottom + 11} textAnchor="middle" fill="rgba(255,255,255,0.2)" fontSize="6">
             {new Date(d.date).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
           </text>

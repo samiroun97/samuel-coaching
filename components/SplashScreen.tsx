@@ -7,17 +7,21 @@ export default function SplashScreen() {
   const [fading, setFading] = useState(false);
 
   useEffect(() => {
+    // Ne bloquer la page qu'à la première visite de la session :
+    // un visiteur qui navigue ou revient ne doit pas revoir le splash.
+    if (sessionStorage.getItem("splash_seen")) { setHidden(true); return; }
+    sessionStorage.setItem("splash_seen", "1");
     const interval = setInterval(() => {
       setProgress((p) => {
         if (p >= 100) {
           clearInterval(interval);
           setFading(true);
-          setTimeout(() => setHidden(true), 700);
+          setTimeout(() => setHidden(true), 500);
           return 100;
         }
-        return p + 1.8;
+        return p + 4;
       });
-    }, 35);
+    }, 20);
     return () => clearInterval(interval);
   }, []);
 

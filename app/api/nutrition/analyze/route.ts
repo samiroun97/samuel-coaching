@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import { requireUser } from "@/lib/apiAuth";
 
 const PROMPT = `Tu es un nutritionniste expert. Analyse ce repas et retourne UNIQUEMENT un objet JSON valide, sans markdown, sans texte avant ni après, sans balises code :
 {"name":"Nom court du plat","calories":450,"proteines":35,"glucides":40,"lipides":15}
@@ -7,6 +8,8 @@ Toutes les valeurs sont des entiers. Estime des portions raisonnables si non pr�
 
 export async function POST(req: NextRequest) {
   try {
+    if (!(await requireUser(req))) return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
       return NextResponse.json({ error: "Clé API manquante" }, { status: 500 });

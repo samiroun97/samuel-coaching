@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { apiPost } from "@/lib/apiClient";
 
 const SAMUEL_EMAIL = "sam97waelti@gmail.com";
 
@@ -73,10 +74,7 @@ export default function CoachPage() {
     setAiInput("");
     setAiLoading(true);
     try {
-      const res = await fetch("/api/coach", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: history }),
-      });
+      const res = await apiPost("/api/coach", { messages: history });
       const data = await res.json();
       setAiMessages(prev => [...prev, { role: "assistant", content: data.error ? `Erreur : ${data.error}` : data.text }]);
     } catch {

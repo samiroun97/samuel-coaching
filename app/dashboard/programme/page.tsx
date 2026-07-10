@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
+import { apiPost } from "@/lib/apiClient";
 
 type Profile = { poids: number; taille: number; age: number; sexe: string };
 type LoggedWorkout = {
@@ -17,6 +18,13 @@ const DURATIONS = [
   { label: "1h",     min: 60 }, { label: "1h15",   min: 75 }, { label: "1h30",   min: 90 },
   { label: "2h",     min: 120 },
 ];
+
+const INTENSITIES = [
+  { label: "Faible",  key: "faible",  mult: 0.55 },
+  { label: "Modérée", key: "moderee", mult: 0.75 },
+  { label: "Haute",   key: "haute",   mult: 1.1  },
+] as const;
+type IntensityKey = "faible" | "moderee" | "haute";
 
 const todayStr = () => new Date().toISOString().split("T")[0];
 
@@ -80,6 +88,7 @@ export default function ProgrammePage() {
   const [estimating,  setEstimating]  = useState(false);
   const [calResult,   setCalResult]   = useState<{ calories_brulees: number; note: string } | null>(null);
   const [calError,    setCalError]    = useState("");
+  const [intensity,   setIntensity]   = useState<IntensityKey>("haute");
   const recognitionRef = useRef<{ start(): void; stop(): void } | null>(null);
 
   useEffect(() => {
@@ -132,10 +141,7 @@ export default function ProgrammePage() {
     if (!activity.trim() || !durationMin) return;
     setEstimating(true); setCalError(""); setCalResult(null);
     try {
-      const res = await fetch("/api/programme/calories", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ activity, duration_minutes: durationMin, description, profile }),
-      });
+      const res = await apiPost("/api/programme/calories", { activity, duration_minutes: durationMin, description, profile });
       if (!res.ok) { const t = await res.text(); throw new Error(t || `Erreur ${res.status}`); }
       const data = await res.json();
       if (data.error) throw new Error(data.error);
@@ -150,8 +156,8 @@ export default function ProgrammePage() {
       id: Date.now().toString(),
       date: new Date(selectedDate + "T12:00:00").toISOString(),
       activity, duration_minutes: durationMin, description,
-      calories_burned: calResult.calories_brulees,
-      note: calResult.note,
+      calories_burned: adjustedCal,
+      note: calResult.note + (intensity !== "haute" ? ` · intensité ${intensity}` : ""),
     };
     const next = [entry, ...workouts].slice(0, 50);
     setWorkouts(next);
@@ -159,7 +165,7 @@ export default function ProgrammePage() {
 
     // Historique perfs par activité
     const key = activity.trim().toLowerCase();
-    const rec: PerfRecord = { date: entry.date, calories: calResult.calories_brulees, duration: durationMin, description };
+    const rec: PerfRecord = { date: entry.date, calories: adjustedCal, duration: durationMin, description };
     const prevPerf = perfHistory[key] ?? [];
     const newPerf = { ...perfHistory, [key]: [rec, ...prevPerf].slice(0, 5) };
     setPerfHistory(newPerf);
@@ -189,6 +195,9 @@ export default function ProgrammePage() {
   const lastPerf = activity.trim()
     ? (perfHistory[activity.trim().toLowerCase()]?.[0] ?? null)
     : null;
+
+  const intensityMult = INTENSITIES.find(i => i.key === intensity)?.mult ?? 1;
+  const adjustedCal   = calResult ? Math.round(calResult.calories_brulees * intensityMult) : 0;
 
   const chip = (active: boolean) =>
     `px-3 py-2 text-[0.6rem] tracking-[0.1em] uppercase border cursor-pointer transition-all ${active ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10" : "border-white/10 text-white/40 hover:border-white/30 hover:text-white/60"}`;
@@ -344,6 +353,15 @@ export default function ProgrammePage() {
         </div>
       </div>
 
+      {/* ── Explication pas ── */}
+      <div className="border-t border-white/5 px-5 py-4 bg-[#0a0a0a]/60 mb-6">
+        <p className="text-[0.55rem] tracking-[0.15em] uppercase text-white/30 mb-3">Pourquoi suivre tes pas est aussi important que tes séances</p>
+        <div className="flex flex-col gap-2.5">
+          <p className="text-[0.65rem] text-white/35 leading-relaxed">On pense souvent que seule la séance de sport compte pour brûler des calories. Mais ce que tu fais en dehors de l&apos;entraînement, marcher, monter des escaliers, bouger dans la journée peut représenter une dépense calorique encore plus grande que ta séance elle-même.</p>
+          <p className="text-[0.65rem] text-white/35 leading-relaxed">Une journée où tu marches peu, même si ton entraînement était intense, peut au final brûler moins de calories qu&apos;une journée où tu t&apos;es beaucoup déplacé, même sans sport. C&apos;est pour ça que suivre tes pas n&apos;est pas un détail : c&apos;est une vraie pièce du puzzle qui influence directement tes résultats, au même titre que tes séances.</p>
+        </div>
+      </div>
+
       {/* ── Formulaire séance ── */}
       <div className="border border-white/10 bg-[#111] p-6 mb-6 flex flex-col gap-5">
         <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Enregistrer une séance</p>
@@ -378,6 +396,17 @@ export default function ProgrammePage() {
         </div>
 
         <div>
+          <label className="text-[0.7rem] tracking-[0.2em] uppercase text-white/40 block mb-2">Intensité</label>
+          <div className="flex gap-2">
+            {INTENSITIES.map(i => (
+              <button key={i.key} onClick={() => setIntensity(i.key)} className={chip(intensity === i.key)}>
+                {i.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
           <label className="text-[0.7rem] tracking-[0.2em] uppercase text-white/40 block mb-1.5">
             Décris ta séance <span className="text-white/20">(optionnel)</span>
           </label>
@@ -402,12 +431,22 @@ export default function ProgrammePage() {
         {calResult ? (
           <div className="flex flex-col gap-3">
             <div className="border border-[#c9a84c]/20 bg-[#c9a84c]/5 p-4 flex items-center justify-between">
-              <div>
-                <p className="text-[0.5rem] tracking-[0.15em] uppercase text-[#c9a84c] mb-1">Estimation IA</p>
+              <div className="flex-1 min-w-0 mr-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <p className="text-[0.5rem] tracking-[0.15em] uppercase text-[#c9a84c]">Estimation IA</p>
+                  {intensity !== "haute" && (
+                    <span className="text-[0.42rem] tracking-[0.1em] uppercase border border-white/15 text-white/30 px-1.5 py-0.5">
+                      intensité {intensity} · ×{intensityMult}
+                    </span>
+                  )}
+                </div>
                 <p className="text-[0.7rem] text-white/40 italic">{calResult.note}</p>
+                {intensity !== "haute" && (
+                  <p className="text-[0.5rem] text-white/20 mt-1">Base haute intensité : {calResult.calories_brulees} kcal</p>
+                )}
               </div>
-              <div className="text-right">
-                <p style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-white tracking-wide leading-none">{calResult.calories_brulees}</p>
+              <div className="text-right shrink-0">
+                <p style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-white tracking-wide leading-none">{adjustedCal}</p>
                 <p className="text-[0.45rem] tracking-[0.15em] uppercase text-white/30">kcal</p>
               </div>
             </div>
