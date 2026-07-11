@@ -45,13 +45,25 @@ function DateNav({ date, onChange }: { date: string; onChange: (d: string) => vo
     onChange(d.toISOString().split("T")[0]);
   };
   const label = isToday ? "Aujourd'hui" : new Date(date + "T12:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+  const dateInputRef = useRef<HTMLInputElement>(null);
+  const openPicker = () => {
+    const input = dateInputRef.current;
+    if (!input) return;
+    if (typeof input.showPicker === "function") {
+      try { input.showPicker(); } catch { input.focus(); input.click(); }
+    } else {
+      input.focus();
+      input.click();
+    }
+  };
   return (
     <div className="flex items-center gap-2 mb-6">
       <button onClick={() => move(-1)} className="w-7 h-7 border border-white/10 text-white/40 hover:text-white/60 hover:border-white/20 transition-colors flex items-center justify-center shrink-0">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
-      <div className="flex-1 relative flex items-center justify-center gap-1.5 cursor-pointer group">
+      <div className="flex-1 relative flex items-center justify-center gap-1.5 cursor-pointer group" onClick={openPicker}>
         <input
+          ref={dateInputRef}
           type="date" value={date} max={todayD}
           onChange={e => { if (e.target.value) onChange(e.target.value); }}
           className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"

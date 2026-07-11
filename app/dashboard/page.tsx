@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
@@ -81,20 +81,32 @@ type BFEntry     = { id: string; date: string; body_fat: number };
 function DateNav({ date, onChange }: { date: string; onChange: (d: string) => void }) {
   const todayD  = new Date().toISOString().split("T")[0];
   const isToday = date === todayD;
+  const dateInputRef = useRef<HTMLInputElement>(null);
   const go = (n: number) => {
     const d = new Date(date + "T12:00:00");
     d.setDate(d.getDate() + n);
     onChange(d.toISOString().split("T")[0]);
   };
+  const openPicker = () => {
+    const input = dateInputRef.current;
+    if (!input) return;
+    if (typeof input.showPicker === "function") {
+      try { input.showPicker(); } catch { input.focus(); input.click(); }
+    } else {
+      input.focus();
+      input.click();
+    }
+  };
   return (
     <div className="flex items-center justify-between mb-5">
       <button onClick={() => go(-1)} className="text-white/30 hover:text-white/60 transition-colors w-8 h-8 flex items-center justify-center text-lg">‹</button>
       <div className="flex items-center gap-3">
-        <label className="relative cursor-pointer">
+        <label className="relative cursor-pointer" onClick={openPicker}>
           <span className="text-[0.6rem] tracking-[0.25em] uppercase text-white/50 select-none hover:text-white/70 transition-colors">
             {isToday ? "Aujourd'hui" : new Date(date + "T12:00:00").toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" })}
           </span>
           <input
+            ref={dateInputRef}
             type="date" value={date} max={todayD}
             onChange={e => { if (e.target.value) onChange(e.target.value); }}
             className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
