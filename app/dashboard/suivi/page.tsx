@@ -59,13 +59,13 @@ function DateNav({ date, onChange }: { date: string; onChange: (d: string) => vo
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-white/30 group-hover:text-white/50 transition-colors shrink-0">
           <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
         </svg>
-        <p className="text-[0.6rem] tracking-[0.15em] uppercase text-white/50 group-hover:text-white/70 transition-colors capitalize select-none">{label}</p>
+        <p className="text-[0.7rem] tracking-[0.15em] uppercase text-white/50 group-hover:text-white/70 transition-colors capitalize select-none">{label}</p>
       </div>
       <button onClick={() => move(1)} disabled={isToday} className="w-7 h-7 border border-white/10 text-white/40 hover:text-white/60 hover:border-white/20 transition-colors flex items-center justify-center shrink-0 disabled:opacity-20 disabled:cursor-not-allowed">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
       {!isToday && (
-        <button onClick={() => onChange(todayD)} className="text-[0.45rem] tracking-[0.12em] uppercase text-[#c9a84c] border border-[#c9a84c]/30 px-2 py-1 hover:bg-[#c9a84c]/10 transition-colors shrink-0">
+        <button onClick={() => onChange(todayD)} className="text-[0.62rem] tracking-[0.12em] uppercase text-[#c9a84c] border border-[#c9a84c]/30 px-2 py-1 hover:bg-[#c9a84c]/10 transition-colors shrink-0">
           Auj.
         </button>
       )}
@@ -77,7 +77,9 @@ export default function SuiviPage() {
   const [profile,        setProfile]        = useState<Profile | null>(null);
   const [userId,         setUserId]         = useState<string | null>(null);
   const [userEmail,      setUserEmail]      = useState<string>("");
-  const [selectedDate,   setSelectedDate]   = useState(today());
+  const [selectedDate,   setSelectedDate]   = useState(() => {
+    try { return localStorage.getItem("selected_date") || today(); } catch { return today(); }
+  });
   const [weightHist,     setWeightHist]     = useState<WeightEntry[]>([]);
   const [bfHist,         setBfHist]         = useState<BodyFatEntry[]>([]);
   const [photos,         setPhotos]         = useState<Record<string, string>>({});
@@ -140,6 +142,10 @@ export default function SuiviPage() {
       if (ck?.[0]) setLastCkDate(ck[0].week_date);
     })();
   }, []);
+
+  useEffect(() => {
+    try { localStorage.setItem("selected_date", selectedDate); } catch { /* ignore */ }
+  }, [selectedDate]);
 
   const sendCheckin = async () => {
     if (!userId || ckSaving) return;
@@ -327,7 +333,7 @@ export default function SuiviPage() {
           <button onClick={() => setCkOpen(o => !o)} className="w-full flex items-center justify-between px-5 py-4 text-left">
             <div>
               <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-0.5">Check-in de la semaine</p>
-              <p className="text-[0.6rem] text-white/35 tracking-wider">
+              <p className="text-[0.7rem] text-white/35 tracking-wider">
                 {ckDoneThisWeek ? "✓ Envoyé à Samuel cette semaine — modifier" : "Fais ton point du dimanche : poids, énergie, adhérence"}
               </p>
             </div>
@@ -338,13 +344,13 @@ export default function SuiviPage() {
             <div className="px-5 pb-5 flex flex-col gap-4 border-t border-white/5 pt-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[0.6rem] tracking-[0.15em] uppercase text-white/40 block mb-1.5">Poids (kg)</label>
+                  <label className="text-[0.7rem] tracking-[0.15em] uppercase text-white/40 block mb-1.5">Poids (kg)</label>
                   <input type="number" inputMode="decimal" step="0.1" value={ckWeight} onChange={e => setCkWeight(e.target.value)}
                     className="w-full bg-[#0a0a0a] border border-white/10 text-white text-base px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40" placeholder="78.0"/>
                 </div>
               </div>
               <div>
-                <label className="text-[0.6rem] tracking-[0.15em] uppercase text-white/40 block mb-1.5">Énergie / forme — 1 faible · 5 top</label>
+                <label className="text-[0.7rem] tracking-[0.15em] uppercase text-white/40 block mb-1.5">Énergie / forme — 1 faible · 5 top</label>
                 <div className="flex gap-2">
                   {[1,2,3,4,5].map(n => (
                     <button key={n} onClick={() => setCkEnergy(n)}
@@ -353,7 +359,7 @@ export default function SuiviPage() {
                 </div>
               </div>
               <div>
-                <label className="text-[0.6rem] tracking-[0.15em] uppercase text-white/40 block mb-1.5">Adhérence au plan — 1 difficile · 5 parfaite</label>
+                <label className="text-[0.7rem] tracking-[0.15em] uppercase text-white/40 block mb-1.5">Adhérence au plan — 1 difficile · 5 parfaite</label>
                 <div className="flex gap-2">
                   {[1,2,3,4,5].map(n => (
                     <button key={n} onClick={() => setCkComp(n)}
@@ -362,7 +368,7 @@ export default function SuiviPage() {
                 </div>
               </div>
               <div>
-                <label className="text-[0.6rem] tracking-[0.15em] uppercase text-white/40 block mb-1.5">Un mot pour Samuel</label>
+                <label className="text-[0.7rem] tracking-[0.15em] uppercase text-white/40 block mb-1.5">Un mot pour Samuel</label>
                 <textarea rows={3} value={ckNotes} onChange={e => setCkNotes(e.target.value)}
                   placeholder="Comment s'est passée ta semaine ? Difficultés, victoires, douleurs…"
                   className="w-full bg-[#0a0a0a] border border-white/10 text-white/80 text-sm px-3 py-2.5 resize-none focus:outline-none focus:border-[#c9a84c]/40"/>
@@ -371,7 +377,7 @@ export default function SuiviPage() {
                 <div className="text-center py-2 text-[#7eb8a0] text-sm tracking-wider">Check-in envoyé ✓</div>
               ) : (
                 <button onClick={sendCheckin} disabled={ckSaving}
-                  className="bg-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.2em] uppercase py-3 hover:bg-[#e2c97e] transition-colors disabled:opacity-40">
+                  className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3 hover:bg-[#e2c97e] transition-colors disabled:opacity-40">
                   {ckSaving ? "Envoi…" : "Envoyer mon check-in à Samuel →"}
                 </button>
               )}
@@ -389,7 +395,7 @@ export default function SuiviPage() {
             {selectedDate === today() ? "Pesée du jour" : `Pesée · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
           </p>
           {lastWeight && (
-            <span className="text-[0.48rem] text-white/25 tracking-wider">
+            <span className="text-[0.62rem] text-white/25 tracking-wider">
               Dernière · {new Date(lastWeight.date + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })} · {lastWeight.weight} kg
             </span>
           )}
@@ -402,12 +408,12 @@ export default function SuiviPage() {
             placeholder="70.0"/>
           <span className="text-white/30 text-sm">kg</span>
           <button onClick={saveWeight} disabled={weightSaving || !weightInput}
-            className="ml-auto bg-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.15em] uppercase px-5 py-2.5 hover:bg-[#e2c97e] transition-colors disabled:opacity-30">
+            className="ml-auto bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.15em] uppercase px-5 py-2.5 hover:bg-[#e2c97e] transition-colors disabled:opacity-30">
             {weightSaved ? "Enregistré ✓" : alreadySelected ? "Mettre à jour" : "Enregistrer →"}
           </button>
         </div>
         {alreadySelected && (
-          <p className="text-[0.48rem] text-[#7eb8a0] mt-2 tracking-wider">
+          <p className="text-[0.62rem] text-[#7eb8a0] mt-2 tracking-wider">
             ✓ {weightHist.find(e => e.date === selectedDate)?.weight} kg enregistré
           </p>
         )}
@@ -417,13 +423,13 @@ export default function SuiviPage() {
       {needsBF && (
         <div className="border border-[#c9a84c]/30 bg-[#c9a84c]/5 px-5 py-3 mb-4 flex items-center justify-between">
           <div>
-            <p className="text-[0.6rem] tracking-[0.15em] uppercase text-[#c9a84c] font-bold">
+            <p className="text-[0.7rem] tracking-[0.15em] uppercase text-[#c9a84c] font-bold">
               {daysSinceBF === null ? "Premier check-in body fat" : `Check-in body fat · ${daysSinceBF}j depuis le dernier`}
             </p>
-            <p className="text-[0.45rem] text-white/30 mt-0.5 tracking-wider">Recommandé toutes les 2 semaines</p>
+            <p className="text-[0.62rem] text-white/30 mt-0.5 tracking-wider">Recommandé toutes les 2 semaines</p>
           </div>
           <button onClick={() => { setShowUpload(true); setShowManual(false); }}
-            className="bg-[#c9a84c] text-black text-[0.55rem] font-bold tracking-[0.15em] uppercase px-4 py-2 hover:bg-[#e2c97e] transition-colors shrink-0 ml-4">
+            className="bg-[#c9a84c] text-black text-[0.68rem] font-bold tracking-[0.15em] uppercase px-4 py-2 hover:bg-[#e2c97e] transition-colors shrink-0 ml-4">
             Estimer →
           </button>
         </div>
@@ -435,7 +441,7 @@ export default function SuiviPage() {
           <div className="flex items-center justify-between mb-3">
             <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Body fat actuel</p>
             {!needsBF && daysSinceBF !== null && (
-              <span className="text-[0.45rem] text-white/20 tracking-wider">Prochain dans {14 - daysSinceBF}j</span>
+              <span className="text-[0.62rem] text-white/20 tracking-wider">Prochain dans {14 - daysSinceBF}j</span>
             )}
           </div>
           <div className="flex items-center justify-between">
@@ -449,12 +455,12 @@ export default function SuiviPage() {
             )}
             <div className="flex gap-2">
               <button onClick={() => { setShowManual(v => !v); setShowUpload(false); setManualVal(""); setManualDate(selectedDate); }}
-                className="border border-white/10 text-white/30 text-[0.6rem] tracking-[0.12em] uppercase px-4 py-2 hover:border-white/20 hover:text-white/50 transition-colors">
+                className="border border-white/10 text-white/30 text-[0.7rem] tracking-[0.12em] uppercase px-4 py-2 hover:border-white/20 hover:text-white/50 transition-colors">
                 {showManual ? "Annuler" : "Manuel"}
               </button>
               {!needsBF && (
                 <button onClick={() => { setShowUpload(v => !v); setShowManual(false); setResult(null); setError(""); }}
-                  className="border border-white/10 text-white/30 text-[0.6rem] tracking-[0.12em] uppercase px-4 py-2 hover:border-white/20 hover:text-white/50 transition-colors">
+                  className="border border-white/10 text-white/30 text-[0.7rem] tracking-[0.12em] uppercase px-4 py-2 hover:border-white/20 hover:text-white/50 transition-colors">
                   {showUpload ? "Annuler" : "Estimer IA"}
                 </button>
               )}
@@ -464,7 +470,7 @@ export default function SuiviPage() {
 
         {/* Encadré explicatif */}
         <div className="border-t border-white/5 px-5 py-4 bg-[#0a0a0a]/60">
-          <p className="text-[0.55rem] tracking-[0.15em] uppercase text-white/30 mb-3">Pourquoi suivre ton taux de masse grasse plutôt que juste ton poids ?</p>
+          <p className="text-[0.68rem] tracking-[0.15em] uppercase text-white/30 mb-3">Pourquoi suivre ton taux de masse grasse plutôt que juste ton poids ?</p>
           <div className="flex flex-col gap-2.5">
             <p className="text-[0.65rem] text-white/35 leading-relaxed">
               Ta balance ne te dit qu&apos;un chiffre : ton poids total. Mais deux personnes qui pèsent 70 kg peuvent avoir un corps complètement différent — l&apos;une avec plus de muscle, l&apos;autre avec plus de gras. Résultat : leur corps ne brûle pas les mêmes calories au quotidien, même à poids égal.
@@ -483,7 +489,7 @@ export default function SuiviPage() {
       {showManual && (
         <div className="border border-white/10 bg-[#111] p-5 mb-4 flex items-center gap-3">
           <div className="flex flex-col gap-1 shrink-0">
-            <p className="text-[0.5rem] tracking-[0.15em] uppercase text-white/25">Body fat %</p>
+            <p className="text-[0.65rem] tracking-[0.15em] uppercase text-white/25">Body fat %</p>
             <input type="number" min="1" max="60" step="0.1" placeholder="18.5" autoFocus
               className="w-24 bg-[#0a0a0a] border border-white/10 text-white text-sm px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 placeholder-white/15"
               value={manualVal} onChange={e => setManualVal(e.target.value)}
@@ -491,14 +497,14 @@ export default function SuiviPage() {
             />
           </div>
           <div className="flex flex-col gap-1 flex-1">
-            <p className="text-[0.5rem] tracking-[0.15em] uppercase text-white/25">Date</p>
+            <p className="text-[0.65rem] tracking-[0.15em] uppercase text-white/25">Date</p>
             <input type="date" max={today()}
               className="w-full bg-[#0a0a0a] border border-white/10 text-white/60 text-sm px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40"
               value={manualDate || selectedDate} onChange={e => setManualDate(e.target.value)}
             />
           </div>
           <button onClick={saveManualBF}
-            className="bg-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.15em] uppercase px-5 py-2.5 hover:bg-[#e2c97e] transition-colors shrink-0 self-end">
+            className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.15em] uppercase px-5 py-2.5 hover:bg-[#e2c97e] transition-colors shrink-0 self-end">
             Enregistrer →
           </button>
         </div>
@@ -509,9 +515,9 @@ export default function SuiviPage() {
         <div className="border border-white/10 bg-[#111] p-5 mb-4">
           <div className="flex items-center justify-between mb-1">
             <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Photos corporelles</p>
-            <span className="text-[0.45rem] text-white/20 tracking-wider">Privées par défaut</span>
+            <span className="text-[0.62rem] text-white/20 tracking-wider">Privées par défaut</span>
           </div>
-          <p className="text-[0.5rem] text-white/20 mb-5 tracking-wider">Plus il y a de photos, plus l'estimation est précise</p>
+          <p className="text-[0.65rem] text-white/20 mb-5 tracking-wider">Plus il y a de photos, plus l'estimation est précise</p>
 
           <div className="grid grid-cols-5 gap-2 mb-5">
             {SLOTS.map(slot => (
@@ -530,7 +536,7 @@ export default function SuiviPage() {
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="text-white/15"><path d="M12 5v14M5 12h14"/></svg>
                   )}
                 </button>
-                <span className="text-[0.38rem] tracking-wider text-white/20 text-center uppercase leading-tight">{slot.label}</span>
+                <span className="text-[0.6rem] tracking-wider text-white/20 text-center uppercase leading-tight">{slot.label}</span>
                 <input type="file" accept="image/*" className="hidden"
                   ref={el => { fileRefs.current[slot.key] = el; }}
                   onChange={e => { const f = e.target.files?.[0]; if (f) handleSelect(slot.key, f); }}
@@ -546,12 +552,12 @@ export default function SuiviPage() {
               {/* Résultat IA */}
               <div className="border border-[#c9a84c]/20 bg-[#c9a84c]/5 p-4 flex items-center justify-between">
                 <div>
-                  <p className="text-[0.5rem] tracking-[0.15em] uppercase text-[#c9a84c] mb-1">Estimation IA</p>
+                  <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c] mb-1">Estimation IA</p>
                   <p className="text-[0.65rem] text-white/40 italic leading-relaxed">{result.note}</p>
                 </div>
                 <div className="text-right ml-4 shrink-0">
                   <p style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-white tracking-wide leading-none">{result.body_fat_percentage}</p>
-                  <p className="text-[0.45rem] tracking-[0.15em] uppercase text-white/30">% body fat</p>
+                  <p className="text-[0.62rem] tracking-[0.15em] uppercase text-white/30">% body fat</p>
                 </div>
               </div>
 
@@ -567,8 +573,8 @@ export default function SuiviPage() {
               {/* Toggle partage coach */}
               <div className="border border-white/8 bg-[#0f0f0f] px-4 py-3 flex items-center justify-between">
                 <div>
-                  <p className="text-[0.6rem] tracking-[0.1em] uppercase text-white/50">Partager avec Samuel</p>
-                  <p className="text-[0.45rem] text-white/25 mt-0.5">
+                  <p className="text-[0.7rem] tracking-[0.1em] uppercase text-white/50">Partager avec Samuel</p>
+                  <p className="text-[0.62rem] text-white/25 mt-0.5">
                     {shareWithCoach
                       ? "L'estimation et le feedback IA seront envoyés à ton coach"
                       : "Les photos restent privées — seule l'estimation sera partagée si tu coches"}
@@ -588,14 +594,14 @@ export default function SuiviPage() {
                   Ré-estimer
                 </button>
                 <button onClick={saveBFEntry} disabled={sharing}
-                  className="flex-1 bg-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.2em] uppercase py-2.5 hover:bg-[#e2c97e] transition-colors disabled:opacity-50">
+                  className="flex-1 bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 hover:bg-[#e2c97e] transition-colors disabled:opacity-50">
                   {sharing ? "Envoi…" : shareWithCoach ? "Enregistrer & partager →" : "Enregistrer →"}
                 </button>
               </div>
             </div>
           ) : (
             <button onClick={estimate} disabled={photoCount === 0 || estimating}
-              className="w-full bg-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+              className="w-full bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
               {estimating
                 ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Analyse en cours…</>
                 : `Estimer avec l'IA · ${photoCount}/5 photo${photoCount > 1 ? "s" : ""} →`}
@@ -640,10 +646,10 @@ export default function SuiviPage() {
                       </p>
                     )}
                     <div className="flex items-center gap-2 mt-0.5">
-                      <p className="text-[0.42rem] text-white/20 italic truncate">{entry.note}</p>
+                      <p className="text-[0.6rem] text-white/20 italic truncate">{entry.note}</p>
                       <button
                         onClick={() => togglePhotoSharing(entry.id, !entry.shared)}
-                        className={`text-[0.38rem] tracking-wider uppercase border px-1.5 py-px transition-colors shrink-0 ${
+                        className={`text-[0.6rem] tracking-wider uppercase border px-1.5 py-px transition-colors shrink-0 ${
                           entry.shared
                             ? "text-[#c9a84c]/60 border-[#c9a84c]/25 hover:text-[#e07070]/50 hover:border-[#e07070]/20"
                             : "text-white/15 border-white/8 hover:text-[#c9a84c]/40 hover:border-[#c9a84c]/20"
@@ -666,11 +672,11 @@ export default function SuiviPage() {
                         <div className="flex items-baseline gap-1 justify-end cursor-pointer"
                           onClick={() => { setEditingBFId(entry.id); setEditingBFVal(entry.body_fat.toString()); }}>
                           <span style={{ fontFamily: "var(--font-bebas)" }} className={`text-2xl tracking-wide leading-none ${i === 0 ? "text-white" : "text-white/40"}`}>{entry.body_fat}</span>
-                          <span className="text-[0.45rem] text-white/25">%</span>
+                          <span className="text-[0.62rem] text-white/25">%</span>
                         </div>
                       )}
                       {diff !== null && editingBFId !== entry.id && (
-                        <span className={`text-[0.42rem] tracking-wider ${diff < 0 ? "text-[#7eb8a0]" : diff > 0 ? "text-[#e07070]" : "text-white/20"}`}>
+                        <span className={`text-[0.6rem] tracking-wider ${diff < 0 ? "text-[#7eb8a0]" : diff > 0 ? "text-[#e07070]" : "text-white/20"}`}>
                           {diff < 0 ? "▼" : diff > 0 ? "▲" : "—"}{Math.abs(diff)}%
                         </span>
                       )}
@@ -711,7 +717,7 @@ export default function SuiviPage() {
                 </p>
                 <div className="flex items-center gap-3">
                   {diff !== null && (
-                    <span className={`text-[0.42rem] tracking-wider ${diff < 0 ? "text-[#7eb8a0]" : diff > 0 ? "text-[#e07070]" : "text-white/20"}`}>
+                    <span className={`text-[0.6rem] tracking-wider ${diff < 0 ? "text-[#7eb8a0]" : diff > 0 ? "text-[#e07070]" : "text-white/20"}`}>
                       {diff > 0 ? "+" : ""}{diff} kg
                     </span>
                   )}
@@ -733,7 +739,7 @@ export default function SuiviPage() {
 function FeedbackRow({ color, label, text }: { color: string; label: string; text: string }) {
   return (
     <div className="flex gap-3 px-4 py-2.5">
-      <span className="text-[0.45rem] tracking-[0.15em] uppercase shrink-0 w-20 pt-0.5" style={{ color }}>{label}</span>
+      <span className="text-[0.62rem] tracking-[0.15em] uppercase shrink-0 w-20 pt-0.5" style={{ color }}>{label}</span>
       <p className="text-[0.65rem] text-white/45 leading-relaxed">{text}</p>
     </div>
   );

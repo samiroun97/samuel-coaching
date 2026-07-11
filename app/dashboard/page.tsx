@@ -45,12 +45,12 @@ function CalRing({ consumed, tdee, label = "TDEE" }: { consumed: number; tdee: n
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
         <p style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-white tracking-wide leading-none">{consumed.toLocaleString("fr-FR")}</p>
-        <p className="text-[0.42rem] tracking-[0.2em] uppercase text-white/30 mt-1">kcal consommés</p>
+        <p className="text-[0.6rem] tracking-[0.2em] uppercase text-white/30 mt-1">kcal consommés</p>
         <div className="w-8 h-px bg-white/10 my-2"/>
         <p style={{ fontFamily: "var(--font-bebas)", color }} className="text-lg tracking-wide leading-none">{tdee.toLocaleString("fr-FR")}</p>
-        <p className="text-[0.4rem] tracking-[0.18em] uppercase mt-0.5" style={{ color: "rgba(255,255,255,0.25)" }}>{label}</p>
+        <p className="text-[0.6rem] tracking-[0.18em] uppercase mt-0.5" style={{ color: "rgba(255,255,255,0.25)" }}>{label}</p>
         {consumed > 0 && (
-          <p className="text-[0.45rem] font-bold tracking-wider mt-1.5" style={{ color }}>
+          <p className="text-[0.62rem] font-bold tracking-wider mt-1.5" style={{ color }}>
             {over ? "+" : ""}{balance.toLocaleString("fr-FR")} kcal
           </p>
         )}
@@ -63,7 +63,7 @@ function MiniBar({ label, consumed, goal, color }: { label: string; consumed: nu
   const pct = goal > 0 ? Math.min(consumed / goal, 1) : 0;
   return (
     <div>
-      <div className="flex justify-between text-[0.48rem] tracking-wider mb-1.5">
+      <div className="flex justify-between text-[0.62rem] tracking-wider mb-1.5">
         <span className="uppercase text-white/30">{label}</span>
         <span style={{ color }}>{consumed}g <span className="text-white/20">/ {goal}g</span></span>
       </div>
@@ -78,6 +78,41 @@ function MiniBar({ label, consumed, goal, color }: { label: string; consumed: nu
 type WeightEntry = { id: string; date: string; weight: number };
 type BFEntry     = { id: string; date: string; body_fat: number };
 
+function DateNav({ date, onChange }: { date: string; onChange: (d: string) => void }) {
+  const todayD  = new Date().toISOString().split("T")[0];
+  const isToday = date === todayD;
+  const go = (n: number) => {
+    const d = new Date(date + "T12:00:00");
+    d.setDate(d.getDate() + n);
+    onChange(d.toISOString().split("T")[0]);
+  };
+  return (
+    <div className="flex items-center justify-between mb-5">
+      <button onClick={() => go(-1)} className="text-white/30 hover:text-white/60 transition-colors w-8 h-8 flex items-center justify-center text-lg">‹</button>
+      <div className="flex items-center gap-3">
+        <label className="relative cursor-pointer">
+          <span className="text-[0.6rem] tracking-[0.25em] uppercase text-white/50 select-none hover:text-white/70 transition-colors">
+            {isToday ? "Aujourd'hui" : new Date(date + "T12:00:00").toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" })}
+          </span>
+          <input
+            type="date" value={date} max={todayD}
+            onChange={e => { if (e.target.value) onChange(e.target.value); }}
+            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+          />
+        </label>
+        {!isToday && (
+          <button onClick={() => onChange(todayD)}
+            className="text-[0.45rem] tracking-wider uppercase text-[#c9a84c]/60 hover:text-[#c9a84c] transition-colors border border-[#c9a84c]/20 hover:border-[#c9a84c]/40 px-2 py-0.5">
+            Aujourd'hui
+          </button>
+        )}
+      </div>
+      <button onClick={() => go(1)} disabled={isToday}
+        className="text-white/30 hover:text-white/60 disabled:opacity-20 transition-colors w-8 h-8 flex items-center justify-center text-lg">›</button>
+    </div>
+  );
+}
+
 export default function AccueilPage() {
   const [profile,      setProfile]      = useState<Profile | null>(null);
   const [userId,       setUserId]       = useState<string | null>(null);
@@ -88,12 +123,13 @@ export default function AccueilPage() {
   const [bodyFat,      setBodyFat]      = useState<number | null>(null);
   const [weightHist,   setWeightHist]   = useState<WeightEntry[]>([]);
   const [weightInput,  setWeightInput]  = useState("");
-  const [weightDate,   setWeightDate]   = useState(today());
   const [weightSaving, setWeightSaving] = useState(false);
   const [weightSaved,  setWeightSaved]  = useState(false);
   const [daysSinceBF,  setDaysSinceBF]  = useState<number | null>(null);
   const [calView,      setCalView]      = useState<"tdee" | "goal">("tdee");
+  const [selectedDate, setSelectedDate] = useState(today());
 
+  // Static data — loads once on mount
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
       if (!data.user) return;
@@ -125,11 +161,26 @@ export default function AccueilPage() {
       } catch { /* ignore */ }
     });
 
-    // Nutrition
+    // Goals (static)
     try {
       const g = localStorage.getItem("nutrition_goals");
       if (g) setGoals(JSON.parse(g));
-      const f = localStorage.getItem(`nutrition_${today()}`);
+    } catch { /* ignore */ }
+
+    // Restore saved selected date
+    try {
+      const saved = localStorage.getItem("selected_date");
+      if (saved) setSelectedDate(saved);
+    } catch { /* ignore */ }
+  }, []);
+
+  // Date-specific data — reloads when selected date or profile changes
+  useEffect(() => {
+    try { localStorage.setItem("selected_date", selectedDate); } catch { /* ignore */ }
+
+    // Nutrition consumed
+    try {
+      const f = localStorage.getItem(`nutrition_${selectedDate}`);
       if (f) {
         const foods: Food[] = JSON.parse(f);
         setConsumed(foods.reduce((acc, x) => ({
@@ -138,61 +189,52 @@ export default function AccueilPage() {
           glucides: acc.glucides + x.glucides,
           lipides: acc.lipides + x.lipides,
         }), { calories: 0, proteines: 0, glucides: 0, lipides: 0 }));
+      } else {
+        setConsumed({ calories: 0, proteines: 0, glucides: 0, lipides: 0 });
       }
     } catch { /* ignore */ }
 
-    // Steps → NEAT
+    // Steps → NEAT (uses profile weight when available)
     try {
-      const steps = parseInt(localStorage.getItem(`steps_${today()}`) ?? "0") || 0;
-      setNeat(Math.round(steps * 0.04));
+      const steps = parseInt(localStorage.getItem(`steps_${selectedDate}`) ?? "0") || 0;
+      setNeat(Math.round(steps * 0.04 * ((profile?.poids ?? 70) / 70)));
     } catch { /* ignore */ }
 
-    // EAT (workouts today)
+    // EAT (workouts for selected day)
     try {
       const logs: Log[] = JSON.parse(localStorage.getItem("programme_logs") ?? "[]");
-      const todayEat = logs
-        .filter(l => l.date.startsWith(today()))
-        .reduce((s, l) => s + l.calories_burned, 0);
-      setEat(todayEat);
+      setEat(logs.filter(l => l.date.startsWith(selectedDate)).reduce((s, l) => s + l.calories_burned, 0));
     } catch { /* ignore */ }
-  }, []);
+  }, [selectedDate, profile]);
 
   const lastWeight   = weightHist[0]?.weight ?? profile?.poids ?? null;
   const needsBF      = daysSinceBF === null || daysSinceBF >= 14;
-  const entryForDate = weightHist.find(e => e.date === weightDate);
+  const entryForDate = weightHist.find(e => e.date === selectedDate);
 
   // Pré-remplir avec la pesée existante quand on change de date
   useEffect(() => {
-    const e = weightHist.find(x => x.date === weightDate);
+    const e = weightHist.find(x => x.date === selectedDate);
     if (e) setWeightInput(String(e.weight));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [weightDate]);
+  }, [selectedDate]);
 
   const saveWeight = async () => {
     const val = parseFloat(weightInput.replace(",", "."));
     if (isNaN(val) || val < 20 || val > 300 || !userId) return;
     setWeightSaving(true);
-    const entry: WeightEntry = { id: Date.now().toString(), date: weightDate, weight: +val.toFixed(1) };
-    const next = [entry, ...weightHist.filter(e => e.date !== weightDate)]
+    const entry: WeightEntry = { id: Date.now().toString(), date: selectedDate, weight: +val.toFixed(1) };
+    const next = [entry, ...weightHist.filter(e => e.date !== selectedDate)]
       .sort((a, b) => b.date.localeCompare(a.date));
     setWeightHist(next);
     localStorage.setItem(`weight_history_${userId}`, JSON.stringify(next));
     // Le poids du profil ne suit que la pesée la plus récente
-    if (next[0]?.date === weightDate) {
+    if (next[0]?.date === selectedDate) {
       await supabase.from("profiles").update({ poids: val }).eq("id", userId);
     }
     setWeightSaving(false); setWeightSaved(true);
     setTimeout(() => setWeightSaved(false), 2000);
   };
 
-  // Recalc NEAT with actual weight once profile loaded
-  useEffect(() => {
-    if (!profile) return;
-    try {
-      const steps = parseInt(localStorage.getItem(`steps_${today()}`) ?? "0") || 0;
-      setNeat(Math.round(steps * 0.04 * (profile.poids / 70)));
-    } catch { /* ignore */ }
-  }, [profile]);
 
   if (!profile) return (
     <div className="flex items-center justify-center h-64">
@@ -213,7 +255,7 @@ export default function AccueilPage() {
     <div className="p-4 sm:p-8 max-w-3xl">
 
       {/* ── Header ── */}
-      <div className="mb-5 sm:mb-8">
+      <div className="mb-4 sm:mb-6">
         <p className="text-[0.7rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-1">Espace client</p>
         <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl sm:text-5xl text-white tracking-wide">
           {profile.prenom} {profile.nom}
@@ -223,23 +265,21 @@ export default function AccueilPage() {
         </p>
       </div>
 
-      {/* ── Pesée (date sélectionnable) ── */}
+      {/* ── Sélecteur de date global ── */}
+      <DateNav date={selectedDate} onChange={setSelectedDate} />
+
+      {/* ── Pesée ── */}
       <div className={`border p-4 mb-4 flex flex-wrap items-center gap-3 sm:gap-4 ${entryForDate ? "border-white/5 bg-[#0d0d0d]" : "border-[#c9a84c]/20 bg-[#c9a84c]/5"}`}>
         <div className="flex-1 min-w-[130px]">
-          <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-0.5">
-            Pesée {weightDate === today() ? "du jour" : `· ${new Date(weightDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
+          <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-0.5">
+            Pesée {selectedDate === today() ? "du jour" : `· ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
           </p>
           {entryForDate
-            ? <p className="text-[0.5rem] text-white/30 tracking-wider">✓ Enregistrée — {entryForDate.weight} kg</p>
-            : <p className="text-[0.5rem] text-white/30 tracking-wider">Dernière : {lastWeight ? `${lastWeight} kg` : "—"}</p>
+            ? <p className="text-[0.65rem] text-white/30 tracking-wider">✓ Enregistrée — {entryForDate.weight} kg</p>
+            : <p className="text-[0.65rem] text-white/30 tracking-wider">Dernière : {lastWeight ? `${lastWeight} kg` : "—"}</p>
           }
         </div>
         <div className="flex items-center gap-2 shrink-0 flex-wrap">
-          <input
-            type="date" value={weightDate} max={today()}
-            onChange={e => { if (e.target.value) setWeightDate(e.target.value); }}
-            className="bg-[#0a0a0a] border border-white/10 text-white/60 text-[0.7rem] px-2 py-1.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
-          />
           <input
             type="number" min="20" max="300" step="0.1"
             value={weightInput}
@@ -250,7 +290,7 @@ export default function AccueilPage() {
           />
           <span className="text-white/25 text-xs">kg</span>
           <button onClick={saveWeight} disabled={weightSaving || !weightInput}
-            className={`text-[0.55rem] font-bold tracking-[0.12em] uppercase px-4 py-1.5 transition-colors disabled:opacity-30 ${
+            className={`text-[0.68rem] font-bold tracking-[0.12em] uppercase px-4 py-1.5 transition-colors disabled:opacity-30 ${
               weightSaved ? "bg-[#7eb8a0] text-black" : "bg-[#c9a84c] text-black hover:bg-[#e2c97e]"
             }`}>
             {weightSaved ? "✓" : entryForDate ? "Modifier" : "Enregistrer"}
@@ -263,7 +303,7 @@ export default function AccueilPage() {
       <div className="border border-white/10 bg-[#111] p-6 mb-4">
         <div className="flex items-center justify-between mb-6">
           <Link href="/dashboard/nutrition" className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] hover:text-[#e2c97e] transition-colors">
-            Bilan calorique du jour
+            {selectedDate === today() ? "Bilan calorique du jour" : `Bilan calorique · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
           </Link>
         </div>
         <div className="flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-8">
@@ -280,7 +320,7 @@ export default function AccueilPage() {
             <div className="flex gap-1.5 mb-4">
               {([["tdee", "TDEE"], ["goal", "Objectif"]] as const).map(([key, label]) => (
                 <button key={key} onClick={() => setCalView(key)}
-                  className={`px-3 py-1.5 text-[0.5rem] tracking-[0.12em] uppercase border transition-all ${calView === key ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10" : "border-white/10 text-white/30 hover:border-white/20 hover:text-white/50"}`}>
+                  className={`px-3 py-1.5 text-[0.65rem] tracking-[0.12em] uppercase border transition-all ${calView === key ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10" : "border-white/10 text-white/30 hover:border-white/20 hover:text-white/50"}`}>
                   {label}
                 </button>
               ))}
@@ -289,7 +329,7 @@ export default function AccueilPage() {
             {calView === "tdee" ? (
               /* ── Vue TDEE ── */
               <div className="mb-5">
-                <Link href="/dashboard/programme" className="text-[0.5rem] tracking-[0.18em] uppercase text-white/20 hover:text-white/40 transition-colors mb-3 block">Dépense totale (TDEE)</Link>
+                <Link href="/dashboard/programme" className="text-[0.65rem] tracking-[0.18em] uppercase text-white/20 hover:text-white/40 transition-colors mb-3 block">Dépense totale (TDEE)</Link>
                 <div className="flex flex-col gap-2">
                   {[
                     { label: "BMR",  val: bmrVal, desc: "Métabolisme de base",   color: "#c9a84c" },
@@ -301,14 +341,14 @@ export default function AccueilPage() {
                         <div className="w-1 h-5" style={{ backgroundColor: row.color }}/>
                         <div className="flex items-baseline gap-2">
                           <span className="text-sm tracking-[0.12em] uppercase font-bold" style={{ color: row.color }}>{row.label}</span>
-                          <span className="text-[0.5rem] text-white/30">{row.desc}</span>
+                          <span className="text-[0.65rem] text-white/30">{row.desc}</span>
                         </div>
                       </div>
                       <span style={{ fontFamily: "var(--font-bebas)" }} className="text-xl text-white/70 tracking-wide">{row.val.toLocaleString("fr-FR")}</span>
                     </div>
                   ))}
                   <div className="border-t border-white/5 pt-2 flex items-center justify-between mt-1">
-                    <span className="text-[0.5rem] tracking-[0.15em] uppercase text-white/40">Total TDEE</span>
+                    <span className="text-[0.65rem] tracking-[0.15em] uppercase text-white/40">Total TDEE</span>
                     <span style={{ fontFamily: "var(--font-bebas)" }} className="text-xl text-white tracking-wide">{tdee.toLocaleString("fr-FR")} <span className="text-sm text-white/30">kcal</span></span>
                   </div>
                 </div>
@@ -316,19 +356,19 @@ export default function AccueilPage() {
             ) : (
               /* ── Vue Objectif ── */
               <div className="mb-5">
-                <p className="text-[0.5rem] tracking-[0.18em] uppercase text-white/20 mb-3">Calories · objectif vs consommé</p>
+                <p className="text-[0.65rem] tracking-[0.18em] uppercase text-white/20 mb-3">Calories · objectif vs consommé</p>
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="w-1 h-5 bg-[#c9a84c]"/>
-                      <span className="text-[0.5rem] text-white/30">Objectif journalier</span>
+                      <span className="text-[0.65rem] text-white/30">Objectif journalier</span>
                     </div>
                     <span style={{ fontFamily: "var(--font-bebas)" }} className="text-xl text-white/70 tracking-wide">{goals.calories.toLocaleString("fr-FR")}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="w-1 h-5" style={{ backgroundColor: consumed.calories > goals.calories ? "#e07070" : "#7eb8a0" }}/>
-                      <span className="text-[0.5rem] text-white/30">Consommés aujourd&apos;hui</span>
+                      <span className="text-[0.65rem] text-white/30">Consommés aujourd&apos;hui</span>
                     </div>
                     <span style={{ fontFamily: "var(--font-bebas)" }} className="text-xl text-white/70 tracking-wide">{consumed.calories.toLocaleString("fr-FR")}</span>
                   </div>
@@ -340,7 +380,7 @@ export default function AccueilPage() {
                       }}/>
                   </div>
                   <div className="border-t border-white/5 pt-2 flex items-center justify-between mt-1">
-                    <span className="text-[0.5rem] tracking-[0.15em] uppercase text-white/40">
+                    <span className="text-[0.65rem] tracking-[0.15em] uppercase text-white/40">
                       {consumed.calories > goals.calories ? "Surplus" : "Restant"}
                     </span>
                     <span style={{ fontFamily: "var(--font-bebas)" }} className={`text-xl tracking-wide ${consumed.calories > goals.calories ? "text-[#e07070]" : "text-[#7eb8a0]"}`}>
@@ -382,18 +422,18 @@ export default function AccueilPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         {/* Poids */}
         <div className="border border-white/10 bg-[#111] p-4">
-          <p className="text-[0.5rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1.5">Poids</p>
+          <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1.5">Poids</p>
           <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-white tracking-wide">{lastWeight ? `${lastWeight} kg` : `${profile.poids} kg`}</p>
         </div>
         {/* Taille */}
         <div className="border border-white/10 bg-[#111] p-4">
-          <p className="text-[0.5rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1.5">Taille</p>
+          <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1.5">Taille</p>
           <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-white tracking-wide">{profile.taille} cm</p>
         </div>
         {/* Body fat — lien vers suivi avec flèche si check-in requis */}
         <Link href="/dashboard/suivi" className={`border p-4 flex flex-col justify-between group transition-colors ${needsBF ? "border-[#c9a84c]/25 bg-[#c9a84c]/5 hover:bg-[#c9a84c]/8" : "border-white/10 bg-[#111] hover:border-white/15"}`}>
           <div className="flex items-center justify-between">
-            <p className="text-[0.5rem] tracking-[0.2em] uppercase text-[#c9a84c]">Body fat</p>
+            <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c]">Body fat</p>
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={needsBF ? "#c9a84c" : "rgba(255,255,255,0.2)"} strokeWidth="2" strokeLinecap="round" className="transition-transform group-hover:translate-x-0.5"><polyline points="9 18 15 12 9 6"/></svg>
           </div>
           <p style={{ fontFamily: "var(--font-bebas)", color: needsBF && bodyFat === null ? "#c9a84c" : "white" }} className="text-2xl tracking-wide mt-1.5">
@@ -406,7 +446,7 @@ export default function AccueilPage() {
           const balLabel = Math.abs(balance) <= 100 ? "Maintenance" : surplus ? "Surplus" : "Déficit";
           return (
             <div className="border bg-[#111] p-4" style={{ borderColor: `${balColor}30` }}>
-              <p className="text-[0.5rem] tracking-[0.2em] uppercase mb-1.5" style={{ color: balColor }}>{balLabel}</p>
+              <p className="text-[0.65rem] tracking-[0.2em] uppercase mb-1.5" style={{ color: balColor }}>{balLabel}</p>
               <p style={{ fontFamily: "var(--font-bebas)", color: balColor }} className="text-2xl tracking-wide">
                 {surplus ? "+" : ""}{balance.toLocaleString("fr-FR")} kcal
               </p>
@@ -444,7 +484,7 @@ export default function AccueilPage() {
               { label: "Sommeil/stress", val: profile.sommeil_stress },
             ].map(r => (
               <div key={r.label}>
-                <p className="text-[0.5rem] tracking-[0.18em] uppercase text-white/25 mb-1">{r.label}</p>
+                <p className="text-[0.65rem] tracking-[0.18em] uppercase text-white/25 mb-1">{r.label}</p>
                 <p className="text-xs text-white/55 leading-relaxed">{r.val}</p>
               </div>
             ))}
@@ -460,11 +500,11 @@ export default function AccueilPage() {
       {/* ── Actions ── */}
       <div className="flex gap-4">
         <Link href="/dashboard/onboarding"
-          className="flex-1 border border-white/10 text-white/40 text-[0.6rem] tracking-[0.15em] uppercase py-4 text-center hover:border-white/20 hover:text-white/60 transition-colors">
+          className="flex-1 border border-white/10 text-white/40 text-[0.7rem] tracking-[0.15em] uppercase py-4 text-center hover:border-white/20 hover:text-white/60 transition-colors">
           Modifier mon profil
         </Link>
         <Link href="/dashboard/coach"
-          className="flex-1 bg-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.15em] uppercase py-4 text-center hover:bg-[#e2c97e] transition-colors">
+          className="flex-1 bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.15em] uppercase py-4 text-center hover:bg-[#e2c97e] transition-colors">
           Contacter Samuel →
         </Link>
       </div>
