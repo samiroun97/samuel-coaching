@@ -31,6 +31,8 @@ export default function ProgrammesPage() {
   const [genError,    setGenError]    = useState("");
   const [sending,     setSending]     = useState(false);
   const [sentTo,      setSentTo]      = useState<string | null>(null);
+  const [nbSeries,    setNbSeries]    = useState("");
+  const [repos,       setRepos]       = useState("");
 
   const load = async () => {
     const [{ data: c, error: cErr }, { data: s }] = await Promise.all([
@@ -58,7 +60,11 @@ export default function ProgrammesPage() {
     if (!selected || generating) return;
     setGenerating(true); setGenError("");
     try {
-      const res = await apiPost("/api/programme/generate", { profile: selected });
+      const res = await apiPost("/api/programme/generate", {
+        profile: selected,
+        seriesParExercice: nbSeries.trim() || null,
+        reposEntreSeries: repos.trim() || null,
+      });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Erreur génération");
       setDrafts((data.seances as SeanceDraft[]).map(s => ({ ...emptySeance(), ...s })));
@@ -191,6 +197,16 @@ export default function ProgrammesPage() {
                   <p className="text-[0.65rem] text-white/35 leading-relaxed">
                     Génère {Math.min(Math.max(selected.seances_par_semaine || 3, 2), 6)} séances adaptées à l&apos;objectif, au niveau, au lieu et aux blessures de {selected.prenom}. Tu pourras tout modifier avant d&apos;envoyer.
                   </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className={lbl}>Séries par exercice</label>
+                      <input type="number" min={1} max={10} placeholder="ex : 4" className={inp} value={nbSeries} onChange={e => setNbSeries(e.target.value)}/>
+                    </div>
+                    <div>
+                      <label className={lbl}>Repos entre séries</label>
+                      <input placeholder="ex : 60-90 sec" className={inp} value={repos} onChange={e => setRepos(e.target.value)}/>
+                    </div>
+                  </div>
                   <button onClick={generate} disabled={generating}
                     className="bg-[#c9a84c] text-black text-[0.58rem] font-bold tracking-[0.18em] uppercase py-3 hover:bg-[#e2c97e] transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
                     {generating ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Génération en cours…</> : "Générer avec l'IA →"}

@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) return NextResponse.json({ error: "Clé API manquante" }, { status: 500 });
 
-    const { profile } = await req.json();
+    const { profile, seriesParExercice, reposEntreSeries } = await req.json();
     const { prenom, age, sexe, poids, taille, objectifs, experience, niveau_activite, seances_par_semaine, duree_seance, lieu_entrainement, blessures } = profile ?? {};
     if (!objectifs && !experience) return NextResponse.json({ error: "Profil client incomplet" }, { status: 400 });
 
@@ -49,12 +49,14 @@ Séances par semaine : ${nb}
 Durée par séance : ${duree_seance || "1h"}
 Lieu d'entraînement : ${lieu_entrainement || "salle de sport"}
 Blessures / limitations : ${blessures || "aucune"}
+${seriesParExercice ? `Nombre de séries imposé : ${seriesParExercice} séries par exercice de renforcement (sauf exercice au temps comme le gainage, où la durée prime).` : ""}
+${reposEntreSeries ? `Temps de repos imposé entre les séries : ${reposEntreSeries}.` : ""}
 
 Règles :
 - Exactement ${nb} séances, adaptées à l'objectif et au niveau du client.
 - Respecte impérativement les blessures/limitations.
 - Adapte les exercices au lieu (maison = poids du corps/haltères, salle = machines/barres, mixte = varie).
-- exercices : un exercice par ligne, format "Nom de l'exercice séries×répétitions (conseil court optionnel)". 5 à 8 exercices par séance (3 à 5 pour cardio).
+- exercices : un exercice par ligne, format "Nom de l'exercice séries×répétitions${reposEntreSeries ? ` — repos ${reposEntreSeries}` : ""} (conseil court optionnel)". 5 à 8 exercices par séance (3 à 5 pour cardio).${seriesParExercice ? ` Utilise ${seriesParExercice} séries pour chaque exercice sauf si non pertinent.` : ""}
 - description : 1 phrase — objectif de la séance et intensité.
 - Tout en français.`;
 
