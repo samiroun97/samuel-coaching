@@ -83,7 +83,7 @@ export function generateProgrammePdf(seances: CoachSeance[], clientName?: string
       const dateLabel = new Date(s.date_prevue + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
       doc.text(dateLabel, pageW - margin, y + 5, { align: "right" });
     }
-    y += 7;
+    y += 9;
 
     if (s.type_seance) {
       doc.setFont("helvetica", "bold");
