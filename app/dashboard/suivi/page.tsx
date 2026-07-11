@@ -98,6 +98,23 @@ export default function SuiviPage() {
   const [editingBFDate,  setEditingBFDate]  = useState<string | null>(null);
   const fileRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
+  // ── Check-in hebdomadaire (client → coach) ──
+  const [ckOpen,    setCkOpen]    = useState(false);
+  const [ckWeight,  setCkWeight]  = useState("");
+  const [ckEnergy,  setCkEnergy]  = useState(0);
+  const [ckComp,    setCkComp]    = useState(0);
+  const [ckNotes,   setCkNotes]   = useState("");
+  const [ckSaving,  setCkSaving]  = useState(false);
+  const [ckDone,    setCkDone]    = useState(false);
+  const [lastCkDate, setLastCkDate] = useState<string | null>(null);
+
+  // Lundi de la semaine en cours (référence du check-in)
+  const weekMonday = (() => {
+    const d = new Date(); const day = (d.getDay() + 6) % 7;
+    d.setDate(d.getDate() - day); return d.toISOString().split("T")[0];
+  })();
+  const ckDoneThisWeek = lastCkDate === weekMonday;
+
   useEffect(() => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -115,8 +132,30 @@ export default function SuiviPage() {
       setBfHist(bh);
       const lastWeight = wh[0]?.weight ?? (p as Profile | null)?.poids;
       if (lastWeight) setWeightInput(String(lastWeight));
+      if (lastWeight) setCkWeight(String(lastWeight));
+
+      // Dernier check-in envoyé
+      const { data: ck } = await supabase.from("weekly_checkins")
+        .select("week_date").eq("client_id", user.id).order("week_date", { ascending: false }).limit(1);
+      if (ck?.[0]) setLastCkDate(ck[0].week_date);
     })();
   }, []);
+
+  const sendCheckin = async () => {
+    if (!userId || ckSaving) return;
+    setCkSaving(true);
+    const { error } = await supabase.from("weekly_checkins").upsert({
+      client_id: userId, week_date: weekMonday,
+      weight: ckWeight ? parseFloat(ckWeight.replace(",", ".")) : null,
+      compliance: ckComp || null, energy: ckEnergy || null,
+      notes: ckNotes || null,
+    }, { onConflict: "client_id,week_date" });
+    setCkSaving(false);
+    if (!error) {
+      setLastCkDate(weekMonday); setCkDone(true);
+      setTimeout(() => { setCkDone(false); setCkOpen(false); }, 1800);
+    }
+  };
 
   const lastWeight      = weightHist[0] ?? null;
   const alreadySelected = weightHist.some(e => e.date === selectedDate);
@@ -162,8 +201,9 @@ export default function SuiviPage() {
 
   const saveBFEntry = async () => {
     if (!result) return;
+    const entryId = Date.now().toString();
     const entry: BodyFatEntry = {
-      id: Date.now().toString(),
+      id: entryId,
       date: new Date().toISOString(),
       body_fat: result.body_fat_percentage,
       note: result.note,
@@ -175,6 +215,9 @@ export default function SuiviPage() {
     const next = [entry, ...bfHist];
     setBfHist(next);
     localStorage.setItem(`bodyfat_history_${userId}`, JSON.stringify(next));
+
+    // Upload sécurisé dans Supabase Storage (fire & forget)
+    void uploadSessionPhotos(entryId, photos, shareWithCoach);
 
     if (shareWithCoach && userEmail && userEmail !== SAMUEL_EMAIL) {
       setSharing(true);
@@ -228,6 +271,37 @@ export default function SuiviPage() {
     setEditingBFId(null);
   };
 
+  const uploadSessionPhotos = async (entryId: string, photoMap: Record<string, string>, shared: boolean) => {
+    if (!userId || Object.keys(photoMap).length === 0) return;
+    for (const [key, dataUrl] of Object.entries(photoMap)) {
+      try {
+        const base64 = dataUrl.split(",")[1];
+        const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+        const blob = new Blob([bytes], { type: "image/jpeg" });
+        const path = `${userId}/${entryId}/${key}.jpg`;
+        const { error: uploadErr } = await supabase.storage
+          .from("body-photos")
+          .upload(path, blob, { contentType: "image/jpeg" });
+        if (!uploadErr) {
+          await supabase.from("body_photos").insert({
+            user_id: userId, photo_path: path, session_id: entryId, shared_with_coach: shared,
+          });
+        }
+      } catch { /* fail silently si le bucket n'existe pas encore */ }
+    }
+  };
+
+  const togglePhotoSharing = async (entryId: string, shared: boolean) => {
+    if (!userId) return;
+    await supabase.from("body_photos")
+      .update({ shared_with_coach: shared })
+      .eq("session_id", entryId)
+      .eq("user_id", userId);
+    const next = bfHist.map(e => e.id === entryId ? { ...e, shared } : e);
+    setBfHist(next);
+    localStorage.setItem(`bodyfat_history_${userId}`, JSON.stringify(next));
+  };
+
   const saveBFEditDate = (id: string, dateVal: string) => {
     if (!dateVal) { setEditingBFDate(null); return; }
     const next = bfHist.map(e => e.id === id ? { ...e, date: new Date(dateVal + "T12:00:00").toISOString() } : e)
@@ -246,6 +320,65 @@ export default function SuiviPage() {
         <p className="text-[0.7rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-2">Rubrique</p>
         <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl sm:text-5xl text-white tracking-wide">SUIVI</h1>
       </div>
+
+      {/* ── Check-in hebdomadaire (client → coach) ── */}
+      {userEmail !== SAMUEL_EMAIL && (
+        <div className={`border mb-6 ${ckDoneThisWeek && !ckOpen ? "border-[#7eb8a0]/25 bg-[#7eb8a0]/5" : "border-[#c9a84c]/25 bg-[#c9a84c]/5"}`}>
+          <button onClick={() => setCkOpen(o => !o)} className="w-full flex items-center justify-between px-5 py-4 text-left">
+            <div>
+              <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-0.5">Check-in de la semaine</p>
+              <p className="text-[0.6rem] text-white/35 tracking-wider">
+                {ckDoneThisWeek ? "✓ Envoyé à Samuel cette semaine — modifier" : "Fais ton point du dimanche : poids, énergie, adhérence"}
+              </p>
+            </div>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+              className={`text-white/30 shrink-0 transition-transform ${ckOpen ? "rotate-180" : ""}`}><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          {ckOpen && (
+            <div className="px-5 pb-5 flex flex-col gap-4 border-t border-white/5 pt-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[0.6rem] tracking-[0.15em] uppercase text-white/40 block mb-1.5">Poids (kg)</label>
+                  <input type="number" inputMode="decimal" step="0.1" value={ckWeight} onChange={e => setCkWeight(e.target.value)}
+                    className="w-full bg-[#0a0a0a] border border-white/10 text-white text-base px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40" placeholder="78.0"/>
+                </div>
+              </div>
+              <div>
+                <label className="text-[0.6rem] tracking-[0.15em] uppercase text-white/40 block mb-1.5">Énergie / forme — 1 faible · 5 top</label>
+                <div className="flex gap-2">
+                  {[1,2,3,4,5].map(n => (
+                    <button key={n} onClick={() => setCkEnergy(n)}
+                      className={`flex-1 h-10 border text-sm font-bold transition-all ${ckEnergy >= n ? "bg-[#7eb8a0] border-[#7eb8a0] text-black" : "border-white/15 text-white/25"}`}>{n}</button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-[0.6rem] tracking-[0.15em] uppercase text-white/40 block mb-1.5">Adhérence au plan — 1 difficile · 5 parfaite</label>
+                <div className="flex gap-2">
+                  {[1,2,3,4,5].map(n => (
+                    <button key={n} onClick={() => setCkComp(n)}
+                      className={`flex-1 h-10 border text-sm font-bold transition-all ${ckComp >= n ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-white/15 text-white/25"}`}>{n}</button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-[0.6rem] tracking-[0.15em] uppercase text-white/40 block mb-1.5">Un mot pour Samuel</label>
+                <textarea rows={3} value={ckNotes} onChange={e => setCkNotes(e.target.value)}
+                  placeholder="Comment s'est passée ta semaine ? Difficultés, victoires, douleurs…"
+                  className="w-full bg-[#0a0a0a] border border-white/10 text-white/80 text-sm px-3 py-2.5 resize-none focus:outline-none focus:border-[#c9a84c]/40"/>
+              </div>
+              {ckDone ? (
+                <div className="text-center py-2 text-[#7eb8a0] text-sm tracking-wider">Check-in envoyé ✓</div>
+              ) : (
+                <button onClick={sendCheckin} disabled={ckSaving}
+                  className="bg-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.2em] uppercase py-3 hover:bg-[#e2c97e] transition-colors disabled:opacity-40">
+                  {ckSaving ? "Envoi…" : "Envoyer mon check-in à Samuel →"}
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       <DateNav date={selectedDate} onChange={setSelectedDate} />
 
@@ -508,7 +641,16 @@ export default function SuiviPage() {
                     )}
                     <div className="flex items-center gap-2 mt-0.5">
                       <p className="text-[0.42rem] text-white/20 italic truncate">{entry.note}</p>
-                      {entry.shared && <span className="text-[0.38rem] tracking-wider text-[#c9a84c]/40 uppercase border border-[#c9a84c]/15 px-1 py-px">Partagé</span>}
+                      <button
+                        onClick={() => togglePhotoSharing(entry.id, !entry.shared)}
+                        className={`text-[0.38rem] tracking-wider uppercase border px-1.5 py-px transition-colors shrink-0 ${
+                          entry.shared
+                            ? "text-[#c9a84c]/60 border-[#c9a84c]/25 hover:text-[#e07070]/50 hover:border-[#e07070]/20"
+                            : "text-white/15 border-white/8 hover:text-[#c9a84c]/40 hover:border-[#c9a84c]/20"
+                        }`}
+                      >
+                        {entry.shared ? "Partagé ✓" : "Partager"}
+                      </button>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 ml-4 shrink-0">

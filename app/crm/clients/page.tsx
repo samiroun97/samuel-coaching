@@ -25,9 +25,11 @@ type StatusKey = keyof typeof STATUS_CFG;
 type StageKey  = keyof typeof STAGE_CFG;
 
 type Client   = { id: string; email: string; prenom: string; nom: string; age: number; poids: number; taille: number; sexe: string; niveau_activite: string; experience: string; seances_par_semaine: number; lieu_entrainement: string; blessures: string; alimentation: string; sommeil_stress: string; objectifs: string; updated_at: string; status: StatusKey | null; subscription_end: string | null; pipeline_stage: StageKey | null };
-type Seance   = { id: string; titre: string; type_seance: string | null; date_prevue: string | null; description: string | null; exercices: string | null };
+type Seance   = { id: string; titre: string; type_seance: string | null; date_prevue: string | null; description: string | null; exercices: string | null; completed_at: string | null };
 type Note     = { id: string; client_id: string; content: string; created_at: string };
-type Checkin  = { id: string; client_id: string; week_date: string; weight: number | null; body_fat: number | null; compliance: number | null; notes: string | null };
+type Checkin  = { id: string; client_id: string; week_date: string; weight: number | null; body_fat: number | null; compliance: number | null; energy: number | null; notes: string | null };
+type FoodItem = { name: string; calories: number; proteines: number; glucides: number; lipides: number; repas?: string | null };
+type DaySummary = { date: string; calories: number; proteines: number; glucides: number; lipides: number; foods: FoodItem[] | null };
 type MealPlan = { id: string; name: string; notes: string | null; is_active: boolean };
 type MealItem = { id: string; plan_id: string; meal_type: string; name: string; calories: number; proteines: number; glucides: number; lipides: number };
 
@@ -40,7 +42,7 @@ export default function ClientsPage() {
   const [filterStage,  setFilterStage]  = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [selected, setSelected] = useState<Client | null>(null);
-  const [tab,      setTab]      = useState<"profil"|"notes"|"checkin"|"programme"|"repas">("profil");
+  const [tab,      setTab]      = useState<"profil"|"notes"|"checkin"|"programme"|"repas"|"journal">("profil");
   const [loading,  setLoading]  = useState(true);
 
   // Detail data
@@ -50,6 +52,7 @@ export default function ClientsPage() {
   const [mealPlans,    setMealPlans]    = useState<MealPlan[]>([]);
   const [mealItems,    setMealItems]    = useState<MealItem[]>([]);
   const [activePlanId, setActivePlanId] = useState<string | null>(null);
+  const [journal,      setJournal]      = useState<DaySummary[]>([]);
 
   // Forms
   const [noteInput,    setNoteInput]    = useState("");
@@ -84,12 +87,14 @@ export default function ClientsPage() {
     setSelected(c); setTab("profil");
     setNoteInput(""); setCkForm({ week_date: todayStr(), weight: "", body_fat: "", compliance: 0, notes: "" }); setSeanceErr("");
     setSeanceForm({ titre: "", type_seance: "", date_prevue: "", description: "", exercices: "" });
-    const [{ data: s }, { data: n }, { data: ck }] = await Promise.all([
+    const [{ data: s }, { data: n }, { data: ck }, { data: js }] = await Promise.all([
       supabase.from("programme_seances").select("*").eq("assigned_to_email", c.email).order("created_at", { ascending: false }),
       supabase.from("coach_notes").select("*").eq("client_id", c.id).order("created_at", { ascending: false }),
       supabase.from("weekly_checkins").select("*").eq("client_id", c.id).order("week_date", { ascending: false }),
+      supabase.from("daily_summaries").select("date,calories,proteines,glucides,lipides,foods").eq("user_id", c.id).order("date", { ascending: false }).limit(14),
     ]);
     setSeances((s ?? []) as Seance[]); setNotes((n ?? []) as Note[]); setCheckins((ck ?? []) as Checkin[]);
+    setJournal((js ?? []) as DaySummary[]);
     await loadMealPlans(c.id);
   };
 
@@ -281,6 +286,7 @@ export default function ClientsPage() {
               { key: "checkin",    label: `Check-ins (${checkins.length})` },
               { key: "programme",  label: `Programme (${seances.length})` },
               { key: "repas",      label: `Plan repas${activePlanId ? " ✓" : ""}` },
+              { key: "journal",    label: `Journal (${journal.length})` },
             ] as const).map(({ key, label }) => (
               <button key={key} onClick={() => setTab(key)}
                 className={`py-3 mr-5 text-[0.58rem] tracking-[0.12em] uppercase border-b-2 transition-colors whitespace-nowrap ${tab === key ? "border-[#c9a84c] text-[#c9a84c]" : "border-transparent text-white/30 hover:text-white/50"}`}>
@@ -381,9 +387,10 @@ export default function ClientsPage() {
                           </span>
                           {ck.compliance && <div className="flex gap-0.5">{[1,2,3,4,5].map(n => <div key={n} className="w-2.5 h-2.5 border" style={{ backgroundColor: n <= ck.compliance! ? "#c9a84c" : "transparent", borderColor: n <= ck.compliance! ? "#c9a84c" : "rgba(255,255,255,0.1)" }}/>)}</div>}
                         </div>
-                        <div className="flex gap-5 mb-1">
+                        <div className="flex gap-5 mb-1 items-center flex-wrap">
                           {ck.weight && <span className="text-sm text-white/70 font-medium">{ck.weight} kg</span>}
                           {ck.body_fat && <span className="text-sm text-[#7eb8a0]">{ck.body_fat}% BF</span>}
+                          {ck.energy && <span className="text-[0.6rem] tracking-wider uppercase text-[#7eb8a0]/70">Énergie {ck.energy}/5</span>}
                         </div>
                         {ck.notes && <p className="text-xs text-white/35 leading-relaxed">{ck.notes}</p>}
                       </div>
@@ -421,16 +428,21 @@ export default function ClientsPage() {
                 </div>
                 {seances.length > 0 && (
                   <div>
-                    <p className="text-[0.5rem] tracking-[0.2em] uppercase text-white/25 mb-3">Séances envoyées ({seances.length})</p>
+                    <p className="text-[0.5rem] tracking-[0.2em] uppercase text-white/25 mb-3">
+                      Séances envoyées ({seances.length}) · {seances.filter(s => s.completed_at).length} terminée{seances.filter(s => s.completed_at).length > 1 ? "s" : ""}
+                    </p>
                     <div className="flex flex-col gap-2">
                       {seances.map(s => (
-                        <div key={s.id} className="border border-white/8 bg-[#111] px-4 py-3 flex items-start justify-between gap-3">
+                        <div key={s.id} className={`border px-4 py-3 flex items-start justify-between gap-3 ${s.completed_at ? "border-[#7eb8a0]/25 bg-[#7eb8a0]/5" : "border-white/8 bg-[#111]"}`}>
                           <div className="min-w-0">
                             <div className="flex items-center gap-2 mb-0.5">
-                              {s.type_seance && <span className="text-[0.42rem] tracking-wider uppercase text-[#c9a84c] border border-[#c9a84c]/20 px-1.5 py-0.5">{s.type_seance}</span>}
-                              <p className="text-xs text-white/65">{s.titre}</p>
+                              {s.completed_at && <span className="text-[0.65rem] text-[#7eb8a0] shrink-0">✓</span>}
+                              {s.type_seance && <span className="text-[0.55rem] tracking-wider uppercase text-[#c9a84c] border border-[#c9a84c]/20 px-1.5 py-0.5">{s.type_seance}</span>}
+                              <p className={`text-xs ${s.completed_at ? "text-white/45" : "text-white/65"}`}>{s.titre}</p>
                             </div>
-                            {s.date_prevue && <p className="text-[0.48rem] text-white/25">{new Date(s.date_prevue + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" })}</p>}
+                            {s.completed_at
+                              ? <p className="text-[0.6rem] text-[#7eb8a0]/70">Terminée le {new Date(s.completed_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}</p>
+                              : s.date_prevue && <p className="text-[0.6rem] text-white/25">Prévue {new Date(s.date_prevue + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" })}</p>}
                           </div>
                           <button onClick={async () => { await supabase.from("programme_seances").delete().eq("id", s.id); setSeances(prev => prev.filter(x => x.id !== s.id)); }}
                             className="shrink-0 text-white/15 hover:text-[#e07070] transition-colors">
@@ -496,6 +508,39 @@ export default function ClientsPage() {
                     })}
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* JOURNAL ALIMENTAIRE (lecture seule — ce que le client a loggé) */}
+            {tab === "journal" && (
+              <div className="max-w-2xl flex flex-col gap-3">
+                {journal.length === 0 ? (
+                  <p className="text-white/20 text-xs text-center py-8">Aucun repas loggé par ce client</p>
+                ) : journal.map(d => (
+                  <div key={d.date} className="border border-white/8 bg-[#111]">
+                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/5">
+                      <p className="text-xs text-white/70 capitalize">{new Date(d.date + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</p>
+                      <div className="flex items-center gap-3 text-[0.6rem]">
+                        <span className="text-white/50">{Math.round(d.calories)} kcal</span>
+                        <span className="text-[#c9a84c]/70">P {Math.round(d.proteines)}</span>
+                        <span className="text-[#7eb8a0]/70">G {Math.round(d.glucides)}</span>
+                        <span className="text-[#e07070]/70">L {Math.round(d.lipides)}</span>
+                      </div>
+                    </div>
+                    {d.foods && d.foods.length > 0 ? (
+                      <div className="px-4 py-2 flex flex-col gap-1.5">
+                        {d.foods.map((f, i) => (
+                          <div key={i} className="flex items-center justify-between">
+                            <p className="text-[0.7rem] text-white/55">{f.name}</p>
+                            <p className="text-[0.6rem] text-white/30 shrink-0 ml-3">{Math.round(f.calories)} kcal · P{Math.round(f.proteines)} G{Math.round(f.glucides)} L{Math.round(f.lipides)}</p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="px-4 py-2 text-[0.6rem] text-white/20">Détail des aliments non disponible (totaux seulement)</p>
+                    )}
+                  </div>
+                ))}
               </div>
             )}
 

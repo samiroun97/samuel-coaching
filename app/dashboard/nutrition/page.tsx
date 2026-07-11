@@ -336,7 +336,9 @@ export default function NutritionPage() {
         glucides: acc.glucides + f.glucides, lipides: acc.lipides + f.lipides,
       }), { calories: 0, proteines: 0, glucides: 0, lipides: 0 });
       await supabase.from("daily_summaries").upsert({
-        user_id: userIdRef.current, date: selectedDateRef.current, ...t, updated_at: new Date().toISOString(),
+        user_id: userIdRef.current, date: selectedDateRef.current, ...t,
+        foods: foods.map(f => ({ name: f.name, calories: f.calories, proteines: f.proteines, glucides: f.glucides, lipides: f.lipides, repas: f.repas ?? null })),
+        updated_at: new Date().toISOString(),
       }, { onConflict: "user_id,date" });
     }, 3000);
   }, [foods]);

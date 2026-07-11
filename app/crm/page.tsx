@@ -28,6 +28,7 @@ export default function CRMDashboard() {
   const [msgs,     setMsgs]     = useState<Msg[]>([]);
   const [checkins, setCheckins] = useState<Ck[]>([]);
   const [loading,  setLoading]  = useState(true);
+  const [treated,  setTreated]  = useState<Set<string>>(new Set());
 
   useEffect(() => {
     (async () => {
@@ -41,6 +42,27 @@ export default function CRMDashboard() {
       setCheckins((ck ?? []) as Ck[]);
       setLoading(false);
     })();
+
+    // Lire l'état "traité" de l'inbox (localStorage)
+    try {
+      const raw = localStorage.getItem("crm_treated_convs");
+      if (raw) setTreated(new Set(JSON.parse(raw)));
+    } catch {}
+
+    // Realtime : nouveaux messages + mise à jour du treated
+    window.addEventListener("storage", () => {
+      try {
+        const raw = localStorage.getItem("crm_treated_convs");
+        setTreated(raw ? new Set(JSON.parse(raw)) : new Set());
+      } catch {}
+    });
+
+    const ch = supabase.channel("crm_dashboard")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, p => {
+        setMsgs(prev => [...prev, p.new as Msg]);
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
   }, []);
 
   // ── Compute KPIs ──
@@ -56,7 +78,7 @@ export default function CRMDashboard() {
     const client = m.from_email === SAMUEL_EMAIL ? m.to_email : m.from_email;
     if (client !== SAMUEL_EMAIL) convLastFrom.set(client, m);
   }
-  const nonRepondus = [...convLastFrom.values()].filter(m => m.from_email !== SAMUEL_EMAIL).length;
+  const nonRepondus = [...convLastFrom.entries()].filter(([email, m]) => m.from_email !== SAMUEL_EMAIL && !treated.has(email)).length;
 
   const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().split("T")[0];
   const ckThisWeek = checkins.filter(c => c.week_date >= weekAgo).length;
@@ -66,7 +88,7 @@ export default function CRMDashboard() {
   const alerts: Alert[] = [];
 
   for (const [email, m] of convLastFrom) {
-    if (m.from_email !== SAMUEL_EMAIL) {
+    if (m.from_email !== SAMUEL_EMAIL && !treated.has(email)) {
       const profile = clients.find(c => c.email === email);
       const name = profile ? `${profile.prenom} ${profile.nom}` : email;
       const ago = Math.floor((now - new Date(m.created_at).getTime()) / 3600000);
@@ -90,9 +112,10 @@ export default function CRMDashboard() {
     return { ...ck, name: p ? `${p.prenom} ${p.nom}` : "—" };
   });
 
-  // Recent messages (last per conv, from client)
-  const recentMsgs = [...convLastFrom.values()]
-    .filter(m => m.from_email !== SAMUEL_EMAIL)
+  // Recent messages (last per conv, from client, non traités)
+  const recentMsgs = [...convLastFrom.entries()]
+    .filter(([email, m]) => m.from_email !== SAMUEL_EMAIL && !treated.has(email))
+    .map(([, m]) => m)
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, 5)
     .map(m => {

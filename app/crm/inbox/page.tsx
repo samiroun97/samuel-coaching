@@ -93,6 +93,18 @@ export default function InboxPage() {
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, activeEmail]);
 
+  // Auto-traiter quand on ouvre une conversation
+  useEffect(() => {
+    if (!activeEmail) return;
+    setTreated(prev => {
+      if (prev.has(activeEmail)) return prev;
+      const next = new Set(prev);
+      next.add(activeEmail);
+      localStorage.setItem("crm_treated_convs", JSON.stringify([...next]));
+      return next;
+    });
+  }, [activeEmail]);
+
   // Group conversations
   type Conv = { email: string; name: string; msgs: Msg[]; lastMsg: Msg; unread: boolean };
   const convs: Conv[] = (() => {

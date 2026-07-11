@@ -11,7 +11,7 @@ type LoggedWorkout = {
 };
 type PerfRecord = { date: string; calories: number; duration: number; description: string };
 type PerfHistory = Record<string, PerfRecord[]>;
-type CoachSeance = { id: string; titre: string; type_seance: string | null; date_prevue: string | null; description: string | null; exercices: string | null };
+type CoachSeance = { id: string; titre: string; type_seance: string | null; date_prevue: string | null; description: string | null; exercices: string | null; completed_at: string | null };
 
 const DURATIONS = [
   { label: "15 min", min: 15 }, { label: "30 min", min: 30 }, { label: "45 min", min: 45 },
@@ -78,6 +78,12 @@ export default function ProgrammePage() {
   const [editingGoal,  setEditingGoal]  = useState(false);
   const [coachSeances, setCoachSeances] = useState<CoachSeance[]>([]);
   const [openSeance,   setOpenSeance]   = useState<string | null>(null);
+
+  const toggleSeanceDone = async (s: CoachSeance) => {
+    const done = s.completed_at ? null : new Date().toISOString();
+    setCoachSeances(prev => prev.map(x => x.id === s.id ? { ...x, completed_at: done } : x));
+    await supabase.from("programme_seances").update({ completed_at: done }).eq("id", s.id);
+  };
 
   /* form */
   const [perfHistory, setPerfHistory] = useState<PerfHistory>({});
@@ -225,16 +231,18 @@ export default function ProgrammePage() {
           </div>
           {coachSeances.map(s => {
             const open = openSeance === s.id;
+            const done = !!s.completed_at;
             return (
               <div key={s.id} className="border-b border-white/5 last:border-0">
                 <button onClick={() => setOpenSeance(open ? null : s.id)}
                   className="w-full text-left px-5 py-3 flex items-center justify-between gap-2 hover:bg-white/[0.02] transition-colors">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      {s.type_seance && <span className="text-[0.42rem] tracking-wider uppercase text-[#c9a84c] border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">{s.type_seance}</span>}
-                      <p className="text-xs text-white/70 truncate">{s.titre}</p>
+                      {done && <span className="text-[0.6rem] text-[#7eb8a0] shrink-0">✓</span>}
+                      {s.type_seance && <span className="text-[0.55rem] tracking-wider uppercase text-[#c9a84c] border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">{s.type_seance}</span>}
+                      <p className={`text-xs truncate ${done ? "text-white/35 line-through" : "text-white/70"}`}>{s.titre}</p>
                     </div>
-                    {s.date_prevue && <p className="text-[0.48rem] text-white/25 mt-0.5">{new Date(s.date_prevue + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</p>}
+                    {s.date_prevue && <p className="text-[0.6rem] text-white/25 mt-0.5">{new Date(s.date_prevue + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</p>}
                   </div>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
                     className={`text-white/25 shrink-0 transition-transform ${open ? "rotate-180" : ""}`}>
@@ -243,9 +251,9 @@ export default function ProgrammePage() {
                 </button>
                 {open && (
                   <div className="px-5 pb-4">
-                    {s.description && <p className="text-[0.65rem] text-white/40 leading-relaxed mb-2">{s.description}</p>}
+                    {s.description && <p className="text-xs text-white/40 leading-relaxed mb-2">{s.description}</p>}
                     {s.exercices && (
-                      <div className="flex flex-col gap-1.5">
+                      <div className="flex flex-col gap-1.5 mb-4">
                         {s.exercices.split("\n").filter(l => l.trim()).map((ex, i) => (
                           <div key={i} className="flex items-start gap-2">
                             <span className="w-1 h-1 rounded-full bg-[#c9a84c]/50 mt-1.5 shrink-0"/>
@@ -254,6 +262,12 @@ export default function ProgrammePage() {
                         ))}
                       </div>
                     )}
+                    <button onClick={() => toggleSeanceDone(s)}
+                      className={`w-full py-2.5 text-[0.6rem] font-bold tracking-[0.15em] uppercase transition-colors ${
+                        done ? "border border-[#7eb8a0]/40 text-[#7eb8a0] bg-[#7eb8a0]/5 hover:bg-[#7eb8a0]/10"
+                             : "bg-[#c9a84c] text-black hover:bg-[#e2c97e]"}`}>
+                      {done ? "✓ Séance terminée — annuler" : "Marquer comme terminée"}
+                    </button>
                   </div>
                 )}
               </div>
