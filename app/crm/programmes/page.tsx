@@ -3,6 +3,8 @@ export const dynamic = "force-dynamic";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
+import { type ExerciceItem, serializeExercices } from "@/lib/exercices";
+import ExerciceEditor from "@/components/ExerciceEditor";
 
 const SEANCE_TYPES = ["Haut du corps","Bas du corps","Full body","Cardio","Boxe","Natation","CrossFit","Yoga","Autre"];
 
@@ -16,9 +18,9 @@ const STAGE_CFG: Record<string, { label: string; color: string }> = {
 };
 
 type Client = { id: string; email: string; prenom: string; nom: string; age: number; poids: number; taille: number; sexe: string; niveau_activite: string; experience: string; seances_par_semaine: number; duree_seance: string; lieu_entrainement: string; blessures: string; objectifs: string; pipeline_stage: string | null };
-type SeanceDraft = { titre: string; type_seance: string; date_prevue: string; description: string; exercices: string };
+type SeanceDraft = { titre: string; type_seance: string; date_prevue: string; description: string; exercices: ExerciceItem[] };
 
-const emptySeance = (): SeanceDraft => ({ titre: "", type_seance: "", date_prevue: "", description: "", exercices: "" });
+const emptySeance = (): SeanceDraft => ({ titre: "", type_seance: "", date_prevue: "", description: "", exercices: [] });
 
 export default function ProgrammesPage() {
   const [clients,     setClients]     = useState<Client[]>([]);
@@ -31,8 +33,6 @@ export default function ProgrammesPage() {
   const [genError,    setGenError]    = useState("");
   const [sending,     setSending]     = useState(false);
   const [sentTo,      setSentTo]      = useState<string | null>(null);
-  const [nbSeries,    setNbSeries]    = useState("");
-  const [repos,       setRepos]       = useState("");
 
   const load = async () => {
     const [{ data: c, error: cErr }, { data: s }] = await Promise.all([
@@ -60,11 +60,7 @@ export default function ProgrammesPage() {
     if (!selected || generating) return;
     setGenerating(true); setGenError("");
     try {
-      const res = await apiPost("/api/programme/generate", {
-        profile: selected,
-        seriesParExercice: nbSeries.trim() || null,
-        reposEntreSeries: repos.trim() || null,
-      });
+      const res = await apiPost("/api/programme/generate", { profile: selected });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Erreur génération");
       setDrafts((data.seances as SeanceDraft[]).map(s => ({ ...emptySeance(), ...s })));
@@ -88,7 +84,7 @@ export default function ProgrammesPage() {
       type_seance: d.type_seance || null,
       date_prevue: d.date_prevue || null,
       description: d.description || null,
-      exercices: d.exercices || null,
+      exercices: serializeExercices(d.exercices),
     })));
     setSending(false);
     if (error) { setGenError(error.message); return; }
@@ -197,16 +193,6 @@ export default function ProgrammesPage() {
                   <p className="text-[0.65rem] text-white/35 leading-relaxed">
                     Génère {Math.min(Math.max(selected.seances_par_semaine || 3, 2), 6)} séances adaptées à l&apos;objectif, au niveau, au lieu et aux blessures de {selected.prenom}. Tu pourras tout modifier avant d&apos;envoyer.
                   </p>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className={lbl}>Séries par exercice</label>
-                      <input type="number" min={1} max={10} placeholder="ex : 4" className={inp} value={nbSeries} onChange={e => setNbSeries(e.target.value)}/>
-                    </div>
-                    <div>
-                      <label className={lbl}>Repos entre séries</label>
-                      <input placeholder="ex : 60-90 sec" className={inp} value={repos} onChange={e => setRepos(e.target.value)}/>
-                    </div>
-                  </div>
                   <button onClick={generate} disabled={generating}
                     className="bg-[#c9a84c] text-black text-[0.58rem] font-bold tracking-[0.18em] uppercase py-3 hover:bg-[#e2c97e] transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
                     {generating ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Génération en cours…</> : "Générer avec l'IA →"}
@@ -246,7 +232,10 @@ export default function ProgrammesPage() {
                       </div>
                       <div><label className={lbl}>Date prévue</label><input type="date" className={inp} value={d.date_prevue} onChange={e => setDraft(i, { date_prevue: e.target.value })}/></div>
                       <div><label className={lbl}>Description</label><textarea className={`${inp} resize-none`} rows={2} value={d.description} onChange={e => setDraft(i, { description: e.target.value })}/></div>
-                      <div><label className={lbl}>Exercices (un par ligne)</label><textarea className={`${inp} resize-none`} rows={6} value={d.exercices} onChange={e => setDraft(i, { exercices: e.target.value })}/></div>
+                      <div>
+                        <label className={lbl}>Exercices</label>
+                        <ExerciceEditor items={d.exercices} onChange={items => setDraft(i, { exercices: items })}/>
+                      </div>
                     </div>
                   ))}
 

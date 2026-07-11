@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { requireUser } from "@/lib/apiAuth";
+import { EXERCICE_TYPES } from "@/lib/exercices";
 
 const SEANCE_TYPES = ["Haut du corps", "Bas du corps", "Full body", "Cardio", "Boxe", "Natation", "CrossFit", "Yoga", "Autre"];
 
@@ -15,7 +16,23 @@ const SCHEMA = {
           titre:       { type: "string" },
           type_seance: { type: "string", enum: SEANCE_TYPES },
           description: { type: "string" },
-          exercices:   { type: "string", description: "Un exercice par ligne, séparés par \\n" },
+          exercices: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                nom:         { type: "string" },
+                type:        { type: "string", enum: EXERCICE_TYPES },
+                series:      { type: "string", description: "Nombre de séries, ex: 4" },
+                repetitions: { type: "string", description: "Répétitions par série, ex: 12, ou durée pour un exercice au temps, ex: 40 sec" },
+                poids:       { type: "string", description: "Charge suggérée, ex: '20 kg', 'poids du corps', 'léger à modéré' — cohérente avec le niveau du client" },
+                repos:       { type: "string", description: "Temps de repos entre les séries, ex: 90 sec" },
+                note:        { type: "string", description: "Conseil technique court, chaîne vide si rien à ajouter" },
+              },
+              required: ["nom", "type", "series", "repetitions", "poids", "repos", "note"],
+              additionalProperties: false,
+            },
+          },
         },
         required: ["titre", "type_seance", "description", "exercices"],
         additionalProperties: false,
@@ -33,7 +50,7 @@ export async function POST(req: NextRequest) {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) return NextResponse.json({ error: "Clé API manquante" }, { status: 500 });
 
-    const { profile, seriesParExercice, reposEntreSeries } = await req.json();
+    const { profile } = await req.json();
     const { prenom, age, sexe, poids, taille, objectifs, experience, niveau_activite, seances_par_semaine, duree_seance, lieu_entrainement, blessures } = profile ?? {};
     if (!objectifs && !experience) return NextResponse.json({ error: "Profil client incomplet" }, { status: 400 });
 
@@ -49,14 +66,14 @@ Séances par semaine : ${nb}
 Durée par séance : ${duree_seance || "1h"}
 Lieu d'entraînement : ${lieu_entrainement || "salle de sport"}
 Blessures / limitations : ${blessures || "aucune"}
-${seriesParExercice ? `Nombre de séries imposé : ${seriesParExercice} séries par exercice de renforcement (sauf exercice au temps comme le gainage, où la durée prime).` : ""}
-${reposEntreSeries ? `Temps de repos imposé entre les séries : ${reposEntreSeries}.` : ""}
 
 Règles :
 - Exactement ${nb} séances, adaptées à l'objectif et au niveau du client.
 - Respecte impérativement les blessures/limitations.
 - Adapte les exercices au lieu (maison = poids du corps/haltères, salle = machines/barres, mixte = varie).
-- exercices : un exercice par ligne, format "Nom de l'exercice séries×répétitions${reposEntreSeries ? ` — repos ${reposEntreSeries}` : ""} (conseil court optionnel)". 5 à 8 exercices par séance (3 à 5 pour cardio).${seriesParExercice ? ` Utilise ${seriesParExercice} séries pour chaque exercice sauf si non pertinent.` : ""}
+- exercices : 5 à 8 exercices par séance (3 à 5 pour cardio), chacun avec son propre type, ses séries, répétitions (ou durée pour un exercice au temps), charge/poids et temps de repos entre séries — adapte ces valeurs par exercice selon son rôle (ex. plus de séries/repos et charge plus lourde sur les mouvements composés, moins sur l'isolation ou le gainage).
+- poids : cohérent avec le niveau et le poids de corps du client ; "poids du corps" si l'exercice ne nécessite pas de charge externe.
+- note : conseil technique court par exercice si pertinent (posture, tempo, sécurité), sinon chaîne vide.
 - description : 1 phrase — objectif de la séance et intensité.
 - Tout en français.`;
 

@@ -3,6 +3,8 @@ export const dynamic = "force-dynamic";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { type ExerciceItem, serializeExercices } from "@/lib/exercices";
+import ExerciceEditor from "@/components/ExerciceEditor";
 
 const SAMUEL_EMAIL = "sam97waelti@gmail.com";
 const SEANCE_TYPES = ["Haut du corps","Bas du corps","Full body","Cardio","Boxe","Natation","CrossFit","Yoga","Autre"];
@@ -59,7 +61,7 @@ export default function ClientsPage() {
   const [noteSaving,   setNoteSaving]   = useState(false);
   const [ckForm,       setCkForm]       = useState({ week_date: todayStr(), weight: "", body_fat: "", compliance: 0, notes: "" });
   const [ckSaving,     setCkSaving]     = useState(false);
-  const [seanceForm,   setSeanceForm]   = useState({ titre: "", type_seance: "", date_prevue: "", description: "", exercices: "" });
+  const [seanceForm,   setSeanceForm]   = useState<{ titre: string; type_seance: string; date_prevue: string; description: string; exercices: ExerciceItem[] }>({ titre: "", type_seance: "", date_prevue: "", description: "", exercices: [] });
   const [seanceSaving, setSeanceSaving] = useState(false);
   const [seanceErr,    setSeanceErr]    = useState("");
   const [planName,     setPlanName]     = useState("");
@@ -86,7 +88,7 @@ export default function ClientsPage() {
   const selectClient = async (c: Client) => {
     setSelected(c); setTab("profil");
     setNoteInput(""); setCkForm({ week_date: todayStr(), weight: "", body_fat: "", compliance: 0, notes: "" }); setSeanceErr("");
-    setSeanceForm({ titre: "", type_seance: "", date_prevue: "", description: "", exercices: "" });
+    setSeanceForm({ titre: "", type_seance: "", date_prevue: "", description: "", exercices: [] });
     const [{ data: s }, { data: n }, { data: ck }, { data: js }] = await Promise.all([
       supabase.from("programme_seances").select("*").eq("assigned_to_email", c.email).order("created_at", { ascending: false }),
       supabase.from("coach_notes").select("*").eq("client_id", c.id).order("created_at", { ascending: false }),
@@ -132,11 +134,11 @@ export default function ClientsPage() {
   const sendSeance = async () => {
     if (!selected || !seanceForm.titre) { setSeanceErr("Titre requis"); return; }
     setSeanceSaving(true); setSeanceErr("");
-    const { error } = await supabase.from("programme_seances").insert({ assigned_to_email: selected.email, titre: seanceForm.titre, type_seance: seanceForm.type_seance || null, date_prevue: seanceForm.date_prevue || null, description: seanceForm.description || null, exercices: seanceForm.exercices || null });
+    const { error } = await supabase.from("programme_seances").insert({ assigned_to_email: selected.email, titre: seanceForm.titre, type_seance: seanceForm.type_seance || null, date_prevue: seanceForm.date_prevue || null, description: seanceForm.description || null, exercices: serializeExercices(seanceForm.exercices) });
     if (error) { setSeanceErr(error.message); setSeanceSaving(false); return; }
     const { data } = await supabase.from("programme_seances").select("*").eq("assigned_to_email", selected.email).order("created_at", { ascending: false });
     setSeances((data ?? []) as Seance[]);
-    setSeanceForm({ titre: "", type_seance: "", date_prevue: "", description: "", exercices: "" });
+    setSeanceForm({ titre: "", type_seance: "", date_prevue: "", description: "", exercices: [] });
     setSeanceSaving(false);
   };
 
@@ -419,7 +421,10 @@ export default function ClientsPage() {
                     </div>
                     <div><label className={lbl}>Date prévue</label><input className={inp} type="date" value={seanceForm.date_prevue} onChange={e => setSeanceForm(f => ({ ...f, date_prevue: e.target.value }))}/></div>
                     <div><label className={lbl}>Description</label><textarea className={`${inp} resize-none`} rows={2} placeholder="Objectif, intensité, conseils…" value={seanceForm.description} onChange={e => setSeanceForm(f => ({ ...f, description: e.target.value }))}/></div>
-                    <div><label className={lbl}>Exercices (un par ligne)</label><textarea className={`${inp} resize-none`} rows={7} placeholder={"Développé couché 4×8 @ 80kg\nTirage poulie 3×12\n…"} value={seanceForm.exercices} onChange={e => setSeanceForm(f => ({ ...f, exercices: e.target.value }))}/></div>
+                    <div>
+                      <label className={lbl}>Exercices</label>
+                      <ExerciceEditor items={seanceForm.exercices} onChange={items => setSeanceForm(f => ({ ...f, exercices: items }))}/>
+                    </div>
                     {seanceErr && <p className="text-xs text-[#e07070] px-3 py-2 border border-[#e07070]/20 bg-[#e07070]/5">{seanceErr}</p>}
                     <button onClick={sendSeance} disabled={seanceSaving} className="bg-[#c9a84c] text-black text-[0.58rem] font-bold tracking-[0.18em] uppercase py-3 hover:bg-[#e2c97e] transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
                       {seanceSaving ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Envoi…</> : `Envoyer à ${selected.prenom} →`}

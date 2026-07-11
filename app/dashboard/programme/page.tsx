@@ -2,8 +2,9 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
+import { parseExercices } from "@/lib/exercices";
 
-type Profile = { poids: number; taille: number; age: number; sexe: string };
+type Profile = { prenom: string; poids: number; taille: number; age: number; sexe: string };
 type LoggedWorkout = {
   id: string; date: string; activity: string;
   duration_minutes: number; description: string;
@@ -53,13 +54,13 @@ function DateNav({ date, onChange }: { date: string; onChange: (d: string) => vo
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-white/30 group-hover:text-white/50 transition-colors shrink-0">
           <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
         </svg>
-        <p className="text-[0.6rem] tracking-[0.15em] uppercase text-white/50 group-hover:text-white/70 transition-colors capitalize select-none">{label}</p>
+        <p className="text-[0.7rem] tracking-[0.15em] uppercase text-white/50 group-hover:text-white/70 transition-colors capitalize select-none">{label}</p>
       </div>
       <button onClick={() => move(1)} disabled={isToday} className="w-7 h-7 border border-white/10 text-white/40 hover:text-white/60 hover:border-white/20 transition-colors flex items-center justify-center shrink-0 disabled:opacity-20 disabled:cursor-not-allowed">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
       {!isToday && (
-        <button onClick={() => onChange(todayD)} className="text-[0.45rem] tracking-[0.12em] uppercase text-[#c9a84c] border border-[#c9a84c]/30 px-2 py-1 hover:bg-[#c9a84c]/10 transition-colors shrink-0">
+        <button onClick={() => onChange(todayD)} className="text-[0.62rem] tracking-[0.12em] uppercase text-[#c9a84c] border border-[#c9a84c]/30 px-2 py-1 hover:bg-[#c9a84c]/10 transition-colors shrink-0">
           Auj.
         </button>
       )}
@@ -70,7 +71,9 @@ function DateNav({ date, onChange }: { date: string; onChange: (d: string) => vo
 export default function ProgrammePage() {
   const [profile,      setProfile]      = useState<Profile | null>(null);
   const [workouts,     setWorkouts]     = useState<LoggedWorkout[]>([]);
-  const [selectedDate, setSelectedDate] = useState(todayStr());
+  const [selectedDate, setSelectedDate] = useState(() => {
+    try { return localStorage.getItem("selected_date") || todayStr(); } catch { return todayStr(); }
+  });
   const [steps,        setSteps]        = useState(0);
   const [stepsInput,   setStepsInput]   = useState("0");
   const [stepGoal,     setStepGoal]     = useState(10000);
@@ -78,11 +81,23 @@ export default function ProgrammePage() {
   const [editingGoal,  setEditingGoal]  = useState(false);
   const [coachSeances, setCoachSeances] = useState<CoachSeance[]>([]);
   const [openSeance,   setOpenSeance]   = useState<string | null>(null);
+  const [exportingPdf, setExportingPdf] = useState(false);
 
   const toggleSeanceDone = async (s: CoachSeance) => {
     const done = s.completed_at ? null : new Date().toISOString();
     setCoachSeances(prev => prev.map(x => x.id === s.id ? { ...x, completed_at: done } : x));
     await supabase.from("programme_seances").update({ completed_at: done }).eq("id", s.id);
+  };
+
+  const downloadPdf = async () => {
+    if (exportingPdf || !coachSeances.length) return;
+    setExportingPdf(true);
+    try {
+      const { generateProgrammePdf } = await import("@/lib/pdf");
+      generateProgrammePdf(coachSeances, profile?.prenom);
+    } finally {
+      setExportingPdf(false);
+    }
   };
 
   /* form */
@@ -101,7 +116,7 @@ export default function ProgrammePage() {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data: p } = await supabase.from("profiles").select("poids,taille,age,sexe").eq("id", user.id).single();
+      const { data: p } = await supabase.from("profiles").select("prenom,poids,taille,age,sexe").eq("id", user.id).single();
       if (p) setProfile(p as Profile);
       if (user.email) {
         const { data: cs } = await supabase.from("programme_seances").select("*")
@@ -118,6 +133,7 @@ export default function ProgrammePage() {
   }, []);
 
   useEffect(() => {
+    try { localStorage.setItem("selected_date", selectedDate); } catch { /* ignore */ }
     const savedS = localStorage.getItem(`steps_${selectedDate}`);
     if (savedS) { const n = parseInt(savedS); setSteps(n); setStepsInput(n.toString()); }
     else { setSteps(0); setStepsInput("0"); }
@@ -206,7 +222,7 @@ export default function ProgrammePage() {
   const adjustedCal   = calResult ? Math.round(calResult.calories_brulees * intensityMult) : 0;
 
   const chip = (active: boolean) =>
-    `px-3 py-2 text-[0.6rem] tracking-[0.1em] uppercase border cursor-pointer transition-all ${active ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10" : "border-white/10 text-white/40 hover:border-white/30 hover:text-white/60"}`;
+    `px-3 py-2 text-[0.7rem] tracking-[0.1em] uppercase border cursor-pointer transition-all ${active ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10" : "border-white/10 text-white/40 hover:border-white/30 hover:text-white/60"}`;
   const inputCls = "w-full bg-[#0a0a0a] border border-white/10 text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
 
   const pastDates = [...new Set(
@@ -225,9 +241,20 @@ export default function ProgrammePage() {
       {/* ── Mon programme (séances envoyées par Samuel) ── */}
       {coachSeances.length > 0 && (
         <div className="border border-[#c9a84c]/20 bg-[#0f0d07] mb-6">
-          <div className="px-5 py-3 border-b border-[#c9a84c]/10 flex items-center justify-between">
-            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[#c9a84c]">Mon programme</p>
-            <span className="text-[0.45rem] text-white/25 uppercase tracking-wider">{coachSeances.length} séance{coachSeances.length > 1 ? "s" : ""} · par Samuel</span>
+          <div className="px-5 py-3 border-b border-[#c9a84c]/10 flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[#c9a84c]">Mon programme</p>
+              <span className="text-[0.62rem] text-white/25 uppercase tracking-wider">{coachSeances.length} séance{coachSeances.length > 1 ? "s" : ""} · par Samuel</span>
+            </div>
+            <button onClick={downloadPdf} disabled={exportingPdf}
+              className="shrink-0 flex items-center gap-1.5 border border-[#c9a84c]/30 text-[#c9a84c] text-[0.6rem] font-bold tracking-[0.12em] uppercase px-2.5 py-2 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-40">
+              {exportingPdf ? (
+                <div className="w-3 h-3 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>
+              ) : (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              )}
+              <span className="hidden sm:inline">PDF</span>
+            </button>
           </div>
           {coachSeances.map(s => {
             const open = openSeance === s.id;
@@ -238,11 +265,11 @@ export default function ProgrammePage() {
                   className="w-full text-left px-5 py-3 flex items-center justify-between gap-2 hover:bg-white/[0.02] transition-colors">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      {done && <span className="text-[0.6rem] text-[#7eb8a0] shrink-0">✓</span>}
-                      {s.type_seance && <span className="text-[0.55rem] tracking-wider uppercase text-[#c9a84c] border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">{s.type_seance}</span>}
+                      {done && <span className="text-[0.7rem] text-[#7eb8a0] shrink-0">✓</span>}
+                      {s.type_seance && <span className="text-[0.68rem] tracking-wider uppercase text-[#c9a84c] border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">{s.type_seance}</span>}
                       <p className={`text-xs truncate ${done ? "text-white/35 line-through" : "text-white/70"}`}>{s.titre}</p>
                     </div>
-                    {s.date_prevue && <p className="text-[0.6rem] text-white/25 mt-0.5">{new Date(s.date_prevue + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</p>}
+                    {s.date_prevue && <p className="text-[0.7rem] text-white/25 mt-0.5">{new Date(s.date_prevue + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</p>}
                   </div>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
                     className={`text-white/25 shrink-0 transition-transform ${open ? "rotate-180" : ""}`}>
@@ -253,17 +280,27 @@ export default function ProgrammePage() {
                   <div className="px-5 pb-4">
                     {s.description && <p className="text-xs text-white/40 leading-relaxed mb-2">{s.description}</p>}
                     {s.exercices && (
-                      <div className="flex flex-col gap-1.5 mb-4">
-                        {s.exercices.split("\n").filter(l => l.trim()).map((ex, i) => (
-                          <div key={i} className="flex items-start gap-2">
-                            <span className="w-1 h-1 rounded-full bg-[#c9a84c]/50 mt-1.5 shrink-0"/>
-                            <p className="text-xs text-white/55 leading-relaxed">{ex}</p>
+                      <div className="flex flex-col gap-2 mb-4">
+                        {parseExercices(s.exercices).map((ex, i) => (
+                          <div key={i} className="border border-white/8 bg-white/[0.02] px-3 py-2.5">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className="text-xs text-white/70 font-medium leading-snug">{ex.nom}</p>
+                              {ex.type && <span className="text-[0.55rem] tracking-wider uppercase text-white/30 border border-white/10 px-1.5 py-0.5 shrink-0">{ex.type}</span>}
+                            </div>
+                            {(ex.series || ex.repetitions || ex.poids || ex.repos) && (
+                              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5">
+                                {ex.series && <span className="text-[0.7rem] font-bold text-[#c9a84c]">{ex.series}{ex.repetitions ? ` × ${ex.repetitions}` : " séries"}</span>}
+                                {ex.poids && <span className="text-[0.65rem] text-white/40">{ex.poids}</span>}
+                                {ex.repos && <span className="text-[0.65rem] text-white/35">repos {ex.repos}</span>}
+                              </div>
+                            )}
+                            {ex.note && <p className="text-[0.65rem] text-white/35 italic mt-1.5 leading-relaxed">{ex.note}</p>}
                           </div>
                         ))}
                       </div>
                     )}
                     <button onClick={() => toggleSeanceDone(s)}
-                      className={`w-full py-2.5 text-[0.6rem] font-bold tracking-[0.15em] uppercase transition-colors ${
+                      className={`w-full py-2.5 text-[0.7rem] font-bold tracking-[0.15em] uppercase transition-colors ${
                         done ? "border border-[#7eb8a0]/40 text-[#7eb8a0] bg-[#7eb8a0]/5 hover:bg-[#7eb8a0]/10"
                              : "bg-[#c9a84c] text-black hover:bg-[#e2c97e]"}`}>
                       {done ? "✓ Séance terminée — annuler" : "Marquer comme terminée"}
@@ -287,14 +324,14 @@ export default function ProgrammePage() {
             </p>
             <div className="flex items-center gap-1.5">
               <span style={{ fontFamily: "var(--font-bebas)" }} className="text-lg text-[#c9a84c] tracking-wide">{eatCal}</span>
-              <span className="text-[0.45rem] text-white/25 uppercase tracking-wider">kcal</span>
+              <span className="text-[0.62rem] text-white/25 uppercase tracking-wider">kcal</span>
             </div>
           </div>
           {todayWorkouts.map(w => (
             <div key={w.id} className="flex items-center justify-between px-5 py-3 border-b border-white/5 last:border-0">
               <div>
                 <p className="text-xs text-white/70">{w.activity}</p>
-                <p className="text-[0.5rem] text-white/25 mt-0.5">{w.duration_minutes} min{w.description ? ` · ${w.description}` : ""}</p>
+                <p className="text-[0.65rem] text-white/25 mt-0.5">{w.duration_minutes} min{w.description ? ` · ${w.description}` : ""}</p>
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-xs text-white/50">{w.calories_burned} kcal</span>
@@ -339,7 +376,7 @@ export default function ProgrammePage() {
           <div className="h-full transition-all duration-500 rounded-full" style={{ width: `${stepsPct}%`, backgroundColor: steps >= stepGoal ? "#c9a84c" : "#7eb8a0" }}/>
         </div>
 
-        <div className="flex items-center justify-between text-[0.45rem] text-white/20 tracking-wider">
+        <div className="flex items-center justify-between text-[0.62rem] text-white/20 tracking-wider">
           <span>{steps.toLocaleString("fr-FR")} pas</span>
           <span className={steps >= stepGoal ? "text-[#c9a84c]" : ""}>
             {steps >= stepGoal ? "Objectif atteint ✓" : `${(stepGoal - steps).toLocaleString("fr-FR")} restants`}
@@ -350,7 +387,7 @@ export default function ProgrammePage() {
             {editingGoal ? (
               <input
                 type="number" autoFocus
-                className="w-16 bg-[#0a0a0a] border border-[#c9a84c]/40 text-[#c9a84c] text-center text-[0.45rem] py-0.5 focus:outline-none"
+                className="w-16 bg-[#0a0a0a] border border-[#c9a84c]/40 text-[#c9a84c] text-center text-[0.62rem] py-0.5 focus:outline-none"
                 value={goalInput}
                 onChange={e => setGoalInput(e.target.value)}
                 onBlur={() => saveGoal(parseInt(goalInput) || 10000)}
@@ -369,7 +406,7 @@ export default function ProgrammePage() {
 
       {/* ── Explication pas ── */}
       <div className="border-t border-white/5 px-5 py-4 bg-[#0a0a0a]/60 mb-6">
-        <p className="text-[0.55rem] tracking-[0.15em] uppercase text-white/30 mb-3">Pourquoi suivre tes pas est aussi important que tes séances</p>
+        <p className="text-[0.68rem] tracking-[0.15em] uppercase text-white/30 mb-3">Pourquoi suivre tes pas est aussi important que tes séances</p>
         <div className="flex flex-col gap-2.5">
           <p className="text-[0.65rem] text-white/35 leading-relaxed">On pense souvent que seule la séance de sport compte pour brûler des calories. Mais ce que tu fais en dehors de l&apos;entraînement, marcher, monter des escaliers, bouger dans la journée peut représenter une dépense calorique encore plus grande que ta séance elle-même.</p>
           <p className="text-[0.65rem] text-white/35 leading-relaxed">Une journée où tu marches peu, même si ton entraînement était intense, peut au final brûler moins de calories qu&apos;une journée où tu t&apos;es beaucoup déplacé, même sans sport. C&apos;est pour ça que suivre tes pas n&apos;est pas un détail : c&apos;est une vraie pièce du puzzle qui influence directement tes résultats, au même titre que tes séances.</p>
@@ -386,11 +423,11 @@ export default function ProgrammePage() {
             value={activity} onChange={e => { setActivity(e.target.value); setCalResult(null); }}/>
           {lastPerf && (
             <div className="mt-1.5 flex items-center justify-between bg-[#0a0a0a] border border-white/5 px-3 py-2">
-              <span className="text-[0.5rem] tracking-wider text-white/25 uppercase">Dernière fois</span>
+              <span className="text-[0.65rem] tracking-wider text-white/25 uppercase">Dernière fois</span>
               <div className="flex items-center gap-3">
-                <span className="text-[0.5rem] text-white/35">{lastPerf.duration} min</span>
-                <span className="text-[0.5rem] text-[#c9a84c]/70">{lastPerf.calories} kcal</span>
-                <span className="text-[0.45rem] text-white/20">
+                <span className="text-[0.65rem] text-white/35">{lastPerf.duration} min</span>
+                <span className="text-[0.65rem] text-[#c9a84c]/70">{lastPerf.calories} kcal</span>
+                <span className="text-[0.62rem] text-white/20">
                   {new Date(lastPerf.date).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
                 </span>
               </div>
@@ -447,21 +484,21 @@ export default function ProgrammePage() {
             <div className="border border-[#c9a84c]/20 bg-[#c9a84c]/5 p-4 flex items-center justify-between">
               <div className="flex-1 min-w-0 mr-4">
                 <div className="flex items-center gap-2 mb-1">
-                  <p className="text-[0.5rem] tracking-[0.15em] uppercase text-[#c9a84c]">Estimation IA</p>
+                  <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]">Estimation IA</p>
                   {intensity !== "haute" && (
-                    <span className="text-[0.42rem] tracking-[0.1em] uppercase border border-white/15 text-white/30 px-1.5 py-0.5">
+                    <span className="text-[0.6rem] tracking-[0.1em] uppercase border border-white/15 text-white/30 px-1.5 py-0.5">
                       intensité {intensity} · ×{intensityMult}
                     </span>
                   )}
                 </div>
                 <p className="text-[0.7rem] text-white/40 italic">{calResult.note}</p>
                 {intensity !== "haute" && (
-                  <p className="text-[0.5rem] text-white/20 mt-1">Base haute intensité : {calResult.calories_brulees} kcal</p>
+                  <p className="text-[0.65rem] text-white/20 mt-1">Base haute intensité : {calResult.calories_brulees} kcal</p>
                 )}
               </div>
               <div className="text-right shrink-0">
                 <p style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-white tracking-wide leading-none">{adjustedCal}</p>
-                <p className="text-[0.45rem] tracking-[0.15em] uppercase text-white/30">kcal</p>
+                <p className="text-[0.62rem] tracking-[0.15em] uppercase text-white/30">kcal</p>
               </div>
             </div>
             <div className="flex gap-2">
@@ -470,14 +507,14 @@ export default function ProgrammePage() {
                 Ré-estimer
               </button>
               <button onClick={addWorkout}
-                className="flex-1 bg-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.2em] uppercase py-2.5 hover:bg-[#e2c97e] transition-colors">
+                className="flex-1 bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 hover:bg-[#e2c97e] transition-colors">
                 Ajouter à ma journée →
               </button>
             </div>
           </div>
         ) : (
           <button onClick={estimate} disabled={!activity.trim() || estimating}
-            className="bg-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             {estimating
               ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Estimation en cours…</>
               : "Estimer les calories brûlées →"}
@@ -492,20 +529,20 @@ export default function ProgrammePage() {
           {/* EAT */}
           <div className="border border-white/5 bg-[#0a0a0a] py-4 px-3 text-center">
             <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[#c9a84c] tracking-wide leading-none">{eatCal}</p>
-            <p className="text-[0.5rem] tracking-[0.15em] uppercase text-white/30 mt-1.5">EAT</p>
-            <p className="text-[0.45rem] text-white/15 mt-0.5">Exercice intentionnel</p>
+            <p className="text-[0.65rem] tracking-[0.15em] uppercase text-white/30 mt-1.5">EAT</p>
+            <p className="text-[0.62rem] text-white/15 mt-0.5">Exercice intentionnel</p>
           </div>
           {/* NEAT */}
           <div className="border border-white/5 bg-[#0a0a0a] py-4 px-3 text-center">
             <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[#7eb8a0] tracking-wide leading-none">{neatCal}</p>
-            <p className="text-[0.5rem] tracking-[0.15em] uppercase text-white/30 mt-1.5">NEAT</p>
-            <p className="text-[0.45rem] text-white/15 mt-0.5">Activité quotidienne</p>
+            <p className="text-[0.65rem] tracking-[0.15em] uppercase text-white/30 mt-1.5">NEAT</p>
+            <p className="text-[0.62rem] text-white/15 mt-0.5">Activité quotidienne</p>
           </div>
           {/* Total */}
           <div className="border border-[#c9a84c]/15 bg-[#c9a84c]/5 py-4 px-3 text-center">
             <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-white tracking-wide leading-none">{totalCal}</p>
-            <p className="text-[0.5rem] tracking-[0.15em] uppercase text-white/30 mt-1.5">Total</p>
-            <p className="text-[0.45rem] text-white/15 mt-0.5">kcal brûlées</p>
+            <p className="text-[0.65rem] tracking-[0.15em] uppercase text-white/30 mt-1.5">Total</p>
+            <p className="text-[0.62rem] text-white/15 mt-0.5">kcal brûlées</p>
           </div>
         </div>
 
@@ -519,7 +556,7 @@ export default function ProgrammePage() {
           </div>
         )}
 
-        <div className="flex items-center justify-between text-[0.45rem] text-white/20 tracking-wider">
+        <div className="flex items-center justify-between text-[0.62rem] text-white/20 tracking-wider">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1"><span className="w-2 h-2 inline-block" style={{ backgroundColor: "#c9a84c" }}/>EAT : exercice</span>
             <span className="flex items-center gap-1"><span className="w-2 h-2 inline-block" style={{ backgroundColor: "#7eb8a0" }}/>NEAT : {steps.toLocaleString("fr-FR")} pas</span>
@@ -546,7 +583,7 @@ export default function ProgrammePage() {
                   <div key={w.id} className="flex items-center justify-between px-5 py-2.5 border-b border-white/5 last:border-0">
                     <div>
                       <p className="text-xs text-white/60">{w.activity}</p>
-                      <p className="text-[0.5rem] text-white/20 mt-0.5">{w.duration_minutes} min</p>
+                      <p className="text-[0.65rem] text-white/20 mt-0.5">{w.duration_minutes} min</p>
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="text-xs text-white/40">{w.calories_burned} kcal</span>
