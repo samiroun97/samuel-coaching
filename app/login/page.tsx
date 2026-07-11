@@ -14,31 +14,46 @@ export default function LoginPage() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const translateError = (message: string) => {
+    const m = message.toLowerCase();
+    if (m.includes("already registered") || m.includes("already exists")) return "Un compte existe déjà avec cet email. Essaie de te connecter.";
+    if (m.includes("invalid login credentials")) return "Email ou mot de passe incorrect.";
+    if (m.includes("password") && (m.includes("short") || m.includes("at least"))) return "Le mot de passe doit contenir au moins 6 caractères.";
+    if (m.includes("email") && (m.includes("invalid") || m.includes("valid"))) return "Cette adresse email n'est pas valide.";
+    if (m.includes("rate limit")) return "Trop de tentatives, réessaie dans quelques minutes.";
+    return message;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
     setSuccess("");
 
+    if (mode === "register" && !nom.trim()) { setError("Merci d'indiquer ton prénom."); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setError("Cette adresse email n'est pas valide (ex : ton@email.com)."); return; }
+    if (password.length < 6) { setError("Le mot de passe doit contenir au moins 6 caractères."); return; }
+
+    setLoading(true);
+
     if (mode === "login") {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (error) {
-        setError("Email ou mot de passe incorrect.");
+        setError(translateError(error.message));
         setLoading(false);
       } else {
         router.push("/dashboard");
       }
     } else {
       const { error } = await supabase.auth.signUp({
-        email,
+        email: email.trim(),
         password,
         options: {
-          data: { full_name: nom },
+          data: { full_name: nom.trim() },
           emailRedirectTo: "https://samuel-coaching-five.vercel.app/dashboard",
         },
       });
       if (error) {
-        setError(error.message);
+        setError(translateError(error.message));
         setLoading(false);
       } else {
         setSuccess("Compte créé ! Vérifie ton email pour confirmer ton inscription.");
@@ -78,13 +93,12 @@ export default function LoginPage() {
             {mode === "login" ? "Accède à ton espace client" : "Rejoins l'espace client Samuel Coaching"}
           </p>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
             {mode === "register" && (
               <div>
                 <label className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] block mb-2">Prénom</label>
                 <input
                   type="text"
-                  required
                   placeholder="Ton prénom"
                   value={nom}
                   onChange={(e) => setNom(e.target.value)}
@@ -96,7 +110,9 @@ export default function LoginPage() {
               <label className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] block mb-2">Email</label>
               <input
                 type="email"
-                required
+                inputMode="email"
+                autoCapitalize="none"
+                autoCorrect="off"
                 placeholder="ton@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -107,13 +123,12 @@ export default function LoginPage() {
               <label className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] block mb-2">Mot de passe</label>
               <input
                 type="password"
-                required
                 placeholder="••••••••"
-                minLength={6}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full bg-[#0a0a0a] border border-white/10 text-white placeholder-white/20 text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/50"
               />
+              {mode === "register" && <p className="text-white/25 text-[0.65rem] mt-1.5">Au moins 6 caractères, rien de plus compliqué.</p>}
             </div>
 
             {error && <p className="text-red-400 text-xs">{error}</p>}
