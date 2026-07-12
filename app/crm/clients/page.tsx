@@ -27,6 +27,7 @@ type StatusKey = keyof typeof STATUS_CFG;
 type StageKey  = keyof typeof STAGE_CFG;
 
 type Client   = { id: string; email: string; prenom: string; nom: string; age: number; poids: number; taille: number; sexe: string; niveau_activite: string; experience: string; seances_par_semaine: number; lieu_entrainement: string; blessures: string; alimentation: string; sommeil_stress: string; objectifs: string; updated_at: string; status: StatusKey | null; subscription_end: string | null; pipeline_stage: StageKey | null };
+type PendingSignup = { id: string; email: string; full_name: string | null; created_at: string; email_confirmed_at: string | null };
 type Seance   = { id: string; titre: string; type_seance: string | null; date_prevue: string | null; description: string | null; exercices: string | null; completed_at: string | null };
 type Note     = { id: string; client_id: string; content: string; created_at: string };
 type Checkin  = { id: string; client_id: string; week_date: string; weight: number | null; body_fat: number | null; compliance: number | null; energy: number | null; notes: string | null };
@@ -46,6 +47,7 @@ export default function ClientsPage() {
   const [selected, setSelected] = useState<Client | null>(null);
   const [tab,      setTab]      = useState<"profil"|"notes"|"checkin"|"programme"|"repas"|"journal">("profil");
   const [loading,  setLoading]  = useState(true);
+  const [pendingSignups, setPendingSignups] = useState<PendingSignup[]>([]);
 
   // Detail data
   const [seances,      setSeances]      = useState<Seance[]>([]);
@@ -73,6 +75,8 @@ export default function ClientsPage() {
   useEffect(() => {
     supabase.from("profiles").select("*").order("updated_at", { ascending: false })
       .then(({ data }) => { setClients((data ?? []) as Client[]); setLoading(false); });
+    supabase.rpc("get_pending_signups")
+      .then(({ data }) => setPendingSignups((data ?? []) as PendingSignup[]));
   }, []);
 
   const loadMealPlans = async (id: string) => {
@@ -195,6 +199,30 @@ export default function ClientsPage() {
           </div>
           <p className="text-[0.45rem] text-white/20 mt-2">{filtered.length} client{filtered.length !== 1 ? "s" : ""}</p>
         </div>
+
+        {pendingSignups.length > 0 && (
+          <div className="border-b border-[#c9a84c]/10 bg-[#0f0d07] px-4 md:px-5 py-3 shrink-0">
+            <p className="text-[0.5rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-2">
+              Inscriptions en attente ({pendingSignups.length})
+            </p>
+            <div className="flex flex-col gap-2 max-h-40 overflow-y-auto">
+              {pendingSignups.map(p => (
+                <div key={p.id} className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="text-[0.65rem] text-white/70 truncate">{p.full_name || "Sans nom"}</p>
+                    <p className="text-[0.5rem] text-white/30 truncate">{p.email}</p>
+                  </div>
+                  <div className="flex flex-col items-end gap-0.5 shrink-0">
+                    <span className={`text-[0.4rem] tracking-wider uppercase px-1.5 py-0.5 border whitespace-nowrap ${p.email_confirmed_at ? "text-[#7eb8a0] border-[#7eb8a0]/30" : "text-[#e09070] border-[#e09070]/30"}`}>
+                      {p.email_confirmed_at ? "Email confirmé" : "Confirmation en attente"}
+                    </span>
+                    <span className="text-[0.42rem] text-white/20">{new Date(p.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="flex-1 overflow-y-auto py-2 px-2">
           {filtered.map(c => {
