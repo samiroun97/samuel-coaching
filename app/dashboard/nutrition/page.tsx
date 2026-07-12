@@ -8,6 +8,7 @@ type Goals = { calories: number; proteines: number; glucides: number; lipides: n
 type MacroKey = "proteines" | "glucides" | "lipides";
 type AIResult = { name: string; calories: number; proteines: number; glucides: number; lipides: number };
 type IdeaResult = { name: string; description: string; calories: number; proteines: number; glucides: number; lipides: number };
+const MEAL_TYPES = ["Petit-déjeuner", "Déjeuner", "Dîner", "Collation"] as const;
 type OFFProduct = { product_name: string; brands?: string; nutriments: { "energy-kcal_100g"?: number; proteins_100g?: number; carbohydrates_100g?: number; fat_100g?: number } };
 // base_qty/unit : produit dont les macros valent pour une quantité de base (ex. 100 ml) — la quantité est choisie à l'ajout.
 // Sans base_qty : repas à portion fixe (comportement historique).
@@ -248,6 +249,7 @@ export default function NutritionPage() {
 
   const [modalMode, setModalMode] = useState<"ai"|"search"|"saved">("ai");
   const [ideas,       setIdeas]       = useState<IdeaResult[]>([]);
+  const [ideaMealType, setIdeaMealType] = useState<string>(MEAL_TYPES[0]);
   const [ideaLoading, setIdeaLoading] = useState(false);
   const [ideaError,   setIdeaError]   = useState("");
   const [mealPlan,    setMealPlan]    = useState<MealPlan | null>(null);
@@ -370,7 +372,7 @@ export default function NutritionPage() {
   const generateIdeas = async () => {
     setIdeaLoading(true); setIdeaError(""); setIdeas([]);
     try {
-      const res = await apiPost("/api/nutrition/meal-idea", { remaining });
+      const res = await apiPost("/api/nutrition/meal-idea", { remaining, mealType: ideaMealType });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setIdeas(data.ideas ?? []);
@@ -380,8 +382,8 @@ export default function NutritionPage() {
     setIdeaLoading(false);
   };
 
-  const addFoodDirect = (item: Omit<IdeaResult, "description">) => {
-    setFoods(f => [...f, { id: Date.now().toString(), ...item }]);
+  const addFoodDirect = (item: Omit<IdeaResult, "description">, repas?: string) => {
+    setFoods(f => [...f, { id: Date.now().toString(), ...item, ...(repas ? { repas } : {}) }]);
   };
 
   const totals = foods.reduce((acc,f) => ({
@@ -736,6 +738,15 @@ export default function NutritionPage() {
           )}
         </div>
 
+        <div className="flex gap-1.5 px-5 pt-3 pb-1">
+          {MEAL_TYPES.map(t => (
+            <button key={t} onClick={() => setIdeaMealType(t)}
+              className={`flex-1 py-1.5 text-[0.5rem] tracking-[0.06em] uppercase border transition-colors ${ideaMealType === t ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10" : "border-white/10 text-white/30 hover:border-white/20 hover:text-white/50"}`}>
+              {t}
+            </button>
+          ))}
+        </div>
+
         {ideaError && (
           <p className="px-5 py-3 text-[0.7rem] text-[#e07070]">{ideaError}</p>
         )}
@@ -760,7 +771,7 @@ export default function NutritionPage() {
                     <span className="text-[0.65rem] text-[#e07070]/70">L {idea.lipides}g</span>
                   </div>
                 </div>
-                <button onClick={() => addFoodDirect(idea)}
+                <button onClick={() => addFoodDirect(idea, ideaMealType)}
                   className="shrink-0 w-7 h-7 border border-[#c9a84c]/30 text-[#c9a84c] hover:bg-[#c9a84c]/10 transition-colors flex items-center justify-center text-sm">
                   +
                 </button>

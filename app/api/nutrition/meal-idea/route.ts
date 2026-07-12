@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) return NextResponse.json({ error: "Clé API manquante" }, { status: 500 });
 
-    const { remaining }: { remaining: Remaining } = await req.json();
+    const { remaining, mealType }: { remaining: Remaining; mealType?: string } = await req.json();
 
     if (remaining.calories <= 0) {
       return NextResponse.json({ ideas: [] });
@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     const client = new Anthropic({ apiKey });
 
     const prompt = `Tu es un expert en nutrition sportive. Je cherche des idées de repas pour compléter ma journée alimentaire.
-
+${mealType ? `\nType de repas visé : ${mealType}. Propose exclusivement des idées adaptées à ce moment de la journée (ex: pas de plat en sauce lourd pour un petit-déjeuner, pas de céréales sucrées pour un dîner).\n` : ""}
 Budget restant :
 - Calories : ${remaining.calories} kcal
 - Protéines : ${remaining.proteines}g
