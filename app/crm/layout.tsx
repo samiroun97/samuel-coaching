@@ -38,15 +38,17 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
       // Sync multi-appareils (conversations traitées, etc.)
       await startStateSync(user.id);
 
-      // Count conversations where last message is from client (not Samuel)
+      // Count conversations where last message is from client (not Samuel) and not marked traité
       const { data: msgs } = await supabase.from("messages").select("from_email,to_email,created_at").order("created_at", { ascending: true });
       if (msgs) {
+        let treated = new Set<string>();
+        try { treated = new Set(JSON.parse(localStorage.getItem("crm_treated_convs") ?? "[]")); } catch { /* ignore */ }
         const last = new Map<string, string>();
         for (const m of msgs) {
           const client = m.from_email === SAMUEL_EMAIL ? m.to_email : m.from_email;
           if (client !== SAMUEL_EMAIL) last.set(client, m.from_email);
         }
-        setUnread([...last.values()].filter(f => f !== SAMUEL_EMAIL).length);
+        setUnread([...last.entries()].filter(([client, from]) => from !== SAMUEL_EMAIL && !treated.has(client)).length);
       }
       setReady(true);
     })();
