@@ -72,23 +72,27 @@ function adjustMacro(draft: Goals, key: MacroKey, grams: number): Goals {
   return out;
 }
 
-function CalorieRing({ consumed, goal }: { consumed: number; goal: number }) {
+function CalorieRing({ consumed, goal, goalDefined = true }: { consumed: number; goal: number; goalDefined?: boolean }) {
   const r = 82, circ = 2*Math.PI*r, pct = Math.min(consumed/(goal||1), 1), over = consumed > goal;
   return (
     <div className="relative flex items-center justify-center w-52 h-52 mx-auto">
       <svg width="208" height="208" viewBox="0 0 208 208" className="absolute inset-0">
         <circle cx="104" cy="104" r={r} fill="none" stroke="#ffffff07" strokeWidth="14"/>
-        <circle cx="104" cy="104" r={r} fill="none" stroke={over?"#e07070":"#c9a84c"} strokeWidth="14"
-          strokeDasharray={`${pct*circ} ${circ}`} strokeLinecap="round" transform="rotate(-90 104 104)"
+        <circle cx="104" cy="104" r={r} fill="none" stroke={!goalDefined ? "rgba(255,255,255,0.1)" : over?"#e07070":"#c9a84c"} strokeWidth="14"
+          strokeDasharray={`${goalDefined ? pct*circ : 0} ${circ}`} strokeLinecap="round" transform="rotate(-90 104 104)"
           style={{ transition:"stroke-dasharray 0.9s ease" }}/>
       </svg>
       <div className="flex flex-col items-center z-10">
         <span style={{ fontFamily:"var(--font-bebas)" }} className="text-5xl text-white tracking-wide leading-none">{consumed}</span>
         <span className="text-[0.65rem] tracking-[0.2em] uppercase text-white/30 mt-1">kcal consommés</span>
         <div className="mt-3 h-px w-10 bg-white/10"/>
-        <span className={`text-xs mt-3 ${over?"text-[#e07070]":"text-[#c9a84c]"}`}>
-          {over ? `+${consumed-goal} excédent` : `${Math.max(goal-consumed,0)} restants`}
-        </span>
+        {goalDefined ? (
+          <span className={`text-xs mt-3 ${over?"text-[#e07070]":"text-[#c9a84c]"}`}>
+            {over ? `+${consumed-goal} excédent` : `${Math.max(goal-consumed,0)} restants`}
+          </span>
+        ) : (
+          <span className="text-xs mt-3 text-white/25">Objectif à définir</span>
+        )}
       </div>
     </div>
   );
@@ -234,6 +238,7 @@ export default function NutritionPage() {
     try { return localStorage.getItem("selected_date") || realToday; } catch { return realToday; }
   });
   const [goals,     setGoals]     = useState<Goals>(defaultGoals);
+  const [goalsSet,  setGoalsSet]  = useState(false);
   const [foods,     setFoods]     = useState<Food[]>([]);
   const [showAdd,   setShowAdd]   = useState(false);
   const [showGoals, setShowGoals] = useState(false);
@@ -306,7 +311,7 @@ export default function NutritionPage() {
     const g = localStorage.getItem("nutrition_goals");
     const s = localStorage.getItem("nutrition_saved_meals");
     const r = localStorage.getItem("nutrition_cal_ref");
-    if (g) setGoals(JSON.parse(g));
+    if (g) { setGoals(JSON.parse(g)); setGoalsSet(true); }
     if (s) setSavedMeals(JSON.parse(s));
     if (r === "tdee" || r === "objectif") setCalRef(r);
     const hist: DayHistory[] = [];
@@ -630,7 +635,7 @@ export default function NutritionPage() {
         </div>
       </div>
 
-      <CalorieRing consumed={totals.calories} goal={calTarget}/>
+      <CalorieRing consumed={totals.calories} goal={calTarget} goalDefined={useTdee || goalsSet}/>
 
       {useTdee && (
         <p className="text-center text-[0.65rem] tracking-[0.12em] uppercase text-white/25 mt-4">
@@ -639,9 +644,13 @@ export default function NutritionPage() {
       )}
 
       <div className="flex justify-center gap-8 mt-6 mb-8">
-        {[{ label: useTdee ? "TDEE" : "Objectif", val:calTarget }, { label:"Consommé", val:totals.calories }, { label:"Restant", val:Math.max(calTarget-totals.calories,0) }].map(s => (
+        {[
+          { label: useTdee ? "TDEE" : "Objectif", val: useTdee || goalsSet ? String(calTarget) : "À définir" },
+          { label:"Consommé", val: String(totals.calories) },
+          { label:"Restant",  val: useTdee || goalsSet ? String(Math.max(calTarget-totals.calories,0)) : "—" },
+        ].map(s => (
           <div key={s.label} className="text-center">
-            <p style={{ fontFamily:"var(--font-bebas)" }} className="text-2xl text-white tracking-wide leading-none">{s.val}</p>
+            <p style={{ fontFamily:"var(--font-bebas)" }} className={`text-2xl tracking-wide leading-none ${s.val === "À définir" || s.val === "—" ? "text-white/25" : "text-white"}`}>{s.val}</p>
             <p className="text-[0.65rem] tracking-[0.15em] uppercase text-white/25 mt-1">{s.label}</p>
           </div>
         ))}
@@ -1188,7 +1197,7 @@ export default function NutritionPage() {
                 </div>
               ))}
             </div>
-            <button onClick={() => { setGoals(goalDraft); setShowGoals(false); }}
+            <button onClick={() => { setGoals(goalDraft); setGoalsSet(true); setShowGoals(false); }}
               className="w-full bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] transition-colors">
               Enregistrer
             </button>

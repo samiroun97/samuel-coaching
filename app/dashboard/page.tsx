@@ -26,14 +26,14 @@ function bmr(p: Profile, bodyFatPct: number | null): number {
   return Math.round(p.sexe === "Femme" ? base - 161 : base + 5);
 }
 
-function CalRing({ consumed, tdee, label = "TDEE" }: { consumed: number; tdee: number; label?: string }) {
+function CalRing({ consumed, tdee, label = "TDEE", goalDefined = true }: { consumed: number; tdee: number; label?: string; goalDefined?: boolean }) {
   const r = 90, circ = 2 * Math.PI * r;
   const pct     = tdee > 0 ? Math.min(consumed / tdee, 1.3) : 0;
   const over    = consumed > tdee;
   const balance = consumed - tdee;
   const maint   = Math.abs(balance) <= 100;
-  const color   = over ? "#e07070" : maint ? "#c9a84c" : "#7eb8a0";
-  const dash    = circ * Math.min(pct, 1);
+  const color   = !goalDefined ? "rgba(255,255,255,0.15)" : over ? "#e07070" : maint ? "#c9a84c" : "#7eb8a0";
+  const dash    = goalDefined ? circ * Math.min(pct, 1) : 0;
 
   return (
     <div className="relative flex items-center justify-center w-[210px] h-[210px] sm:w-[240px] sm:h-[240px]">
@@ -47,9 +47,13 @@ function CalRing({ consumed, tdee, label = "TDEE" }: { consumed: number; tdee: n
         <p style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-white tracking-wide leading-none">{consumed.toLocaleString("fr-FR")}</p>
         <p className="text-[0.6rem] tracking-[0.2em] uppercase text-white/30 mt-1">kcal consommés</p>
         <div className="w-8 h-px bg-white/10 my-2"/>
-        <p style={{ fontFamily: "var(--font-bebas)", color }} className="text-lg tracking-wide leading-none">{tdee.toLocaleString("fr-FR")}</p>
+        {goalDefined ? (
+          <p style={{ fontFamily: "var(--font-bebas)", color }} className="text-lg tracking-wide leading-none">{tdee.toLocaleString("fr-FR")}</p>
+        ) : (
+          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-lg tracking-wide leading-none text-white/25">À définir</p>
+        )}
         <p className="text-[0.6rem] tracking-[0.18em] uppercase mt-0.5" style={{ color: "rgba(255,255,255,0.25)" }}>{label}</p>
-        {consumed > 0 && (
+        {goalDefined && consumed > 0 && (
           <p className="text-[0.62rem] font-bold tracking-wider mt-1.5" style={{ color }}>
             {over ? "+" : ""}{balance.toLocaleString("fr-FR")} kcal
           </p>
@@ -130,6 +134,7 @@ export default function AccueilPage() {
   const [userId,       setUserId]       = useState<string | null>(null);
   const [consumed,     setConsumed]     = useState({ calories: 0, proteines: 0, glucides: 0, lipides: 0 });
   const [goals,        setGoals]        = useState<Goals>({ calories: 2200, proteines: 150, glucides: 220, lipides: 70 });
+  const [goalsSet,     setGoalsSet]     = useState(false);
   const [neat,         setNeat]         = useState(0);
   const [eat,          setEat]          = useState(0);
   const [bodyFat,      setBodyFat]      = useState<number | null>(null);
@@ -176,7 +181,7 @@ export default function AccueilPage() {
     // Goals (static)
     try {
       const g = localStorage.getItem("nutrition_goals");
-      if (g) setGoals(JSON.parse(g));
+      if (g) { setGoals(JSON.parse(g)); setGoalsSet(true); }
     } catch { /* ignore */ }
 
     // Restore saved selected date
@@ -322,7 +327,7 @@ export default function AccueilPage() {
 
           {/* Ring */}
           <div className="shrink-0 flex justify-center">
-            <CalRing consumed={consumed.calories} tdee={refCal} label={calView === "goal" ? "Objectif" : "TDEE"}/>
+            <CalRing consumed={consumed.calories} tdee={refCal} label={calView === "goal" ? "Objectif" : "TDEE"} goalDefined={calView === "tdee" || goalsSet}/>
           </div>
 
           {/* Right panel */}
@@ -375,7 +380,11 @@ export default function AccueilPage() {
                       <div className="w-1 h-5 bg-[#c9a84c]"/>
                       <span className="text-[0.65rem] text-white/30">Objectif journalier</span>
                     </div>
-                    <span style={{ fontFamily: "var(--font-bebas)" }} className="text-xl text-white/70 tracking-wide">{goals.calories.toLocaleString("fr-FR")}</span>
+                    {goalsSet ? (
+                      <span style={{ fontFamily: "var(--font-bebas)" }} className="text-xl text-white/70 tracking-wide">{goals.calories.toLocaleString("fr-FR")}</span>
+                    ) : (
+                      <Link href="/dashboard/nutrition" style={{ fontFamily: "var(--font-bebas)" }} className="text-xl text-white/25 tracking-wide hover:text-[#c9a84c] transition-colors">À définir</Link>
+                    )}
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -387,7 +396,7 @@ export default function AccueilPage() {
                   <div className="mt-1 h-1 bg-white/5 rounded-full overflow-hidden">
                     <div className="h-full rounded-full transition-all duration-500"
                       style={{
-                        width: `${Math.min(goals.calories > 0 ? (consumed.calories / goals.calories) * 100 : 0, 100)}%`,
+                        width: `${goalsSet ? Math.min(goals.calories > 0 ? (consumed.calories / goals.calories) * 100 : 0, 100) : 0}%`,
                         backgroundColor: consumed.calories > goals.calories ? "#e07070" : "#7eb8a0",
                       }}/>
                   </div>
@@ -395,9 +404,13 @@ export default function AccueilPage() {
                     <span className="text-[0.65rem] tracking-[0.15em] uppercase text-white/40">
                       {consumed.calories > goals.calories ? "Surplus" : "Restant"}
                     </span>
-                    <span style={{ fontFamily: "var(--font-bebas)" }} className={`text-xl tracking-wide ${consumed.calories > goals.calories ? "text-[#e07070]" : "text-[#7eb8a0]"}`}>
-                      {Math.abs(goals.calories - consumed.calories).toLocaleString("fr-FR")} <span className="text-sm text-white/30">kcal</span>
-                    </span>
+                    {goalsSet ? (
+                      <span style={{ fontFamily: "var(--font-bebas)" }} className={`text-xl tracking-wide ${consumed.calories > goals.calories ? "text-[#e07070]" : "text-[#7eb8a0]"}`}>
+                        {Math.abs(goals.calories - consumed.calories).toLocaleString("fr-FR")} <span className="text-sm text-white/30">kcal</span>
+                      </span>
+                    ) : (
+                      <span style={{ fontFamily: "var(--font-bebas)" }} className="text-xl tracking-wide text-white/20">—</span>
+                    )}
                   </div>
                 </div>
               </div>
