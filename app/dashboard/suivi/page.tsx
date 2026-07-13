@@ -111,6 +111,11 @@ export default function SuiviPage() {
   const [editingBFVal,   setEditingBFVal]   = useState("");
   const [editingBFDate,  setEditingBFDate]  = useState<string | null>(null);
   const fileRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  const uploadSectionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (showUpload) uploadSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [showUpload]);
 
   // ── Check-in hebdomadaire (client → coach) ──
   const [ckOpen,    setCkOpen]    = useState(false);
@@ -524,7 +529,7 @@ export default function SuiviPage() {
 
       {/* Upload & IA */}
       {showUpload && (
-        <div className="border border-white/10 bg-[#111] p-5 mb-4">
+        <div ref={uploadSectionRef} className="border border-white/10 bg-[#111] p-5 mb-4 scroll-mt-4">
           <div className="flex items-center justify-between mb-1">
             <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Photos corporelles</p>
             <span className="text-[0.62rem] text-white/20 tracking-wider">Privées par défaut</span>
