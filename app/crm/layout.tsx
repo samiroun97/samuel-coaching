@@ -25,8 +25,8 @@ function Icon({ name }: { name: string }) {
 export default function CRMLayout({ children }: { children: React.ReactNode }) {
   const router   = useRouter();
   const pathname = usePathname();
-  const [ready,   setReady]   = useState(false);
-  const [unread,  setUnread]  = useState(0);
+  const [ready,     setReady]     = useState(false);
+  const [unreadSet, setUnreadSet] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     // De retour sur le CRM : on sort du mode aperçu client
@@ -38,7 +38,7 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
       // Sync multi-appareils (conversations traitées, etc.)
       await startStateSync(user.id);
 
-      // Count conversations where last message is from client (not Samuel) and not marked traité
+      // Conversations où le dernier message vient du client (pas Samuel) et non marquées traitées
       const { data: msgs } = await supabase.from("messages").select("from_email,to_email,created_at").order("created_at", { ascending: true });
       if (msgs) {
         let treated = new Set<string>();
@@ -48,11 +48,32 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
           const client = m.from_email === SAMUEL_EMAIL ? m.to_email : m.from_email;
           if (client !== SAMUEL_EMAIL) last.set(client, m.from_email);
         }
-        setUnread([...last.entries()].filter(([client, from]) => from !== SAMUEL_EMAIL && !treated.has(client)).length);
+        setUnreadSet(new Set([...last.entries()].filter(([client, from]) => from !== SAMUEL_EMAIL && !treated.has(client)).map(([client]) => client)));
       }
       setReady(true);
     })();
   }, [pathname]);
+
+  // Ecoute en temps réel : un nouveau message client doit faire apparaître le badge
+  // immédiatement, même sur une conversation déjà "traitée" ou déjà ouverte.
+  useEffect(() => {
+    const ch = supabase.channel("crm_layout_messages")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, p => {
+        const m = p.new as { from_email: string; to_email: string };
+        if (m.from_email === SAMUEL_EMAIL) {
+          setUnreadSet(prev => { if (!prev.has(m.to_email)) return prev; const next = new Set(prev); next.delete(m.to_email); return next; });
+        } else {
+          let treated = new Set<string>();
+          try { treated = new Set(JSON.parse(localStorage.getItem("crm_treated_convs") ?? "[]")); } catch { /* ignore */ }
+          treated.delete(m.from_email);
+          localStorage.setItem("crm_treated_convs", JSON.stringify([...treated]));
+          setUnreadSet(prev => { if (prev.has(m.from_email)) return prev; const next = new Set(prev); next.add(m.from_email); return next; });
+        }
+      }).subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, []);
+
+  const unread = unreadSet.size;
 
   const nav = [
     { href: "/crm",            label: "Dashboard",  icon: "grid",  badge: 0 },
