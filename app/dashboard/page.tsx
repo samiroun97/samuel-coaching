@@ -426,7 +426,7 @@ export default function AccueilPage() {
         </div>
 
         {/* Balance banner */}
-        {refCal > 0 && (
+        {refCal > 0 && (calView === "tdee" || goalsSet) && (
           <div className="mt-5 px-4 py-2.5 border flex items-center justify-between"
             style={{ borderColor: `${bannerColor}25`, backgroundColor: `${bannerColor}08` }}>
             <span className="text-[0.7rem] tracking-[0.15em] uppercase" style={{ color: bannerColor }}>{bannerLabel}</span>
@@ -467,13 +467,14 @@ export default function AccueilPage() {
         </Link>
         {/* Balance */}
         {(() => {
-          const balColor = Math.abs(balance) <= 100 ? "#c9a84c" : surplus ? "#e07070" : "#7eb8a0";
-          const balLabel = Math.abs(balance) <= 100 ? "Maintenance" : surplus ? "Surplus" : "Déficit";
+          const balDefined = calView === "tdee" || goalsSet;
+          const balColor = !balDefined ? "rgba(255,255,255,0.25)" : Math.abs(balance) <= 100 ? "#c9a84c" : surplus ? "#e07070" : "#7eb8a0";
+          const balLabel = !balDefined ? "Déficit" : Math.abs(balance) <= 100 ? "Maintenance" : surplus ? "Surplus" : "Déficit";
           return (
-            <div className="border bg-[#111] p-4" style={{ borderColor: `${balColor}30` }}>
+            <div className="border bg-[#111] p-4" style={{ borderColor: `${balDefined ? balColor : "#ffffff"}30` }}>
               <p className="text-[0.65rem] tracking-[0.2em] uppercase mb-1.5" style={{ color: balColor }}>{balLabel}</p>
               <p style={{ fontFamily: "var(--font-bebas)", color: balColor }} className="text-2xl tracking-wide">
-                {surplus ? "+" : ""}{balance.toLocaleString("fr-FR")} kcal
+                {balDefined ? `${surplus ? "+" : ""}${balance.toLocaleString("fr-FR")} kcal` : "À définir"}
               </p>
             </div>
           );
