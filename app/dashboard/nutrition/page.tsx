@@ -334,7 +334,7 @@ export default function NutritionPage() {
     setWater(w ? parseInt(w) : 0);
   }, [selectedDate]);
 
-  useEffect(() => { localStorage.setItem("nutrition_goals", JSON.stringify(goals)); }, [goals]);
+  useEffect(() => { if (goalsSet) localStorage.setItem("nutrition_goals", JSON.stringify(goals)); }, [goals, goalsSet]);
   useEffect(() => { localStorage.setItem("nutrition_cal_ref", calRef); }, [calRef]);
 
   // NEAT (pas) + EAT (entraînements) du jour sélectionné, comme sur l'accueil
