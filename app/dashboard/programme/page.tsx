@@ -247,7 +247,7 @@ export default function ProgrammePage() {
       {/* Header */}
       <div className="mb-6">
         <p className="text-[0.7rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-2">Rubrique</p>
-        <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl sm:text-5xl text-white tracking-wide">PROGRAMME</h1>
+        <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl sm:text-5xl text-white tracking-wide">ACTIVITÉ</h1>
       </div>
 
       {/* ── Mon programme (séances envoyées par Samuel) ── */}

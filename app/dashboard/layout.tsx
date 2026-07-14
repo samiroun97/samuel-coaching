@@ -37,7 +37,7 @@ function NavIcon({ name, size = 17 }: { name: string; size?: number }) {
 const navItems = [
   { label: "Accueil",   href: "/dashboard",            icon: "home" },
   { label: "Nutrition", href: "/dashboard/nutrition",  icon: "nutrition" },
-  { label: "Programme", href: "/dashboard/programme",  icon: "programme" },
+  { label: "Activité",  href: "/dashboard/programme",  icon: "programme" },
   { label: "Suivi",     href: "/dashboard/suivi",      icon: "suivi" },
   { label: "Messages",  href: "/dashboard/coach",      icon: "coach" },
 ];
