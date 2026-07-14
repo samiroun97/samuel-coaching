@@ -20,7 +20,7 @@ function NavIcon({ name, size = 17 }: { name: string; size?: number }) {
     case "nutrition":
       return <svg {...p}><path d="M13.5 6.5c-.5-1.8.5-3.3 2-4"/><path d="M12.2 8.2c-1-1.2-3.2-1.7-4.5-.6-2.8 2.3-2.5 6.8-.8 10 1.2 2.3 2.8 4.2 4.6 4.4.9.1 1.6-.3 2-.3s1.1.4 2 .3c1.8-.2 3.4-2.1 4.6-4.4 1.7-3.2 2-7.7-.8-10-1.5-1.2-3.7-.7-4.7.5-.3.4-.9.4-1.2 0z"/></svg>;
     case "programme":
-      return <svg {...p}><rect x="2" y="9" width="3" height="6" rx="1"/><rect x="19" y="9" width="3" height="6" rx="1"/><line x1="5" y1="12" x2="19" y2="12"/><line x1="8" y1="7" x2="8" y2="17"/><line x1="16" y1="7" x2="16" y2="17"/></svg>;
+      return <svg {...p}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>;
     case "suivi":
       return <svg {...p}><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>;
     case "coach":
