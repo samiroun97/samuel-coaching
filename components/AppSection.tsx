@@ -62,34 +62,42 @@ export default function AppSection() {
         {/* Right — phone mockup */}
         <ScrollReveal direction="right" className="flex items-center justify-center">
           <div className="relative">
-            <div className="absolute inset-0 blur-3xl rounded-full" style={{ background: "radial-gradient(circle, rgba(201,168,76,0.25), transparent 70%)" }} />
+            {/* Soft white halo — separates the phone from the black background */}
+            <div className="absolute -inset-6 blur-3xl rounded-full" style={{ background: "radial-gradient(circle, rgba(255,255,255,0.10), transparent 65%)" }} />
+            <div className="absolute inset-0 blur-3xl rounded-full" style={{ background: "radial-gradient(circle, rgba(201,168,76,0.3), transparent 70%)" }} />
 
-            <div className="relative w-[260px] h-[540px] rounded-[2.8rem] border-[3px] border-white/15 bg-[#050505] p-2.5 shadow-2xl">
-              <div className="relative w-full h-full rounded-[2.2rem] overflow-hidden flex flex-col items-center justify-center" style={{ background: "linear-gradient(160deg,#0a0a0a 0%,#0f0d07 100%)" }}>
-                {/* Notch */}
-                <div className="absolute top-2.5 left-1/2 -translate-x-1/2 w-20 h-5 rounded-full bg-black/60" />
+            {/* Metallic bezel */}
+            <div className="relative w-[264px] h-[544px] rounded-[2.9rem] p-[3px] shadow-2xl" style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.45), rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.3))" }}>
+              <div className="relative w-full h-full rounded-[2.75rem] bg-[#050505] p-1.5">
+                <div className="relative w-full h-full rounded-[2.4rem] overflow-hidden flex flex-col items-center justify-center" style={{ background: "linear-gradient(160deg,#111 0%,#0f0d07 100%)" }}>
+                  {/* Screen sheen */}
+                  <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.06), transparent 40%)" }} />
 
-                {/* Wordmark */}
-                <div className="text-center">
-                  <div style={{ lineHeight: 1 }}>
-                    <span style={{ fontFamily: "var(--font-bebas)", fontSize: "2.4rem", color: "white" }}>SAMUEL</span>
-                    <span style={{ fontFamily: "var(--font-bebas)", fontSize: "2.4rem", color: "#c9a84c" }}>.</span>
+                  {/* Notch */}
+                  <div className="absolute top-2.5 left-1/2 -translate-x-1/2 w-20 h-5 rounded-full bg-black/60" />
+
+                  {/* Wordmark */}
+                  <div className="text-center">
+                    <div style={{ lineHeight: 1 }}>
+                      <span style={{ fontFamily: "var(--font-bebas)", fontSize: "2.4rem", color: "white" }}>SAMUEL</span>
+                      <span style={{ fontFamily: "var(--font-bebas)", fontSize: "2.4rem", color: "#c9a84c" }}>.</span>
+                    </div>
+                    <div style={{ fontSize: "0.7rem", letterSpacing: "0.45em", color: "#c9a84c", marginTop: "0.3rem" }}>
+                      COACHING
+                    </div>
                   </div>
-                  <div style={{ fontSize: "0.7rem", letterSpacing: "0.45em", color: "#c9a84c", marginTop: "0.3rem" }}>
-                    COACHING
+
+                  {/* Decorative ring, echoes the app's calorie ring */}
+                  <svg width="120" height="120" viewBox="0 0 120 120" className="-rotate-90 mt-10">
+                    <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="6" />
+                    <circle cx="60" cy="60" r="50" fill="none" stroke="#c9a84c" strokeWidth="6" strokeLinecap="round" strokeDasharray="230 314" />
+                  </svg>
+
+                  <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-8 opacity-40">
+                    <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-white" />
                   </div>
-                </div>
-
-                {/* Decorative ring, echoes the app's calorie ring */}
-                <svg width="120" height="120" viewBox="0 0 120 120" className="-rotate-90 mt-10">
-                  <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="6" />
-                  <circle cx="60" cy="60" r="50" fill="none" stroke="#c9a84c" strokeWidth="6" strokeLinecap="round" strokeDasharray="230 314" />
-                </svg>
-
-                <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-8 opacity-30">
-                  <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                  <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                  <div className="w-1.5 h-1.5 rounded-full bg-white" />
                 </div>
               </div>
             </div>
