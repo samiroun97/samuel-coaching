@@ -8,6 +8,12 @@ export default function ProfilePage() {
   const [saved,  setSaved]  = useState(false);
   const [error,  setError]  = useState("");
 
+  const [newPassword,     setNewPassword]     = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [pwdSaving, setPwdSaving] = useState(false);
+  const [pwdSaved,  setPwdSaved]  = useState(false);
+  const [pwdError,  setPwdError]  = useState("");
+
   useEffect(() => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -34,6 +40,18 @@ export default function ProfilePage() {
     }).eq("id", user.id);
     if (err) setError(err.message); else setSaved(true);
     setSaving(false);
+  };
+
+  const savePassword = async () => {
+    setPwdError(""); setPwdSaved(false);
+    if (newPassword.length < 6) { setPwdError("Le mot de passe doit contenir au moins 6 caractères."); return; }
+    if (newPassword !== confirmPassword) { setPwdError("Les deux mots de passe ne correspondent pas."); return; }
+    setPwdSaving(true);
+    const { error: err } = await supabase.auth.updateUser({ password: newPassword });
+    setPwdSaving(false);
+    if (err) { setPwdError(err.message); return; }
+    setPwdSaved(true);
+    setNewPassword(""); setConfirmPassword("");
   };
 
   const inp = "w-full bg-[#0a0a0a] border border-white/10 text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
@@ -78,7 +96,7 @@ export default function ProfilePage() {
           <div className="flex gap-2">
             {["Homme", "Femme"].map(s => (
               <button key={s} onClick={() => setForm(f => ({ ...f, sexe: s }))}
-                className={`flex-1 py-2.5 text-[0.6rem] tracking-[0.1em] uppercase border transition-all ${form.sexe === s ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10" : "border-white/10 text-white/40 hover:border-white/30"}`}>
+                className={`flex-1 py-2.5 text-[0.7rem] tracking-[0.1em] uppercase border transition-all ${form.sexe === s ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10" : "border-white/10 text-white/40 hover:border-white/30"}`}>
                 {s}
               </button>
             ))}
@@ -89,10 +107,35 @@ export default function ProfilePage() {
         {saved && <p className="text-xs text-[#7eb8a0] border border-[#7eb8a0]/20 bg-[#7eb8a0]/5 px-3 py-2">Profil mis à jour ✓ — le BMR sera recalculé automatiquement</p>}
 
         <button onClick={save} disabled={saving}
-          className="bg-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+          className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
           {saving
             ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Enregistrement…</>
             : "Enregistrer"}
+        </button>
+      </div>
+
+      <div className="border border-white/10 bg-[#111] p-6 flex flex-col gap-5 mt-6">
+        <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Mot de passe</p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className={lbl}>Nouveau mot de passe</label>
+            <input type="password" autoComplete="new-password" className={inp} value={newPassword} onChange={e => setNewPassword(e.target.value)}/>
+          </div>
+          <div>
+            <label className={lbl}>Confirmer</label>
+            <input type="password" autoComplete="new-password" className={inp} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}/>
+          </div>
+        </div>
+
+        {pwdError && <p className="text-xs text-[#e07070] border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2">{pwdError}</p>}
+        {pwdSaved && <p className="text-xs text-[#7eb8a0] border border-[#7eb8a0]/20 bg-[#7eb8a0]/5 px-3 py-2">Mot de passe mis à jour ✓</p>}
+
+        <button onClick={savePassword} disabled={pwdSaving}
+          className="bg-white/10 text-white text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-white/15 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+          {pwdSaving
+            ? <><div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"/>Enregistrement…</>
+            : "Changer le mot de passe"}
         </button>
       </div>
     </div>
