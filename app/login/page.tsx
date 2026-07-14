@@ -33,7 +33,6 @@ function InstallGuide() {
         onClick={() => setOpen(o => !o)}
         className="w-full flex items-center gap-3 bg-[#c9a84c] text-black px-4 py-3 hover:bg-[#e2c97e] transition-colors shadow-[0_0_20px_rgba(201,168,76,0.25)]"
       >
-        <span className="w-7 h-7 shrink-0 rounded-full bg-black/10 flex items-center justify-center text-sm">📱</span>
         <span className="flex-1 text-left text-[0.7rem] font-bold tracking-[0.08em] uppercase">Installer l&apos;app sur mon téléphone</span>
         <span className={`transition-transform ${open ? "rotate-180" : ""}`}>▾</span>
       </button>
