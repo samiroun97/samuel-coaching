@@ -69,7 +69,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-white/20 text-xs">© 2026 Samuel Coaching. Tous droits réservés.</p>
+          <p className="text-white/20 text-xs">© 2026 Samuel Coaching. Tous droits réservés. Site réalisé par Gilbert Bourcoud.</p>
           <div className="flex gap-6">
             <Link href="/mentions-legales" className="text-white/20 text-xs hover:text-white/50 transition-colors">
               Mentions légales
