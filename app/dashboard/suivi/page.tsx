@@ -12,6 +12,43 @@ type BodyFatEntry = {
   points_forts?: string; points_faibles?: string; conseils?: string; shared?: boolean;
 };
 
+async function loadBodyFatHistory(userId: string): Promise<BodyFatEntry[]> {
+  const { data } = await supabase.from("body_fat_entries")
+    .select("*").eq("user_id", userId).order("date", { ascending: false });
+  if (data && data.length > 0) {
+    const bh: BodyFatEntry[] = data.map(r => ({
+      id: r.id, date: r.date, body_fat: r.body_fat, note: r.note ?? "",
+      points_forts: r.points_forts ?? undefined, points_faibles: r.points_faibles ?? undefined,
+      conseils: r.conseils ?? undefined, shared: r.shared ?? false,
+    }));
+    localStorage.setItem(`bodyfat_history_${userId}`, JSON.stringify(bh));
+    return bh;
+  }
+  // Table distante vide : reprise ponctuelle de l'historique local existant (pré-migration)
+  const bRaw = localStorage.getItem(`bodyfat_history_${userId}`) ?? localStorage.getItem("bodyfat_history");
+  const localBH: BodyFatEntry[] = bRaw ? JSON.parse(bRaw) : [];
+  if (localBH.length > 0) {
+    await supabase.from("body_fat_entries").insert(localBH.map(e => ({
+      id: e.id, user_id: userId, date: e.date, body_fat: e.body_fat, note: e.note,
+      points_forts: e.points_forts, points_faibles: e.points_faibles, conseils: e.conseils,
+      shared: e.shared ?? false,
+    })));
+  }
+  return localBH;
+}
+
+function upsertBodyFatRemote(userId: string, entry: BodyFatEntry) {
+  void supabase.from("body_fat_entries").upsert({
+    id: entry.id, user_id: userId, date: entry.date, body_fat: entry.body_fat,
+    note: entry.note, points_forts: entry.points_forts, points_faibles: entry.points_faibles,
+    conseils: entry.conseils, shared: entry.shared ?? false,
+  });
+}
+
+function deleteBodyFatRemote(userId: string, id: string) {
+  void supabase.from("body_fat_entries").delete().eq("id", id).eq("user_id", userId);
+}
+
 const SLOTS = [
   { key: "face",          label: "Face" },
   { key: "dos",           label: "Dos" },
@@ -144,11 +181,9 @@ export default function SuiviPage() {
       if (p) setProfile(p as Profile);
 
       const wRaw = localStorage.getItem(`weight_history_${user.id}`);
-      const bRaw = localStorage.getItem(`bodyfat_history_${user.id}`) ?? localStorage.getItem("bodyfat_history");
       const wh: WeightEntry[]  = wRaw ? JSON.parse(wRaw) : [];
-      const bh: BodyFatEntry[] = bRaw ? JSON.parse(bRaw) : [];
       setWeightHist(wh);
-      setBfHist(bh);
+      setBfHist(await loadBodyFatHistory(user.id));
       const lastWeight = wh[0]?.weight ?? (p as Profile | null)?.poids;
       if (lastWeight) setWeightInput(String(lastWeight));
       if (lastWeight) setCkWeight(String(lastWeight));
@@ -238,6 +273,7 @@ export default function SuiviPage() {
     const next = [entry, ...bfHist];
     setBfHist(next);
     localStorage.setItem(`bodyfat_history_${userId}`, JSON.stringify(next));
+    if (userId) upsertBodyFatRemote(userId, entry);
 
     // Upload sécurisé dans Supabase Storage (fire & forget)
     void uploadSessionPhotos(entryId, photos, shareWithCoach);
@@ -271,6 +307,7 @@ export default function SuiviPage() {
     const next = [entry, ...bfHist].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     setBfHist(next);
     localStorage.setItem(`bodyfat_history_${userId}`, JSON.stringify(next));
+    if (userId) upsertBodyFatRemote(userId, entry);
     setManualVal(""); setManualDate(""); setShowManual(false);
   };
 
@@ -278,6 +315,7 @@ export default function SuiviPage() {
     const next = bfHist.filter(e => e.id !== id);
     setBfHist(next);
     localStorage.setItem(`bodyfat_history_${userId}`, JSON.stringify(next));
+    if (userId) deleteBodyFatRemote(userId, id);
   };
 
   const deleteWeight = (id: string) => {
@@ -291,6 +329,7 @@ export default function SuiviPage() {
     if (isNaN(val)) { setEditingBFId(null); return; }
     const next = bfHist.map(e => e.id === id ? { ...e, body_fat: +val.toFixed(1) } : e);
     setBfHist(next); localStorage.setItem(`bodyfat_history_${userId}`, JSON.stringify(next));
+    if (userId) { const updated = next.find(e => e.id === id); if (updated) upsertBodyFatRemote(userId, updated); }
     setEditingBFId(null);
   };
 
@@ -323,6 +362,8 @@ export default function SuiviPage() {
     const next = bfHist.map(e => e.id === entryId ? { ...e, shared } : e);
     setBfHist(next);
     localStorage.setItem(`bodyfat_history_${userId}`, JSON.stringify(next));
+    const updated = next.find(e => e.id === entryId);
+    if (updated) upsertBodyFatRemote(userId, updated);
   };
 
   const saveBFEditDate = (id: string, dateVal: string) => {
@@ -330,6 +371,7 @@ export default function SuiviPage() {
     const next = bfHist.map(e => e.id === id ? { ...e, date: new Date(dateVal + "T12:00:00").toISOString() } : e)
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     setBfHist(next); localStorage.setItem(`bodyfat_history_${userId}`, JSON.stringify(next));
+    if (userId) { const updated = next.find(e => e.id === id); if (updated) upsertBodyFatRemote(userId, updated); }
     setEditingBFDate(null);
   };
 

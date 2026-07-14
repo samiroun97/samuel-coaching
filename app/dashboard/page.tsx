@@ -164,13 +164,19 @@ export default function AccueilPage() {
         if (lastW) setWeightInput(String(lastW));
       } catch { /* ignore */ }
 
-      // Body fat
+      // Body fat (source de vérité : Supabase, partagé entre appareils)
       try {
-        const bfRaw = localStorage.getItem(`bodyfat_history_${uid}`) ?? localStorage.getItem("bodyfat_history");
-        const bfHist: BFEntry[] = bfRaw ? JSON.parse(bfRaw) : [];
-        if (bfHist[0]?.body_fat) setBodyFat(bfHist[0].body_fat);
-        if (bfHist[0]?.date) {
-          const days = Math.floor((Date.now() - new Date(bfHist[0].date).getTime()) / 86400000);
+        const { data: bf } = await supabase.from("body_fat_entries")
+          .select("date,body_fat").eq("user_id", uid).order("date", { ascending: false }).limit(1);
+        let latest: { date: string; body_fat: number } | null = bf?.[0] ?? null;
+        if (!latest) {
+          const bfRaw = localStorage.getItem(`bodyfat_history_${uid}`) ?? localStorage.getItem("bodyfat_history");
+          const bfHist: BFEntry[] = bfRaw ? JSON.parse(bfRaw) : [];
+          latest = bfHist[0] ?? null;
+        }
+        if (latest?.body_fat) setBodyFat(latest.body_fat);
+        if (latest?.date) {
+          const days = Math.floor((Date.now() - new Date(latest.date).getTime()) / 86400000);
           setDaysSinceBF(days);
         } else {
           setDaysSinceBF(null);

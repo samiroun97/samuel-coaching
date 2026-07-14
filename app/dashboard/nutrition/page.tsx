@@ -293,9 +293,15 @@ export default function NutritionPage() {
         const { data: p } = await supabase.from("profiles").select("poids,taille,age,sexe").eq("id", user.id).single();
         if (p) setMiniProfile(p as MiniProfile);
         try {
-          const bfRaw = localStorage.getItem(`bodyfat_history_${user.id}`) ?? localStorage.getItem("bodyfat_history");
-          const bfHist: { body_fat?: number }[] = bfRaw ? JSON.parse(bfRaw) : [];
-          if (bfHist[0]?.body_fat) setBodyFat(bfHist[0].body_fat);
+          const { data: bf } = await supabase.from("body_fat_entries")
+            .select("body_fat").eq("user_id", user.id).order("date", { ascending: false }).limit(1);
+          if (bf?.[0]?.body_fat) {
+            setBodyFat(bf[0].body_fat);
+          } else {
+            const bfRaw = localStorage.getItem(`bodyfat_history_${user.id}`) ?? localStorage.getItem("bodyfat_history");
+            const bfHist: { body_fat?: number }[] = bfRaw ? JSON.parse(bfRaw) : [];
+            if (bfHist[0]?.body_fat) setBodyFat(bfHist[0].body_fat);
+          }
         } catch { /* ignore */ }
         // Charger plan repas actif
         const { data: plans } = await supabase
