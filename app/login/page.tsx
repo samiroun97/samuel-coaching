@@ -28,17 +28,18 @@ function InstallGuide() {
       ];
 
   return (
-    <div className="mt-6">
+    <div className="mb-6">
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center justify-center gap-2 text-white/30 hover:text-[#c9a84c] text-xs transition-colors"
+        className="w-full flex items-center gap-3 bg-[#c9a84c] text-black px-4 py-3 hover:bg-[#e2c97e] transition-colors shadow-[0_0_20px_rgba(201,168,76,0.25)]"
       >
-        📱 Comment installer l&apos;app sur mon téléphone ?
+        <span className="w-7 h-7 shrink-0 rounded-full bg-black/10 flex items-center justify-center text-sm">📱</span>
+        <span className="flex-1 text-left text-[0.7rem] font-bold tracking-[0.08em] uppercase">Installer l&apos;app sur mon téléphone</span>
         <span className={`transition-transform ${open ? "rotate-180" : ""}`}>▾</span>
       </button>
 
       {open && (
-        <div className="mt-4 bg-[#111111] border border-white/10 p-6">
+        <div className="mt-3 bg-[#111111] border border-[#c9a84c]/30 p-6">
           <div className="flex mb-5 border border-white/10">
             <button
               onClick={() => setOs("ios")}
@@ -141,9 +142,11 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-6">
       <div className="w-full max-w-sm">
-        <Link href="/" style={{ fontFamily: "var(--font-bebas)" }} className="block text-2xl tracking-[0.2em] text-white text-center mb-12">
+        <Link href="/" style={{ fontFamily: "var(--font-bebas)" }} className="block text-2xl tracking-[0.2em] text-white text-center mb-8">
           SAMUEL<span style={{ color: "#c9a84c" }}>.</span><span style={{ color: "#c9a84c" }}>COACHING</span>
         </Link>
+
+        <InstallGuide/>
 
         {/* Toggle */}
         {mode !== "forgot" && (
@@ -243,8 +246,6 @@ export default function LoginPage() {
             Séance gratuite →
           </Link>
         </p>
-
-        <InstallGuide/>
       </div>
     </div>
   );
