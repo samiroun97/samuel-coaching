@@ -8,9 +8,9 @@ import { startStateSync } from "@/lib/syncStorage";
 
 const SAMUEL_EMAIL = "sam97waelti@gmail.com";
 
-function NavIcon({ name }: { name: string }) {
+function NavIcon({ name, size = 17 }: { name: string; size?: number }) {
   const p = {
-    width: 17, height: 17, viewBox: "0 0 24 24", fill: "none",
+    width: size, height: size, viewBox: "0 0 24 24", fill: "none",
     stroke: "currentColor", strokeWidth: 1.5,
     strokeLinecap: "round" as const, strokeLinejoin: "round" as const,
   };
@@ -156,7 +156,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             const dest = isPreview ? `${href}?preview=1` : href;
             return (
               <Link key={href} href={dest}
-                className={`flex items-center gap-3 px-3 py-2.5 text-[0.6rem] tracking-[0.12em] uppercase transition-all duration-150 border-l-2 ${
+                className={`flex items-center gap-3 px-3 py-2.5 text-[0.7rem] tracking-[0.12em] uppercase transition-all duration-150 border-l-2 ${
                   active
                     ? "text-[#c9a84c] bg-[#c9a84c]/5 border-[#c9a84c]"
                     : "text-white/30 hover:text-white/60 hover:bg-white/[0.03] border-transparent"
@@ -171,7 +171,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         <div className="px-2 py-3 border-t border-white/5 flex flex-col gap-0.5">
           <Link href="/dashboard/profile"
-            className={`flex items-center gap-3 px-3 py-2.5 text-[0.6rem] tracking-[0.12em] uppercase transition-all duration-150 border-l-2 ${
+            className={`flex items-center gap-3 px-3 py-2.5 text-[0.7rem] tracking-[0.12em] uppercase transition-all duration-150 border-l-2 ${
               pathname === "/dashboard/profile"
                 ? "text-[#c9a84c] bg-[#c9a84c]/5 border-[#c9a84c]"
                 : "text-white/20 hover:text-white/40 hover:bg-white/[0.03] border-transparent"
@@ -181,7 +181,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </Link>
           <button
             onClick={async () => { await supabase.auth.signOut(); router.push("/login"); }}
-            className="flex items-center gap-3 px-3 py-2.5 text-[0.6rem] tracking-[0.12em] uppercase text-white/20 hover:text-white/40 transition-colors w-full border-l-2 border-transparent">
+            className="flex items-center gap-3 px-3 py-2.5 text-[0.7rem] tracking-[0.12em] uppercase text-white/20 hover:text-white/40 transition-colors w-full border-l-2 border-transparent">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
             </svg>
@@ -190,14 +190,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </aside>
 
-      <main className="ml-0 md:ml-52 flex-1 min-w-0 w-full h-screen overflow-y-auto pb-16 md:pb-0">
+      <main className="ml-0 md:ml-52 flex-1 min-w-0 w-full h-screen overflow-y-auto pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-0">
         {children}
       </main>
 
       {/* Retour CRM — Samuel en mode aperçu */}
       {isSamuel && isPreview && (
         <Link href="/crm"
-          className="fixed top-4 left-4 md:left-56 z-40 flex items-center gap-1.5 px-3 py-1.5 border border-white/15 bg-[#0a0a0a]/90 text-white/50 hover:text-white/80 hover:border-white/30 transition-all text-[0.45rem] tracking-[0.15em] uppercase">
+          className="fixed top-4 left-4 md:left-56 z-40 flex items-center gap-1.5 px-3 py-1.5 border border-white/15 bg-[#0a0a0a]/90 text-white/50 hover:text-white/80 hover:border-white/30 transition-all text-[0.62rem] tracking-[0.15em] uppercase">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="15 18 9 12 15 6"/>
           </svg>
@@ -209,7 +209,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {(!isSamuel || isPreview) && (
         <>
           <button onClick={() => setFbOpen(true)}
-            className="fixed top-4 right-4 z-40 flex items-center gap-1.5 px-3 py-1.5 border transition-all text-[0.45rem] tracking-[0.15em] uppercase"
+            className="fixed top-4 right-4 z-40 flex items-center gap-1.5 px-3 py-1.5 border transition-all text-[0.62rem] tracking-[0.15em] uppercase"
             style={{ backgroundColor: "#c9a84c15", borderColor: "#c9a84c50", color: "#c9a84c", boxShadow: "0 0 12px #c9a84c25" }}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
@@ -222,13 +222,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               onClick={() => setFbOpen(false)}>
               <div className="bg-[#0f0f0f] border border-white/10 w-full max-w-sm p-6" onClick={e => e.stopPropagation()}>
                 <h3 style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-white tracking-wide mb-1">Feedback</h3>
-                <p className="text-[0.45rem] text-white/30 tracking-wider mb-5">Remonte un bug ou une suggestion sur l'app</p>
+                <p className="text-[0.62rem] text-white/30 tracking-wider mb-5">Remonte un bug ou une suggestion sur l'app</p>
 
                 {/* Type selector */}
                 <div className="flex gap-2 mb-4">
                   {(["bug", "suggestion", "idee"] as const).map(t => (
                     <button key={t} onClick={() => setFbType(t)}
-                      className={`flex-1 py-2 text-[0.45rem] tracking-[0.12em] uppercase border transition-all ${
+                      className={`flex-1 py-2 text-[0.62rem] tracking-[0.12em] uppercase border transition-all ${
                         fbType === t ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/5" : "border-white/10 text-white/30 hover:border-white/20"
                       }`}>
                       {FB_LABELS[t]}
@@ -246,11 +246,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 ) : (
                   <div className="flex gap-2">
                     <button onClick={() => setFbOpen(false)}
-                      className="flex-1 py-2.5 border border-white/10 text-white/30 text-[0.48rem] tracking-wider uppercase hover:border-white/20 transition-colors">
+                      className="flex-1 py-2.5 border border-white/10 text-white/30 text-[0.62rem] tracking-wider uppercase hover:border-white/20 transition-colors">
                       Annuler
                     </button>
                     <button onClick={sendFeedback} disabled={!fbMsg.trim() || fbSending}
-                      className="flex-1 py-2.5 bg-[#c9a84c] text-black text-[0.48rem] font-bold tracking-[0.15em] uppercase hover:bg-[#e2c97e] transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                      className="flex-1 py-2.5 bg-[#c9a84c] text-black text-[0.62rem] font-bold tracking-[0.15em] uppercase hover:bg-[#e2c97e] transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
                       {fbSending ? "Envoi…" : "Envoyer"}
                     </button>
                   </div>
@@ -262,21 +262,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       )}
 
       {/* Bottom nav — mobile only */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0a0a0a] border-t border-white/5 flex z-10">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0a0a0a]/95 backdrop-blur-md border-t border-white/8 flex z-10 pb-[env(safe-area-inset-bottom)]">
         {navItems.map(({ label, href, icon }) => {
           const active = pathname === href;
           const showBadge = href === "/dashboard/coach" && unread;
           const dest = isPreview ? `${href}?preview=1` : href;
           return (
             <Link key={href} href={dest}
-              className={`flex-1 flex flex-col items-center gap-1 py-2.5 text-[0.45rem] tracking-[0.08em] uppercase transition-all ${
-                active ? "text-[#c9a84c]" : "text-white/25"
-              }`}>
-              <div className="relative">
-                <NavIcon name={icon}/>
-                {showBadge && <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#e07070]"/>}
+              className="relative flex-1 flex flex-col items-center justify-center gap-1 py-3">
+              {active && (
+                <span className="absolute inset-x-2 top-1.5 bottom-1.5 rounded-2xl bg-gradient-to-b from-[#c9a84c]/20 to-[#c9a84c]/[0.04] border border-[#c9a84c]/25 shadow-[0_0_16px_-2px_rgba(201,168,76,0.4)]"/>
+              )}
+              <div className={`relative transition-all duration-300 ${active ? "text-[#c9a84c] scale-110" : "text-white/30"}`}>
+                <NavIcon name={icon} size={active ? 22 : 19}/>
+                {showBadge && <span className="absolute -top-0.5 -right-1.5 w-2 h-2 rounded-full bg-[#e07070] ring-2 ring-[#0a0a0a]"/>}
               </div>
-              {label}
+              <span className={`relative text-[0.64rem] tracking-[0.08em] uppercase transition-all duration-300 ${
+                active ? "text-[#c9a84c] font-bold" : "text-white/30"
+              }`}>
+                {label}
+              </span>
             </Link>
           );
         })}
