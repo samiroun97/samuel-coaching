@@ -41,10 +41,10 @@ export default function Home() {
         <AboutSection />
         <ProgramsSection />
         <EbookSection />
+        <AppSection />
         <ProcessSection />
         <FaqSection />
         <ContactSection />
-        <AppSection />
       </main>
       <Footer />
     </>
