@@ -18,9 +18,9 @@ function NavIcon({ name, size = 17 }: { name: string; size?: number }) {
     case "home":
       return <svg {...p}><path d="M3 9L12 2l9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path d="M9 22V12h6v10"/></svg>;
     case "nutrition":
-      return <svg {...p}><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>;
+      return <svg {...p}><path d="M13.5 6.5c-.5-1.8.5-3.3 2-4"/><path d="M12.2 8.2c-1-1.2-3.2-1.7-4.5-.6-2.8 2.3-2.5 6.8-.8 10 1.2 2.3 2.8 4.2 4.6 4.4.9.1 1.6-.3 2-.3s1.1.4 2 .3c1.8-.2 3.4-2.1 4.6-4.4 1.7-3.2 2-7.7-.8-10-1.5-1.2-3.7-.7-4.7.5-.3.4-.9.4-1.2 0z"/></svg>;
     case "programme":
-      return <svg {...p}><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>;
+      return <svg {...p}><rect x="2" y="9" width="3" height="6" rx="1"/><rect x="19" y="9" width="3" height="6" rx="1"/><line x1="5" y1="12" x2="19" y2="12"/><line x1="8" y1="7" x2="8" y2="17"/><line x1="16" y1="7" x2="16" y2="17"/></svg>;
     case "suivi":
       return <svg {...p}><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>;
     case "coach":
