@@ -1,8 +1,72 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+
+function InstallGuide() {
+  const [open, setOpen] = useState(false);
+  const [os, setOs] = useState<"ios" | "android">("android");
+
+  useEffect(() => {
+    const ua = navigator.userAgent || "";
+    if (/iPhone|iPad|iPod/.test(ua)) setOs("ios");
+  }, []);
+
+  const steps = os === "ios"
+    ? [
+        "Ouvre ce site dans Safari (pas Chrome — sur iPhone, l'installation ne marche que depuis Safari).",
+        "Appuie sur l'icône Partager en bas de l'écran (le carré avec une flèche vers le haut).",
+        "Fais défiler et appuie sur \"Sur l'écran d'accueil\".",
+        "Appuie sur \"Ajouter\" en haut à droite.",
+      ]
+    : [
+        "Ouvre ce site dans Chrome.",
+        "Appuie sur le menu ⋮ en haut à droite.",
+        "Appuie sur \"Installer l'application\" (ou \"Ajouter à l'écran d'accueil\").",
+        "Confirme — l'icône apparaît sur ton écran d'accueil comme une vraie app.",
+      ];
+
+  return (
+    <div className="mt-6">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-center gap-2 text-white/30 hover:text-[#c9a84c] text-xs transition-colors"
+      >
+        📱 Comment installer l&apos;app sur mon téléphone ?
+        <span className={`transition-transform ${open ? "rotate-180" : ""}`}>▾</span>
+      </button>
+
+      {open && (
+        <div className="mt-4 bg-[#111111] border border-white/10 p-6">
+          <div className="flex mb-5 border border-white/10">
+            <button
+              onClick={() => setOs("ios")}
+              className={`flex-1 py-2 text-[0.65rem] tracking-[0.15em] uppercase font-bold transition-colors duration-200 ${os === "ios" ? "bg-[#c9a84c] text-black" : "text-white/40 hover:text-white"}`}
+            >
+              iPhone
+            </button>
+            <button
+              onClick={() => setOs("android")}
+              className={`flex-1 py-2 text-[0.65rem] tracking-[0.15em] uppercase font-bold transition-colors duration-200 ${os === "android" ? "bg-[#c9a84c] text-black" : "text-white/40 hover:text-white"}`}
+            >
+              Android
+            </button>
+          </div>
+
+          <ol className="flex flex-col gap-3">
+            {steps.map((s, i) => (
+              <li key={i} className="flex gap-3 text-xs text-white/60 leading-relaxed">
+                <span className="shrink-0 w-5 h-5 flex items-center justify-center border border-[#c9a84c]/40 text-[#c9a84c] text-[0.65rem] font-bold">{i + 1}</span>
+                <span>{s}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -179,6 +243,8 @@ export default function LoginPage() {
             Séance gratuite →
           </Link>
         </p>
+
+        <InstallGuide/>
       </div>
     </div>
   );
