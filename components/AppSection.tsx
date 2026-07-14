@@ -4,10 +4,10 @@ import ScrollReveal from "./ScrollReveal";
 function FeatureIcon({ name }: { name: string }) {
   const p = { width: 20, height: 20, viewBox: "0 0 24 24", fill: "none", stroke: "#c9a84c", strokeWidth: 1.5, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
   switch (name) {
-    case "nutrition": return <svg {...p}><path d="M5 21c8 0 14-6 14-14V3h-4C7 3 3 9 3 17v4z" /></svg>;
-    case "programme": return <svg {...p}><rect x="2" y="9" width="3" height="6" rx="1" /><rect x="19" y="9" width="3" height="6" rx="1" /><rect x="6" y="7" width="3" height="10" rx="1" /><rect x="15" y="7" width="3" height="10" rx="1" /><line x1="9" y1="12" x2="15" y2="12" /></svg>;
-    case "suivi": return <svg {...p}><polyline points="3 17 9 11 13 15 21 7" /><polyline points="15 7 21 7 21 13" /></svg>;
-    case "messages": return <svg {...p}><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>;
+    case "nutrition": return <svg {...p}><path d="M12 8.5c-.8-1.2-2.1-2-3.6-2C6 6.5 4.3 8.6 4.3 11.2c0 4.1 3.1 9.3 7.7 9.3s7.7-5.2 7.7-9.3c0-2.6-1.7-4.7-4.1-4.7-1.5 0-2.8.8-3.6 2z" /><path d="M12 8.5V6c0-1.1.9-2.3 2.3-2.3" /></svg>;
+    case "programme": return <svg {...p}><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z" /></svg>;
+    case "suivi": return <svg {...p}><line x1="6" y1="20" x2="6" y2="12" /><line x1="12" y1="20" x2="12" y2="6" /><line x1="18" y1="20" x2="18" y2="14" /></svg>;
+    case "messages": return <svg {...p}><rect x="3" y="4" width="18" height="13" rx="3" /><path d="M9 17l3 4 3-4" /></svg>;
     default: return null;
   }
 }
