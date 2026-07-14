@@ -63,7 +63,7 @@ export default function AppSection() {
         <ScrollReveal direction="right" className="flex items-center justify-center">
           <div className="relative">
             {/* Decorative gold wave */}
-            <svg className="absolute -inset-24 -z-10 opacity-30 blur-2xl" viewBox="0 0 400 700" preserveAspectRatio="none">
+            <svg className="absolute -inset-24 -z-10 opacity-10 blur-2xl" viewBox="0 0 400 700" preserveAspectRatio="none">
               <defs>
                 <linearGradient id="appWaveGrad" x1="0" y1="0" x2="1" y2="1">
                   <stop offset="0%" stopColor="#c9a84c" />
@@ -74,8 +74,8 @@ export default function AppSection() {
             </svg>
 
             {/* Soft white halo — separates the phone from the black background */}
-            <div className="absolute -inset-6 blur-3xl rounded-full" style={{ background: "radial-gradient(circle, rgba(255,255,255,0.10), transparent 65%)" }} />
-            <div className="absolute inset-0 blur-3xl rounded-full" style={{ background: "radial-gradient(circle, rgba(201,168,76,0.3), transparent 70%)" }} />
+            <div className="absolute -inset-6 blur-3xl rounded-full" style={{ background: "radial-gradient(circle, rgba(255,255,255,0.05), transparent 65%)" }} />
+            <div className="absolute inset-0 blur-3xl rounded-full" style={{ background: "radial-gradient(circle, rgba(201,168,76,0.15), transparent 70%)" }} />
 
             {/* Metallic bezel */}
             <div className="relative w-[264px] h-[544px] rounded-[2.9rem] p-[3px] shadow-2xl" style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.45), rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.3))" }}>
