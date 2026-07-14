@@ -105,8 +105,11 @@ function DateNav({ date, onChange }: { date: string; onChange: (d: string) => vo
     <div className="flex items-center justify-between mb-5">
       <button onClick={() => go(-1)} className="text-white/30 hover:text-white/60 transition-colors w-8 h-8 flex items-center justify-center text-lg">‹</button>
       <div className="flex items-center gap-3">
-        <label className="relative cursor-pointer" onClick={openPicker}>
-          <span className="text-[0.6rem] tracking-[0.25em] uppercase text-white/50 select-none hover:text-white/70 transition-colors">
+        <label className="relative cursor-pointer group flex items-center gap-1.5" onClick={openPicker}>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-white/30 group-hover:text-white/50 transition-colors shrink-0">
+            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          <span className="text-[0.7rem] tracking-[0.15em] uppercase text-white/50 select-none group-hover:text-white/70 transition-colors">
             {isToday ? "Aujourd'hui" : new Date(date + "T12:00:00").toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" })}
           </span>
           <input
