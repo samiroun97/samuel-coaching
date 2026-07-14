@@ -2,7 +2,7 @@ import Link from "next/link";
 import ScrollReveal from "./ScrollReveal";
 
 function FeatureIcon({ name }: { name: string }) {
-  const p = { width: 20, height: 20, viewBox: "0 0 24 24", fill: "none", stroke: "#c9a84c", strokeWidth: 1.5, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+  const p = { width: 18, height: 18, viewBox: "0 0 24 24", fill: "none", stroke: "#c9a84c", strokeWidth: 1.5, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
   switch (name) {
     case "nutrition": return <svg {...p}><path d="M12 8.5c-.8-1.2-2.1-2-3.6-2C6 6.5 4.3 8.6 4.3 11.2c0 4.1 3.1 9.3 7.7 9.3s7.7-5.2 7.7-9.3c0-2.6-1.7-4.7-4.1-4.7-1.5 0-2.8.8-3.6 2z" /><path d="M12 8.5V6c0-1.1.9-2.3 2.3-2.3" /></svg>;
     case "programme": return <svg {...p}><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z" /></svg>;
@@ -35,10 +35,10 @@ export default function AppSection() {
             Ton suivi nutrition, ton programme d&apos;entraînement, tes stats et tes échanges avec moi — tout accessible en un tap, où que tu sois.
           </p>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-10">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-4 mb-10 max-w-sm">
             {features.map((f) => (
-              <div key={f.title} className="flex flex-col items-center text-center gap-2">
-                <div className="w-12 h-12 rounded-full border border-[#c9a84c]/25 bg-[#c9a84c]/5 flex items-center justify-center">
+              <div key={f.title} className="flex items-center gap-3">
+                <div className="w-10 h-10 shrink-0 rounded-full border border-[#c9a84c]/25 bg-[#c9a84c]/5 flex items-center justify-center">
                   <FeatureIcon name={f.icon} />
                 </div>
                 <span className="text-[0.65rem] tracking-wide text-white/50 uppercase">{f.title}</span>
