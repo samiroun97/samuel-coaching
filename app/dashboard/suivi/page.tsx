@@ -5,7 +5,7 @@ import { apiPost } from "@/lib/apiClient";
 
 const SAMUEL_EMAIL = "sam97waelti@gmail.com";
 
-type Profile      = { sexe?: string; poids?: number; taille?: number; age?: number };
+type Profile      = { prenom?: string; sexe?: string; poids?: number; taille?: number; age?: number };
 type WeightEntry  = { id: string; date: string; weight: number };
 type BodyFatEntry = {
   id: string; date: string; body_fat: number; note: string;
@@ -149,6 +149,8 @@ export default function SuiviPage() {
   const [editingBFDate,  setEditingBFDate]  = useState<string | null>(null);
   const fileRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const uploadSectionRef = useRef<HTMLDivElement>(null);
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportError,   setReportError]   = useState("");
 
   useEffect(() => {
     if (showUpload) uploadSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -177,7 +179,7 @@ export default function SuiviPage() {
       if (!user) return;
       setUserId(user.id);
       setUserEmail(user.email ?? "");
-      const { data: p } = await supabase.from("profiles").select("poids,taille,age,sexe").eq("id", user.id).single();
+      const { data: p } = await supabase.from("profiles").select("prenom,poids,taille,age,sexe").eq("id", user.id).single();
       if (p) setProfile(p as Profile);
 
       const wRaw = localStorage.getItem(`weight_history_${user.id}`);
@@ -221,6 +223,84 @@ export default function SuiviPage() {
   const daysSinceBF  = lastBF ? Math.floor((Date.now() - new Date(lastBF.date).getTime()) / 86400000) : null;
   const needsBF      = daysSinceBF === null || daysSinceBF >= 14;
   const photoCount   = Object.keys(photos).length;
+
+  const downloadWeeklyReport = async () => {
+    if (!userId) return;
+    setReportLoading(true); setReportError("");
+    try {
+      const dates: string[] = [];
+      const d = new Date(weekMonday + "T12:00:00");
+      for (let i = 0; i < 7; i++) { dates.push(d.toISOString().split("T")[0]); d.setDate(d.getDate() + 1); }
+      const weekEnd = dates[6];
+
+      const { data: summaries } = await supabase.from("daily_summaries")
+        .select("date,calories,proteines").eq("user_id", userId).gte("date", weekMonday).lte("date", weekEnd);
+      const daysLogged   = summaries?.length ?? 0;
+      const avgCalories  = daysLogged ? Math.round(summaries!.reduce((s, r) => s + (r.calories  ?? 0), 0) / daysLogged) : 0;
+      const avgProteines = daysLogged ? Math.round(summaries!.reduce((s, r) => s + (r.proteines ?? 0), 0) / daysLogged) : 0;
+
+      const logs: { date: string; duration_minutes?: number; calories_burned?: number }[] =
+        JSON.parse(localStorage.getItem("programme_logs") ?? "[]");
+      const weekLogs = logs.filter(l => dates.includes((l.date || "").split("T")[0]));
+      const sessionsCount         = weekLogs.length;
+      const totalTrainingMinutes  = weekLogs.reduce((s, l) => s + (l.duration_minutes ?? 0), 0);
+      const totalEat              = weekLogs.reduce((s, l) => s + (l.calories_burned ?? 0), 0);
+
+      const totalSteps = dates.reduce((s, dt) => s + (parseInt(localStorage.getItem(`steps_${dt}`) ?? "0") || 0), 0);
+      const avgSteps = Math.round(totalSteps / 7);
+
+      const poidsRef = profile?.poids ?? weightHist[0]?.weight ?? 70;
+      const avgNeatPerDay = Math.round((totalSteps / 7) * 0.04 * (poidsRef / 70));
+      const avgEatPerDay  = Math.round(totalEat / 7);
+
+      const bmrVal = (() => {
+        if (!profile?.poids || !profile?.taille || !profile?.age) return 1800;
+        if (lastBF) {
+          const lbm = profile.poids * (1 - lastBF.body_fat / 100);
+          return Math.round(370 + 21.6 * lbm);
+        }
+        const base = 10 * profile.poids + 6.25 * profile.taille - 5 * profile.age;
+        return Math.round(profile.sexe === "Femme" ? base - 161 : base + 5);
+      })();
+      const avgTdee = bmrVal + avgNeatPerDay + avgEatPerDay;
+      const balancePerDay = avgCalories - avgTdee;
+      const balanceStatus: "deficit" | "surplus" | "maintenance" =
+        Math.abs(balancePerDay) <= 100 ? "maintenance" : balancePerDay > 0 ? "surplus" : "deficit";
+
+      const sortedByDateDesc = [...weightHist].sort((a, b) => b.date.localeCompare(a.date));
+      const weightStart = sortedByDateDesc.find(w => w.date <= weekMonday)?.weight
+        ?? sortedByDateDesc[sortedByDateDesc.length - 1]?.weight ?? null;
+      const weightEnd = sortedByDateDesc.find(w => w.date <= weekEnd)?.weight ?? weightStart;
+
+      let goalProteines = 150;
+      try {
+        const g = JSON.parse(localStorage.getItem("nutrition_goals") ?? "{}");
+        if (g?.proteines) goalProteines = g.proteines;
+      } catch { /* défaut */ }
+
+      const stats = {
+        weekStart: weekMonday, weekEnd, daysLogged, avgCalories, avgTdee, balanceStatus, balancePerDay,
+        avgProteines, goalProteines, sessionsCount, totalTrainingMinutes, avgSteps, weightStart, weightEnd,
+      };
+
+      const res = await apiPost("/api/suivi/weekly-report", { stats });
+      if (!res.ok) throw new Error(await res.text() || `Erreur ${res.status}`);
+      const feedback = await res.json();
+      if (feedback.error) throw new Error(feedback.error);
+
+      const { generateWeeklyReportPdf } = await import("@/lib/pdf");
+      generateWeeklyReportPdf({
+        ...stats,
+        clientName: profile?.prenom,
+        pointFort: feedback.point_fort,
+        pointFaible: feedback.point_faible,
+        remarque: feedback.remarque,
+      });
+    } catch (e: unknown) {
+      setReportError(e instanceof Error ? e.message : "Erreur lors de la génération du bilan.");
+    }
+    setReportLoading(false);
+  };
 
   const saveWeight = async () => {
     const val = parseFloat(weightInput.replace(",", "."));
@@ -417,6 +497,23 @@ export default function SuiviPage() {
           )}
         </div>
       )}
+
+      {/* ── Bilan hebdomadaire PDF ── */}
+      <div className="border border-white/10 bg-[#111] p-5 mb-4 flex items-center justify-between gap-4 flex-wrap">
+        <div>
+          <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Bilan de la semaine</p>
+          <p className="text-[0.62rem] text-white/25 mt-0.5 tracking-wider">
+            Nutrition, entraînement, repos et déficit/surplus — en PDF
+          </p>
+        </div>
+        <button onClick={downloadWeeklyReport} disabled={reportLoading}
+          className="bg-[#c9a84c] text-black text-[0.68rem] font-bold tracking-[0.15em] uppercase px-4 py-2.5 hover:bg-[#e2c97e] transition-colors disabled:opacity-40 flex items-center gap-2 shrink-0">
+          {reportLoading
+            ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Génération…</>
+            : "Télécharger le PDF →"}
+        </button>
+      </div>
+      {reportError && <p className="text-xs text-[#e07070] border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2 mb-4">{reportError}</p>}
 
       <DateNav date={selectedDate} onChange={setSelectedDate} />
 

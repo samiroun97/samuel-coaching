@@ -165,3 +165,161 @@ export function generateProgrammePdf(seances: CoachSeance[], clientName?: string
   const filenameSafe = clientName ? clientName.toLowerCase().replace(/[^a-z0-9]+/gi, "-") : "programme";
   doc.save(`samuel-coaching-${filenameSafe}.pdf`);
 }
+
+const GREEN = { r: 126, g: 184, b: 160 };
+const RED   = { r: 224, g: 112, b: 112 };
+
+export type WeeklyReportData = {
+  clientName?: string;
+  weekStart: string;
+  weekEnd: string;
+  daysLogged: number;
+  avgCalories: number;
+  avgTdee: number;
+  balanceStatus: "deficit" | "surplus" | "maintenance";
+  balancePerDay: number;
+  avgProteines: number;
+  goalProteines: number;
+  sessionsCount: number;
+  totalTrainingMinutes: number;
+  avgSteps: number;
+  weightStart: number | null;
+  weightEnd: number | null;
+  pointFort: string;
+  pointFaible: string;
+  remarque: string;
+};
+
+export function generateWeeklyReportPdf(data: WeeklyReportData) {
+  const doc = new jsPDF({ unit: "mm", format: "a4" });
+  const pageW = 210, pageH = 297, margin = 16;
+  let y = margin;
+
+  const fillBg = () => { doc.setFillColor(BG.r, BG.g, BG.b); doc.rect(0, 0, pageW, pageH, "F"); };
+  const drawFooter = () => {
+    doc.setDrawColor(GOLD.r, GOLD.g, GOLD.b);
+    doc.setLineWidth(0.2);
+    doc.line(margin, pageH - 14, pageW - margin, pageH - 14);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(GOLD.r, GOLD.g, GOLD.b);
+    doc.text("SAMUEL.COACHING", margin, pageH - 9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(GRAY_DIM.r, GRAY_DIM.g, GRAY_DIM.b);
+    doc.text(`Page ${doc.getCurrentPageInfo().pageNumber}`, pageW - margin, pageH - 9, { align: "right" });
+  };
+  const ensureSpace = (needed: number) => {
+    if (y + needed > pageH - 20) { drawFooter(); doc.addPage(); fillBg(); y = margin; }
+  };
+
+  fillBg();
+
+  // ── En-tête ──
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(22);
+  doc.setTextColor(GOLD.r, GOLD.g, GOLD.b);
+  doc.text("BILAN HEBDOMADAIRE", margin, y + 6);
+  y += 12;
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(11);
+  doc.setTextColor(WHITE.r, WHITE.g, WHITE.b);
+  doc.text(data.clientName ? `Préparé pour ${data.clientName}` : "Ton bilan de la semaine", margin, y);
+  y += 6;
+
+  const fmtDate = (d: string) => new Date(d + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
+  doc.setFontSize(9);
+  doc.setTextColor(GRAY_DIM.r, GRAY_DIM.g, GRAY_DIM.b);
+  doc.text(`Semaine du ${fmtDate(data.weekStart)} au ${fmtDate(data.weekEnd)}`, margin, y);
+  y += 6;
+
+  doc.setDrawColor(GOLD.r, GOLD.g, GOLD.b);
+  doc.setLineWidth(0.4);
+  doc.line(margin, y, pageW - margin, y);
+  y += 10;
+
+  // ── Résultat de la semaine (déficit / surplus / maintien) ──
+  const statusColor = data.balanceStatus === "surplus" ? RED : data.balanceStatus === "deficit" ? GREEN : GOLD;
+  const statusLabel = data.balanceStatus === "surplus" ? "SURPLUS" : data.balanceStatus === "deficit" ? "DÉFICIT" : "MAINTIEN";
+  const cardH = 26;
+  ensureSpace(cardH + 4);
+  doc.setFillColor(CARD_BG.r, CARD_BG.g, CARD_BG.b);
+  doc.setDrawColor(statusColor.r, statusColor.g, statusColor.b);
+  doc.setLineWidth(0.3);
+  doc.roundedRect(margin, y, pageW - margin * 2, cardH, 1.5, 1.5, "FD");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.setTextColor(GRAY_DIM.r, GRAY_DIM.g, GRAY_DIM.b);
+  doc.text("RÉSULTAT DE LA SEMAINE", margin + 6, y + 8);
+  doc.setFontSize(18);
+  doc.setTextColor(statusColor.r, statusColor.g, statusColor.b);
+  doc.text(statusLabel, margin + 6, y + 18);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.setTextColor(WHITE.r, WHITE.g, WHITE.b);
+  const balanceTxt = `${data.balancePerDay > 0 ? "+" : ""}${data.balancePerDay} kcal / jour en moyenne`;
+  doc.text(balanceTxt, pageW - margin - 6, y + 18, { align: "right" });
+  y += cardH + 8;
+
+  // ── Grille de stats ──
+  const stats: { label: string; value: string }[] = [
+    { label: "Jours suivis",        value: `${data.daysLogged}/7` },
+    { label: "Calories / jour",     value: `${data.avgCalories} kcal` },
+    { label: "Objectif (TDEE)",     value: `${data.avgTdee} kcal` },
+    { label: "Protéines / jour",    value: `${data.avgProteines}g / ${data.goalProteines}g` },
+    { label: "Séances",             value: `${data.sessionsCount}` },
+    { label: "Temps d'entraînement",value: `${data.totalTrainingMinutes} min` },
+    { label: "Pas / jour",          value: `${data.avgSteps.toLocaleString("fr-FR")}` },
+    { label: "Poids",               value: data.weightStart !== null && data.weightEnd !== null
+        ? `${data.weightStart} → ${data.weightEnd} kg` : "—" },
+  ];
+  const colW = (pageW - margin * 2 - 8) / 2;
+  const rowH = 18;
+  ensureSpace(rowH * Math.ceil(stats.length / 2) + 4);
+  stats.forEach((s, i) => {
+    const col = i % 2, row = Math.floor(i / 2);
+    const x = margin + col * (colW + 8);
+    const sy = y + row * rowH;
+    doc.setFillColor(CARD_BG.r, CARD_BG.g, CARD_BG.b);
+    doc.setDrawColor(CARD_BORDER.r, CARD_BORDER.g, CARD_BORDER.b);
+    doc.setLineWidth(0.2);
+    doc.roundedRect(x, sy, colW, rowH - 4, 1, 1, "FD");
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(GRAY_DIM.r, GRAY_DIM.g, GRAY_DIM.b);
+    doc.text(s.label.toUpperCase(), x + 5, sy + 6);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(WHITE.r, WHITE.g, WHITE.b);
+    doc.text(s.value, x + 5, sy + 12.5);
+  });
+  y += rowH * Math.ceil(stats.length / 2) + 8;
+
+  // ── Feedback qualitatif ──
+  const feedback: { label: string; text: string; color: typeof GOLD }[] = [
+    { label: "POINT FORT DE LA SEMAINE", text: data.pointFort, color: GREEN },
+    { label: "AXE DE PROGRÈS",           text: data.pointFaible, color: RED },
+    { label: "CONSEIL POUR LA SUITE",    text: data.remarque, color: GOLD },
+  ];
+  feedback.forEach(f => {
+    const lines = doc.splitTextToSize(f.text, pageW - margin * 2 - 8);
+    const h = 10 + lines.length * 4.5;
+    ensureSpace(h + 4);
+    doc.setDrawColor(f.color.r, f.color.g, f.color.b);
+    doc.setLineWidth(0.8);
+    doc.line(margin, y, margin, y + h - 4);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(f.color.r, f.color.g, f.color.b);
+    doc.text(f.label, margin + 5, y + 5);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9.5);
+    doc.setTextColor(WHITE.r, WHITE.g, WHITE.b);
+    doc.text(lines, margin + 5, y + 11);
+    y += h + 4;
+  });
+
+  drawFooter();
+  const filenameSafe = data.clientName ? data.clientName.toLowerCase().replace(/[^a-z0-9]+/gi, "-") : "bilan";
+  doc.save(`samuel-coaching-bilan-${filenameSafe}-${data.weekStart}.pdf`);
+}
