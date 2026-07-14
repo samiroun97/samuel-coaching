@@ -16,7 +16,11 @@ export async function POST(req: NextRequest) {
     }
 
     const client = new Anthropic({ apiKey });
-    const { type, image, text } = await req.json();
+    const { type, image, text, portion } = await req.json();
+
+    const portionNote = portion === "petite" || portion === "moyenne" || portion === "grande"
+      ? `Portion indiquée par l'utilisateur : ${portion}.`
+      : "";
 
     let content: Anthropic.Messages.MessageParam["content"];
 
@@ -24,12 +28,13 @@ export async function POST(req: NextRequest) {
       const comma = image.indexOf(",");
       const mediaType = (image.slice(0, comma).match(/:(.*?);/)?.[1] ?? "image/jpeg") as
         "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+      const precisions = text?.trim() ? `Précisions données par l'utilisateur : "${text.trim()}".` : "";
       content = [
         { type: "image", source: { type: "base64", media_type: mediaType, data: image.slice(comma + 1) } },
-        { type: "text", text: PROMPT },
+        { type: "text", text: [precisions, portionNote, PROMPT].filter(Boolean).join("\n") },
       ];
     } else if (type === "text" && text) {
-      content = [{ type: "text", text: `Repas : "${text}"\n\n${PROMPT}` }];
+      content = [{ type: "text", text: [`Repas : "${text}"`, portionNote, PROMPT].filter(Boolean).join("\n") }];
     } else {
       return NextResponse.json({ error: "Paramètres invalides" }, { status: 400 });
     }
