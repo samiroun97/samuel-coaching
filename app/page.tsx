@@ -11,6 +11,7 @@ import EbookSection from "@/components/EbookSection";
 import ProcessSection from "@/components/ProcessSection";
 import FaqSection from "@/components/FaqSection";
 import ContactSection from "@/components/ContactSection";
+import AppSection from "@/components/AppSection";
 import Footer from "@/components/Footer";
 
 const jsonLd = {
@@ -43,6 +44,7 @@ export default function Home() {
         <ProcessSection />
         <FaqSection />
         <ContactSection />
+        <AppSection />
       </main>
       <Footer />
     </>
