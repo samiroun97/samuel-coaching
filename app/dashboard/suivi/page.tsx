@@ -275,9 +275,6 @@ export default function SuiviPage() {
     localStorage.setItem(`bodyfat_history_${userId}`, JSON.stringify(next));
     if (userId) upsertBodyFatRemote(userId, entry);
 
-    // Upload sécurisé dans Supabase Storage (fire & forget)
-    void uploadSessionPhotos(entryId, photos, shareWithCoach);
-
     if (shareWithCoach && userEmail && userEmail !== SAMUEL_EMAIL) {
       setSharing(true);
       const payload = JSON.stringify({
@@ -333,32 +330,8 @@ export default function SuiviPage() {
     setEditingBFId(null);
   };
 
-  const uploadSessionPhotos = async (entryId: string, photoMap: Record<string, string>, shared: boolean) => {
-    if (!userId || Object.keys(photoMap).length === 0) return;
-    for (const [key, dataUrl] of Object.entries(photoMap)) {
-      try {
-        const base64 = dataUrl.split(",")[1];
-        const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
-        const blob = new Blob([bytes], { type: "image/jpeg" });
-        const path = `${userId}/${entryId}/${key}.jpg`;
-        const { error: uploadErr } = await supabase.storage
-          .from("body-photos")
-          .upload(path, blob, { contentType: "image/jpeg" });
-        if (!uploadErr) {
-          await supabase.from("body_photos").insert({
-            user_id: userId, photo_path: path, session_id: entryId, shared_with_coach: shared,
-          });
-        }
-      } catch { /* fail silently si le bucket n'existe pas encore */ }
-    }
-  };
-
-  const togglePhotoSharing = async (entryId: string, shared: boolean) => {
+  const togglePhotoSharing = (entryId: string, shared: boolean) => {
     if (!userId) return;
-    await supabase.from("body_photos")
-      .update({ shared_with_coach: shared })
-      .eq("session_id", entryId)
-      .eq("user_id", userId);
     const next = bfHist.map(e => e.id === entryId ? { ...e, shared } : e);
     setBfHist(next);
     localStorage.setItem(`bodyfat_history_${userId}`, JSON.stringify(next));
@@ -574,7 +547,7 @@ export default function SuiviPage() {
         <div ref={uploadSectionRef} className="border border-white/10 bg-[#111] p-5 mb-4 scroll-mt-4">
           <div className="flex items-center justify-between mb-1">
             <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Photos corporelles</p>
-            <span className="text-[0.62rem] text-white/20 tracking-wider">Privées par défaut</span>
+            <span className="text-[0.62rem] text-white/20 tracking-wider">Non conservées après l'estimation</span>
           </div>
           <p className="text-[0.65rem] text-white/20 mb-5 tracking-wider">Plus il y a de photos, plus l'estimation est précise</p>
 
@@ -636,7 +609,7 @@ export default function SuiviPage() {
                   <p className="text-[0.62rem] text-white/25 mt-0.5">
                     {shareWithCoach
                       ? "L'estimation et le feedback IA seront envoyés à ton coach"
-                      : "Les photos restent privées — seule l'estimation sera partagée si tu coches"}
+                      : "Les photos ne sont jamais conservées, seule l'estimation peut être partagée si tu coches"}
                   </p>
                 </div>
                 <button onClick={() => setShareWithCoach(v => !v)}

@@ -17,7 +17,7 @@ export default function MentionsLegalesPage() {
             <h2 className="text-white font-semibold text-base mb-3 uppercase tracking-widest text-[0.75rem] text-[#c9a84c]">Éditeur</h2>
             <p>Samuel Coaching — Coaching Fitness & Transformation Personnelle</p>
             <p>Lausanne, Suisse</p>
-            <p>Email : contact@samuelcoaching.fr</p>
+            <p>Email : sam97waelti@gmail.com</p>
           </section>
 
           <section>
@@ -33,7 +33,7 @@ export default function MentionsLegalesPage() {
               Les données collectées via le formulaire de contact (prénom, objectif, message) sont utilisées uniquement pour répondre à vos demandes et ne sont pas partagées avec des tiers.
             </p>
             <p className="mt-3">
-              Conformément au RGPD, vous disposez d&apos;un droit d&apos;accès, de rectification et de suppression de vos données. Pour exercer ce droit, contactez : contact@samuelcoaching.fr
+              Conformément au RGPD, vous disposez d&apos;un droit d&apos;accès, de rectification et de suppression de vos données. Pour exercer ce droit, contactez : sam97waelti@gmail.com
             </p>
           </section>
 
