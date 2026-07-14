@@ -19,8 +19,8 @@ export default function ContactSection() {
         <div>
           <p className="section-label mb-4">Prêt ?</p>
           <h2 style={{background:'linear-gradient(120deg,#f5f5f0 30%,#c9a84c 65%,#e8c76a 100%)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text',fontFamily:'var(--font-bebas)'}} className="text-[clamp(2.5rem,5vw,4.5rem)] uppercase leading-none mb-6">
-            TON MEILLEUR<br />
-            <span className="text-[#c9a84c]">SELF T&apos;ATTEND</span>
+            LA MEILLEURE VERSION<br />
+            <span className="text-[#c9a84c]">DE TOI-MÊME T&apos;ATTEND</span>
           </h2>
           <p className="text-white/50 text-sm leading-relaxed mb-10 max-w-sm">
             La seule question qui compte : est-ce que tu es prêt(e) à faire ce que la plupart ne feront jamais ?
