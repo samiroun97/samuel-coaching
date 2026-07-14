@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Bebas_Neue } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -12,7 +13,9 @@ const bebasNeue = Bebas_Neue({
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
+  // Zoom autorisé (accessibilité) — le plafond à 1 bloquait les malvoyants.
+  maximumScale: 5,
+  userScalable: true,
 };
 
 export const metadata: Metadata = {
@@ -45,7 +48,10 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="fr" className={`${inter.variable} ${bebasNeue.variable}`}>
-      <body className="bg-[#0a0a0a] text-white antialiased">{children}</body>
+      <body className="bg-[#0a0a0a] text-white antialiased">
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }

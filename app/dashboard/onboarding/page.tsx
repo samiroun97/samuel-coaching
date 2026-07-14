@@ -132,7 +132,7 @@ export default function OnboardingPage() {
         <div style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl tracking-[0.2em] text-white text-center mb-2">
           SAMUEL<span style={{ color: "#c9a84c" }}>.</span><span style={{ color: "#c9a84c" }}>COACHING</span>
         </div>
-        <p className="text-center text-[0.55rem] tracking-[0.2em] uppercase text-white/30 mb-10">
+        <p className="text-center text-[0.68rem] tracking-[0.2em] uppercase text-white/30 mb-10">
           {isEditing ? "Modifier mon profil" : "Compléter mon profil"}
         </p>
 
@@ -153,7 +153,7 @@ export default function OnboardingPage() {
               >
                 {isEditing || i < step ? "✓" : i + 1}
               </button>
-              <span className={`text-[0.5rem] tracking-widest uppercase text-center transition-colors duration-300 ${
+              <span className={`text-[0.65rem] tracking-widest uppercase text-center transition-colors duration-300 ${
                 i === step ? "text-[#c9a84c]" : isEditing || i < step ? "text-white/40" : "text-white/20"
               }`}>
                 {s}

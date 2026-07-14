@@ -9,12 +9,26 @@ import AboutSection from "@/components/AboutSection";
 import ProgramsSection from "@/components/ProgramsSection";
 import EbookSection from "@/components/EbookSection";
 import ProcessSection from "@/components/ProcessSection";
+import FaqSection from "@/components/FaqSection";
 import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "HealthAndBeautyBusiness",
+  name: "Samuel Coaching",
+  description: "Coach sportif à Lausanne — fitness, transformation physique, nutrition et suivi personnalisé.",
+  url: "https://samuel-coaching-five.vercel.app",
+  areaServed: { "@type": "City", name: "Lausanne" },
+  address: { "@type": "PostalAddress", addressLocality: "Lausanne", addressRegion: "Vaud", addressCountry: "CH" },
+  priceRange: "80–390 CHF",
+  sameAs: ["https://www.instagram.com/samw.coaching/"],
+};
 
 export default function Home() {
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <SplashScreen />
       <CursorSpotlight />
       <Navbar />
@@ -27,6 +41,7 @@ export default function Home() {
         <ProgramsSection />
         <EbookSection />
         <ProcessSection />
+        <FaqSection />
         <ContactSection />
       </main>
       <Footer />

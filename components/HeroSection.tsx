@@ -31,7 +31,7 @@ export default function HeroSection() {
 
       <div className="relative z-10 text-center max-w-5xl mx-auto px-6 pt-24 -mt-24">
         <div style={{ opacity: 1, transform: "translateY(0)", animation: "fadeInUp 1s ease 0.2s both" }}>
-          <p className="section-label mb-8">Coach Fitness & Transformation Personnelle</p>
+          <p className="section-label mb-8">Coach Sportif à Lausanne · Fitness & Transformation</p>
         </div>
 
         <div style={{ animation: "fadeInUp 1s ease 0.4s both" }}>
@@ -54,8 +54,9 @@ export default function HeroSection() {
 
         <p className="text-white/50 text-sm tracking-wide max-w-md mx-auto mb-12 leading-relaxed"
           style={{ animation: "fadeInUp 1s ease 0.7s both" }}>
-          Un accompagnement d&apos;élite pour des résultats réels. Pas de raccourcis.
-          Pas de compromis. Juste la transformation que tu mérites.
+          Coaching sur mesure à Lausanne et en ligne. Un accompagnement d&apos;élite pour
+          des résultats réels. Pas de raccourcis. Pas de compromis. Juste la transformation
+          que tu mérites.
         </p>
 
         <div className="flex justify-center" style={{ animation: "fadeInUp 1s ease 0.8s both" }}>

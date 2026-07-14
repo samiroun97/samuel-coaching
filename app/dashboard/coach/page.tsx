@@ -115,7 +115,7 @@ export default function CoachPage() {
         <div className="flex gap-0 border border-white/10">
           {(["ia", "samuel"] as const).map(t => (
             <button key={t} onClick={() => setTab(t)}
-              className={`flex-1 py-2.5 text-[0.6rem] tracking-[0.15em] uppercase font-bold transition-colors flex items-center justify-center gap-2 ${
+              className={`flex-1 py-2.5 text-[0.7rem] tracking-[0.15em] uppercase font-bold transition-colors flex items-center justify-center gap-2 ${
                 tab === t ? "bg-[#c9a84c] text-black" : "text-white/30 hover:text-white/60 hover:bg-white/[0.03]"
               }`}>
               {t === "ia" ? (
@@ -179,7 +179,7 @@ export default function CoachPage() {
               disabled={aiLoading}
               className="flex-1 bg-[#111] border border-white/10 text-white placeholder-white/20 text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors disabled:opacity-50"/>
             <button onClick={sendAi} disabled={!aiInput.trim() || aiLoading}
-              className="bg-[#c9a84c] text-black px-6 py-3 text-[0.6rem] font-bold tracking-[0.15em] uppercase hover:bg-[#e2c97e] transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+              className="bg-[#c9a84c] text-black px-6 py-3 text-[0.7rem] font-bold tracking-[0.15em] uppercase hover:bg-[#e2c97e] transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
               Envoyer
             </button>
           </div>
@@ -199,7 +199,7 @@ export default function CoachPage() {
                     </svg>
                   </div>
                   <p className="text-white/20 text-xs">Aucun message pour l&apos;instant</p>
-                  <p className="text-white/10 text-[0.55rem] mt-1">Envoie un message à Samuel ci-dessous</p>
+                  <p className="text-white/10 text-[0.68rem] mt-1">Envoie un message à Samuel ci-dessous</p>
                 </div>
               </div>
             )}
@@ -209,7 +209,7 @@ export default function CoachPage() {
                 <div key={m.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
                   {!isMe && (
                     <div className="w-6 h-6 border border-[#c9a84c]/30 bg-[#c9a84c]/5 flex items-center justify-center mr-2.5 mt-0.5 shrink-0">
-                      <span style={{ fontFamily: "var(--font-bebas)" }} className="text-[0.55rem] text-[#c9a84c]">SW</span>
+                      <span style={{ fontFamily: "var(--font-bebas)" }} className="text-[0.68rem] text-[#c9a84c]">SW</span>
                     </div>
                   )}
                   <div className="max-w-sm">
@@ -218,7 +218,7 @@ export default function CoachPage() {
                     }`}>
                       {m.content}
                     </div>
-                    <p className={`text-[0.4rem] text-white/15 mt-1 tracking-wider ${isMe ? "text-right" : ""}`}>
+                    <p className={`text-[0.6rem] text-white/15 mt-1 tracking-wider ${isMe ? "text-right" : ""}`}>
                       {new Date(m.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
                     </p>
                   </div>
@@ -234,7 +234,7 @@ export default function CoachPage() {
               disabled={dirLoading}
               className="flex-1 bg-[#111] border border-white/10 text-white placeholder-white/20 text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors disabled:opacity-50"/>
             <button onClick={sendDirect} disabled={!dirInput.trim() || dirLoading}
-              className="bg-[#c9a84c] text-black px-6 py-3 text-[0.6rem] font-bold tracking-[0.15em] uppercase hover:bg-[#e2c97e] transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+              className="bg-[#c9a84c] text-black px-6 py-3 text-[0.7rem] font-bold tracking-[0.15em] uppercase hover:bg-[#e2c97e] transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
               Envoyer
             </button>
           </div>

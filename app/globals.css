@@ -93,3 +93,12 @@ body {
 
 /* Mobile menu */
 .mobile-menu-open { overflow: hidden; }
+
+/* Sur mobile, iOS Safari zoome automatiquement sur un champ dont la police
+   fait moins de 16px. On force 16px minimum pour éviter ce zoom intempestif
+   (le zoom manuel reste possible via userScalable). */
+@media (max-width: 640px) {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+}
