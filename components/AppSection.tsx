@@ -31,22 +31,22 @@ export default function AppSection() {
             <span className="text-white">TON COACHING<br /></span>
             <span style={{ color: "#c9a84c" }}>DANS TA POCHE</span>
           </h2>
-          <p className="text-white/50 text-sm leading-relaxed mb-10 max-w-sm">
+          <p className="text-white/50 text-sm leading-relaxed mb-10">
             Ton suivi nutrition, ton programme d&apos;entraînement, tes stats et tes échanges avec moi — tout accessible en un tap, où que tu sois.
           </p>
 
-          <div className="grid grid-cols-2 gap-x-6 gap-y-4 mb-10 max-w-sm">
+          <div className="flex flex-wrap gap-5 mb-10">
             {features.map((f) => (
-              <div key={f.title} className="flex items-center gap-3">
-                <div className="w-10 h-10 shrink-0 rounded-full border border-[#c9a84c]/25 bg-[#c9a84c]/5 flex items-center justify-center">
+              <div key={f.title} className="flex flex-col items-center text-center gap-2">
+                <div className="w-11 h-11 shrink-0 rounded-full border border-[#c9a84c]/25 bg-[#c9a84c]/5 flex items-center justify-center">
                   <FeatureIcon name={f.icon} />
                 </div>
-                <span className="text-[0.65rem] tracking-wide text-white/50 uppercase">{f.title}</span>
+                <span className="text-[0.6rem] tracking-wide text-white/50 uppercase">{f.title}</span>
               </div>
             ))}
           </div>
 
-          <p className="text-white/40 text-xs leading-relaxed mb-6 max-w-sm">
+          <p className="text-white/40 text-xs leading-relaxed mb-6">
             L&apos;app est <span className="text-[#c9a84c]">100% gratuite</span>. Pour y accéder, crée ton compte dans l&apos;espace membre — c&apos;est immédiat.
           </p>
 
@@ -62,6 +62,17 @@ export default function AppSection() {
         {/* Right — phone mockup */}
         <ScrollReveal direction="right" className="flex items-center justify-center">
           <div className="relative">
+            {/* Decorative gold wave */}
+            <svg className="absolute -inset-24 -z-10 opacity-30 blur-2xl" viewBox="0 0 400 700" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="appWaveGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#c9a84c" />
+                  <stop offset="100%" stopColor="#e8c76a" />
+                </linearGradient>
+              </defs>
+              <path d="M0,420 C90,320 140,520 230,400 C320,280 360,560 400,460 L400,700 L0,700 Z" fill="url(#appWaveGrad)" />
+            </svg>
+
             {/* Soft white halo — separates the phone from the black background */}
             <div className="absolute -inset-6 blur-3xl rounded-full" style={{ background: "radial-gradient(circle, rgba(255,255,255,0.10), transparent 65%)" }} />
             <div className="absolute inset-0 blur-3xl rounded-full" style={{ background: "radial-gradient(circle, rgba(201,168,76,0.3), transparent 70%)" }} />
