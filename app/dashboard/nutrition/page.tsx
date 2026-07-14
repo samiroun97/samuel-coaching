@@ -888,7 +888,7 @@ export default function NutritionPage() {
                       {photoPreview ? "Changer la photo" : "Choisir une photo"}
                     </button>
                   </div>
-                  <input ref={photoRef} type="file" accept="image/*" className="hidden" onChange={selectPhoto}/>
+                  <input ref={photoRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={selectPhoto}/>
                   <input ref={galleryRef} type="file" accept="image/*" className="hidden" onChange={selectPhoto}/>
 
                   {photoPreview && (
