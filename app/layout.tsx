@@ -37,6 +37,12 @@ export const metadata: Metadata = {
     images: [{ url: "/photos/samuel.jpg", alt: "Samuel — coach sportif à Lausanne" }],
   },
   robots: { index: true, follow: true },
+  twitter: {
+    card: "summary_large_image",
+    title: "Samuel Coaching — Coach sportif à Lausanne",
+    description: "Transformation physique, mentale et lifestyle. Programmes 100% sur mesure. Bilan gratuit de 45 minutes.",
+    images: ["/photos/samuel.jpg"],
+  },
   icons: {
     icon: "/icons/icon-192.png",
     apple: "/icons/apple-icon.png",
