@@ -19,7 +19,7 @@ const jsonLd = {
   "@type": "HealthAndBeautyBusiness",
   name: "Samuel Coaching",
   description: "Coach sportif à Lausanne — fitness, transformation physique, nutrition et suivi personnalisé.",
-  url: "https://samuel-coaching-five.vercel.app",
+  url: "https://samuel-coaching.ch",
   areaServed: { "@type": "City", name: "Lausanne" },
   address: { "@type": "PostalAddress", addressLocality: "Lausanne", addressRegion: "Vaud", addressCountry: "CH" },
   priceRange: "80–390 CHF",

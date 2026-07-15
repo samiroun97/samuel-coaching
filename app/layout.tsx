@@ -19,7 +19,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://samuel-coaching-five.vercel.app"),
+  metadataBase: new URL("https://samuel-coaching.ch"),
   title: {
     default: "Samuel Coaching — Coach sportif à Lausanne · Fitness & Transformation",
     template: "%s · Samuel Coaching",
