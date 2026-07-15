@@ -4,7 +4,9 @@ import { requireUser } from "@/lib/apiAuth";
 
 const PROMPT = `Tu es un nutritionniste expert. Analyse ce repas et retourne UNIQUEMENT un objet JSON valide, sans markdown, sans texte avant ni après, sans balises code :
 {"name":"Nom court du plat","calories":450,"proteines":35,"glucides":40,"lipides":15}
-Toutes les valeurs sont des entiers. Estime des portions raisonnables si non précisées.`;
+Toutes les valeurs sont des entiers. Estime des portions raisonnables si non précisées.
+
+Si la photo montre un tableau/étiquette de valeurs nutritionnelles (emballage produit), c'est ta source prioritaire et la plus fiable : lis les chiffres exacts imprimés dessus plutôt que d'estimer à partir de l'apparence du produit ou de son nom. Ces tableaux sont généralement donnés "pour 100g" — vérifie l'unité de référence indiquée, puis calcule pour la quantité réellement consommée (poids/portion précisé par l'utilisateur, ou la portion de référence de l'étiquette si rien n'est précisé). N'ignore jamais un tableau de valeurs nutritionnelles visible au profit d'une estimation générique.`;
 
 export async function POST(req: NextRequest) {
   try {
