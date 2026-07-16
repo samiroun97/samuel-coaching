@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { requireUser } from "@/lib/apiAuth";
 
-const PROMPT = `Tu es un nutritionniste expert. Analyse ce repas et retourne UNIQUEMENT un objet JSON valide, sans markdown, sans texte avant ni après, sans balises code :
-{"name":"Nom court du plat","calories":450,"proteines":35,"glucides":40,"lipides":15}
+const PROMPT = `Tu es un nutritionniste expert. Analyse ce repas et retourne UNIQUEMENT un objet JSON valide, sans markdown, sans texte avant ni après, sans balises code, au format exact {"name": string, "calories": integer, "proteines": integer, "glucides": integer, "lipides": integer}.
 Toutes les valeurs sont des entiers. Estime des portions raisonnables si non précisées.
+
+N'ancre jamais ton estimation sur une valeur "par défaut" ou "moyenne" (par exemple ~450-520 kcal) : le résultat doit refléter précisément l'aliment et la quantité décrits, avec une amplitude réaliste totalement différente selon les cas. Exemples d'ordres de grandeur très variés à titre indicatif (ne pas recopier ces chiffres, juste illustrer l'écart attendu) : un fruit seul ou un yaourt nature ≈ 60-150 kcal, une salade légère ≈ 150-300 kcal, un sandwich ou une portion de pâtes ≈ 400-650 kcal, un burger avec frites ou un plat en sauce copieux ≈ 700-1100 kcal, une pizza entière ou un repas de restauration rapide large ≈ 900-1500 kcal. Si la description est vague (ex : "un truc rapide", "un plat de pâtes"), choisis la valeur la plus plausible pour CE plat précis plutôt qu'un chiffre générique passe-partout.
 
 Si la photo montre un tableau/étiquette de valeurs nutritionnelles (emballage produit), c'est ta source prioritaire et la plus fiable : lis les chiffres exacts imprimés dessus plutôt que d'estimer à partir de l'apparence du produit ou de son nom. Ces tableaux sont généralement donnés "pour 100g" — vérifie l'unité de référence indiquée, puis calcule pour la quantité réellement consommée (poids/portion précisé par l'utilisateur, ou la portion de référence de l'étiquette si rien n'est précisé). N'ignore jamais un tableau de valeurs nutritionnelles visible au profit d'une estimation générique.
 
