@@ -88,6 +88,18 @@ export default function LoginPage() {
     return message;
   };
 
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  const handleGoogleLogin = async () => {
+    setError(""); setGoogleLoading(true);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/dashboard` },
+    });
+    if (error) { setError(translateError(error.message)); setGoogleLoading(false); }
+    // Sinon redirection automatique vers Google — pas besoin de setLoading(false) ici.
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -177,6 +189,30 @@ export default function LoginPage() {
           <p className="text-white/40 text-xs mb-8">
             {mode === "login" ? "Accède à ton espace client" : mode === "register" ? "Rejoins l'espace client Samuel Coaching" : "On t'envoie un lien par email pour en choisir un nouveau"}
           </p>
+
+          {mode !== "forgot" && (
+            <>
+              <button
+                type="button"
+                onClick={handleGoogleLogin}
+                disabled={googleLoading}
+                className="w-full flex items-center justify-center gap-3 bg-white text-black text-xs font-bold tracking-wide py-3.5 hover:bg-white/90 transition-colors disabled:opacity-50 mb-5"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M23.52 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.47c-.28 1.5-1.13 2.78-2.4 3.63v3.02h3.88c2.27-2.09 3.57-5.17 3.57-8.84z"/>
+                  <path fill="#34A853" d="M12 24c3.24 0 5.96-1.07 7.95-2.9l-3.88-3.02c-1.08.72-2.45 1.15-4.07 1.15-3.13 0-5.78-2.11-6.73-4.96H1.26v3.12C3.24 21.3 7.29 24 12 24z"/>
+                  <path fill="#FBBC05" d="M5.27 14.27a7.2 7.2 0 010-4.54V6.61H1.26a12 12 0 000 10.78l4.01-3.12z"/>
+                  <path fill="#EA4335" d="M12 4.77c1.77 0 3.35.61 4.6 1.8l3.44-3.44C17.95 1.19 15.24 0 12 0 7.29 0 3.24 2.7 1.26 6.61l4.01 3.12C6.22 6.88 8.87 4.77 12 4.77z"/>
+                </svg>
+                {googleLoading ? "..." : "Continuer avec Google"}
+              </button>
+              <div className="flex items-center gap-3 mb-5">
+                <div className="flex-1 h-px bg-white/10"/>
+                <span className="text-white/25 text-[0.6rem] tracking-widest uppercase">ou</span>
+                <div className="flex-1 h-px bg-white/10"/>
+              </div>
+            </>
+          )}
 
           <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
             {mode === "register" && (
