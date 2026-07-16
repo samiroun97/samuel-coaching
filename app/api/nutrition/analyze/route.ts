@@ -22,9 +22,10 @@ export async function POST(req: NextRequest) {
     const client = new Anthropic({ apiKey });
     const { type, image, text, portion } = await req.json();
 
-    const portionNote = portion === "petite" || portion === "moyenne" || portion === "grande"
-      ? `Portion indiquée par l'utilisateur : ${portion}.`
-      : "";
+    // Le réglage de portion (petite/grande) est appliqué mathématiquement après coup
+    // (+/-15%), pas laissé à l'appréciation de l'IA : on lui demande donc toujours
+    // une estimation pour une portion standard/typique.
+    const portionMultiplier = portion === "grande" ? 1.15 : portion === "petite" ? 0.85 : 1;
 
     let content: Anthropic.Messages.MessageParam["content"];
 
@@ -35,10 +36,10 @@ export async function POST(req: NextRequest) {
       const precisions = text?.trim() ? `Précisions données par l'utilisateur : "${text.trim()}".` : "";
       content = [
         { type: "image", source: { type: "base64", media_type: mediaType, data: image.slice(comma + 1) } },
-        { type: "text", text: [precisions, portionNote, PROMPT].filter(Boolean).join("\n") },
+        { type: "text", text: [precisions, PROMPT].filter(Boolean).join("\n") },
       ];
     } else if (type === "text" && text) {
-      content = [{ type: "text", text: [`Repas : "${text}"`, portionNote, PROMPT].filter(Boolean).join("\n") }];
+      content = [{ type: "text", text: [`Repas : "${text}"`, PROMPT].filter(Boolean).join("\n") }];
     } else {
       return NextResponse.json({ error: "Paramètres invalides" }, { status: 400 });
     }
@@ -58,6 +59,11 @@ export async function POST(req: NextRequest) {
     }
 
     const parsed = JSON.parse(match[0]);
+    if (portionMultiplier !== 1) {
+      for (const key of ["calories", "proteines", "glucides", "lipides"] as const) {
+        if (typeof parsed[key] === "number") parsed[key] = Math.round(parsed[key] * portionMultiplier);
+      }
+    }
     return NextResponse.json(parsed);
 
   } catch (err: unknown) {
