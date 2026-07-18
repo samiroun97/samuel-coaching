@@ -5,7 +5,7 @@ import { apiPost } from "@/lib/apiClient";
 
 const SAMUEL_EMAIL = "sam97waelti@gmail.com";
 
-type Profile      = { prenom?: string; sexe?: string; poids?: number; taille?: number; age?: number };
+type Profile      = { prenom?: string; sexe?: string; poids?: number; taille?: number; age?: number; objectifs?: string; seances_par_semaine?: number; experience?: string; niveau_activite?: string };
 type WeightEntry  = { id: string; date: string; weight: number };
 type BodyFatEntry = {
   id: string; date: string; body_fat: number; note: string;
@@ -179,7 +179,7 @@ export default function SuiviPage() {
       if (!user) return;
       setUserId(user.id);
       setUserEmail(user.email ?? "");
-      const { data: p } = await supabase.from("profiles").select("prenom,poids,taille,age,sexe").eq("id", user.id).single();
+      const { data: p } = await supabase.from("profiles").select("prenom,poids,taille,age,sexe,objectifs,seances_par_semaine,experience,niveau_activite").eq("id", user.id).single();
       if (p) setProfile(p as Profile);
 
       const wRaw = localStorage.getItem(`weight_history_${user.id}`);
@@ -234,10 +234,12 @@ export default function SuiviPage() {
       const weekEnd = dates[6];
 
       const { data: summaries } = await supabase.from("daily_summaries")
-        .select("date,calories,proteines").eq("user_id", userId).gte("date", weekMonday).lte("date", weekEnd);
+        .select("date,calories,proteines,glucides,lipides").eq("user_id", userId).gte("date", weekMonday).lte("date", weekEnd);
       const daysLogged   = summaries?.length ?? 0;
       const avgCalories  = daysLogged ? Math.round(summaries!.reduce((s, r) => s + (r.calories  ?? 0), 0) / daysLogged) : 0;
       const avgProteines = daysLogged ? Math.round(summaries!.reduce((s, r) => s + (r.proteines ?? 0), 0) / daysLogged) : 0;
+      const avgGlucides  = daysLogged ? Math.round(summaries!.reduce((s, r) => s + (r.glucides  ?? 0), 0) / daysLogged) : 0;
+      const avgLipides   = daysLogged ? Math.round(summaries!.reduce((s, r) => s + (r.lipides   ?? 0), 0) / daysLogged) : 0;
 
       const logs: { date: string; duration_minutes?: number; calories_burned?: number }[] =
         JSON.parse(localStorage.getItem("programme_logs") ?? "[]");
@@ -245,9 +247,13 @@ export default function SuiviPage() {
       const sessionsCount         = weekLogs.length;
       const totalTrainingMinutes  = weekLogs.reduce((s, l) => s + (l.duration_minutes ?? 0), 0);
       const totalEat              = weekLogs.reduce((s, l) => s + (l.calories_burned ?? 0), 0);
+      const trainedDates          = new Set(weekLogs.map(l => (l.date || "").split("T")[0]));
+      const restDays              = dates.filter(dt => !trainedDates.has(dt)).length;
+      const targetSessions        = profile?.seances_par_semaine ?? null;
 
       const totalSteps = dates.reduce((s, dt) => s + (parseInt(localStorage.getItem(`steps_${dt}`) ?? "0") || 0), 0);
       const avgSteps = Math.round(totalSteps / 7);
+      const stepsGoal = parseInt(localStorage.getItem("steps_goal") ?? "10000") || 10000;
 
       const poidsRef = profile?.poids ?? weightHist[0]?.weight ?? 70;
       const avgNeatPerDay = Math.round((totalSteps / 7) * 0.04 * (poidsRef / 70));
@@ -272,18 +278,25 @@ export default function SuiviPage() {
         ?? sortedByDateDesc[sortedByDateDesc.length - 1]?.weight ?? null;
       const weightEnd = sortedByDateDesc.find(w => w.date <= weekEnd)?.weight ?? weightStart;
 
-      let goalProteines = 150;
+      let goalCalories = 2200, goalProteines = 150, goalGlucides = 220, goalLipides = 70;
       try {
         const g = JSON.parse(localStorage.getItem("nutrition_goals") ?? "{}");
+        if (g?.calories)  goalCalories  = g.calories;
         if (g?.proteines) goalProteines = g.proteines;
+        if (g?.glucides)  goalGlucides  = g.glucides;
+        if (g?.lipides)   goalLipides   = g.lipides;
       } catch { /* défaut */ }
 
       const stats = {
         weekStart: weekMonday, weekEnd, daysLogged, avgCalories, avgTdee, balanceStatus, balancePerDay,
-        avgProteines, goalProteines, sessionsCount, totalTrainingMinutes, avgSteps, weightStart, weightEnd,
+        avgProteines, goalProteines, avgGlucides, goalGlucides, avgLipides, goalLipides, goalCalories,
+        sessionsCount, totalTrainingMinutes, targetSessions, restDays,
+        avgSteps, stepsGoal, weightStart, weightEnd,
       };
 
-      const res = await apiPost("/api/suivi/weekly-report", { stats });
+      const res = await apiPost("/api/suivi/weekly-report", {
+        stats: { ...stats, objectifs: profile?.objectifs ?? null, experience: profile?.experience ?? null, niveauActivite: profile?.niveau_activite ?? null },
+      });
       if (!res.ok) throw new Error(await res.text() || `Erreur ${res.status}`);
       const feedback = await res.json();
       if (feedback.error) throw new Error(feedback.error);
@@ -292,9 +305,9 @@ export default function SuiviPage() {
       generateWeeklyReportPdf({
         ...stats,
         clientName: profile?.prenom,
-        pointFort: feedback.point_fort,
-        pointFaible: feedback.point_faible,
-        remarque: feedback.remarque,
+        nutrition: feedback.nutrition,
+        neat: feedback.neat,
+        eat: feedback.eat,
       });
     } catch (e: unknown) {
       setReportError(e instanceof Error ? e.message : "Erreur lors de la génération du bilan.");

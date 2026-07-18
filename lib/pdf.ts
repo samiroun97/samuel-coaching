@@ -232,25 +232,35 @@ export function generateProgrammePdf(seances: CoachSeance[], clientName?: string
 const GREEN = { r: 126, g: 184, b: 160 };
 const RED   = { r: 224, g: 112, b: 112 };
 
+export type ReportSection = { point_fort: string; point_faible: string; conseil: string };
+
 export type WeeklyReportData = {
   clientName?: string;
   weekStart: string;
   weekEnd: string;
   daysLogged: number;
   avgCalories: number;
+  goalCalories: number;
   avgTdee: number;
   balanceStatus: "deficit" | "surplus" | "maintenance";
   balancePerDay: number;
   avgProteines: number;
   goalProteines: number;
+  avgGlucides: number;
+  goalGlucides: number;
+  avgLipides: number;
+  goalLipides: number;
   sessionsCount: number;
+  targetSessions: number | null;
   totalTrainingMinutes: number;
+  restDays: number;
   avgSteps: number;
+  stepsGoal: number;
   weightStart: number | null;
   weightEnd: number | null;
-  pointFort: string;
-  pointFaible: string;
-  remarque: string;
+  nutrition: ReportSection;
+  neat: ReportSection;
+  eat: ReportSection;
 };
 
 export function generateWeeklyReportPdf(data: WeeklyReportData) {
@@ -355,12 +365,15 @@ export function generateWeeklyReportPdf(data: WeeklyReportData) {
   // ── Grille de stats ──
   const stats: { label: string; value: string }[] = [
     { label: "Jours suivis",        value: `${data.daysLogged}/7` },
-    { label: "Calories / jour",     value: `${data.avgCalories} kcal` },
+    { label: "Calories / jour",     value: `${data.avgCalories} / ${data.goalCalories} kcal` },
     { label: "Objectif (TDEE)",     value: `${data.avgTdee} kcal` },
     { label: "Protéines / jour",    value: `${data.avgProteines}g / ${data.goalProteines}g` },
-    { label: "Séances",             value: `${data.sessionsCount}` },
+    { label: "Glucides / jour",     value: `${data.avgGlucides}g / ${data.goalGlucides}g` },
+    { label: "Lipides / jour",      value: `${data.avgLipides}g / ${data.goalLipides}g` },
+    { label: "Séances",             value: data.targetSessions ? `${data.sessionsCount} / ${data.targetSessions}` : `${data.sessionsCount}` },
     { label: "Temps d'entraînement",value: `${data.totalTrainingMinutes} min` },
-    { label: "Pas / jour",          value: fmtInt(data.avgSteps) },
+    { label: "Jours de repos",      value: `${data.restDays}/7` },
+    { label: "Pas / jour",          value: `${fmtInt(data.avgSteps)} / ${fmtInt(data.stepsGoal)}` },
     { label: "Poids",               value: data.weightStart !== null && data.weightEnd !== null
         ? `${data.weightStart} -> ${data.weightEnd} kg` : "—" },
   ];
@@ -386,28 +399,43 @@ export function generateWeeklyReportPdf(data: WeeklyReportData) {
   });
   y += rowH * Math.ceil(stats.length / 2) + 8;
 
-  // ── Feedback qualitatif ──
-  const feedback: { label: string; text: string; color: typeof GOLD }[] = [
-    { label: "POINT FORT DE LA SEMAINE", text: data.pointFort, color: GREEN },
-    { label: "AXE DE PROGRÈS",           text: data.pointFaible, color: RED },
-    { label: "CONSEIL POUR LA SUITE",    text: data.remarque, color: GOLD },
+  // ── Feedback qualitatif, par domaine ──
+  const domains: { title: string; section: ReportSection }[] = [
+    { title: "NUTRITION",           section: data.nutrition },
+    { title: "NEAT · ACTIVITÉ (PAS)", section: data.neat },
+    { title: "EAT · ENTRAÎNEMENT",  section: data.eat },
   ];
-  feedback.forEach(f => {
-    const lines = doc.splitTextToSize(f.text, pageW - margin * 2 - 8);
-    const h = 10 + lines.length * 4.5;
-    ensureSpace(h + 4);
-    doc.setDrawColor(f.color.r, f.color.g, f.color.b);
-    doc.setLineWidth(0.8);
-    doc.line(margin, y, margin, y + h - 4);
+  domains.forEach(({ title, section }) => {
+    ensureSpace(10);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
-    doc.setTextColor(f.color.r, f.color.g, f.color.b);
-    doc.text(f.label, margin + 5, y + 5);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9.5);
-    doc.setTextColor(WHITE.r, WHITE.g, WHITE.b);
-    doc.text(lines, margin + 5, y + 11);
-    y += h + 4;
+    doc.setFontSize(10);
+    doc.setTextColor(GOLD.r, GOLD.g, GOLD.b);
+    doc.text(title, margin, y + 4);
+    y += 8;
+
+    const rows: { label: string; text: string; color: typeof GOLD }[] = [
+      { label: "POINT FORT",       text: section.point_fort,   color: GREEN },
+      { label: "POINT FAIBLE",     text: section.point_faible, color: RED },
+      { label: "CONSEIL",          text: section.conseil,      color: GOLD },
+    ];
+    rows.forEach(f => {
+      const lines = doc.splitTextToSize(f.text, pageW - margin * 2 - 8);
+      const h = 10 + lines.length * 4.5;
+      ensureSpace(h + 4);
+      doc.setDrawColor(f.color.r, f.color.g, f.color.b);
+      doc.setLineWidth(0.8);
+      doc.line(margin, y, margin, y + h - 4);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.setTextColor(f.color.r, f.color.g, f.color.b);
+      doc.text(f.label, margin + 5, y + 5);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9.5);
+      doc.setTextColor(WHITE.r, WHITE.g, WHITE.b);
+      doc.text(lines, margin + 5, y + 11);
+      y += h + 4;
+    });
+    y += 3;
   });
 
   drawFooter();
