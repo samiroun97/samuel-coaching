@@ -2,10 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { requireUser } from "@/lib/apiAuth";
 
-const PROMPT = `Tu es un nutritionniste expert. Analyse ce repas et retourne UNIQUEMENT un objet JSON valide, sans markdown, sans texte avant ni après, sans balises code, au format exact {"name": string, "calories": integer, "proteines": integer, "glucides": integer, "lipides": integer}.
-Toutes les valeurs sont des entiers. Estime des portions raisonnables si non précisées.
+const PROMPT = `Tu es un nutritionniste expert. Analyse ce repas.
 
-Procède ingrédient par ingrédient : identifie chaque composant du plat, estime son poids/sa quantité, puis calcule ses calories à partir des valeurs nutritionnelles usuelles que tu connais pour cet aliment précis (ex : 1 oeuf ≈ 70 kcal, 100g de riz cuit ≈ 130 kcal, 100g de thon au naturel égoutté ≈ 110 kcal, 100g de pâtes cuites ≈ 160 kcal, 1 galette de blé/tortilla ≈ 90-150 kcal selon taille). Additionne ensuite ces valeurs. Le total ne doit jamais être choisi a priori ou par habitude : c'est uniquement la somme des ingrédients qui détermine le résultat. Deux plats de composition différente doivent presque toujours donner des totaux différents — si tu remarques que tu t'apprêtes à répondre une valeur que tu as déjà donnée pour un plat précédent sans que la composition soit vraiment identique, recalcule depuis les ingrédients.
+Procède ingrédient par ingrédient, en écrivant ton raisonnement avant de conclure : identifie chaque composant du plat, estime son poids/sa quantité, puis calcule ses calories à partir des valeurs nutritionnelles usuelles que tu connais pour cet aliment précis (ex : 1 oeuf ≈ 70 kcal, 100g de riz cuit ≈ 130 kcal, 100g de thon au naturel égoutté ≈ 110 kcal, 100g de pâtes cuites ≈ 160 kcal, 1 galette de blé/tortilla ≈ 90-150 kcal selon taille). Additionne ensuite ces valeurs — le total doit être la somme visible de tes lignes de calcul, jamais un chiffre choisi a priori ou par habitude. Deux plats de composition différente doivent presque toujours donner des totaux différents — si tu remarques que tu t'apprêtes à répondre une valeur que tu as déjà donnée pour un plat précédent sans que la composition soit vraiment identique, recalcule depuis les ingrédients.
+
+Garde ce raisonnement bref et strictement textuel : une ligne par ingrédient au format "ingrédient — poids estimé — calcul kcal/P/G/L", sans titres, sans tableau, sans markdown, sans mise en gras, sans phrase de conclusion.
+
+Une fois ce calcul écrit, termine ta réponse — et seulement à la toute fin — par l'objet JSON final sur sa propre ligne, sans markdown ni balises code, au format exact {"name": string, "calories": integer, "proteines": integer, "glucides": integer, "lipides": integer}, où calories est bien la somme que tu viens de calculer. Toutes les valeurs sont des entiers. Estime des portions raisonnables si non précisées.
 
 Si la photo montre un tableau/étiquette de valeurs nutritionnelles (emballage produit), c'est ta source prioritaire et la plus fiable : lis les chiffres exacts imprimés dessus plutôt que d'estimer à partir de l'apparence du produit ou de son nom. Ces tableaux sont généralement donnés "pour 100g" — vérifie l'unité de référence indiquée, puis calcule pour la quantité réellement consommée (poids/portion précisé par l'utilisateur, ou la portion de référence de l'étiquette si rien n'est précisé). N'ignore jamais un tableau de valeurs nutritionnelles visible au profit d'une estimation générique.
 
@@ -47,19 +50,22 @@ export async function POST(req: NextRequest) {
 
     const response = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 256,
+      max_tokens: 1000,
       messages: [{ role: "user", content }],
     });
 
     const raw = response.content[0].type === "text" ? response.content[0].text.trim() : "";
 
-    // greedy match to capture full JSON object
-    const match = raw.match(/\{[\s\S]*\}/);
-    if (!match) {
+    // Le modèle écrit maintenant son calcul ingrédient par ingrédient avant de conclure
+    // (nécessaire pour qu'il fasse vraiment l'addition au lieu de deviner un chiffre rond) ;
+    // on ne garde que le dernier objet JSON de la réponse, qui contient le résultat final.
+    const objectMatches = raw.match(/\{[^{}]*\}/g);
+    const lastObject = objectMatches?.[objectMatches.length - 1];
+    if (!lastObject) {
       return NextResponse.json({ error: "Réponse IA non parseable", raw }, { status: 500 });
     }
 
-    const parsed = JSON.parse(match[0]);
+    const parsed = JSON.parse(lastObject);
     if (portionMultiplier !== 1) {
       for (const key of ["calories", "proteines", "glucides", "lipides"] as const) {
         if (typeof parsed[key] === "number") parsed[key] = Math.round(parsed[key] * portionMultiplier);
