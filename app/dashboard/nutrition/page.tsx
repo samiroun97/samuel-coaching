@@ -445,6 +445,20 @@ export default function NutritionPage() {
     setIdeaLoading(false);
   };
 
+  // Ajuster manuellement les calories d'une estimation IA doit rééquilibrer les macros
+  // proportionnellement (même ratio), sinon le total calorique affiché devient incohérent
+  // avec P/G/L (ex: +200 kcal sur un plat jugé plus riche que prévu par la photo).
+  const adjustAiCalories = (newCalories: number) => setAiResult(r => {
+    if (!r) return r;
+    const scale = r.calories > 0 ? Math.max(0, newCalories) / r.calories : 1;
+    return {
+      ...r, calories: Math.max(0, newCalories),
+      proteines: Math.max(0, Math.round(r.proteines * scale)),
+      glucides:  Math.max(0, Math.round(r.glucides  * scale)),
+      lipides:   Math.max(0, Math.round(r.lipides   * scale)),
+    };
+  });
+
   const addFoodDirect = (item: Omit<IdeaResult, "description">, repas?: string) => {
     setFoods(f => [...f, { id: Date.now().toString(), ...item, ...(repas ? { repas } : {}) }]);
   };
@@ -1043,10 +1057,10 @@ export default function NutritionPage() {
                         </div>
                       </div>
                       <div>
-                        <p className="text-[0.65rem] tracking-wider uppercase text-white/20 mb-2">Ajuster si nécessaire</p>
+                        <p className="text-[0.65rem] tracking-wider uppercase text-white/20 mb-2">Ajuster si nécessaire <span className="normal-case tracking-normal text-white/15">(les macros suivent les calories)</span></p>
                         <div className="grid grid-cols-5 gap-2">
                           <div><label className={labelCls}>Nom</label><input className={inputCls} value={aiResult.name} onChange={e => setAiResult(r => r ? {...r, name:e.target.value} : r)}/></div>
-                          <div><label className={labelCls}>Cal</label><input className={inputCls} type="number" value={aiResult.calories} onChange={e => setAiResult(r => r ? {...r, calories:+e.target.value} : r)}/></div>
+                          <div><label className={labelCls}>Cal</label><input className={inputCls} type="number" value={aiResult.calories} onChange={e => adjustAiCalories(+e.target.value)}/></div>
                           <div><label className={labelCls} style={{ color:"#c9a84c" }}>Prot</label><input className={inputCls} type="number" value={aiResult.proteines} onChange={e => setAiResult(r => r ? {...r, proteines:+e.target.value} : r)}/></div>
                           <div><label className={labelCls} style={{ color:"#7eb8a0" }}>Gluc</label><input className={inputCls} type="number" value={aiResult.glucides} onChange={e => setAiResult(r => r ? {...r, glucides:+e.target.value} : r)}/></div>
                           <div><label className={labelCls} style={{ color:"#e07070" }}>Lip</label><input className={inputCls} type="number" value={aiResult.lipides} onChange={e => setAiResult(r => r ? {...r, lipides:+e.target.value} : r)}/></div>
