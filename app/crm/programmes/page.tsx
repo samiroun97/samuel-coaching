@@ -3,8 +3,10 @@ export const dynamic = "force-dynamic";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
-import { type ExerciceItem, serializeExercices } from "@/lib/exercices";
+import { type ExerciceItem, serializeExercices, normalizeExercice } from "@/lib/exercices";
 import ExerciceEditor from "@/components/ExerciceEditor";
+import { type LibraryEntry, listLibrary, addLibraryEntry, deleteLibraryEntry } from "@/lib/exerciceLibrary";
+import { type ProgrammeTemplate, listTemplates, saveTemplate, deleteTemplate, templateToExercices } from "@/lib/programmeTemplates";
 
 const SEANCE_TYPES = ["Haut du corps","Bas du corps","Full body","Cardio","Boxe","Natation","CrossFit","Yoga","Autre"];
 
@@ -18,9 +20,9 @@ const STAGE_CFG: Record<string, { label: string; color: string }> = {
 };
 
 type Client = { id: string; email: string; prenom: string; nom: string; age: number; poids: number; taille: number; sexe: string; niveau_activite: string; experience: string; seances_par_semaine: number; duree_seance: string; lieu_entrainement: string; blessures: string; objectifs: string; pipeline_stage: string | null };
-type SeanceDraft = { titre: string; type_seance: string; date_prevue: string; description: string; exercices: ExerciceItem[] };
+type SeanceDraft = { titre: string; type_seance: string; date_prevue: string; semaine: string; description: string; exercices: ExerciceItem[] };
 
-const emptySeance = (): SeanceDraft => ({ titre: "", type_seance: "", date_prevue: "", description: "", exercices: [] });
+const emptySeance = (): SeanceDraft => ({ titre: "", type_seance: "", date_prevue: "", semaine: "", description: "", exercices: [] });
 
 export default function ProgrammesPage() {
   const [clients,     setClients]     = useState<Client[]>([]);
@@ -33,6 +35,47 @@ export default function ProgrammesPage() {
   const [genError,    setGenError]    = useState("");
   const [sending,     setSending]     = useState(false);
   const [sentTo,      setSentTo]      = useState<string | null>(null);
+  const [library,      setLibrary]      = useState<LibraryEntry[]>([]);
+  const [showLibrary,  setShowLibrary]  = useState(false);
+  const [libForm,      setLibForm]      = useState({ nom: "", type: "", note_default: "", video_url: "" });
+  const [templates,    setTemplates]    = useState<ProgrammeTemplate[]>([]);
+  const [showTemplates, setShowTemplates] = useState(false);
+
+  const loadLibrary = async () => { try { setLibrary(await listLibrary()); } catch { /* table pas encore créée */ } };
+  const loadTemplates = async () => { try { setTemplates(await listTemplates()); } catch { /* table pas encore créée */ } };
+  useEffect(() => { loadLibrary(); loadTemplates(); }, []);
+
+  const addLibItem = async () => {
+    if (!libForm.nom.trim()) return;
+    try {
+      const entry = await addLibraryEntry(libForm);
+      setLibrary(prev => [...prev, entry].sort((a, b) => a.nom.localeCompare(b.nom)));
+      setLibForm({ nom: "", type: "", note_default: "", video_url: "" });
+    } catch (e: unknown) { setGenError(e instanceof Error ? e.message : "Erreur bibliothèque"); }
+  };
+  const removeLibItem = async (id: string) => {
+    try { await deleteLibraryEntry(id); setLibrary(prev => prev.filter(l => l.id !== id)); } catch { /* ignore */ }
+  };
+
+  const applyTemplate = (t: ProgrammeTemplate) => {
+    setDrafts(prev => [...prev, { ...emptySeance(), titre: t.nom, type_seance: t.type_seance || "", description: t.description || "", exercices: templateToExercices(t) }]);
+    setShowTemplates(false);
+  };
+  const removeTemplate = async (id: string) => {
+    try { await deleteTemplate(id); setTemplates(prev => prev.filter(t => t.id !== id)); } catch { /* ignore */ }
+  };
+  const saveAsTemplate = async (d: SeanceDraft) => {
+    const nom = window.prompt("Nom du modèle ?", d.titre);
+    if (!nom || !nom.trim()) return;
+    try {
+      const t = await saveTemplate({ nom, objectif: selected?.objectifs ?? "", type_seance: d.type_seance, description: d.description, exercices: d.exercices });
+      setTemplates(prev => [t, ...prev]);
+    } catch (e: unknown) { setGenError(e instanceof Error ? e.message : "Erreur modèle"); }
+  };
+  const duplicateDraft = (i: number) => {
+    const clone: SeanceDraft = { ...structuredClone(drafts[i]), date_prevue: "" };
+    setDrafts(prev => [...prev.slice(0, i + 1), clone, ...prev.slice(i + 1)]);
+  };
 
   const load = async () => {
     const [{ data: c, error: cErr }, { data: s }] = await Promise.all([
@@ -63,7 +106,8 @@ export default function ProgrammesPage() {
       const res = await apiPost("/api/programme/generate", { profile: selected });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Erreur génération");
-      setDrafts((data.seances as SeanceDraft[]).map(s => ({ ...emptySeance(), ...s })));
+      type RawSeance = { titre: string; type_seance: string; description: string; exercices: Partial<ExerciceItem>[] };
+      setDrafts((data.seances as RawSeance[]).map(s => ({ ...emptySeance(), ...s, exercices: s.exercices.map(normalizeExercice) })));
     } catch (e: unknown) {
       setGenError(e instanceof Error ? e.message : "Erreur génération");
     }
@@ -83,6 +127,7 @@ export default function ProgrammesPage() {
       titre: d.titre.trim(),
       type_seance: d.type_seance || null,
       date_prevue: d.date_prevue || null,
+      semaine: d.semaine ? parseInt(d.semaine) || null : null,
       description: d.description || null,
       exercices: serializeExercices(d.exercices),
     })));
@@ -186,8 +231,42 @@ export default function ProgrammesPage() {
                 </div>
               )}
 
+              {/* Bibliothèque d'exercices */}
+              <div className="border border-white/8 bg-[#0a0a0a]">
+                <button onClick={() => setShowLibrary(v => !v)} className="w-full flex items-center justify-between px-4 py-2.5 text-left">
+                  <span className="text-[0.55rem] tracking-[0.2em] uppercase text-white/40">Ma bibliothèque d&apos;exercices ({library.length})</span>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={`text-white/25 transition-transform ${showLibrary ? "rotate-180" : ""}`}><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                {showLibrary && (
+                  <div className="px-4 pb-4 flex flex-col gap-2.5">
+                    {library.length > 0 && (
+                      <div className="flex flex-col gap-1 max-h-40 overflow-y-auto">
+                        {library.map(l => (
+                          <div key={l.id} className="flex items-center justify-between gap-2 border border-white/5 px-2.5 py-1.5">
+                            <span className="text-[0.62rem] text-white/50 truncate">{l.nom}{l.type ? <span className="text-white/25"> · {l.type}</span> : null}</span>
+                            <button onClick={() => removeLibItem(l.id)} className="shrink-0 text-white/15 hover:text-[#e07070] transition-colors">
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <div className="grid grid-cols-2 gap-2">
+                      <input className={inp} placeholder="Nom de l'exercice" value={libForm.nom} onChange={e => setLibForm(f => ({ ...f, nom: e.target.value }))}/>
+                      <input className={inp} placeholder="Type (optionnel)" value={libForm.type} onChange={e => setLibForm(f => ({ ...f, type: e.target.value }))}/>
+                      <input className={inp} placeholder="Note par défaut (optionnel)" value={libForm.note_default} onChange={e => setLibForm(f => ({ ...f, note_default: e.target.value }))}/>
+                      <input className={inp} placeholder="Lien vidéo (optionnel)" value={libForm.video_url} onChange={e => setLibForm(f => ({ ...f, video_url: e.target.value }))}/>
+                    </div>
+                    <button onClick={addLibItem} disabled={!libForm.nom.trim()}
+                      className="border border-white/10 text-white/30 text-[0.55rem] tracking-[0.12em] uppercase py-2 hover:border-white/20 hover:text-white/50 transition-colors disabled:opacity-30">
+                      + Ajouter à la bibliothèque
+                    </button>
+                  </div>
+                )}
+              </div>
+
               {/* Génération */}
-              {drafts.length === 0 && (
+              {drafts.length === 0 && !showTemplates && (
                 <div className="border border-[#c9a84c]/20 bg-[#0f0d07] p-4 md:p-5 flex flex-col gap-3">
                   <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c]">Programme ciblé</p>
                   <p className="text-[0.65rem] text-white/35 leading-relaxed">
@@ -201,6 +280,32 @@ export default function ProgrammesPage() {
                     className="border border-white/10 text-white/30 text-[0.55rem] tracking-[0.12em] uppercase py-2.5 hover:border-white/20 hover:text-white/50 transition-colors">
                     Ou créer manuellement
                   </button>
+                  {templates.length > 0 && (
+                    <button onClick={() => setShowTemplates(true)}
+                      className="border border-white/10 text-white/30 text-[0.55rem] tracking-[0.12em] uppercase py-2.5 hover:border-white/20 hover:text-white/50 transition-colors">
+                      Ou choisir un modèle ({templates.length})
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {drafts.length === 0 && showTemplates && (
+                <div className="border border-[#c9a84c]/20 bg-[#0f0d07] p-4 md:p-5 flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c]">Modèles enregistrés</p>
+                    <button onClick={() => setShowTemplates(false)} className="text-[0.5rem] tracking-wider uppercase text-white/25 hover:text-white/50 transition-colors">Retour</button>
+                  </div>
+                  {templates.map(t => (
+                    <div key={t.id} className="flex items-center justify-between gap-2 border border-white/8 bg-[#111] px-3 py-2.5">
+                      <button onClick={() => applyTemplate(t)} className="text-left min-w-0 flex-1">
+                        <p className="text-xs text-white/70 truncate">{t.nom}</p>
+                        <p className="text-[0.55rem] text-white/25 truncate">{t.objectif || t.type_seance || "—"}</p>
+                      </button>
+                      <button onClick={() => removeTemplate(t.id)} className="shrink-0 text-white/15 hover:text-[#e07070] transition-colors">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </button>
+                    </div>
+                  ))}
                 </div>
               )}
 
@@ -218,9 +323,18 @@ export default function ProgrammesPage() {
                     <div key={i} className="border border-white/8 bg-[#111] p-4 flex flex-col gap-3">
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-[0.5rem] tracking-[0.2em] uppercase text-[#c9a84c]">Séance {i + 1}</span>
-                        <button onClick={() => setDrafts(prev => prev.filter((_, j) => j !== i))} className="text-white/15 hover:text-[#e07070] transition-colors">
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                        </button>
+                        <div className="flex items-center gap-3">
+                          <button onClick={() => saveAsTemplate(d)} disabled={!d.titre.trim()} title="Enregistrer comme modèle"
+                            className="text-[0.48rem] tracking-wider uppercase text-white/25 hover:text-[#c9a84c] transition-colors disabled:opacity-30">
+                            Modèle
+                          </button>
+                          <button onClick={() => duplicateDraft(i)} title="Dupliquer cette séance" className="text-white/25 hover:text-[#c9a84c] transition-colors">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                          </button>
+                          <button onClick={() => setDrafts(prev => prev.filter((_, j) => j !== i))} className="text-white/15 hover:text-[#e07070] transition-colors">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                          </button>
+                        </div>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div><label className={lbl}>Titre *</label><input className={inp} value={d.titre} onChange={e => setDraft(i, { titre: e.target.value })}/></div>
@@ -230,11 +344,14 @@ export default function ProgrammesPage() {
                           </select>
                         </div>
                       </div>
-                      <div><label className={lbl}>Date prévue</label><input type="date" className={inp} value={d.date_prevue} onChange={e => setDraft(i, { date_prevue: e.target.value })}/></div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div><label className={lbl}>Date prévue</label><input type="date" className={inp} value={d.date_prevue} onChange={e => setDraft(i, { date_prevue: e.target.value })}/></div>
+                        <div><label className={lbl}>Semaine (optionnel)</label><input type="number" min="1" className={inp} placeholder="1" value={d.semaine} onChange={e => setDraft(i, { semaine: e.target.value })}/></div>
+                      </div>
                       <div><label className={lbl}>Description</label><textarea className={`${inp} resize-none`} rows={2} value={d.description} onChange={e => setDraft(i, { description: e.target.value })}/></div>
                       <div>
                         <label className={lbl}>Exercices</label>
-                        <ExerciceEditor items={d.exercices} onChange={items => setDraft(i, { exercices: items })}/>
+                        <ExerciceEditor items={d.exercices} onChange={items => setDraft(i, { exercices: items })} library={library}/>
                       </div>
                     </div>
                   ))}

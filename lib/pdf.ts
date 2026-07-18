@@ -1,7 +1,7 @@
 import { jsPDF } from "jspdf";
-import { parseExercices } from "@/lib/exercices";
+import { type ExerciceItem, parseExercices } from "@/lib/exercices";
 
-type CoachSeance = { titre: string; type_seance: string | null; date_prevue: string | null; description: string | null; exercices: string | null };
+type CoachSeance = { titre: string; type_seance: string | null; date_prevue: string | null; semaine?: number | null; description: string | null; exercices: string | null };
 
 const GOLD = { r: 201, g: 168, b: 76 };
 const GOLD_LIGHT = { r: 226, g: 201, b: 126 };
@@ -76,12 +76,13 @@ export function generateProgrammePdf(seances: CoachSeance[], clientName?: string
     doc.setTextColor(WHITE.r, WHITE.g, WHITE.b);
     doc.text(`Séance ${si + 1} — ${s.titre}`, margin, y + 5);
 
-    if (s.date_prevue) {
+    if (s.date_prevue || s.semaine) {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8.5);
       doc.setTextColor(GRAY_DIM.r, GRAY_DIM.g, GRAY_DIM.b);
-      const dateLabel = new Date(s.date_prevue + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
-      doc.text(dateLabel, pageW - margin, y + 5, { align: "right" });
+      const dateLabel = s.date_prevue ? new Date(s.date_prevue + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" }) : "";
+      const label = [s.semaine ? `Semaine ${s.semaine}` : "", dateLabel].filter(Boolean).join(" · ");
+      doc.text(label, pageW - margin, y + 5, { align: "right" });
     }
     y += 9;
 
@@ -109,15 +110,39 @@ export function generateProgrammePdf(seances: CoachSeance[], clientName?: string
       y += 2;
     }
 
-    items.forEach((ex, ei) => {
+    const drawExerciceCard = (ex: ExerciceItem, ei: number, grouped: boolean) => {
       const noteLines: string[] = ex.note ? doc.splitTextToSize(ex.note, pageW - margin * 2 - 12) : [];
-      const cardH = 12 + (noteLines.length ? noteLines.length * 3.8 + 2 : 0);
+      const bodyLines: string[] = ex.mode === "avance"
+        ? ex.sets.map((s, si) => {
+            const parts = [s.reps, s.poids, s.repos ? `repos ${s.repos}` : "", s.rpe ? `RPE ${s.rpe}` : "", s.tempo ? `tempo ${s.tempo}` : ""].filter(Boolean);
+            return parts.length ? `Série ${si + 1} — ${parts.join(" · ")}` : "";
+          }).filter(Boolean)
+        : [];
+      const stats: string[] = [];
+      if (ex.mode === "simple") {
+        if (ex.series) stats.push(`${ex.series}${ex.repetitions ? ` × ${ex.repetitions}` : " séries"}`);
+        if (ex.poids) stats.push(ex.poids);
+        if (ex.repos) stats.push(`repos ${ex.repos}`);
+      }
+      const freeLines: string[] = ex.mode === "libre" && ex.texteLibre ? doc.splitTextToSize(ex.texteLibre, pageW - margin * 2 - 12) : [];
+
+      const cardH = 12
+        + (stats.length ? 4.5 : 0)
+        + (bodyLines.length ? bodyLines.length * 3.8 + 1 : 0)
+        + (freeLines.length ? freeLines.length * 3.8 + 2 : 0)
+        + (noteLines.length ? noteLines.length * 3.8 + 2 : 0);
       ensureSpace(cardH + 3);
 
       doc.setFillColor(CARD_BG.r, CARD_BG.g, CARD_BG.b);
       doc.setDrawColor(CARD_BORDER.r, CARD_BORDER.g, CARD_BORDER.b);
       doc.setLineWidth(0.2);
       doc.roundedRect(margin, y, pageW - margin * 2, cardH, 1, 1, "FD");
+
+      if (grouped) {
+        doc.setDrawColor(GOLD.r, GOLD.g, GOLD.b);
+        doc.setLineWidth(0.8);
+        doc.line(margin, y, margin, y + cardH);
+      }
 
       doc.setFont("helvetica", "bold");
       doc.setFontSize(8);
@@ -136,26 +161,59 @@ export function generateProgrammePdf(seances: CoachSeance[], clientName?: string
         doc.text(ex.type, pageW - margin - 4, y + 6, { align: "right" });
       }
 
-      const stats: string[] = [];
-      if (ex.series) stats.push(`${ex.series}${ex.repetitions ? ` × ${ex.repetitions}` : " séries"}`);
-      if (ex.poids) stats.push(ex.poids);
-      if (ex.repos) stats.push(`repos ${ex.repos}`);
+      let cy = y + 10.5;
       if (stats.length) {
         doc.setFont("helvetica", "bold");
         doc.setFontSize(8.5);
         doc.setTextColor(GOLD_LIGHT.r, GOLD_LIGHT.g, GOLD_LIGHT.b);
-        doc.text(stats.join("   ·   "), margin + 10, y + 10.5);
+        doc.text(stats.join("   ·   "), margin + 10, cy);
+        cy += 4.5;
       }
-
+      if (bodyLines.length) {
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(7.5);
+        doc.setTextColor(GOLD_LIGHT.r, GOLD_LIGHT.g, GOLD_LIGHT.b);
+        doc.text(bodyLines, margin + 10, cy);
+        cy += bodyLines.length * 3.8 + 1;
+      }
+      if (freeLines.length) {
+        doc.setFont("helvetica", "italic");
+        doc.setFontSize(8);
+        doc.setTextColor(GRAY.r, GRAY.g, GRAY.b);
+        doc.text(freeLines, margin + 10, cy);
+        cy += freeLines.length * 3.8 + 2;
+      }
       if (noteLines.length) {
         doc.setFont("helvetica", "italic");
         doc.setFontSize(7.5);
         doc.setTextColor(GRAY.r, GRAY.g, GRAY.b);
-        doc.text(noteLines, margin + 10, y + 15);
+        doc.text(noteLines, margin + 10, cy);
       }
 
       y += cardH + 3;
-    });
+    };
+
+    let ei = 0;
+    while (ei < items.length) {
+      const ex = items[ei];
+      const isGrouped = !!ex.groupId && ((ei > 0 && items[ei - 1].groupId === ex.groupId) || (ei < items.length - 1 && items[ei + 1].groupId === ex.groupId));
+      if (isGrouped && ex.groupId) {
+        const gid = ex.groupId;
+        let ej = ei;
+        while (ej < items.length && items[ej].groupId === gid) ej++;
+        ensureSpace(6);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(7.5);
+        doc.setTextColor(GOLD.r, GOLD.g, GOLD.b);
+        doc.text((ex.groupLabel || "Superset").toUpperCase(), margin + 2, y + 3);
+        y += 5.5;
+        for (let k = ei; k < ej; k++) drawExerciceCard(items[k], k, true);
+        ei = ej;
+      } else {
+        drawExerciceCard(ex, ei, false);
+        ei += 1;
+      }
+    }
 
     y += 6;
   });
