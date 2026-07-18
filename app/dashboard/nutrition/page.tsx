@@ -406,11 +406,24 @@ export default function NutritionPage() {
   useEffect(() => { localStorage.setItem(`hydration_${selectedDateRef.current}`, water.toString()); }, [water]);
   useEffect(() => { localStorage.setItem("nutrition_saved_meals", JSON.stringify(savedMeals)); }, [savedMeals]);
 
+  // Référence calorique : objectif fixe ou TDEE du jour (métabolisme + activité + sport)
+  const bmrVal    = miniProfile ? bmr(miniProfile, bodyFat) : 0;
+  const tdee      = bmrVal > 0 ? bmrVal + tdeeParts.neat + tdeeParts.eat : 0;
+  const useTdee   = calRef === "tdee" && tdee > 0;
+  const calTarget = useTdee ? tdee : goals.calories;
+
+  // En mode TDEE, le budget calorique s'adapte à la dépense réelle du jour ; les macros
+  // suivent proportionnellement le même ratio que dans "Mes objectifs" pour rester cohérentes.
+  const macroScale = useTdee && goals.calories > 0 ? calTarget / goals.calories : 1;
+  const consumed = foods.reduce((acc, f) => ({
+    calories: acc.calories + f.calories, proteines: acc.proteines + f.proteines,
+    glucides: acc.glucides + f.glucides, lipides: acc.lipides + f.lipides,
+  }), { calories: 0, proteines: 0, glucides: 0, lipides: 0 });
   const remaining = {
-    calories:  Math.max(0, goals.calories  - foods.reduce((s,f) => s+f.calories, 0)),
-    proteines: Math.max(0, goals.proteines - foods.reduce((s,f) => s+f.proteines, 0)),
-    glucides:  Math.max(0, goals.glucides  - foods.reduce((s,f) => s+f.glucides, 0)),
-    lipides:   Math.max(0, goals.lipides   - foods.reduce((s,f) => s+f.lipides, 0)),
+    calories:  Math.max(0, calTarget - consumed.calories),
+    proteines: Math.max(0, Math.round(goals.proteines * macroScale) - consumed.proteines),
+    glucides:  Math.max(0, Math.round(goals.glucides  * macroScale) - consumed.glucides),
+    lipides:   Math.max(0, Math.round(goals.lipides   * macroScale) - consumed.lipides),
   };
 
   const canGenerateIdeas = !respectBudget || remaining.calories > 0;
@@ -644,12 +657,6 @@ export default function NutritionPage() {
 
   const daysWithData = fullHistory.filter(d => d.calories > 0);
   const avgCal = daysWithData.length ? Math.round(daysWithData.reduce((s,d) => s+d.calories,0)/daysWithData.length) : 0;
-
-  // Référence calorique : objectif fixe ou TDEE du jour
-  const bmrVal    = miniProfile ? bmr(miniProfile, bodyFat) : 0;
-  const tdee      = bmrVal > 0 ? bmrVal + tdeeParts.neat + tdeeParts.eat : 0;
-  const useTdee   = calRef === "tdee" && tdee > 0;
-  const calTarget = useTdee ? tdee : goals.calories;
 
   return (
     <div className="p-4 sm:p-8 max-w-2xl">
