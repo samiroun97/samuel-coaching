@@ -12,6 +12,11 @@ const BG = { r: 9, g: 9, b: 9 };
 const CARD_BG = { r: 17, g: 17, b: 17 };
 const CARD_BORDER = { r: 42, g: 42, b: 42 };
 
+// jsPDF (police "helvetica" standard, encodage WinAnsi) ne sait pas afficher l'espace fine
+// insécable utilisée par `toLocaleString("fr-FR")` pour grouper les milliers (rendue en glyphe
+// cassé dans le PDF) ni le caractère flèche "→" : on formate donc les nombres nous-mêmes.
+const fmtInt = (n: number) => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "'");
+
 export function generateProgrammePdf(seances: CoachSeance[], clientName?: string) {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const pageW = 210, pageH = 297, margin = 16;
@@ -299,7 +304,12 @@ export function generateWeeklyReportPdf(data: WeeklyReportData) {
   // ── Résultat de la semaine (déficit / surplus / maintien) ──
   const statusColor = data.balanceStatus === "surplus" ? RED : data.balanceStatus === "deficit" ? GREEN : GOLD;
   const statusLabel = data.balanceStatus === "surplus" ? "SURPLUS" : data.balanceStatus === "deficit" ? "DÉFICIT" : "MAINTIEN";
-  const cardH = 26;
+  // Totaux sur 7 jours (extrapolés depuis les moyennes journalières) : la "dépense" est le TDEE
+  // (métabolisme + activité + sport), donc les calories réellement brûlées cette semaine.
+  const weekConsumed = data.avgCalories * 7;
+  const weekBurned   = data.avgTdee * 7;
+  const weekBalance  = weekConsumed - weekBurned;
+  const cardH = 40;
   ensureSpace(cardH + 4);
   doc.setFillColor(CARD_BG.r, CARD_BG.g, CARD_BG.b);
   doc.setDrawColor(statusColor.r, statusColor.g, statusColor.b);
@@ -315,8 +325,31 @@ export function generateWeeklyReportPdf(data: WeeklyReportData) {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   doc.setTextColor(WHITE.r, WHITE.g, WHITE.b);
-  const balanceTxt = `${data.balancePerDay > 0 ? "+" : ""}${data.balancePerDay} kcal / jour en moyenne`;
+  const balanceTxt = `${data.balancePerDay > 0 ? "+" : ""}${fmtInt(data.balancePerDay)} kcal / jour en moyenne`;
   doc.text(balanceTxt, pageW - margin - 6, y + 18, { align: "right" });
+
+  doc.setDrawColor(statusColor.r, statusColor.g, statusColor.b);
+  doc.setLineWidth(0.15);
+  doc.line(margin + 6, y + 23, pageW - margin - 6, y + 23);
+
+  const weekStats = [
+    { label: "Brûlées / semaine",    value: `${fmtInt(weekBurned)} kcal` },
+    { label: "Consommées / semaine", value: `${fmtInt(weekConsumed)} kcal` },
+    { label: "Total semaine",        value: `${weekBalance > 0 ? "+" : ""}${fmtInt(weekBalance)} kcal`, highlight: true },
+  ];
+  const wCol = (pageW - margin * 2 - 12) / 3;
+  weekStats.forEach((s, i) => {
+    const x = margin + 6 + i * wCol;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.setTextColor(GRAY_DIM.r, GRAY_DIM.g, GRAY_DIM.b);
+    doc.text(s.label.toUpperCase(), x, y + 29);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    const c = s.highlight ? statusColor : WHITE;
+    doc.setTextColor(c.r, c.g, c.b);
+    doc.text(s.value, x, y + 36);
+  });
   y += cardH + 8;
 
   // ── Grille de stats ──
@@ -327,9 +360,9 @@ export function generateWeeklyReportPdf(data: WeeklyReportData) {
     { label: "Protéines / jour",    value: `${data.avgProteines}g / ${data.goalProteines}g` },
     { label: "Séances",             value: `${data.sessionsCount}` },
     { label: "Temps d'entraînement",value: `${data.totalTrainingMinutes} min` },
-    { label: "Pas / jour",          value: `${data.avgSteps.toLocaleString("fr-FR")}` },
+    { label: "Pas / jour",          value: fmtInt(data.avgSteps) },
     { label: "Poids",               value: data.weightStart !== null && data.weightEnd !== null
-        ? `${data.weightStart} → ${data.weightEnd} kg` : "—" },
+        ? `${data.weightStart} -> ${data.weightEnd} kg` : "—" },
   ];
   const colW = (pageW - margin * 2 - 8) / 2;
   const rowH = 18;
