@@ -841,21 +841,34 @@ export default function NutritionPage() {
         </div>
         {foods.length === 0
           ? <p className="px-5 py-4 text-[0.7rem] tracking-wider text-white/20 uppercase">Aucun aliment ajouté</p>
-          : foods.map(f => (
+          : foods.map(f => {
+            const isFav = savedMeals.some(s => s.name === f.name);
+            return (
             <div key={f.id} className="flex items-center justify-between px-5 py-3 border-b border-white/5 last:border-0 group">
               <div>
                 <p className="text-xs text-white/70">{f.name}</p>
                 <p className="text-[0.7rem] text-white/25 mt-0.5">P {f.proteines}g · G {f.glucides}g · L {f.lipides}g</p>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2.5">
                 <span className="text-xs text-white/50">{f.calories} kcal</span>
+                <button onClick={() => setFoods(fs => [...fs, { ...f, id: Date.now().toString() }])}
+                  title="Reprendre cet aliment aujourd'hui"
+                  className="text-white/20 hover:text-[#c9a84c] transition-colors opacity-0 group-hover:opacity-100">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                </button>
+                <button
+                  onClick={() => isFav ? setSavedMeals(s => s.filter(m => m.name !== f.name)) : saveMeal(f)}
+                  title={isFav ? "Retirer des favoris" : "Ajouter aux favoris"}
+                  className={`transition-colors ${isFav ? "text-[#c9a84c] opacity-100" : "text-white/20 hover:text-[#c9a84c] opacity-0 group-hover:opacity-100"}`}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill={isFav ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </button>
                 <button onClick={() => setFoods(fs => fs.filter(x => x.id !== f.id))}
                   className="text-white/20 hover:text-[#e07070] transition-colors opacity-0 group-hover:opacity-100">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
               </div>
             </div>
-          ))
+          );})
         }
       </div>
 
