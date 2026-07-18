@@ -264,6 +264,7 @@ export default function NutritionPage() {
   const [ideaMealType, setIdeaMealType] = useState<string>(MEAL_TYPES[0]);
   const [ideaLoading, setIdeaLoading] = useState(false);
   const [ideaError,   setIdeaError]   = useState("");
+  const [respectBudget, setRespectBudget] = useState(true);
   const [mealPlan,    setMealPlan]    = useState<MealPlan | null>(null);
   const [description, setDescription] = useState("");
   const userIdRef       = useRef("");
@@ -412,10 +413,16 @@ export default function NutritionPage() {
     lipides:   Math.max(0, goals.lipides   - foods.reduce((s,f) => s+f.lipides, 0)),
   };
 
+  const canGenerateIdeas = !respectBudget || remaining.calories > 0;
+
   const generateIdeas = async () => {
+    if (!canGenerateIdeas) return;
     setIdeaLoading(true); setIdeaError(""); setIdeas([]);
     try {
-      const res = await apiPost("/api/nutrition/meal-idea", { remaining, mealType: ideaMealType });
+      const res = await apiPost("/api/nutrition/meal-idea", {
+        mealType: ideaMealType,
+        remaining: respectBudget ? remaining : null,
+      });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setIdeas(data.ideas ?? []);
@@ -770,22 +777,24 @@ export default function NutritionPage() {
               </svg>
               <span style={{ fontFamily:"var(--font-bebas)" }} className="text-sm tracking-wider text-white">Idée repas</span>
             </div>
-            {remaining.calories > 0 ? (
-              <p className="text-[0.65rem] tracking-wider text-white/25">
-                Budget · {remaining.calories} kcal · P {remaining.proteines}g · G {remaining.glucides}g · L {remaining.lipides}g
-              </p>
+            {respectBudget ? (
+              remaining.calories > 0 ? (
+                <p className="text-[0.65rem] tracking-wider text-white/25">
+                  Budget · {remaining.calories} kcal · P {remaining.proteines}g · G {remaining.glucides}g · L {remaining.lipides}g
+                </p>
+              ) : (
+                <p className="text-[0.65rem] tracking-wider text-[#7eb8a0]/60">Objectif calorique atteint</p>
+              )
             ) : (
-              <p className="text-[0.65rem] tracking-wider text-[#7eb8a0]/60">Objectif calorique atteint</p>
+              <p className="text-[0.65rem] tracking-wider text-white/25">Idées libres, sans contrainte de budget</p>
             )}
           </div>
-          {remaining.calories > 0 && (
-            <button onClick={generateIdeas} disabled={ideaLoading}
-              className="shrink-0 border border-[#c9a84c]/30 text-[#c9a84c] text-[0.7rem] tracking-[0.15em] uppercase px-3.5 py-2 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5">
-              {ideaLoading
-                ? <><div className="w-2.5 h-2.5 border border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>Génération…</>
-                : "Générer →"}
-            </button>
-          )}
+          <button onClick={generateIdeas} disabled={ideaLoading || !canGenerateIdeas}
+            className="shrink-0 border border-[#c9a84c]/30 text-[#c9a84c] text-[0.7rem] tracking-[0.15em] uppercase px-3.5 py-2 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5">
+            {ideaLoading
+              ? <><div className="w-2.5 h-2.5 border border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>Génération…</>
+              : "Générer →"}
+          </button>
         </div>
 
         <div className="flex gap-1.5 px-5 pt-3 pb-1">
@@ -797,13 +806,25 @@ export default function NutritionPage() {
           ))}
         </div>
 
+        <label className="flex items-center gap-2 px-5 pt-3 pb-1 cursor-pointer select-none">
+          <input type="checkbox" checked={respectBudget} onChange={e => setRespectBudget(e.target.checked)}
+            className="accent-[#c9a84c] w-3.5 h-3.5 cursor-pointer"/>
+          <span className="text-[0.62rem] tracking-wider text-white/40 uppercase">Respecter mon budget calorique restant</span>
+        </label>
+
         {ideaError && (
           <p className="px-5 py-3 text-[0.7rem] text-[#e07070]">{ideaError}</p>
         )}
 
-        {!ideaLoading && ideas.length === 0 && !ideaError && remaining.calories > 0 && (
+        {respectBudget && remaining.calories <= 0 && (
+          <p className="px-5 py-3 text-[0.7rem] tracking-wider text-white/25">
+            Plus de budget restant aujourd&apos;hui — décoche la case pour avoir quand même des idées.
+          </p>
+        )}
+
+        {!ideaLoading && ideas.length === 0 && !ideaError && canGenerateIdeas && (
           <p className="px-5 py-4 text-[0.7rem] tracking-wider text-white/20 uppercase">
-            Clique sur &ldquo;Générer&rdquo; pour des idées adaptées à ton budget
+            Clique sur &ldquo;Générer&rdquo; pour des idées {respectBudget ? "adaptées à ton budget" : "de repas"}
           </p>
         )}
 

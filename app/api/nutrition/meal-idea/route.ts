@@ -11,24 +11,28 @@ export async function POST(req: NextRequest) {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) return NextResponse.json({ error: "Clé API manquante" }, { status: 500 });
 
-    const { remaining, mealType }: { remaining: Remaining; mealType?: string } = await req.json();
+    const { remaining, mealType }: { remaining: Remaining | null; mealType?: string } = await req.json();
 
-    if (remaining.calories <= 0) {
+    if (remaining && remaining.calories <= 0) {
       return NextResponse.json({ ideas: [] });
     }
 
     const client = new Anthropic({ apiKey });
 
-    const prompt = `Tu es un expert en nutrition sportive. Je cherche des idées de repas pour compléter ma journée alimentaire.
-${mealType ? `\nType de repas visé : ${mealType}. Propose exclusivement des idées adaptées à ce moment de la journée (ex: pas de plat en sauce lourd pour un petit-déjeuner, pas de céréales sucrées pour un dîner).\n` : ""}
-Budget restant :
+    const budgetSection = remaining
+      ? `Budget restant :
 - Calories : ${remaining.calories} kcal
 - Protéines : ${remaining.proteines}g
 - Glucides : ${remaining.glucides}g
 - Lipides : ${remaining.lipides}g
 
 Propose 3 idées de repas simples, réalistes et savoureux qui s'inscrivent chacun dans ce budget.
-Adapte chaque repas au budget (si le budget est faible, propose quelque chose de léger ; si le budget est élevé, propose quelque chose de plus complet).
+Adapte chaque repas au budget (si le budget est faible, propose quelque chose de léger ; si le budget est élevé, propose quelque chose de plus complet).`
+      : `Propose 3 idées de repas simples, réalistes et savoureux, avec une portion normale et équilibrée adaptée à ce moment de la journée — sans contrainte de budget calorique particulière.`;
+
+    const prompt = `Tu es un expert en nutrition sportive. Je cherche des idées de repas pour compléter ma journée alimentaire.
+${mealType ? `\nType de repas visé : ${mealType}. Propose exclusivement des idées adaptées à ce moment de la journée (ex: pas de plat en sauce lourd pour un petit-déjeuner, pas de céréales sucrées pour un dîner).\n` : ""}
+${budgetSection}
 
 Réponds UNIQUEMENT avec un JSON valide, sans texte avant ni après, dans ce format exact :
 {
