@@ -16,6 +16,13 @@ type SavedMeal = { id: string; name: string; calories: number; proteines: number
 type DayHistory = { date: string; label: string; calories: number };
 type MealPlanItem = { id: string; meal_type: string; name: string; calories: number; proteines: number; glucides: number; lipides: number };
 type MealPlan = { id: string; name: string; notes: string | null; items: MealPlanItem[] };
+type PhotoDraft = { photoPreview: string | null; description: string; portionSize: "petite" | "moyenne" | "grande" | null };
+
+// Sur mobile (PWA), ouvrir l'appareil photo natif via <input capture> peut faire recharger
+// la page au retour (l'OS libère la mémoire de la webview) : tout le state React est perdu,
+// la modale se ferme et la photo/l'estimation en cours disparaissent. On sauvegarde donc le
+// brouillon dans sessionStorage dès qu'une photo est prise, pour le restaurer après un reload.
+const PHOTO_DRAFT_KEY = "nutrition_photo_draft";
 type MiniProfile = { poids: number; taille: number; age: number; sexe: string };
 
 // Même calcul que l'accueil : Katch-McArdle si body fat connu, sinon Mifflin-St Jeor
@@ -286,6 +293,29 @@ export default function NutritionPage() {
 
   const WATER_GOAL = 8;
 
+  // Restaure un brouillon photo interrompu par un reload (retour d'appareil photo natif).
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(PHOTO_DRAFT_KEY);
+      if (!raw) return;
+      const draft = JSON.parse(raw) as PhotoDraft;
+      if (!draft.photoPreview) return;
+      setShowAdd(true); setModalMode("ai");
+      setPhotoPreview(draft.photoPreview);
+      setDescription(draft.description ?? "");
+      setPortionSize(draft.portionSize ?? null);
+    } catch { /* ignore */ }
+  }, []);
+
+  // Garde le brouillon à jour tant qu'une photo est en attente d'estimation.
+  useEffect(() => {
+    if (!photoPreview) return;
+    try {
+      const draft: PhotoDraft = { photoPreview, description, portionSize };
+      sessionStorage.setItem(PHOTO_DRAFT_KEY, JSON.stringify(draft));
+    } catch { /* ignore */ }
+  }, [photoPreview, description, portionSize]);
+
   useEffect(() => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -449,6 +479,12 @@ export default function NutritionPage() {
       setPhotoPreview(compressed);
       if (photoRef.current) photoRef.current.value = "";
       if (galleryRef.current) galleryRef.current.value = "";
+      // Sauvegarde immédiate : si le retour de l'appareil photo recharge la page,
+      // ce brouillon permet de retrouver la photo au lieu de tout perdre.
+      try {
+        const draft: PhotoDraft = { photoPreview: compressed, description, portionSize };
+        sessionStorage.setItem(PHOTO_DRAFT_KEY, JSON.stringify(draft));
+      } catch { /* quota dépassé, tant pis */ }
     };
     reader.readAsDataURL(file);
   };
@@ -567,6 +603,7 @@ export default function NutritionPage() {
     setPhotoPreview(null); setPortionSize(null);
     setQuery(""); setResults([]); setSelected(null); setQuantity("100"); setSelectedSaved(null);
     setSavedQty("100"); setShowNewProd(false); setNewProd(emptyProd);
+    try { sessionStorage.removeItem(PHOTO_DRAFT_KEY); } catch { /* ignore */ }
   };
 
   const syncRaw = (g: Goals) => setRawGoal({
@@ -895,7 +932,7 @@ export default function NutritionPage() {
                     <div className="relative w-24 h-24 shrink-0">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={photoPreview} alt="Photo du repas" className="w-full h-full object-cover border border-white/10"/>
-                      <button onClick={() => { setPhotoPreview(null); setAiResult(null); }}
+                      <button onClick={() => { setPhotoPreview(null); setAiResult(null); try { sessionStorage.removeItem(PHOTO_DRAFT_KEY); } catch { /* ignore */ } }}
                         className="absolute -top-2 -right-2 w-5 h-5 bg-black border border-white/20 rounded-full flex items-center justify-center text-white/60 hover:text-white transition-colors">
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                       </button>
