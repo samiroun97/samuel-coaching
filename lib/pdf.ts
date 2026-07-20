@@ -22,7 +22,10 @@ export function generateProgrammePdf(seances: CoachSeance[], clientName?: string
   const pageW = 210, pageH = 297, margin = 16;
   let y = margin;
 
-  const fillBg = () => { doc.setFillColor(BG.r, BG.g, BG.b); doc.rect(0, 0, pageW, pageH, "F"); };
+  const fillBg = () => {
+    doc.setFillColor(10, 10, 10);
+    doc.rect(0, 0, pageW, pageH, "F");
+  };
 
   const drawFooter = () => {
     doc.setDrawColor(GOLD.r, GOLD.g, GOLD.b);
@@ -264,8 +267,20 @@ export type WeeklyReportData = {
   eat: ReportSection;
 };
 
-export function generateWeeklyReportPdf(data: WeeklyReportData) {
+export async function generateWeeklyReportPdf(data: WeeklyReportData) {
 const doc = new jsPDF({ unit: "mm", format: "a4" });
+  let hasBebasNeue = false;
+  try {
+    const _fr = await fetch("https://raw.githubusercontent.com/google/fonts/main/ofl/bebasneue/BebasNeue-Regular.ttf");
+    if (_fr.ok) {
+      const _buf = await _fr.arrayBuffer();
+      const _arr = new Uint8Array(_buf);
+      let _bin = ""; for (let _fi = 0; _fi < _arr.length; _fi++) _bin += String.fromCharCode(_arr[_fi]);
+      doc.addFileToVFS("BebasNeue.ttf", btoa(_bin));
+      doc.addFont("BebasNeue.ttf", "BebasNeue", "normal");
+      hasBebasNeue = true;
+    }
+  } catch (_e) {}
 const pageW = 210, pageH = 297, margin = 16;
 let y = 0;
 
@@ -301,8 +316,18 @@ doc.setDrawColor(GOLD.r, GOLD.g, GOLD.b);
 doc.setLineWidth(0.3);
 doc.line(pageW - 60, 0, pageW - 60, 62);
 
-doc.setFont("helvetica", "bold");
-doc.setFontSize(30);
+if (hasBebasNeue) {
+    doc.setFont("BebasNeue", "normal");
+    doc.setFontSize(38);
+  } else {
+    if (hasBebasNeue) {
+      doc.setFont("BebasNeue", "normal");
+      doc.setFontSize(38);
+    } else {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(30);
+    }
+  }
 doc.setTextColor(WHITE.r, WHITE.g, WHITE.b);
 doc.text("BILAN", 12, 24);
 const bilanW = doc.getTextWidth("BILAN");
