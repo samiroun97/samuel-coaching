@@ -151,6 +151,7 @@ export default function SuiviPage() {
   const uploadSectionRef = useRef<HTMLDivElement>(null);
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError,   setReportError]   = useState("");
+  const [reportWeekMonday, setReportWeekMonday] = useState(weekMonday);
 
   useEffect(() => {
     if (showUpload) uploadSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -229,12 +230,12 @@ export default function SuiviPage() {
     setReportLoading(true); setReportError("");
     try {
       const dates: string[] = [];
-      const d = new Date(weekMonday + "T12:00:00");
+      const d = new Date(reportWeekMonday + "T12:00:00");
       for (let i = 0; i < 7; i++) { dates.push(d.toISOString().split("T")[0]); d.setDate(d.getDate() + 1); }
       const weekEnd = dates[6];
 
       const { data: summaries } = await supabase.from("daily_summaries")
-        .select("date,calories,proteines,glucides,lipides").eq("user_id", userId).gte("date", weekMonday).lte("date", weekEnd);
+        .select("date,calories,proteines,glucides,lipides").eq("user_id", userId).gte("date", reportWeekMonday).lte("date", weekEnd);
       const daysLogged   = summaries?.length ?? 0;
       const avgCalories  = daysLogged ? Math.round(summaries!.reduce((s, r) => s + (r.calories  ?? 0), 0) / daysLogged) : 0;
       const avgProteines = daysLogged ? Math.round(summaries!.reduce((s, r) => s + (r.proteines ?? 0), 0) / daysLogged) : 0;
@@ -288,7 +289,7 @@ export default function SuiviPage() {
       } catch { /* défaut */ }
 
       const stats = {
-        weekStart: weekMonday, weekEnd, daysLogged, avgCalories, avgTdee, balanceStatus, balancePerDay,
+        weekStart: reportWeekMonday, weekEnd, daysLogged, avgCalories, avgTdee, balanceStatus, balancePerDay,
         avgProteines, goalProteines, avgGlucides, goalGlucides, avgLipides, goalLipides, goalCalories,
         sessionsCount, totalTrainingMinutes, targetSessions, restDays,
         avgSteps, stepsGoal, weightStart, weightEnd,
@@ -512,19 +513,45 @@ export default function SuiviPage() {
       )}
 
       {/* ── Bilan hebdomadaire PDF ── */}
-      <div className="border border-white/10 bg-[#111] p-5 mb-4 flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Bilan de la semaine</p>
-          <p className="text-[0.62rem] text-white/25 mt-0.5 tracking-wider">
-            Nutrition, entraînement, repos et déficit/surplus — en PDF
-          </p>
+      <div className="border border-white/10 bg-[#111] p-5 mb-4">
+        <div className="flex items-center justify-between gap-4 flex-wrap mb-3">
+          <div>
+            <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Bilan de la semaine</p>
+            <p className="text-[0.62rem] text-white/25 mt-0.5 tracking-wider">
+              Nutrition, entraînement, repos et déficit/surplus — en PDF
+            </p>
+          </div>
+          <button onClick={downloadWeeklyReport} disabled={reportLoading}
+            className="bg-[#c9a84c] text-black text-[0.68rem] font-bold tracking-[0.15em] uppercase px-4 py-2.5 hover:bg-[#e2c97e] transition-colors disabled:opacity-40 flex items-center gap-2 shrink-0">
+            {reportLoading
+              ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Génération…</>
+              : "Télécharger le PDF →"}
+          </button>
         </div>
-        <button onClick={downloadWeeklyReport} disabled={reportLoading}
-          className="bg-[#c9a84c] text-black text-[0.68rem] font-bold tracking-[0.15em] uppercase px-4 py-2.5 hover:bg-[#e2c97e] transition-colors disabled:opacity-40 flex items-center gap-2 shrink-0">
-          {reportLoading
-            ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Génération…</>
-            : "Télécharger le PDF →"}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => { const d = new Date(reportWeekMonday + "T12:00:00"); d.setDate(d.getDate() - 7); setReportWeekMonday(d.toISOString().split("T")[0]); }}
+            className="w-7 h-7 border border-white/10 text-white/40 hover:text-white/60 hover:border-white/20 transition-colors flex items-center justify-center shrink-0">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <p className="flex-1 text-center text-[0.65rem] tracking-[0.12em] uppercase text-white/40">
+            {new Date(reportWeekMonday + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}
+            {" — "}
+            {(() => { const d = new Date(reportWeekMonday + "T12:00:00"); d.setDate(d.getDate() + 6); return d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }); })()}
+          </p>
+          <button
+            onClick={() => { const d = new Date(reportWeekMonday + "T12:00:00"); d.setDate(d.getDate() + 7); const next = d.toISOString().split("T")[0]; if (next <= weekMonday) setReportWeekMonday(next); }}
+            disabled={reportWeekMonday === weekMonday}
+            className="w-7 h-7 border border-white/10 text-white/40 hover:text-white/60 hover:border-white/20 transition-colors flex items-center justify-center shrink-0 disabled:opacity-20 disabled:cursor-not-allowed">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+          {reportWeekMonday !== weekMonday && (
+            <button onClick={() => setReportWeekMonday(weekMonday)}
+              className="text-[0.62rem] tracking-[0.12em] uppercase text-[#c9a84c] border border-[#c9a84c]/30 px-2 py-1 hover:bg-[#c9a84c]/10 transition-colors shrink-0">
+              Actuelle
+            </button>
+          )}
+        </div>
       </div>
       {reportError && <p className="text-xs text-[#e07070] border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2 mb-4">{reportError}</p>}
 
