@@ -19,31 +19,31 @@ export async function POST(req: NextRequest) {
       messages: [
         {
           role: "user",
-          content: `Tu es un coach sportif expert. Voici le bilan chiffré de la semaine d'un client, avec ses objectifs personnels :
+          content: `Tu es Samuel, coach sportif expert. Voici le bilan chiffré de la semaine de ton client :
 ${JSON.stringify(stats, null, 2)}
 
-Génère un retour structuré en 3 domaines distincts, calibré sur les objectifs réels du client ("objectifs", "experience", "niveauActivite" fournis ci-dessus) — pas un discours générique. Sois direct, factuel et bienveillant, comme un vrai coach.
+Génère un retour en 3 domaines. CHAQUE conseil doit être directement lié à l'objectif déclaré ("objectifs") et au profil du client ("experience", "niveauActivite"). Sois direct, concret, sans généralités.
 
-Retourne UNIQUEMENT ce JSON valide, sans texte avant ni après, chaque champ = 1 phrase courte et concrète (max 110 caractères) :
+Retourne UNIQUEMENT ce JSON valide, sans texte avant ni après. Chaque champ = 1 phrase courte et percutante (max 120 caractères) :
 {
-  "nutrition": {
-    "point_fort": "ce qui est bien équilibré dans l'apport macro (glucides/protéines/lipides) vs les objectifs macro fournis",
-    "point_faible": "le déséquilibre macro principal constaté (ex: trop de glucides, protéines insuffisantes) — jamais une liste d'aliments, juste un constat chiffré",
-    "conseil": "ajustement macro concret et actionnable pour la semaine prochaine"
-  },
-  "neat": {
-    "point_fort": "ce qui est positif dans l'activité quotidienne (pas) de la semaine vs l'objectif de pas",
-    "point_faible": "le principal manque sur les pas de la semaine, ou absence de point faible si l'objectif est atteint",
-    "conseil": "conseil concret pour ajuster l'activité quotidienne"
-  },
-  "eat": {
-    "point_fort": "ce qui est positif dans l'entraînement de la semaine (régularité, volume, séances vs objectif de fréquence)",
-    "point_faible": "dis explicitement si le client est en sous-entraînement, en sur-entraînement, ou si le rythme est adapté par rapport à sa fréquence visée (targetSessions) — base-toi sur sessionsCount vs targetSessions et totalTrainingMinutes",
-    "conseil": "conseil concret pour la suite ; si restDays vaut 0 cette semaine, rappelle explicitement l'importance d'un jour de repos pour la récupération"
-  }
+"nutrition": {
+"point_fort": "ce qui fonctionne dans les apports caloriques cette semaine par rapport à l'objectif du client",
+"point_faible": "le principal écart constaté (surplus, déficit trop fort, irrégularité) — constat chiffré, pas de liste d'aliments",
+"conseil": "ajustement calorique prioritaire pour la semaine prochaine, directement lié à l'objectif du client"
+},
+"neat": {
+"point_fort": "ce qui est positif dans l'activité quotidienne (pas) vs l'objectif et le niveau d'activité habituel",
+"point_faible": "le principal manque sur les pas ; si l'objectif est atteint, signale que c'est en bonne voie",
+"conseil": "action concrète et réaliste pour améliorer ou maintenir l'activité quotidienne, adaptée au profil"
+},
+"eat": {
+"point_fort": "ce qui est positif dans l'entraînement (régularité, fréquence vs objectif, progression)",
+"point_faible": "sous-entraînement ou sur-entraînement — compare sessionsCount vs targetSessions ; sois explicite",
+"conseil": "conseil prioritaire pour la semaine prochaine ; si restDays = 0, insiste sur la récupération obligatoire"
+}
 }
 
-Base-toi uniquement sur les chiffres fournis, ne les invente pas. Si une donnée est manquante ou à 0 (ex: pas d'objectif de séances défini), adapte le propos sans inventer de chiffre.`,
+Base-toi uniquement sur les données fournies. Si une donnée est à 0 ou absente, adapte sans inventer de chiffre.`,
         },
       ],
     });
