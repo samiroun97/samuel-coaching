@@ -151,7 +151,10 @@ export default function SuiviPage() {
   const uploadSectionRef = useRef<HTMLDivElement>(null);
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError,   setReportError]   = useState("");
-  const [reportWeekMonday, setReportWeekMonday] = useState(weekMonday);
+  const [reportWeekMonday, setReportWeekMonday] = useState(() => {
+    const d = new Date(); const day = (d.getDay() + 6) % 7;
+    d.setDate(d.getDate() - day); return d.toISOString().split("T")[0];
+  });
 
   useEffect(() => {
     if (showUpload) uploadSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
