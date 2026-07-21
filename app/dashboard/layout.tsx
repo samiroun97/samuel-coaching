@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { startStateSync } from "@/lib/syncStorage";
+import { startStateSync, SYNC_STATUS_EVENT } from "@/lib/syncStorage";
 
 const SAMUEL_EMAIL = "sam97waelti@gmail.com";
 
@@ -56,6 +56,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [fbDone,       setFbDone]       = useState(false);
   const isOnboarding = pathname === "/dashboard/onboarding";
   const [isPreview, setIsPreview] = useState(false);
+  const [syncIssue, setSyncIssue] = useState(false);
+
+  useEffect(() => {
+    const onSyncStatus = (e: Event) => setSyncIssue(!(e as CustomEvent<{ ok: boolean }>).detail.ok);
+    window.addEventListener(SYNC_STATUS_EVENT, onSyncStatus);
+    return () => window.removeEventListener(SYNC_STATUS_EVENT, onSyncStatus);
+  }, []);
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
@@ -193,6 +200,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <main className="ml-0 md:ml-52 flex-1 min-w-0 w-full h-screen overflow-y-auto pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-0">
         {children}
       </main>
+
+      {/* Synchro multi-appareils interrompue — reste discret, les données sont conservées en local */}
+      {syncIssue && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1.5 px-3 py-1.5 border border-[#e07070]/30 bg-[#0a0a0a]/90 text-[#e07070] text-[0.45rem] tracking-[0.12em] uppercase">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#e07070] shrink-0"/>
+          Synchro interrompue — données sauvegardées localement
+        </div>
+      )}
 
       {/* Retour CRM — Samuel en mode aperçu */}
       {isSamuel && isPreview && (

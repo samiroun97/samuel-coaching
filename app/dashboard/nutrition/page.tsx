@@ -1058,12 +1058,14 @@ export default function NutritionPage() {
                       </div>
                       <div>
                         <p className="text-[0.65rem] tracking-wider uppercase text-white/20 mb-2">Ajuster si nécessaire <span className="normal-case tracking-normal text-white/15">(les macros suivent les calories)</span></p>
-                        <div className="grid grid-cols-5 gap-2">
+                        <div className="flex flex-col gap-2">
                           <div><label className={labelCls}>Nom</label><input className={inputCls} value={aiResult.name} onChange={e => setAiResult(r => r ? {...r, name:e.target.value} : r)}/></div>
-                          <div><label className={labelCls}>Cal</label><input className={inputCls} type="number" value={aiResult.calories} onChange={e => adjustAiCalories(+e.target.value)}/></div>
-                          <div><label className={labelCls} style={{ color:"#c9a84c" }}>Prot</label><input className={inputCls} type="number" value={aiResult.proteines} onChange={e => setAiResult(r => r ? {...r, proteines:+e.target.value} : r)}/></div>
-                          <div><label className={labelCls} style={{ color:"#7eb8a0" }}>Gluc</label><input className={inputCls} type="number" value={aiResult.glucides} onChange={e => setAiResult(r => r ? {...r, glucides:+e.target.value} : r)}/></div>
-                          <div><label className={labelCls} style={{ color:"#e07070" }}>Lip</label><input className={inputCls} type="number" value={aiResult.lipides} onChange={e => setAiResult(r => r ? {...r, lipides:+e.target.value} : r)}/></div>
+                          <div className="grid grid-cols-4 gap-2">
+                            <div><label className={labelCls}>Cal</label><input className={inputCls} type="number" value={aiResult.calories} onChange={e => adjustAiCalories(+e.target.value)}/></div>
+                            <div><label className={labelCls} style={{ color:"#c9a84c" }}>Prot</label><input className={inputCls} type="number" value={aiResult.proteines} onChange={e => setAiResult(r => r ? {...r, proteines:+e.target.value} : r)}/></div>
+                            <div><label className={labelCls} style={{ color:"#7eb8a0" }}>Gluc</label><input className={inputCls} type="number" value={aiResult.glucides} onChange={e => setAiResult(r => r ? {...r, glucides:+e.target.value} : r)}/></div>
+                            <div><label className={labelCls} style={{ color:"#e07070" }}>Lip</label><input className={inputCls} type="number" value={aiResult.lipides} onChange={e => setAiResult(r => r ? {...r, lipides:+e.target.value} : r)}/></div>
+                          </div>
                         </div>
                       </div>
                       <div className="flex gap-2">

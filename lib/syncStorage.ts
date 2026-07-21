@@ -22,8 +22,20 @@ let patched = false;
 let muted = false;
 const pending = new Map<string, string | null>();
 let timer: ReturnType<typeof setTimeout> | undefined;
+let consecutiveFailures = 0;
 
 const shouldSync = (key: string) => SYNC_PREFIXES.some(p => key.startsWith(p));
+
+// Notifie l'UI (voir dashboard/layout.tsx et crm/layout.tsx) au-delà d'un
+// certain nombre d'échecs, pour ne pas alarmer sur un simple aller-retour
+// réseau ponctuel.
+export const SYNC_STATUS_EVENT = "samuel:sync-status";
+const FAILURE_THRESHOLD = 3;
+
+function notifySyncStatus(ok: boolean) {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent(SYNC_STATUS_EVENT, { detail: { ok } }));
+}
 
 function queue(key: string, value: string | null) {
   if (!userId || muted || !shouldSync(key)) return;
@@ -40,9 +52,29 @@ async function flush() {
     .map(([key, value]) => ({ user_id: userId, key, value: value as string, updated_at: new Date().toISOString() }));
   const deletions = entries.filter(([, v]) => v === null).map(([k]) => k);
   try {
-    if (upserts.length) await supabase.from("user_state").upsert(upserts, { onConflict: "user_id,key" });
-    if (deletions.length) await supabase.from("user_state").delete().eq("user_id", userId).in("key", deletions);
-  } catch { /* hors-ligne : les prochaines écritures re-déclencheront un flush */ }
+    if (upserts.length) {
+      const { error } = await supabase.from("user_state").upsert(upserts, { onConflict: "user_id,key" });
+      if (error) throw error;
+    }
+    if (deletions.length) {
+      const { error } = await supabase.from("user_state").delete().eq("user_id", userId).in("key", deletions);
+      if (error) throw error;
+    }
+    if (consecutiveFailures >= FAILURE_THRESHOLD) notifySyncStatus(true);
+    consecutiveFailures = 0;
+  } catch {
+    // Hors-ligne ou erreur transitoire : on remet les entrées en file (sans
+    // écraser une valeur plus récente déjà en attente pour la même clé) et on
+    // reprogramme un flush, sinon ces données ne seraient jamais retentées
+    // tant que l'utilisateur ne retouche pas exactement les mêmes clés.
+    for (const [key, value] of entries) {
+      if (!pending.has(key)) pending.set(key, value);
+    }
+    clearTimeout(timer);
+    timer = setTimeout(() => { void flush(); }, 1500);
+    consecutiveFailures++;
+    if (consecutiveFailures === FAILURE_THRESHOLD) notifySyncStatus(false);
+  }
 }
 
 export async function startStateSync(uid: string) {
