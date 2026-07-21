@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
-import { type ExerciceItem, parseExercices } from "@/lib/exercices";
+import { type ExerciceItem, parseExercices, groupExerciceRuns } from "@/lib/exercices";
 
 type Profile = { prenom: string; poids: number; taille: number; age: number; sexe: string };
 type LoggedWorkout = {
@@ -51,27 +51,16 @@ function ExerciceCard({ ex }: { ex: ExerciceItem }) {
 }
 
 function ExercicesList({ items }: { items: ExerciceItem[] }) {
-  const nodes: ReactNode[] = [];
-  let i = 0;
-  while (i < items.length) {
-    const cur = items[i];
-    const isGrouped = !!cur.groupId && ((i > 0 && items[i - 1].groupId === cur.groupId) || (i < items.length - 1 && items[i + 1].groupId === cur.groupId));
-    if (isGrouped && cur.groupId) {
-      const gid = cur.groupId;
-      let j = i;
-      while (j < items.length && items[j].groupId === gid) j++;
-      nodes.push(
-        <div key={`g-${i}`} className="border border-[#c9a84c]/25 bg-[#c9a84c]/[0.03] p-2 flex flex-col gap-2">
-          <p className="text-[0.55rem] tracking-[0.15em] uppercase text-[#c9a84c] px-1">{cur.groupLabel || "Superset"}</p>
-          {items.slice(i, j).map((ex, k) => <ExerciceCard key={i + k} ex={ex} />)}
-        </div>
-      );
-      i = j;
-    } else {
-      nodes.push(<ExerciceCard key={i} ex={cur} />);
-      i += 1;
-    }
-  }
+  const nodes: ReactNode[] = groupExerciceRuns(items).map(run =>
+    run.groupId ? (
+      <div key={`g-${run.indices[0]}`} className="border border-[#c9a84c]/25 bg-[#c9a84c]/[0.03] p-2 flex flex-col gap-2">
+        <p className="text-[0.55rem] tracking-[0.15em] uppercase text-[#c9a84c] px-1">{run.groupLabel || "Superset"}</p>
+        {run.indices.map(k => <ExerciceCard key={k} ex={items[k]} />)}
+      </div>
+    ) : (
+      <ExerciceCard key={run.indices[0]} ex={items[run.indices[0]]} />
+    )
+  );
   return <>{nodes}</>;
 }
 

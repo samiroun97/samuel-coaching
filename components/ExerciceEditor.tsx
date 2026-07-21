@@ -1,5 +1,5 @@
 "use client";
-import { type ExerciceItem, type ExerciceMode, type SetDetail, EXERCICE_TYPES, emptyExercice, emptySet } from "@/lib/exercices";
+import { type ExerciceItem, type ExerciceMode, type SetDetail, EXERCICE_TYPES, emptyExercice, emptySet, groupExerciceRuns } from "@/lib/exercices";
 import { type LibraryEntry } from "@/lib/exerciceLibrary";
 
 const inp = "w-full bg-[#060606] border border-white/10 text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
@@ -165,35 +165,22 @@ export default function ExerciceEditor({ items, onChange, library = [] }: { item
     );
   };
 
-  const nodes: React.ReactNode[] = [];
-  let i = 0;
-  while (i < items.length) {
-    const cur = items[i];
-    const isGrouped = !!cur.groupId && ((i > 0 && items[i - 1].groupId === cur.groupId) || (i < items.length - 1 && items[i + 1].groupId === cur.groupId));
-    if (isGrouped && cur.groupId) {
-      const gid = cur.groupId;
-      let j = i;
-      while (j < items.length && items[j].groupId === gid) j++;
-      const run: number[] = [];
-      for (let k = i; k < j; k++) run.push(k);
-      nodes.push(
-        <div key={`group-${i}`} className="border border-[#c9a84c]/25 bg-[#c9a84c]/[0.03] p-2.5 flex flex-col gap-2.5">
-          <div className="flex items-center justify-between px-1">
-            <input className="bg-transparent text-[0.55rem] tracking-[0.18em] uppercase text-[#c9a84c] focus:outline-none w-40"
-              value={cur.groupLabel} onChange={e => renameGroup(gid, e.target.value)} placeholder="Superset" />
-            <button type="button" onClick={() => unlinkGroup(gid)} className="text-[0.48rem] tracking-wider uppercase text-white/25 hover:text-[#e07070] transition-colors">
-              Délier
-            </button>
-          </div>
-          {run.map(k => renderExercice(k, true))}
+  const nodes: React.ReactNode[] = groupExerciceRuns(items).map(run =>
+    run.groupId ? (
+      <div key={`group-${run.indices[0]}`} className="border border-[#c9a84c]/25 bg-[#c9a84c]/[0.03] p-2.5 flex flex-col gap-2.5">
+        <div className="flex items-center justify-between px-1">
+          <input className="bg-transparent text-[0.55rem] tracking-[0.18em] uppercase text-[#c9a84c] focus:outline-none w-40"
+            value={run.groupLabel} onChange={e => renameGroup(run.groupId!, e.target.value)} placeholder="Superset" />
+          <button type="button" onClick={() => unlinkGroup(run.groupId!)} className="text-[0.48rem] tracking-wider uppercase text-white/25 hover:text-[#e07070] transition-colors">
+            Délier
+          </button>
         </div>
-      );
-      i = j;
-    } else {
-      nodes.push(renderExercice(i, false));
-      i += 1;
-    }
-  }
+        {run.indices.map(k => renderExercice(k, true))}
+      </div>
+    ) : (
+      renderExercice(run.indices[0], false)
+    )
+  );
 
   return (
     <div className="flex flex-col gap-2.5">

@@ -56,6 +56,34 @@ export function parseExercices(raw: string | null | undefined): ExerciceItem[] {
   return raw.split("\n").filter(l => l.trim()).map(l => ({ ...emptyExercice(), nom: l.trim() }));
 }
 
+// Regroupe les exercices consécutifs partageant un groupId (supersets) en
+// "runs" ; un run seul (groupId: null) correspond à un exercice isolé.
+// Logique partagée entre l'éditeur CRM et l'affichage côté client, pour que
+// les deux vues d'un même programme restent identiques.
+export type ExerciceRun = { groupId: string | null; groupLabel: string; indices: number[] };
+
+export function groupExerciceRuns(items: ExerciceItem[]): ExerciceRun[] {
+  const runs: ExerciceRun[] = [];
+  let i = 0;
+  while (i < items.length) {
+    const cur = items[i];
+    const isGrouped = !!cur.groupId && ((i > 0 && items[i - 1].groupId === cur.groupId) || (i < items.length - 1 && items[i + 1].groupId === cur.groupId));
+    if (isGrouped && cur.groupId) {
+      const gid = cur.groupId;
+      let j = i;
+      while (j < items.length && items[j].groupId === gid) j++;
+      const indices: number[] = [];
+      for (let k = i; k < j; k++) indices.push(k);
+      runs.push({ groupId: gid, groupLabel: cur.groupLabel, indices });
+      i = j;
+    } else {
+      runs.push({ groupId: null, groupLabel: "", indices: [i] });
+      i += 1;
+    }
+  }
+  return runs;
+}
+
 export function serializeExercices(items: ExerciceItem[]): string | null {
   const valid = items.filter(i => i.nom.trim());
   if (!valid.length) return null;
