@@ -15,6 +15,15 @@ export default function BilanPage() {
     }
   }, []);
 
+  // Le titre de la page devient l'en-tête imprimé par le navigateur en haut du PDF
+  // (à la place du titre générique du site hérité du layout) ; restauré au démontage.
+  useEffect(() => {
+    if (!data) return;
+    const previous = document.title;
+    document.title = data.clientName ? `Bilan hebdomadaire — ${data.clientName}` : "Bilan hebdomadaire";
+    return () => { document.title = previous; };
+  }, [data]);
+
   if (data === undefined) return null;
 
   if (data === null) {
@@ -42,6 +51,10 @@ export default function BilanPage() {
           Enregistrer en PDF →
         </button>
       </div>
+      <p className="print:hidden text-[0.62rem] text-white/25 leading-relaxed px-4 sm:px-8 mt-2 max-w-md">
+        Astuce : dans la fenêtre d&apos;impression, sous &quot;Plus de paramètres&quot;, décoche
+        &quot;En-têtes et pieds de page&quot; pour un PDF sans date ni URL ajoutées par le navigateur.
+      </p>
       <WeeklyReport data={data} />
     </div>
   );

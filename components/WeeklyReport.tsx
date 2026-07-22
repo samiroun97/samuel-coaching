@@ -45,7 +45,7 @@ function GoldDivider() {
 
 function StatCard({ label, value, gold }: { label: string; value: string; gold?: boolean }) {
   return (
-    <div className={`relative border p-4 break-inside-avoid ${gold ? "border-[#c9a84c]/30 bg-[#c9a84c]/[0.04]" : "border-white/10 bg-[#111]"}`}>
+    <div className={`relative border p-4 print:p-3 break-inside-avoid ${gold ? "border-[#c9a84c]/30 bg-[#c9a84c]/[0.04]" : "border-white/10 bg-[#111]"}`}>
       <div className={`absolute top-0 left-0 right-0 h-[2px] ${gold ? "bg-[#c9a84c]" : "bg-white/10"}`} />
       <p className="text-[0.62rem] tracking-[0.2em] uppercase text-white/30 mb-1.5">{label}</p>
       <p style={bebas} className={`text-2xl tracking-wide ${gold ? "text-[#c9a84c]" : "text-white"}`}>{value}</p>
@@ -75,14 +75,14 @@ function FeedbackBlock({ title, section }: { title: string; section: ReportSecti
     { label: "Conseil", text: section.conseil, color: "#c9a84c" },
   ];
   return (
-    <div className="relative border border-white/10 bg-[#111] mb-4 break-inside-avoid">
+    <div className="relative border border-white/10 bg-[#111] mb-4 print:mb-3 break-inside-avoid">
       <div className="absolute top-0 left-0 bottom-0 w-[2px] bg-[#c9a84c]" />
-      <div className="px-5 py-3 border-b border-white/5 flex items-center gap-2.5">
+      <div className="px-5 py-3 print:py-2 border-b border-white/5 flex items-center gap-2.5">
         <p style={bebas} className="text-sm tracking-[0.15em] text-[#c9a84c] uppercase">{title}</p>
       </div>
       <div className="divide-y divide-white/5">
         {rows.map(r => (
-          <div key={r.label} className="flex gap-3 px-5 py-3">
+          <div key={r.label} className="flex gap-3 px-5 py-3 print:py-2">
             <span className="text-[0.62rem] tracking-[0.15em] uppercase shrink-0 w-24 pt-0.5" style={{ color: r.color }}>{r.label}</span>
             <p className="text-[0.75rem] text-white/70 leading-relaxed">{r.text}</p>
           </div>
@@ -103,12 +103,12 @@ export function WeeklyReport({ data }: { data: WeeklyReportData }) {
   return (
     <div className="max-w-2xl mx-auto p-6 sm:p-10 print:p-0 print:max-w-none bg-[#0a0a0a]">
       {/* Header */}
-      <div className="mb-10 print:mb-8 break-inside-avoid text-center">
-        <p style={{ ...bebas, letterSpacing: "0.18em" }} className="text-lg text-white mb-5">
+      <div className="mb-10 print:mb-5 break-inside-avoid text-center">
+        <p style={{ ...bebas, letterSpacing: "0.18em" }} className="text-lg text-white mb-5 print:mb-3">
           SAMUEL<span className="text-[#c9a84c]">.</span><span className="text-[#c9a84c]">COACHING</span>
         </p>
-        <h1 style={bebas} className="text-4xl sm:text-5xl text-[#c9a84c] tracking-wide mb-4">BILAN HEBDOMADAIRE</h1>
-        <div className="mb-4"><GoldDivider /></div>
+        <h1 style={bebas} className="text-4xl sm:text-5xl print:text-4xl text-[#c9a84c] tracking-wide mb-4 print:mb-2">BILAN HEBDOMADAIRE</h1>
+        <div className="mb-4 print:mb-2"><GoldDivider /></div>
         <p className="text-white/40 text-sm">
           {data.clientName ? `Préparé pour ${data.clientName}` : "Bilan personnalisé"} · {fmtDate(data.weekStart)} — {fmtDate(data.weekEnd)}
         </p>
@@ -116,16 +116,16 @@ export function WeeklyReport({ data }: { data: WeeklyReportData }) {
       </div>
 
       {/* Résultat de la semaine */}
-      <div className="relative border p-6 mb-6 break-inside-avoid" style={{ borderColor: `${statusColor}40`, backgroundColor: "#111" }}>
+      <div className="relative border p-6 print:p-4 mb-6 print:mb-3 break-inside-avoid" style={{ borderColor: `${statusColor}40`, backgroundColor: "#111" }}>
         <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ backgroundColor: statusColor }} />
-        <div className="flex items-center justify-between gap-4 flex-wrap mb-4">
+        <div className="flex items-center justify-between gap-4 flex-wrap mb-4 print:mb-2">
           <div>
             <p className="text-[0.65rem] tracking-[0.2em] uppercase text-white/30 mb-1">Résultat de la semaine</p>
             <p style={{ ...bebas, color: statusColor }} className="text-3xl tracking-wide">{statusLabel}</p>
           </div>
           <p className="text-sm text-white/60">{data.balancePerDay > 0 ? "+" : ""}{fmtInt(data.balancePerDay)} kcal / jour</p>
         </div>
-        <div className="grid grid-cols-3 gap-4 border-t border-white/5 pt-4">
+        <div className="grid grid-cols-3 gap-4 border-t border-white/5 pt-4 print:pt-2">
           <div>
             <p className="text-[0.6rem] tracking-[0.15em] uppercase text-white/25 mb-1">Brûlées / semaine</p>
             <p className="text-lg text-white/80">{fmtInt(weekBurned)} kcal</p>
@@ -142,7 +142,7 @@ export function WeeklyReport({ data }: { data: WeeklyReportData }) {
       </div>
 
       {/* Stats grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6 print:grid-cols-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 print:gap-2 mb-6 print:mb-3 print:grid-cols-3">
         <StatCard label="Calories / jour" value={`${fmtInt(data.avgCalories)} kcal`} gold />
         <StatCard label="Séances" value={data.targetSessions ? `${data.sessionsCount} / ${data.targetSessions}` : `${data.sessionsCount}`} gold />
         <StatCard label="Jours de repos" value={`${data.restDays} / 7`} />
@@ -152,7 +152,7 @@ export function WeeklyReport({ data }: { data: WeeklyReportData }) {
       </div>
 
       {/* Macros moyennes */}
-      <div className="relative border border-white/10 bg-[#111] p-5 mb-6 flex flex-col gap-3 break-inside-avoid">
+      <div className="relative border border-white/10 bg-[#111] p-5 print:p-4 mb-6 print:mb-3 flex flex-col gap-3 print:gap-2 break-inside-avoid">
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-white/10" />
         <p className="text-[0.65rem] tracking-[0.2em] uppercase text-white/30">Macros moyennes / jour</p>
         <MacroBar label="Protéines" avg={data.avgProteines} goal={data.goalProteines} color="#F3F4F6" />
@@ -165,7 +165,7 @@ export function WeeklyReport({ data }: { data: WeeklyReportData }) {
       <FeedbackBlock title="Activité quotidienne" section={data.neat} />
       <FeedbackBlock title="Entraînement" section={data.eat} />
 
-      <div className="mt-10 break-inside-avoid text-center">
+      <div className="mt-10 print:mt-4 break-inside-avoid text-center">
         <div className="mb-3"><GoldDivider /></div>
         <p style={{ ...bebas, letterSpacing: "0.18em" }} className="text-xs text-white/50 mb-1">
           SAMUEL<span className="text-[#c9a84c]">.</span><span className="text-[#c9a84c]">COACHING</span>
