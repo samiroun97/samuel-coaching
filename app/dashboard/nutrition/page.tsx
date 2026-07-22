@@ -40,8 +40,8 @@ const CAL: Record<MacroKey, number> = { proteines: 4, glucides: 4, lipides: 9 };
 const defaultGoals: Goals = { calories: 2200, proteines: 150, glucides: 220, lipides: 70 };
 const macroConfig: { key: MacroKey; label: string; color: string }[] = [
   { key: "proteines", label: "Protéines", color: "#F3F4F6" },
-  { key: "glucides",  label: "Glucides",  color: "#F97316" },
-  { key: "lipides",   label: "Lipides",   color: "#CA8A04" },
+  { key: "glucides",  label: "Glucides",  color: "#e0834a" },
+  { key: "lipides",   label: "Lipides",   color: "#9c8563" },
 ];
 const DAY_LABELS = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
 
@@ -128,7 +128,7 @@ function WaterTracker({ water, goal, onAdd, onRemove }: { water: number; goal: n
     <div className="border border-white/10 bg-[#111] p-5 mb-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4a9fd5" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6fa3c4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 2C6 8 4 12 4 15a8 8 0 0016 0c0-3-2-7-8-13z"/>
           </svg>
           <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Hydratation</p>
@@ -139,14 +139,14 @@ function WaterTracker({ water, goal, onAdd, onRemove }: { water: number; goal: n
             <button onClick={onRemove} disabled={water === 0}
               className="w-6 h-6 border border-white/10 text-white/30 hover:text-white/60 hover:border-white/20 transition-colors disabled:opacity-20 flex items-center justify-center text-sm">−</button>
             <button onClick={onAdd} disabled={water >= goal}
-              className="w-6 h-6 border border-[#4a9fd5]/40 text-[#4a9fd5] hover:bg-[#4a9fd5]/10 transition-colors disabled:opacity-20 flex items-center justify-center text-sm">+</button>
+              className="w-6 h-6 border border-[#6fa3c4]/40 text-[#6fa3c4] hover:bg-[#6fa3c4]/10 transition-colors disabled:opacity-20 flex items-center justify-center text-sm">+</button>
           </div>
         </div>
       </div>
       <div className="flex gap-1 mb-2">
         {Array.from({ length: goal }).map((_, i) => (
           <div key={i} onClick={() => i < water ? onRemove() : onAdd()}
-            className={`flex-1 h-3 border cursor-pointer transition-all ${i < water ? "border-[#4a9fd5] bg-[#4a9fd5]/25" : "border-white/10 hover:border-white/20"}`}/>
+            className={`flex-1 h-3 border cursor-pointer transition-all ${i < water ? "border-[#6fa3c4] bg-[#6fa3c4]/25" : "border-white/10 hover:border-white/20"}`}/>
         ))}
       </div>
       <p className="text-[0.62rem] tracking-wider text-white/20 text-right">
@@ -991,7 +991,7 @@ export default function NutritionPage() {
 
                   {!aiResult && (
                     <button onClick={runAnalysis} disabled={analyzing || (!photoPreview && !description.trim())}
-                      className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                      className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                       {analyzing ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Analyse en cours…</> : "Estimer les macros avec l'IA →"}
                     </button>
                   )}
@@ -1039,7 +1039,7 @@ export default function NutritionPage() {
                           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
                           {savedMeals.some(s => s.name === aiResult.name) ? "Déjà sauvegardé" : "Sauvegarder"}
                         </button>
-                        <button onClick={addFood} className="flex-1 bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 hover:bg-[#e2c97e] transition-colors">
+                        <button onClick={addFood} className="flex-1 bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200">
                           Ajouter au journal →
                         </button>
                       </div>
@@ -1120,7 +1120,7 @@ export default function NutritionPage() {
                           className="flex-1 border border-white/10 text-white/40 text-[0.7rem] tracking-[0.15em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
                           {savedMeals.some(s => s.name === selected.product_name) ? "Déjà sauvegardé" : "Sauvegarder"}
                         </button>
-                        <button onClick={addFood} className="flex-1 bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 hover:bg-[#e2c97e] transition-colors">
+                        <button onClick={addFood} className="flex-1 bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200">
                           Ajouter au journal →
                         </button>
                       </div>
@@ -1177,7 +1177,7 @@ export default function NutritionPage() {
                         ))}
                       </div>
                       <button onClick={createProduct} disabled={!newProd.name.trim() || !(parseFloat(newProd.base.replace(",", ".")) > 0)}
-                        className="bg-[#c9a84c] text-black text-[0.58rem] font-bold tracking-[0.18em] uppercase py-2.5 hover:bg-[#e2c97e] transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                        className="bg-[#c9a84c] text-black text-[0.58rem] font-bold tracking-[0.18em] uppercase py-2.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed">
                         Enregistrer le produit →
                       </button>
                     </div>
@@ -1234,7 +1234,7 @@ export default function NutritionPage() {
                   )}
 
                   {selectedSaved && (
-                    <button onClick={addFood} className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] transition-colors">
+                    <button onClick={addFood} className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200">
                       Ajouter &quot;{selectedSaved.name}&quot;{selectedSaved.base_qty ? ` (${savedQty || 0} ${selectedSaved.unit ?? "g"})` : ""} au journal →
                     </button>
                   )}
@@ -1284,7 +1284,7 @@ export default function NutritionPage() {
               ))}
             </div>
             <button onClick={() => { setGoals(goalDraft); setGoalsSet(true); setShowGoals(false); }}
-              className="w-full bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] transition-colors">
+              className="w-full bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200">
               Enregistrer
             </button>
           </div>

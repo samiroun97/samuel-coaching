@@ -179,7 +179,7 @@ export default function CoachPage() {
               disabled={aiLoading}
               className="flex-1 bg-[#111] border border-white/10 text-white placeholder-white/20 text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors disabled:opacity-50"/>
             <button onClick={sendAi} disabled={!aiInput.trim() || aiLoading}
-              className="bg-[#c9a84c] text-black px-6 py-3 text-[0.7rem] font-bold tracking-[0.15em] uppercase hover:bg-[#e2c97e] transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+              className="bg-[#c9a84c] text-black px-6 py-3 text-[0.7rem] font-bold tracking-[0.15em] uppercase hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed">
               Envoyer
             </button>
           </div>
@@ -234,7 +234,7 @@ export default function CoachPage() {
               disabled={dirLoading}
               className="flex-1 bg-[#111] border border-white/10 text-white placeholder-white/20 text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors disabled:opacity-50"/>
             <button onClick={sendDirect} disabled={!dirInput.trim() || dirLoading}
-              className="bg-[#c9a84c] text-black px-6 py-3 text-[0.7rem] font-bold tracking-[0.15em] uppercase hover:bg-[#e2c97e] transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+              className="bg-[#c9a84c] text-black px-6 py-3 text-[0.7rem] font-bold tracking-[0.15em] uppercase hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed">
               Envoyer
             </button>
           </div>

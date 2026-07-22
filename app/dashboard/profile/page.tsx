@@ -107,7 +107,7 @@ export default function ProfilePage() {
         {saved && <p className="text-xs text-[#7eb8a0] border border-[#7eb8a0]/20 bg-[#7eb8a0]/5 px-3 py-2">Profil mis à jour ✓ — le BMR sera recalculé automatiquement</p>}
 
         <button onClick={save} disabled={saving}
-          className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+          className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 disabled:opacity-50 flex items-center justify-center gap-2">
           {saving
             ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Enregistrement…</>
             : "Enregistrer"}
@@ -132,9 +132,9 @@ export default function ProfilePage() {
         {pwdSaved && <p className="text-xs text-[#7eb8a0] border border-[#7eb8a0]/20 bg-[#7eb8a0]/5 px-3 py-2">Mot de passe mis à jour ✓</p>}
 
         <button onClick={savePassword} disabled={pwdSaving}
-          className="bg-white/10 text-white text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-white/15 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+          className="border border-[#c9a84c]/30 text-[#c9a84c] text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
           {pwdSaving
-            ? <><div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"/>Enregistrement…</>
+            ? <><div className="w-3 h-3 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>Enregistrement…</>
             : "Changer le mot de passe"}
         </button>
       </div>

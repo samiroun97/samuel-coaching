@@ -360,7 +360,7 @@ export default function AccueilPage() {
                   {[
                     { label: "BMR",  val: bmrVal, desc: "Métabolisme de base",   color: "#c9a84c" },
                     { label: "NEAT", val: neat,   desc: "Activité quotidienne",  color: "#7eb8a0" },
-                    { label: "EAT",  val: eat,    desc: "Entraînement",          color: "#a08ec9" },
+                    { label: "EAT",  val: eat,    desc: "Entraînement",          color: "#d9954f" },
                   ].map(row => (
                     <div key={row.label} className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -428,8 +428,8 @@ export default function AccueilPage() {
             {/* Macros */}
             <div className="flex flex-col gap-2.5">
               <MiniBar label="Protéines" consumed={consumed.proteines} goal={goals.proteines} color="#F3F4F6"/>
-              <MiniBar label="Glucides"  consumed={consumed.glucides}  goal={goals.glucides}  color="#F97316"/>
-              <MiniBar label="Lipides"   consumed={consumed.lipides}   goal={goals.lipides}   color="#CA8A04"/>
+              <MiniBar label="Glucides"  consumed={consumed.glucides}  goal={goals.glucides}  color="#e0834a"/>
+              <MiniBar label="Lipides"   consumed={consumed.lipides}   goal={goals.lipides}   color="#9c8563"/>
             </div>
           </div>
         </div>
@@ -539,7 +539,7 @@ export default function AccueilPage() {
           Modifier mon profil
         </Link>
         <Link href="/dashboard/coach"
-          className="flex-1 bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.15em] uppercase py-4 text-center hover:bg-[#e2c97e] transition-colors">
+          className="flex-1 bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.15em] uppercase py-4 text-center hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200">
           Contacter Samuel →
         </Link>
       </div>

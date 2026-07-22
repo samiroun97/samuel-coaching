@@ -463,7 +463,7 @@ export default function SuiviPage() {
                 <div className="text-center py-2 text-[#7eb8a0] text-sm tracking-wider">Check-in envoyé ✓</div>
               ) : (
                 <button onClick={sendCheckin} disabled={ckSaving}
-                  className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3 hover:bg-[#e2c97e] transition-colors disabled:opacity-40">
+                  className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 disabled:opacity-40">
                   {ckSaving ? "Envoi…" : "Envoyer mon check-in à Samuel →"}
                 </button>
               )}
@@ -482,7 +482,7 @@ export default function SuiviPage() {
             </p>
           </div>
           <button onClick={downloadWeeklyReport} disabled={reportLoading}
-            className="bg-[#c9a84c] text-black text-[0.68rem] font-bold tracking-[0.15em] uppercase px-4 py-2.5 hover:bg-[#e2c97e] transition-colors disabled:opacity-40 flex items-center gap-2 shrink-0">
+            className="bg-[#c9a84c] text-black text-[0.68rem] font-bold tracking-[0.15em] uppercase px-4 py-2.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 disabled:opacity-40 flex items-center gap-2 shrink-0">
             {reportLoading
               ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Préparation…</>
               : "Voir le bilan →"}
@@ -537,7 +537,7 @@ export default function SuiviPage() {
             placeholder="70.0"/>
           <span className="text-white/30 text-sm">kg</span>
           <button onClick={saveWeight} disabled={weightSaving || !weightInput}
-            className="ml-auto bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.15em] uppercase px-5 py-2.5 hover:bg-[#e2c97e] transition-colors disabled:opacity-30">
+            className="ml-auto bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.15em] uppercase px-5 py-2.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 disabled:opacity-30">
             {weightSaved ? "Enregistré ✓" : alreadySelected ? "Mettre à jour" : "Enregistrer →"}
           </button>
         </div>
@@ -558,7 +558,7 @@ export default function SuiviPage() {
             <p className="text-[0.62rem] text-white/30 mt-0.5 tracking-wider">Recommandé toutes les 2 semaines</p>
           </div>
           <button onClick={() => { setShowUpload(true); setShowManual(false); }}
-            className="bg-[#c9a84c] text-black text-[0.68rem] font-bold tracking-[0.15em] uppercase px-4 py-2 hover:bg-[#e2c97e] transition-colors shrink-0 ml-4">
+            className="bg-[#c9a84c] text-black text-[0.68rem] font-bold tracking-[0.15em] uppercase px-4 py-2 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 shrink-0 ml-4">
             Estimer →
           </button>
         </div>
@@ -633,7 +633,7 @@ export default function SuiviPage() {
             />
           </div>
           <button onClick={saveManualBF}
-            className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.15em] uppercase px-5 py-2.5 hover:bg-[#e2c97e] transition-colors shrink-0 self-end">
+            className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.15em] uppercase px-5 py-2.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 shrink-0 self-end">
             Enregistrer →
           </button>
         </div>
@@ -723,14 +723,14 @@ export default function SuiviPage() {
                   Ré-estimer
                 </button>
                 <button onClick={saveBFEntry} disabled={sharing}
-                  className="flex-1 bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 hover:bg-[#e2c97e] transition-colors disabled:opacity-50">
+                  className="flex-1 bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 disabled:opacity-50">
                   {sharing ? "Envoi…" : shareWithCoach ? "Enregistrer & partager →" : "Enregistrer →"}
                 </button>
               </div>
             </div>
           ) : (
             <button onClick={estimate} disabled={photoCount === 0 || estimating}
-              className="w-full bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+              className="w-full bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
               {estimating
                 ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Analyse en cours…</>
                 : `Estimer avec l'IA · ${photoCount}/5 photo${photoCount > 1 ? "s" : ""} →`}
