@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
 import { DateNav } from "@/components/DateNav";
@@ -78,6 +79,7 @@ const resizeImage = (dataUrl: string, maxW = 512, maxH = 768): Promise<string> =
 const today = () => new Date().toISOString().split("T")[0];
 
 export default function SuiviPage() {
+  const router = useRouter();
   const [profile,        setProfile]        = useState<Profile | null>(null);
   const [userId,         setUserId]         = useState<string | null>(null);
   const [userEmail,      setUserEmail]      = useState<string>("");
@@ -260,14 +262,14 @@ export default function SuiviPage() {
       const feedback = await res.json();
       if (feedback.error) throw new Error(feedback.error);
 
-      const { generateWeeklyReportPdf } = await import("@/lib/pdf");
-      generateWeeklyReportPdf({
+      sessionStorage.setItem("pending_weekly_report", JSON.stringify({
         ...stats,
         clientName: profile?.prenom,
         nutrition: feedback.nutrition,
         neat: feedback.neat,
         eat: feedback.eat,
-      });
+      }));
+      router.push("/dashboard/suivi/bilan");
     } catch (e: unknown) {
       setReportError(e instanceof Error ? e.message : "Erreur lors de la génération du bilan.");
     }
@@ -476,14 +478,14 @@ export default function SuiviPage() {
           <div>
             <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Bilan de la semaine</p>
             <p className="text-[0.62rem] text-white/25 mt-0.5 tracking-wider">
-              Nutrition, entraînement, repos et déficit/surplus — en PDF
+              Nutrition, entraînement, repos et déficit/surplus — exportable en PDF
             </p>
           </div>
           <button onClick={downloadWeeklyReport} disabled={reportLoading}
             className="bg-[#c9a84c] text-black text-[0.68rem] font-bold tracking-[0.15em] uppercase px-4 py-2.5 hover:bg-[#e2c97e] transition-colors disabled:opacity-40 flex items-center gap-2 shrink-0">
             {reportLoading
-              ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Génération…</>
-              : "Télécharger le PDF →"}
+              ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Préparation…</>
+              : "Voir le bilan →"}
           </button>
         </div>
         <div className="flex items-center gap-2">

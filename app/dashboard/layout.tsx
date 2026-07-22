@@ -148,7 +148,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex w-full overflow-x-hidden">
-      <aside className="w-52 border-r border-white/5 hidden md:flex flex-col fixed h-full z-10 bg-[#0a0a0a]">
+      <aside className="w-52 border-r border-white/5 hidden md:flex flex-col fixed h-full z-10 bg-[#0a0a0a] print:hidden">
         <div className="px-5 py-5 border-b border-white/5">
           <Link href="/" style={{ fontFamily: "var(--font-bebas)" }}
             className="text-[1.05rem] tracking-[0.2em] text-white hover:text-white/80 transition-colors">
@@ -197,13 +197,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </aside>
 
-      <main className="ml-0 md:ml-52 flex-1 min-w-0 w-full h-screen overflow-y-auto pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-0">
+      <main className="ml-0 md:ml-52 flex-1 min-w-0 w-full h-screen overflow-y-auto pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-0 print:ml-0 print:h-auto print:overflow-visible print:pb-0">
         {children}
       </main>
 
       {/* Synchro multi-appareils interrompue — reste discret, les données sont conservées en local */}
       {syncIssue && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1.5 px-3 py-1.5 border border-[#e07070]/30 bg-[#0a0a0a]/90 text-[#e07070] text-[0.45rem] tracking-[0.12em] uppercase">
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1.5 px-3 py-1.5 border border-[#e07070]/30 bg-[#0a0a0a]/90 text-[#e07070] text-[0.45rem] tracking-[0.12em] uppercase print:hidden">
           <span className="w-1.5 h-1.5 rounded-full bg-[#e07070] shrink-0"/>
           Synchro interrompue — données sauvegardées localement
         </div>
@@ -212,7 +212,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Retour CRM — Samuel en mode aperçu */}
       {isSamuel && isPreview && (
         <Link href="/crm"
-          className="fixed top-4 left-4 md:left-56 z-40 flex items-center gap-1.5 px-3 py-1.5 border border-white/15 bg-[#0a0a0a]/90 text-white/50 hover:text-white/80 hover:border-white/30 transition-all text-[0.45rem] tracking-[0.15em] uppercase">
+          className="fixed top-4 left-4 md:left-56 z-40 flex items-center gap-1.5 px-3 py-1.5 border border-white/15 bg-[#0a0a0a]/90 text-white/50 hover:text-white/80 hover:border-white/30 transition-all text-[0.45rem] tracking-[0.15em] uppercase print:hidden">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="15 18 9 12 15 6"/>
           </svg>
@@ -224,7 +224,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {(!isSamuel || isPreview) && (
         <>
           <button onClick={() => setFbOpen(true)}
-            className="fixed top-4 right-4 z-40 flex items-center gap-1.5 px-3 py-1.5 border transition-all text-[0.45rem] tracking-[0.15em] uppercase"
+            className="fixed top-4 right-4 z-40 flex items-center gap-1.5 px-3 py-1.5 border transition-all text-[0.45rem] tracking-[0.15em] uppercase print:hidden"
             style={{ backgroundColor: "#c9a84c15", borderColor: "#c9a84c50", color: "#c9a84c", boxShadow: "0 0 12px #c9a84c25" }}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
@@ -277,7 +277,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       )}
 
       {/* Bottom nav — mobile only, flottante style verre */}
-      <nav className="md:hidden fixed left-3 right-3 z-10 flex rounded-[1.75rem] bg-white/[0.06] backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
+      <nav className="md:hidden print:hidden fixed left-3 right-3 z-10 flex rounded-[1.75rem] bg-white/[0.06] backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
         style={{ bottom: "calc(0.9rem + env(safe-area-inset-bottom))" }}>
         {navItems.map(({ label, href, icon }) => {
           const active = pathname === href;

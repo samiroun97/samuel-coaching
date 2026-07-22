@@ -102,3 +102,18 @@ body {
     font-size: 16px !important;
   }
 }
+
+/* Impression (bilan hebdo, etc.) : conserver le thème sombre au lieu du
+   fond blanc par défaut du navigateur, et des marges de page raisonnables. */
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+  html, body {
+    background: var(--bg) !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+  }
+}
