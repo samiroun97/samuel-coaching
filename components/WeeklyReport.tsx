@@ -31,12 +31,24 @@ export type WeeklyReportData = {
 };
 
 const fmtInt = (n: number) => Math.round(n).toLocaleString("fr-FR");
+const bebas = { fontFamily: "var(--font-bebas)" } as const;
+
+function GoldDivider() {
+  return (
+    <div className="flex items-center gap-3 justify-center">
+      <div className="h-px w-10 bg-gradient-to-r from-transparent to-[#c9a84c]" />
+      <div className="w-1 h-1 rotate-45 bg-[#c9a84c]" />
+      <div className="h-px w-10 bg-gradient-to-l from-transparent to-[#c9a84c]" />
+    </div>
+  );
+}
 
 function StatCard({ label, value, gold }: { label: string; value: string; gold?: boolean }) {
   return (
-    <div className={`border p-4 break-inside-avoid ${gold ? "border-[#c9a84c]/30 bg-[#c9a84c]/5" : "border-white/10 bg-[#111]"}`}>
+    <div className={`relative border p-4 break-inside-avoid ${gold ? "border-[#c9a84c]/30 bg-[#c9a84c]/[0.04]" : "border-white/10 bg-[#111]"}`}>
+      <div className={`absolute top-0 left-0 right-0 h-[2px] ${gold ? "bg-[#c9a84c]" : "bg-white/10"}`} />
       <p className="text-[0.62rem] tracking-[0.2em] uppercase text-white/30 mb-1.5">{label}</p>
-      <p style={{ fontFamily: "var(--font-bebas)" }} className={`text-2xl tracking-wide ${gold ? "text-[#c9a84c]" : "text-white"}`}>{value}</p>
+      <p style={bebas} className={`text-2xl tracking-wide ${gold ? "text-[#c9a84c]" : "text-white"}`}>{value}</p>
     </div>
   );
 }
@@ -63,10 +75,10 @@ function FeedbackBlock({ title, section }: { title: string; section: ReportSecti
     { label: "Conseil", text: section.conseil, color: "#c9a84c" },
   ];
   return (
-    <div className="border border-white/10 bg-[#111] mb-4 break-inside-avoid">
+    <div className="relative border border-white/10 bg-[#111] mb-4 break-inside-avoid">
+      <div className="absolute top-0 left-0 bottom-0 w-[2px] bg-[#c9a84c]" />
       <div className="px-5 py-3 border-b border-white/5 flex items-center gap-2.5">
-        <div className="w-1 h-4 bg-[#c9a84c]" />
-        <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-[0.15em] text-[#c9a84c] uppercase">{title}</p>
+        <p style={bebas} className="text-sm tracking-[0.15em] text-[#c9a84c] uppercase">{title}</p>
       </div>
       <div className="divide-y divide-white/5">
         {rows.map(r => (
@@ -89,11 +101,14 @@ export function WeeklyReport({ data }: { data: WeeklyReportData }) {
   const weekBalance = weekConsumed - weekBurned;
 
   return (
-    <div className="max-w-2xl mx-auto p-6 sm:p-10 print:p-0 print:max-w-none">
+    <div className="max-w-2xl mx-auto p-6 sm:p-10 print:p-0 print:max-w-none bg-[#0a0a0a]">
       {/* Header */}
-      <div className="mb-8 print:mb-6 break-inside-avoid">
-        <p className="text-[0.7rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-2">Samuel.Coaching</p>
-        <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl sm:text-5xl text-white tracking-wide mb-2">BILAN HEBDOMADAIRE</h1>
+      <div className="mb-10 print:mb-8 break-inside-avoid text-center">
+        <p style={{ ...bebas, letterSpacing: "0.18em" }} className="text-lg text-white mb-5">
+          SAMUEL<span className="text-[#c9a84c]">.</span><span className="text-[#c9a84c]">COACHING</span>
+        </p>
+        <h1 style={bebas} className="text-4xl sm:text-5xl text-[#c9a84c] tracking-wide mb-4">BILAN HEBDOMADAIRE</h1>
+        <div className="mb-4"><GoldDivider /></div>
         <p className="text-white/40 text-sm">
           {data.clientName ? `Préparé pour ${data.clientName}` : "Bilan personnalisé"} · {fmtDate(data.weekStart)} — {fmtDate(data.weekEnd)}
         </p>
@@ -101,11 +116,12 @@ export function WeeklyReport({ data }: { data: WeeklyReportData }) {
       </div>
 
       {/* Résultat de la semaine */}
-      <div className="border p-6 mb-6 break-inside-avoid" style={{ borderColor: `${statusColor}40`, backgroundColor: "#111" }}>
+      <div className="relative border p-6 mb-6 break-inside-avoid" style={{ borderColor: `${statusColor}40`, backgroundColor: "#111" }}>
+        <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ backgroundColor: statusColor }} />
         <div className="flex items-center justify-between gap-4 flex-wrap mb-4">
           <div>
             <p className="text-[0.65rem] tracking-[0.2em] uppercase text-white/30 mb-1">Résultat de la semaine</p>
-            <p style={{ fontFamily: "var(--font-bebas)", color: statusColor }} className="text-3xl tracking-wide">{statusLabel}</p>
+            <p style={{ ...bebas, color: statusColor }} className="text-3xl tracking-wide">{statusLabel}</p>
           </div>
           <p className="text-sm text-white/60">{data.balancePerDay > 0 ? "+" : ""}{fmtInt(data.balancePerDay)} kcal / jour</p>
         </div>
@@ -136,7 +152,8 @@ export function WeeklyReport({ data }: { data: WeeklyReportData }) {
       </div>
 
       {/* Macros moyennes */}
-      <div className="border border-white/10 bg-[#111] p-5 mb-6 flex flex-col gap-3 break-inside-avoid">
+      <div className="relative border border-white/10 bg-[#111] p-5 mb-6 flex flex-col gap-3 break-inside-avoid">
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-white/10" />
         <p className="text-[0.65rem] tracking-[0.2em] uppercase text-white/30">Macros moyennes / jour</p>
         <MacroBar label="Protéines" avg={data.avgProteines} goal={data.goalProteines} color="#F3F4F6" />
         <MacroBar label="Glucides" avg={data.avgGlucides} goal={data.goalGlucides} color="#F97316" />
@@ -148,9 +165,15 @@ export function WeeklyReport({ data }: { data: WeeklyReportData }) {
       <FeedbackBlock title="Activité quotidienne" section={data.neat} />
       <FeedbackBlock title="Entraînement" section={data.eat} />
 
-      <p className="text-center text-[0.6rem] tracking-[0.2em] uppercase text-white/15 mt-8">
-        Samuel.Coaching — Généré le {new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
-      </p>
+      <div className="mt-10 break-inside-avoid text-center">
+        <div className="mb-3"><GoldDivider /></div>
+        <p style={{ ...bebas, letterSpacing: "0.18em" }} className="text-xs text-white/50 mb-1">
+          SAMUEL<span className="text-[#c9a84c]">.</span><span className="text-[#c9a84c]">COACHING</span>
+        </p>
+        <p className="text-[0.6rem] tracking-[0.2em] uppercase text-white/15">
+          Généré le {new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
+        </p>
+      </div>
     </div>
   );
 }
