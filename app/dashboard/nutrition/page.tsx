@@ -443,37 +443,49 @@ export default function NutritionPage() {
     setAnalyzing(false);
   };
 
-  const compressImage = (dataUrl: string): Promise<string> =>
-    new Promise(resolve => {
+  // Décode depuis un object URL (pas un FileReader/base64) : une photo de téléphone en
+  // pleine résolution (10-20 Mo+) ferait doubler sa taille en mémoire une fois encodée en
+  // base64 avant même d'être redimensionnée, ce qui suffit à faire planter l'onglet sur les
+  // appareils avec peu de RAM. L'object URL laisse le navigateur décoder directement le Blob.
+  const compressImage = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const objectUrl = URL.createObjectURL(file);
       const img = new Image();
       img.onload = () => {
-        const scale = Math.min(800 / img.width, 800 / img.height, 1);
-        const canvas = document.createElement("canvas");
-        canvas.width = Math.floor(img.width * scale);
-        canvas.height = Math.floor(img.height * scale);
-        canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL("image/jpeg", 0.65));
+        try {
+          const scale = Math.min(800 / img.width, 800 / img.height, 1);
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.floor(img.width * scale);
+          canvas.height = Math.floor(img.height * scale);
+          canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL("image/jpeg", 0.65));
+        } catch (err) {
+          reject(err);
+        } finally {
+          URL.revokeObjectURL(objectUrl);
+        }
       };
-      img.src = dataUrl;
+      img.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error("Image illisible")); };
+      img.src = objectUrl;
     });
 
   const selectPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return;
     setAiError(""); setAiResult(null);
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      const compressed = await compressImage(reader.result as string);
+    if (photoRef.current) photoRef.current.value = "";
+    if (galleryRef.current) galleryRef.current.value = "";
+    try {
+      const compressed = await compressImage(file);
       setPhotoPreview(compressed);
-      if (photoRef.current) photoRef.current.value = "";
-      if (galleryRef.current) galleryRef.current.value = "";
       // Sauvegarde immédiate : si le retour de l'appareil photo recharge la page,
       // ce brouillon permet de retrouver la photo au lieu de tout perdre.
       try {
         const draft: PhotoDraft = { photoPreview: compressed, description, portionSize };
         sessionStorage.setItem(PHOTO_DRAFT_KEY, JSON.stringify(draft));
       } catch { /* quota dépassé, tant pis */ }
-    };
-    reader.readAsDataURL(file);
+    } catch {
+      setAiError("Impossible de traiter cette photo — réessaie ou choisis-en une autre.");
+    }
   };
 
   const startVoice = () => {
