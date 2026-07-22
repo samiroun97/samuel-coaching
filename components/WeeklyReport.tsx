@@ -76,7 +76,7 @@ function FeedbackBlock({ title, section }: { title: string; section: ReportSecti
   ];
   return (
     <div className="relative border border-white/10 bg-[#111] mb-4 print:mb-3 break-inside-avoid">
-      <div className="absolute top-0 left-0 bottom-0 w-[2px] bg-[#c9a84c]" />
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-[#c9a84c]/40" />
       <div className="px-5 py-3 print:py-2 border-b border-white/5 flex items-center gap-2.5">
         <p style={bebas} className="text-sm tracking-[0.15em] text-[#c9a84c] uppercase">{title}</p>
       </div>
@@ -101,9 +101,9 @@ export function WeeklyReport({ data }: { data: WeeklyReportData }) {
   const weekBalance = weekConsumed - weekBurned;
 
   return (
-    <div className="max-w-2xl mx-auto p-6 sm:p-10 print:px-6 print:pt-8 print:pb-2 print:max-w-none bg-[#0a0a0a]">
+    <div className="max-w-2xl mx-auto p-6 sm:p-10 print:px-6 print:pt-0 print:pb-2 print:max-w-none bg-[#0a0a0a]">
       {/* Header */}
-      <div className="mb-10 print:mb-5 break-inside-avoid text-center">
+      <div className="mb-10 print:mb-10 break-inside-avoid text-center">
         <p style={{ ...bebas, letterSpacing: "0.18em" }} className="text-lg text-white mb-5 print:mb-3">
           SAMUEL<span className="text-[#c9a84c]">.</span><span className="text-[#c9a84c]">COACHING</span>
         </p>
@@ -165,7 +165,7 @@ export function WeeklyReport({ data }: { data: WeeklyReportData }) {
       <FeedbackBlock title="Activité quotidienne" section={data.neat} />
       <FeedbackBlock title="Entraînement" section={data.eat} />
 
-      <div className="mt-10 print:mt-4 break-inside-avoid text-center">
+      <div className="mt-10 print:mt-12 break-inside-avoid text-center">
         <div className="mb-3"><GoldDivider /></div>
         <p style={{ ...bebas, letterSpacing: "0.18em" }} className="text-xs text-white/50 mb-1">
           SAMUEL<span className="text-[#c9a84c]">.</span><span className="text-[#c9a84c]">COACHING</span>

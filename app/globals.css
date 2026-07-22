@@ -109,6 +109,9 @@ body {
   @page {
     size: A4;
     margin: 10mm;
+    /* Un peu plus d'air en haut de chaque page (y compris celles créées par
+       une coupure de page, ex. un bloc qui bascule en page 2). */
+    margin-top: 18mm;
   }
   html, body {
     background: var(--bg) !important;
