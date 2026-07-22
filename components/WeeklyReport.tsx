@@ -75,18 +75,23 @@ function FeedbackBlock({ title, section }: { title: string; section: ReportSecti
     { label: "Conseil", text: section.conseil, color: "#c9a84c" },
   ];
   return (
-    <div className="relative border border-white/10 bg-[#111] mb-4 print:mb-3 break-inside-avoid">
-      <div className="absolute top-0 left-0 right-0 h-[2px] bg-[#c9a84c]/40" />
-      <div className="px-5 py-3 print:py-2 border-b border-white/5 flex items-center gap-2.5">
-        <p style={bebas} className="text-sm tracking-[0.15em] text-[#c9a84c] uppercase">{title}</p>
-      </div>
-      <div className="divide-y divide-white/5">
-        {rows.map(r => (
-          <div key={r.label} className="flex gap-3 px-5 py-3 print:py-2">
-            <span className="text-[0.62rem] tracking-[0.15em] uppercase shrink-0 w-24 pt-0.5" style={{ color: r.color }}>{r.label}</span>
-            <p className="text-[0.75rem] text-white/70 leading-relaxed">{r.text}</p>
-          </div>
-        ))}
+    // Le padding-top (sur cette enveloppe transparente) sert d'espace de tête : contrairement
+    // à une margin-top, il n'est jamais absorbé si ce bloc atterrit en haut d'une nouvelle page
+    // après une coupure — donc l'air reste garanti même quand "print:mb-*" seul ne suffit pas.
+    <div className="mb-4 print:mb-0 print:pt-8 break-inside-avoid">
+      <div className="relative border border-white/10 bg-[#111]">
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-[#c9a84c]/40" />
+        <div className="px-5 py-3 print:py-2 border-b border-white/5 flex items-center gap-2.5">
+          <p style={bebas} className="text-sm tracking-[0.15em] text-[#c9a84c] uppercase">{title}</p>
+        </div>
+        <div className="divide-y divide-white/5">
+          {rows.map(r => (
+            <div key={r.label} className="flex gap-3 px-5 py-3 print:py-2">
+              <span className="text-[0.62rem] tracking-[0.15em] uppercase shrink-0 w-24 pt-0.5" style={{ color: r.color }}>{r.label}</span>
+              <p className="text-[0.75rem] text-white/70 leading-relaxed">{r.text}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
