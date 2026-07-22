@@ -101,7 +101,7 @@ export function WeeklyReport({ data }: { data: WeeklyReportData }) {
   const weekBalance = weekConsumed - weekBurned;
 
   return (
-    <div className="max-w-2xl mx-auto p-6 sm:p-10 print:p-0 print:max-w-none bg-[#0a0a0a]">
+    <div className="max-w-2xl mx-auto p-6 sm:p-10 print:px-6 print:pt-8 print:pb-2 print:max-w-none bg-[#0a0a0a]">
       {/* Header */}
       <div className="mb-10 print:mb-5 break-inside-avoid text-center">
         <p style={{ ...bebas, letterSpacing: "0.18em" }} className="text-lg text-white mb-5 print:mb-3">
