@@ -515,6 +515,9 @@ export default function NutritionPage() {
   const stopVoice = () => { recognitionRef.current?.stop(); setListening(false); };
 
   // Résout un code-barres détecté (par la caméra live ou une photo) en produit OFF.
+  // Un match direct par code-barres est sans ambiguïté (contrairement à une recherche
+  // par nom) : l'aliment est donc ajouté au journal directement, portion 100g par défaut,
+  // sans étape de confirmation manuelle.
   const lookupBarcode = useCallback(async (code: string) => {
     setScanError(""); setSelected(null); setSearching(true);
     try {
@@ -522,10 +525,16 @@ export default function NutritionPage() {
       const data = await res.json();
       if (data.status === 1 && data.product?.nutriments) {
         const p = data.product;
-        setSelected({ product_name: p.product_name || code, brands: p.brands, nutriments: p.nutriments });
-        setQuery(p.product_name || code);
-        setResults([]);
+        setFoods(f => [...f, {
+          id: Date.now().toString(),
+          name: p.product_name || code,
+          calories:  Math.round(p.nutriments["energy-kcal_100g"] ?? 0),
+          proteines: Math.round(p.nutriments.proteins_100g ?? 0),
+          glucides:  Math.round(p.nutriments.carbohydrates_100g ?? 0),
+          lipides:   Math.round(p.nutriments.fat_100g ?? 0),
+        }]);
         setSearching(false);
+        resetModal();
       } else {
         setQuery(code);
         doSearch(code);
