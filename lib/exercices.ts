@@ -6,11 +6,16 @@ export const emptySet = (): SetDetail => ({ reps: "", poids: "", repos: "", rpe:
 
 export type ExerciceMode = "simple" | "avance" | "libre";
 
+// Champs du mode "simple" qu'on peut retirer individuellement par exercice
+// (ex: "Poids" n'a pas de sens pour de la corde à sauter dans une séance de boxe).
+export type SimpleField = "series" | "repetitions" | "poids" | "repos";
+
 export type ExerciceItem = {
   nom: string; type: string; note: string;
   mode: ExerciceMode;
   // mode "simple"
   series: string; repetitions: string; poids: string; repos: string;
+  hiddenFields: SimpleField[];
   // mode "avance"
   sets: SetDetail[];
   // mode "libre"
@@ -23,7 +28,7 @@ export type ExerciceItem = {
 
 export const emptyExercice = (): ExerciceItem => ({
   nom: "", type: "", note: "", mode: "simple",
-  series: "", repetitions: "", poids: "", repos: "",
+  series: "", repetitions: "", poids: "", repos: "", hiddenFields: [],
   sets: [], texteLibre: "", videoUrl: "", groupId: null, groupLabel: "",
 });
 
@@ -33,6 +38,7 @@ export function normalizeExercice(p: Partial<ExerciceItem>): ExerciceItem {
     nom: p.nom ?? "", type: p.type ?? "", note: p.note ?? "",
     mode: p.mode ?? "simple",
     series: p.series ?? "", repetitions: p.repetitions ?? "", poids: p.poids ?? "", repos: p.repos ?? "",
+    hiddenFields: Array.isArray(p.hiddenFields) ? p.hiddenFields : [],
     sets: Array.isArray(p.sets) ? p.sets : [],
     texteLibre: p.texteLibre ?? "",
     videoUrl: p.videoUrl ?? "",
@@ -91,6 +97,7 @@ export function serializeExercices(items: ExerciceItem[]): string | null {
     nom: i.nom.trim(), type: i.type.trim(), note: i.note.trim(),
     mode: i.mode,
     series: i.series.trim(), repetitions: i.repetitions.trim(), poids: i.poids.trim(), repos: i.repos.trim(),
+    hiddenFields: i.hiddenFields,
     sets: i.sets.map(s => ({ reps: s.reps.trim(), poids: s.poids.trim(), repos: s.repos.trim(), rpe: s.rpe.trim(), tempo: s.tempo.trim() })),
     texteLibre: i.texteLibre.trim(),
     videoUrl: i.videoUrl.trim(),

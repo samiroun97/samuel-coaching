@@ -1,5 +1,5 @@
 "use client";
-import { type ExerciceItem, type ExerciceMode, type SetDetail, EXERCICE_TYPES, emptyExercice, emptySet, groupExerciceRuns } from "@/lib/exercices";
+import { type ExerciceItem, type ExerciceMode, type SetDetail, type SimpleField, EXERCICE_TYPES, emptyExercice, emptySet, groupExerciceRuns } from "@/lib/exercices";
 import { type LibraryEntry } from "@/lib/exerciceLibrary";
 
 const inp = "w-full bg-[#060606] border border-white/10 text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
@@ -18,6 +18,13 @@ const MODES: { key: ExerciceMode; label: string }[] = [
   { key: "libre", label: "Texte libre" },
 ];
 
+const SIMPLE_FIELDS: { key: SimpleField; label: string; icon: () => React.ReactNode; placeholder: string }[] = [
+  { key: "series",      label: "Séries", icon: IconSeries, placeholder: "4" },
+  { key: "repetitions", label: "Reps",   icon: IconReps,   placeholder: "12" },
+  { key: "poids",       label: "Poids",  icon: IconPoids,  placeholder: "20 kg" },
+  { key: "repos",       label: "Repos",  icon: IconRepos,  placeholder: "90 sec" },
+];
+
 const genId = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`);
 
 const DATALIST_ID = "exercice-bibliotheque-list";
@@ -26,6 +33,14 @@ export default function ExerciceEditor({ items, onChange, library = [] }: { item
   const update = (i: number, patch: Partial<ExerciceItem>) => onChange(items.map((it, j) => (j === i ? { ...it, ...patch } : it)));
   const remove = (i: number) => onChange(items.filter((_, j) => j !== i));
   const add = () => onChange([...items, emptyExercice()]);
+
+  // Retire un champ (Séries/Reps/Poids/Repos) de cet exercice précis — ex: "Poids"
+  // n'a pas de sens pour de la corde à sauter dans une séance de boxe. On vide aussi
+  // sa valeur pour qu'il n'apparaisse pas non plus dans la vue lecture seule du client.
+  const hideField = (i: number, field: SimpleField) =>
+    update(i, { [field]: "", hiddenFields: [...items[i].hiddenFields, field] });
+  const showField = (i: number, field: SimpleField) =>
+    update(i, { hiddenFields: items[i].hiddenFields.filter(f => f !== field) });
 
   const applyFromLibrary = (i: number, nom: string) => {
     const found = library.find(l => l.nom.trim().toLowerCase() === nom.trim().toLowerCase());
@@ -111,11 +126,25 @@ export default function ExerciceEditor({ items, onChange, library = [] }: { item
         </div>
 
         {ex.mode === "simple" && (
-          <div className="grid grid-cols-4 gap-2 pl-8">
-            <div><label className={lblSm}><IconSeries />Séries</label><input className={inpSm} placeholder="4" value={ex.series} onChange={e => update(i, { series: e.target.value })} /></div>
-            <div><label className={lblSm}><IconReps />Reps</label><input className={inpSm} placeholder="12" value={ex.repetitions} onChange={e => update(i, { repetitions: e.target.value })} /></div>
-            <div><label className={lblSm}><IconPoids />Poids</label><input className={inpSm} placeholder="20 kg" value={ex.poids} onChange={e => update(i, { poids: e.target.value })} /></div>
-            <div><label className={lblSm}><IconRepos />Repos</label><input className={inpSm} placeholder="90 sec" value={ex.repos} onChange={e => update(i, { repos: e.target.value })} /></div>
+          <div className="flex flex-wrap items-end gap-2 pl-8">
+            {SIMPLE_FIELDS.filter(f => !ex.hiddenFields.includes(f.key)).map(f => (
+              <div key={f.key} className="w-20">
+                <label className={lblSm}>
+                  <f.icon />{f.label}
+                  <button type="button" onClick={() => hideField(i, f.key)} title={`Retirer le champ ${f.label}`}
+                    className="ml-0.5 text-white/20 hover:text-[#e07070] transition-colors">
+                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                </label>
+                <input className={inpSm} placeholder={f.placeholder} value={ex[f.key]} onChange={e => update(i, { [f.key]: e.target.value })} />
+              </div>
+            ))}
+            {SIMPLE_FIELDS.filter(f => ex.hiddenFields.includes(f.key)).map(f => (
+              <button key={f.key} type="button" onClick={() => showField(i, f.key)}
+                className="flex items-center gap-1 text-[0.5rem] tracking-[0.1em] uppercase text-white/25 border border-dashed border-white/15 px-2 py-1.5 hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors">
+                + {f.label}
+              </button>
+            ))}
           </div>
         )}
 
