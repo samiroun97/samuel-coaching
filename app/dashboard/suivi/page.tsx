@@ -415,7 +415,7 @@ export default function SuiviPage() {
 
       {/* ── Check-in hebdomadaire (client → coach) ── */}
       {userEmail !== SAMUEL_EMAIL && (
-        <div className={`border mb-6 ${ckDoneThisWeek && !ckOpen ? "border-[#7eb8a0]/25 bg-[#7eb8a0]/5" : "border-[#c9a84c]/25 bg-[#c9a84c]/5"}`}>
+        <div className={`border rounded-lg mb-6 ${ckDoneThisWeek && !ckOpen ? "border-[#7eb8a0]/25 bg-[#7eb8a0]/5" : "border-[#c9a84c]/25 bg-[#c9a84c]/5"}`}>
           <button onClick={() => setCkOpen(o => !o)} className="w-full flex items-center justify-between px-5 py-4 text-left">
             <div>
               <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-0.5">Check-in de la semaine</p>
@@ -463,7 +463,7 @@ export default function SuiviPage() {
                 <div className="text-center py-2 text-[#7eb8a0] text-sm tracking-wider">Check-in envoyé ✓</div>
               ) : (
                 <button onClick={sendCheckin} disabled={ckSaving}
-                  className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 disabled:opacity-40">
+                  className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg disabled:opacity-40">
                   {ckSaving ? "Envoi…" : "Envoyer mon check-in à Samuel →"}
                 </button>
               )}
@@ -473,7 +473,7 @@ export default function SuiviPage() {
       )}
 
       {/* ── Bilan hebdomadaire PDF ── */}
-      <div className="border border-white/10 bg-[#111] p-5 mb-4">
+      <div className="border border-white/10 bg-[#111] rounded-lg p-5 mb-4">
         <div className="flex items-center justify-between gap-4 flex-wrap mb-3">
           <div>
             <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Bilan de la semaine</p>
@@ -482,7 +482,7 @@ export default function SuiviPage() {
             </p>
           </div>
           <button onClick={downloadWeeklyReport} disabled={reportLoading}
-            className="bg-[#c9a84c] text-black text-[0.68rem] font-bold tracking-[0.15em] uppercase px-4 py-2.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 disabled:opacity-40 flex items-center gap-2 shrink-0">
+            className="bg-[#c9a84c] text-black text-[0.68rem] font-bold tracking-[0.15em] uppercase px-4 py-2.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg disabled:opacity-40 flex items-center gap-2 shrink-0">
             {reportLoading
               ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Préparation…</>
               : "Voir le bilan →"}
@@ -491,7 +491,7 @@ export default function SuiviPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => { const d = new Date(reportWeekMonday + "T12:00:00"); d.setDate(d.getDate() - 7); setReportWeekMonday(d.toISOString().split("T")[0]); }}
-            className="w-7 h-7 border border-white/10 text-white/40 hover:text-white/60 hover:border-white/20 transition-colors flex items-center justify-center shrink-0">
+            className="w-7 h-7 border border-white/10 text-white/40 rounded-lg hover:text-white/60 hover:border-white/20 transition-colors flex items-center justify-center shrink-0">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
           <p className="flex-1 text-center text-[0.65rem] tracking-[0.12em] uppercase text-white/40">
@@ -502,7 +502,7 @@ export default function SuiviPage() {
           <button
             onClick={() => { const d = new Date(reportWeekMonday + "T12:00:00"); d.setDate(d.getDate() + 7); const next = d.toISOString().split("T")[0]; if (next <= weekMonday) setReportWeekMonday(next); }}
             disabled={reportWeekMonday === weekMonday}
-            className="w-7 h-7 border border-white/10 text-white/40 hover:text-white/60 hover:border-white/20 transition-colors flex items-center justify-center shrink-0 disabled:opacity-20 disabled:cursor-not-allowed">
+            className="w-7 h-7 border border-white/10 text-white/40 rounded-lg hover:text-white/60 hover:border-white/20 transition-colors flex items-center justify-center shrink-0 disabled:opacity-20 disabled:cursor-not-allowed">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
           {reportWeekMonday !== weekMonday && (
@@ -518,7 +518,7 @@ export default function SuiviPage() {
       <DateNav date={selectedDate} onChange={setSelectedDate} />
 
       {/* ── Pesée ── */}
-      <div className="border border-white/10 bg-[#111] p-5 mb-4">
+      <div className="border border-white/10 bg-[#111] rounded-lg p-5 mb-4">
         <div className="flex items-center justify-between mb-4">
           <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">
             {selectedDate === today() ? "Pesée du jour" : `Pesée · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
@@ -537,7 +537,7 @@ export default function SuiviPage() {
             placeholder="70.0"/>
           <span className="text-white/30 text-sm">kg</span>
           <button onClick={saveWeight} disabled={weightSaving || !weightInput}
-            className="ml-auto bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.15em] uppercase px-5 py-2.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 disabled:opacity-30">
+            className="ml-auto bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.15em] uppercase px-5 py-2.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg disabled:opacity-30">
             {weightSaved ? "Enregistré ✓" : alreadySelected ? "Mettre à jour" : "Enregistrer →"}
           </button>
         </div>
@@ -550,7 +550,7 @@ export default function SuiviPage() {
 
       {/* ── Body fat — rappel ── */}
       {needsBF && (
-        <div className="border border-[#c9a84c]/30 bg-[#c9a84c]/5 px-5 py-3 mb-4 flex items-center justify-between">
+        <div className="border border-[#c9a84c]/30 bg-[#c9a84c]/5 rounded-lg px-5 py-3 mb-4 flex items-center justify-between">
           <div>
             <p className="text-[0.7rem] tracking-[0.15em] uppercase text-[#c9a84c] font-bold">
               {daysSinceBF === null ? "Premier check-in body fat" : `Check-in body fat · ${daysSinceBF}j depuis le dernier`}
@@ -558,14 +558,14 @@ export default function SuiviPage() {
             <p className="text-[0.62rem] text-white/30 mt-0.5 tracking-wider">Recommandé toutes les 2 semaines</p>
           </div>
           <button onClick={() => { setShowUpload(true); setShowManual(false); }}
-            className="bg-[#c9a84c] text-black text-[0.68rem] font-bold tracking-[0.15em] uppercase px-4 py-2 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 shrink-0 ml-4">
+            className="bg-[#c9a84c] text-black text-[0.68rem] font-bold tracking-[0.15em] uppercase px-4 py-2 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg shrink-0 ml-4">
             Estimer →
           </button>
         </div>
       )}
 
       {/* ── Carte Body fat + explication ── */}
-      <div className={`border mb-4 ${!needsBF ? "border-white/10 bg-[#111]" : "border-white/5 bg-[#0d0d0d]"}`}>
+      <div className={`border rounded-lg mb-4 ${!needsBF ? "border-white/10 bg-[#111]" : "border-white/5 bg-[#0d0d0d]"}`}>
         <div className="p-5">
           <div className="flex items-center justify-between mb-3">
             <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Body fat actuel</p>
@@ -584,12 +584,12 @@ export default function SuiviPage() {
             )}
             <div className="flex gap-2">
               <button onClick={() => { setShowManual(v => !v); setShowUpload(false); setManualVal(""); setManualDate(selectedDate); }}
-                className="border border-white/10 text-white/30 text-[0.7rem] tracking-[0.12em] uppercase px-4 py-2 hover:border-white/20 hover:text-white/50 transition-colors">
+                className="border border-white/10 text-white/30 text-[0.7rem] tracking-[0.12em] uppercase px-4 py-2 rounded-lg hover:border-white/20 hover:text-white/50 transition-colors">
                 {showManual ? "Annuler" : "Manuel"}
               </button>
               {!needsBF && (
                 <button onClick={() => { setShowUpload(v => !v); setShowManual(false); setResult(null); setError(""); }}
-                  className="border border-white/10 text-white/30 text-[0.7rem] tracking-[0.12em] uppercase px-4 py-2 hover:border-white/20 hover:text-white/50 transition-colors">
+                  className="border border-white/10 text-white/30 text-[0.7rem] tracking-[0.12em] uppercase px-4 py-2 rounded-lg hover:border-white/20 hover:text-white/50 transition-colors">
                   {showUpload ? "Annuler" : "Estimer IA"}
                 </button>
               )}
@@ -616,7 +616,7 @@ export default function SuiviPage() {
 
       {/* Saisie manuelle BF */}
       {showManual && (
-        <div className="border border-white/10 bg-[#111] p-5 mb-4 flex items-center gap-3">
+        <div className="border border-white/10 bg-[#111] rounded-lg p-5 mb-4 flex items-center gap-3">
           <div className="flex flex-col gap-1 shrink-0">
             <p className="text-[0.65rem] tracking-[0.15em] uppercase text-white/25">Body fat %</p>
             <input type="number" min="1" max="60" step="0.1" placeholder="18.5" autoFocus
@@ -633,7 +633,7 @@ export default function SuiviPage() {
             />
           </div>
           <button onClick={saveManualBF}
-            className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.15em] uppercase px-5 py-2.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 shrink-0 self-end">
+            className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.15em] uppercase px-5 py-2.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg shrink-0 self-end">
             Enregistrer →
           </button>
         </div>
@@ -641,7 +641,7 @@ export default function SuiviPage() {
 
       {/* Upload & IA */}
       {showUpload && (
-        <div ref={uploadSectionRef} className="border border-white/10 bg-[#111] p-5 mb-4 scroll-mt-4">
+        <div ref={uploadSectionRef} className="border border-white/10 bg-[#111] rounded-lg p-5 mb-4 scroll-mt-4">
           <div className="flex items-center justify-between mb-1">
             <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Photos corporelles</p>
             <span className="text-[0.62rem] text-white/20 tracking-wider">Non conservées après l'estimation</span>
@@ -679,7 +679,7 @@ export default function SuiviPage() {
           {result ? (
             <div className="flex flex-col gap-3">
               {/* Résultat IA */}
-              <div className="border border-[#c9a84c]/20 bg-[#c9a84c]/5 p-4 flex items-center justify-between">
+              <div className="border border-[#c9a84c]/20 bg-[#c9a84c]/5 rounded-lg p-4 flex items-center justify-between">
                 <div>
                   <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c] mb-1">Estimation IA</p>
                   <p className="text-[0.65rem] text-white/40 italic leading-relaxed">{result.note}</p>
@@ -692,7 +692,7 @@ export default function SuiviPage() {
 
               {/* Feedback IA */}
               {(result.points_forts || result.points_faibles || result.conseils) && (
-                <div className="border border-white/10 bg-[#0a0a0a] divide-y divide-white/5">
+                <div className="border border-white/10 bg-[#0a0a0a] rounded-lg divide-y divide-white/5">
                   {result.points_forts   && <FeedbackRow color="#7eb8a0" label="Points forts"  text={result.points_forts}/>}
                   {result.points_faibles && <FeedbackRow color="#e07070" label="À travailler"  text={result.points_faibles}/>}
                   {result.conseils       && <FeedbackRow color="#c9a84c" label="Conseils"       text={result.conseils}/>}
@@ -700,7 +700,7 @@ export default function SuiviPage() {
               )}
 
               {/* Toggle partage coach */}
-              <div className="border border-white/8 bg-[#0f0f0f] px-4 py-3 flex items-center justify-between">
+              <div className="border border-white/8 bg-[#0f0f0f] rounded-lg px-4 py-3 flex items-center justify-between">
                 <div>
                   <p className="text-[0.7rem] tracking-[0.1em] uppercase text-white/50">Partager avec Samuel</p>
                   <p className="text-[0.62rem] text-white/25 mt-0.5">
@@ -719,18 +719,18 @@ export default function SuiviPage() {
 
               <div className="flex gap-2">
                 <button onClick={() => setResult(null)}
-                  className="flex-1 border border-white/10 text-white/40 text-[0.65rem] tracking-[0.15em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors">
+                  className="flex-1 border border-white/10 text-white/40 rounded-lg text-[0.65rem] tracking-[0.15em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors">
                   Ré-estimer
                 </button>
                 <button onClick={saveBFEntry} disabled={sharing}
-                  className="flex-1 bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 disabled:opacity-50">
+                  className="flex-1 bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg disabled:opacity-50">
                   {sharing ? "Envoi…" : shareWithCoach ? "Enregistrer & partager →" : "Enregistrer →"}
                 </button>
               </div>
             </div>
           ) : (
             <button onClick={estimate} disabled={photoCount === 0 || estimating}
-              className="w-full bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+              className="w-full bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
               {estimating
                 ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Analyse en cours…</>
                 : `Estimer avec l'IA · ${photoCount}/5 photo${photoCount > 1 ? "s" : ""} →`}
@@ -741,7 +741,7 @@ export default function SuiviPage() {
 
       {/* ── Graphique évolution body fat ── */}
       {bfChartData.length > 1 && (
-        <div className="border border-white/10 bg-[#111] p-4 mb-4">
+        <div className="border border-white/10 bg-[#111] rounded-lg p-4 mb-4">
           <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-3">Évolution body fat</p>
           <LineChart data={bfChartData.map(e => ({ id: e.id, date: e.date, val: e.body_fat }))} unit="%" color="#c9a84c" glow/>
         </div>
@@ -749,7 +749,7 @@ export default function SuiviPage() {
 
       {/* ── Historique body fat avec feedback ── */}
       {bfHist.length > 0 && (
-        <div className="border border-white/10 bg-[#111] mb-4">
+        <div className="border border-white/10 bg-[#111] rounded-lg mb-4">
           <div className="px-5 py-3 border-b border-white/5">
             <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-white">Historique body fat</p>
           </div>
@@ -832,7 +832,7 @@ export default function SuiviPage() {
 
       {/* ── Historique poids ── */}
       {weightHist.length > 1 && (
-        <div className="border border-white/10 bg-[#111]">
+        <div className="border border-white/10 bg-[#111] rounded-lg">
           <div className="px-5 py-3 border-b border-white/5">
             <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-white">Historique pesées</p>
           </div>

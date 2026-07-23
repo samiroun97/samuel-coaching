@@ -139,7 +139,7 @@ function WaterTracker({ water, goal, onAdd, onRemove }: { water: number; goal: n
   const liters = (water * 0.25).toFixed(2).replace(/\.?0+$/, "");
   const goalLiters = (goal * 0.25).toFixed(1);
   return (
-    <div className="border border-white/10 bg-[#111] p-5 mb-6">
+    <div className="border border-white/10 bg-[#111] rounded-lg p-5 mb-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6fa3c4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -702,7 +702,7 @@ export default function NutritionPage() {
   const kcalFromMacros = macroKcal(goalDraft);
   const isCoherent     = Math.abs(kcalFromMacros - goalDraft.calories) <= 5;
 
-  const inputCls = "w-full bg-[#0a0a0a] border border-white/10 text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
+  const inputCls = "w-full bg-[#0a0a0a] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
   const labelCls = "text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] block mb-1.5";
   const tabCls   = (active: boolean, border = true) =>
     `flex-1 py-2 text-[0.7rem] tracking-[0.1em] uppercase transition-colors ${border ? "border-r border-white/10" : ""} ${active ? "bg-[#c9a84c]/10 text-[#c9a84c]" : "text-white/30 hover:text-white/50"}`;
@@ -763,7 +763,7 @@ export default function NutritionPage() {
         ))}
       </div>
 
-      <div className="border border-white/10 bg-[#111] p-6 mb-6 flex flex-col gap-5">
+      <div className="border border-white/10 bg-[#111] rounded-lg p-6 mb-6 flex flex-col gap-5">
         <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1">Macronutriments</p>
         {macroConfig.map(m => <MacroBar key={m.key} label={m.label} consumed={totals[m.key]} goal={goals[m.key]} color={m.color}/>)}
       </div>
@@ -774,7 +774,7 @@ export default function NutritionPage() {
 
       {/* ── Plan de Samuel ── */}
       {mealPlan && (
-        <div className="border border-[#c9a84c]/20 bg-[#0f0d07] mb-6">
+        <div className="border border-[#c9a84c]/20 bg-[#0f0d07] rounded-lg mb-6">
           <div className="flex items-center justify-between px-5 py-3 border-b border-[#c9a84c]/10">
             <div>
               <div className="flex items-center gap-2">
@@ -805,7 +805,7 @@ export default function NutritionPage() {
                       </div>
                     </div>
                     <button onClick={() => addFoodDirect(item)}
-                      className="w-6 h-6 border border-[#c9a84c]/30 text-[#c9a84c] hover:bg-[#c9a84c]/10 transition-colors flex items-center justify-center text-sm shrink-0">
+                      className="w-6 h-6 border border-[#c9a84c]/30 text-[#c9a84c] rounded-lg hover:bg-[#c9a84c]/10 transition-colors flex items-center justify-center text-sm shrink-0">
                       +
                     </button>
                   </div>
@@ -820,13 +820,13 @@ export default function NutritionPage() {
       )}
 
       <button onClick={() => setShowAdd(true)}
-        className="w-full border border-[#c9a84c]/30 text-[#c9a84c] text-[0.7rem] tracking-[0.2em] uppercase py-3.5 hover:bg-[#c9a84c]/5 transition-colors mb-6 flex items-center justify-center gap-2">
+        className="w-full border border-[#c9a84c]/30 text-[#c9a84c] rounded-lg text-[0.7rem] tracking-[0.2em] uppercase py-3.5 hover:bg-[#c9a84c]/5 transition-colors mb-6 flex items-center justify-center gap-2">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Ajouter un repas
       </button>
 
       {/* ── Idée repas ── */}
-      <div className="border border-white/10 bg-[#111] mb-6">
+      <div className="border border-white/10 bg-[#111] rounded-lg mb-6">
         <div className="flex items-start justify-between px-5 py-4 border-b border-white/5">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -849,7 +849,7 @@ export default function NutritionPage() {
             )}
           </div>
           <button onClick={generateIdeas} disabled={ideaLoading || !canGenerateIdeas}
-            className="shrink-0 border border-[#c9a84c]/30 text-[#c9a84c] text-[0.7rem] tracking-[0.15em] uppercase px-3.5 py-2 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5">
+            className="shrink-0 border border-[#c9a84c]/30 text-[#c9a84c] rounded-lg text-[0.7rem] tracking-[0.15em] uppercase px-3.5 py-2 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5">
             {ideaLoading
               ? <><div className="w-2.5 h-2.5 border border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>Génération…</>
               : "Générer →"}
@@ -902,7 +902,7 @@ export default function NutritionPage() {
                   </div>
                 </div>
                 <button onClick={() => addFoodDirect(idea, ideaMealType)}
-                  className="shrink-0 w-7 h-7 border border-[#c9a84c]/30 text-[#c9a84c] hover:bg-[#c9a84c]/10 transition-colors flex items-center justify-center text-sm">
+                  className="shrink-0 w-7 h-7 border border-[#c9a84c]/30 text-[#c9a84c] rounded-lg hover:bg-[#c9a84c]/10 transition-colors flex items-center justify-center text-sm">
                   +
                 </button>
               </div>
@@ -912,7 +912,7 @@ export default function NutritionPage() {
       </div>
 
       {/* ── Aliments du jour ── */}
-      <div className="border border-white/10 bg-[#111] mb-6">
+      <div className="border border-white/10 bg-[#111] rounded-lg mb-6">
         <div className="flex items-center justify-between px-5 py-3 border-b border-white/5">
           <span style={{ fontFamily:"var(--font-bebas)" }} className="text-sm tracking-wider text-white">
             {selectedDate === realToday ? "Aliments du jour" : `Aliments · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
@@ -953,7 +953,7 @@ export default function NutritionPage() {
       </div>
 
       {/* ── Week history ── */}
-      <div className="border border-white/10 bg-[#111] p-5 mt-6">
+      <div className="border border-white/10 bg-[#111] rounded-lg p-5 mt-6">
         <div className="flex items-center justify-between mb-4">
           <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Cette semaine</p>
           <div className="flex items-center gap-3">
@@ -979,7 +979,7 @@ export default function NutritionPage() {
       {/* ══ ADD FOOD MODAL ══ */}
       {showAdd && (
         <div className="fixed inset-0 bg-black/75 z-50 flex items-center justify-center px-4" onClick={resetModal}>
-          <div className="bg-[#0f0f0f] border border-white/10 w-full max-w-lg h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <div className="bg-[#0f0f0f] rounded-lg border border-white/10 w-full max-w-lg h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
 
             <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-white/5">
               <h3 style={{ fontFamily:"var(--font-bebas)" }} className="text-xl tracking-wider text-white">Ajouter un repas</h3>
@@ -1004,14 +1004,14 @@ export default function NutritionPage() {
                 <div className="flex flex-col gap-4">
                   <div className="grid grid-cols-2 gap-2">
                     <button onClick={() => photoRef.current?.click()} disabled={analyzing}
-                      className="flex items-center justify-center gap-2 border border-white/10 text-white/40 text-[0.7rem] tracking-[0.1em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors disabled:opacity-40">
+                      className="flex items-center justify-center gap-2 border border-white/10 text-white/40 rounded-lg text-[0.7rem] tracking-[0.1em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors disabled:opacity-40">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/>
                       </svg>
                       {photoPreview ? "Reprendre une photo" : "Prendre une photo"}
                     </button>
                     <button onClick={() => galleryRef.current?.click()} disabled={analyzing}
-                      className="flex items-center justify-center gap-2 border border-white/10 text-white/40 text-[0.7rem] tracking-[0.1em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors disabled:opacity-40">
+                      className="flex items-center justify-center gap-2 border border-white/10 text-white/40 rounded-lg text-[0.7rem] tracking-[0.1em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors disabled:opacity-40">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                         <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
                       </svg>
@@ -1055,7 +1055,7 @@ export default function NutritionPage() {
                     <div className="grid grid-cols-3 gap-2">
                       {(["petite", "moyenne", "grande"] as const).map(p => (
                         <button key={p} onClick={() => { setPortionSize(v => v === p ? null : p); setAiResult(null); }}
-                          className={`border text-[0.68rem] tracking-[0.1em] uppercase py-2 capitalize transition-colors ${portionSize === p ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10" : "border-white/10 text-white/40 hover:border-white/20 hover:text-white/60"}`}>
+                          className={`border text-[0.68rem] tracking-[0.1em] uppercase py-2 capitalize transition-colors ${portionSize === p ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10 rounded-lg" : "border-white/10 text-white/40 hover:border-white/20 hover:text-white/60 rounded-lg"}`}>
                           {p}
                         </button>
                       ))}
@@ -1064,7 +1064,7 @@ export default function NutritionPage() {
 
                   {!aiResult && (
                     <button onClick={runAnalysis} disabled={analyzing || (!photoPreview && !description.trim())}
-                      className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                      className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                       {analyzing ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Analyse en cours…</> : "Estimer les macros avec l'IA →"}
                     </button>
                   )}
@@ -1073,7 +1073,7 @@ export default function NutritionPage() {
 
                   {aiResult && (
                     <div className="flex flex-col gap-4">
-                      <div className="border border-[#c9a84c]/20 bg-[#c9a84c]/5 p-4">
+                      <div className="border border-[#c9a84c]/20 bg-[#c9a84c]/5 rounded-lg p-4">
                         <div className="flex items-center justify-between mb-3">
                           <p className="text-[0.7rem] tracking-[0.15em] uppercase text-[#c9a84c]">Estimation IA</p>
                           <button onClick={() => setAiResult(null)} className="text-[0.65rem] tracking-wider uppercase text-white/25 hover:text-white/50 transition-colors">Réestimer</button>
@@ -1108,11 +1108,11 @@ export default function NutritionPage() {
                       </div>
                       <div className="flex gap-2">
                         <button onClick={() => saveMeal(aiResult)} disabled={savedMeals.some(s => s.name === aiResult.name)}
-                          className="flex-1 border border-white/10 text-white/40 text-[0.7rem] tracking-[0.15em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-1.5">
+                          className="flex-1 border border-white/10 text-white/40 rounded-lg text-[0.7rem] tracking-[0.15em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-1.5">
                           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
                           {savedMeals.some(s => s.name === aiResult.name) ? "Déjà sauvegardé" : "Sauvegarder"}
                         </button>
-                        <button onClick={addFood} className="flex-1 bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200">
+                        <button onClick={addFood} className="flex-1 bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg">
                           Ajouter au journal →
                         </button>
                       </div>
@@ -1125,7 +1125,7 @@ export default function NutritionPage() {
               {modalMode === "search" && (
                 <div className="flex flex-col gap-4">
                   <button onClick={openScanner}
-                    className="flex items-center justify-center gap-2.5 bg-[#c9a84c] text-black text-[0.72rem] font-bold tracking-[0.15em] uppercase py-3.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200">
+                    className="flex items-center justify-center gap-2.5 bg-[#c9a84c] text-black text-[0.72rem] font-bold tracking-[0.15em] uppercase py-3.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M3 5h2M3 5v2M21 5h-2M21 5v2M3 19h2M3 19v-2M21 19h-2M21 19v-2"/>
                       <line x1="7" y1="8" x2="7" y2="16"/><line x1="10" y1="8" x2="10" y2="16"/>
@@ -1165,7 +1165,7 @@ export default function NutritionPage() {
                   )}
 
                   {selected && computed && (
-                    <div className="border border-[#c9a84c]/20 bg-[#c9a84c]/5 p-4 flex flex-col gap-4">
+                    <div className="border border-[#c9a84c]/20 bg-[#c9a84c]/5 rounded-lg p-4 flex flex-col gap-4">
                       <div className="flex items-start justify-between">
                         <div>
                           <p className="text-xs text-white/70">{selected.product_name}</p>
@@ -1196,10 +1196,10 @@ export default function NutritionPage() {
                             lipides:   selected.nutriments.fat_100g ?? 0,
                             base_qty: 100, unit: "g",
                           })} disabled={savedMeals.some(s => s.name === selected.product_name)}
-                          className="flex-1 border border-white/10 text-white/40 text-[0.7rem] tracking-[0.15em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                          className="flex-1 border border-white/10 text-white/40 rounded-lg text-[0.7rem] tracking-[0.15em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
                           {savedMeals.some(s => s.name === selected.product_name) ? "Déjà sauvegardé" : "Sauvegarder"}
                         </button>
-                        <button onClick={addFood} className="flex-1 bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200">
+                        <button onClick={addFood} className="flex-1 bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg">
                           Ajouter au journal →
                         </button>
                       </div>
@@ -1215,11 +1215,11 @@ export default function NutritionPage() {
                   {/* Créer un produit avec macros pour une quantité de base */}
                   {!showNewProd ? (
                     <button onClick={() => { setShowNewProd(true); setSelectedSaved(null); }}
-                      className="border border-dashed border-white/15 text-white/35 text-[0.7rem] tracking-[0.12em] uppercase py-2.5 hover:border-[#c9a84c]/40 hover:text-[#c9a84c]/70 transition-colors">
+                      className="border border-dashed border-white/15 rounded-lg text-white/35 text-[0.7rem] tracking-[0.12em] uppercase py-2.5 hover:border-[#c9a84c]/40 hover:text-[#c9a84c]/70 transition-colors">
                       + Créer un produit
                     </button>
                   ) : (
-                    <div className="border border-[#c9a84c]/20 bg-[#0f0d07] p-4 flex flex-col gap-3">
+                    <div className="border border-[#c9a84c]/20 bg-[#0f0d07] rounded-lg p-4 flex flex-col gap-3">
                       <div className="flex items-center justify-between">
                         <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c]">Nouveau produit</p>
                         <button onClick={() => { setShowNewProd(false); setNewProd(emptyProd); }} className="text-white/25 hover:text-white/50 transition-colors">
@@ -1256,7 +1256,7 @@ export default function NutritionPage() {
                         ))}
                       </div>
                       <button onClick={createProduct} disabled={!newProd.name.trim() || !(parseFloat(newProd.base.replace(",", ".")) > 0)}
-                        className="bg-[#c9a84c] text-black text-[0.58rem] font-bold tracking-[0.18em] uppercase py-2.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed">
+                        className="bg-[#c9a84c] text-black text-[0.58rem] font-bold tracking-[0.18em] uppercase py-2.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed">
                         Enregistrer le produit →
                       </button>
                     </div>
@@ -1292,7 +1292,7 @@ export default function NutritionPage() {
 
                   {/* Quantité + macros recalculées pour les produits à quantité de base */}
                   {selectedSaved?.base_qty && savedComputed && (
-                    <div className="border border-[#c9a84c]/20 bg-[#c9a84c]/5 p-4 flex flex-col gap-4">
+                    <div className="border border-[#c9a84c]/20 bg-[#c9a84c]/5 rounded-lg p-4 flex flex-col gap-4">
                       <div><label className={labelCls}>Quantité ({selectedSaved.unit ?? "g"})</label>
                         <input className={inputCls} type="number" inputMode="decimal" value={savedQty} onChange={e => setSavedQty(e.target.value)}/>
                       </div>
@@ -1313,7 +1313,7 @@ export default function NutritionPage() {
                   )}
 
                   {selectedSaved && (
-                    <button onClick={addFood} className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200">
+                    <button onClick={addFood} className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg">
                       Ajouter &quot;{selectedSaved.name}&quot;{selectedSaved.base_qty ? ` (${savedQty || 0} ${selectedSaved.unit ?? "g"})` : ""} au journal →
                     </button>
                   )}
@@ -1328,7 +1328,7 @@ export default function NutritionPage() {
       {/* ══ GOALS MODAL ══ */}
       {showGoals && (
         <div className="fixed inset-0 bg-black/75 z-50 flex items-end justify-center" onClick={() => setShowGoals(false)}>
-          <div className="bg-[#0f0f0f] border border-white/10 w-full max-w-lg p-6" onClick={e => e.stopPropagation()}>
+          <div className="bg-[#0f0f0f] rounded-lg border border-white/10 w-full max-w-lg p-6" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-5">
               <h3 style={{ fontFamily:"var(--font-bebas)" }} className="text-xl tracking-wider text-white">Objectifs journaliers</h3>
               <button onClick={() => setShowGoals(false)} className="text-white/30 hover:text-white/60 transition-colors">
@@ -1363,7 +1363,7 @@ export default function NutritionPage() {
               ))}
             </div>
             <button onClick={() => { setGoals(goalDraft); setGoalsSet(true); setShowGoals(false); }}
-              className="w-full bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200">
+              className="w-full bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg">
               Enregistrer
             </button>
           </div>

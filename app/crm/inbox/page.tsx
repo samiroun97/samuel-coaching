@@ -174,7 +174,7 @@ export default function InboxPage() {
             const isActive = activeEmail === conv.email;
             return (
               <button key={conv.email} onClick={() => setActiveEmail(conv.email)}
-                className={`w-full text-left px-4 py-3.5 mb-1 border transition-all ${isActive ? "border-[#c9a84c]/30 bg-[#c9a84c]/5" : conv.unread ? "border-[#e07070]/15 bg-[#e07070]/3" : "border-white/5 hover:border-white/10 hover:bg-white/[0.02]"}`}>
+                className={`w-full text-left px-4 py-3.5 mb-1 border transition-all ${isActive ? "border-[#c9a84c]/30 bg-[#c9a84c]/5 rounded-lg" : conv.unread ? "border-[#e07070]/15 bg-[#e07070]/3 rounded-lg" : "border-white/5 hover:border-white/10 hover:bg-white/[0.02] rounded-lg"}`}>
                 <div className="flex items-start justify-between gap-2 mb-1">
                   <div className="flex items-center gap-2 min-w-0">
                     {conv.unread && <span className="w-1.5 h-1.5 rounded-full bg-[#e07070] shrink-0"/>}
@@ -218,7 +218,7 @@ export default function InboxPage() {
                 const isTreated = treated.has(activeEmail);
                 return (
                   <button onClick={() => toggleTreated(activeEmail)}
-                    className={`flex items-center gap-1.5 text-[0.5rem] tracking-[0.12em] uppercase px-3 py-1.5 border transition-all ${
+                    className={`flex items-center gap-1.5 text-[0.5rem] tracking-[0.12em] uppercase px-3 py-1.5 border rounded-full transition-all ${
                       isTreated
                         ? "border-[#7eb8a0]/40 text-[#7eb8a0] bg-[#7eb8a0]/8 hover:opacity-70"
                         : "border-white/10 text-white/30 hover:border-[#7eb8a0]/40 hover:text-[#7eb8a0]/70"
@@ -240,7 +240,7 @@ export default function InboxPage() {
                   {activeClient.pipeline_stage && (
                     <div>
                       <p className="text-[0.42rem] tracking-wider text-white/20 uppercase mb-0.5">Stage</p>
-                      <span className="text-[0.45rem] tracking-wider uppercase px-1.5 py-0.5 border" style={{ color: stage!.color, borderColor: `${stage!.color}35` }}>{stage!.label}</span>
+                      <span className="text-[0.45rem] tracking-wider uppercase px-1.5 py-0.5 border rounded-full" style={{ color: stage!.color, borderColor: `${stage!.color}35` }}>{stage!.label}</span>
                     </div>
                   )}
                   {activeClient.subscription_end && (
@@ -264,7 +264,7 @@ export default function InboxPage() {
               return (
                 <div key={m.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
                   {!isMe && (
-                    <div className="w-7 h-7 border border-white/10 flex items-center justify-center mr-2.5 mt-0.5 shrink-0">
+                    <div className="w-7 h-7 border border-white/10 rounded-full flex items-center justify-center mr-2.5 mt-0.5 shrink-0">
                       <span className="text-[0.55rem] text-white/40 font-bold">{activeConv.name.charAt(0)}</span>
                     </div>
                   )}
@@ -311,7 +311,7 @@ export default function InboxPage() {
                         );
                       }
                       return (
-                        <div className={`px-4 py-3 text-xs leading-relaxed whitespace-pre-line ${isMe ? "bg-[#c9a84c] text-black" : "bg-[#111] border border-white/8 text-white/60"}`}>
+                        <div className={`px-4 py-3 text-xs leading-relaxed whitespace-pre-line ${isMe ? "bg-[#c9a84c] text-black rounded-lg" : "bg-[#111] border border-white/8 text-white/60 rounded-lg"}`}>
                           {m.content}
                         </div>
                       );
@@ -332,7 +332,7 @@ export default function InboxPage() {
               <div className="mb-3 flex flex-wrap gap-2">
                 {TEMPLATES.map(t => (
                   <button key={t.label} onClick={() => { setInput(t.text); setShowTpls(false); }}
-                    className="text-[0.48rem] tracking-wider uppercase px-3 py-1.5 border border-[#c9a84c]/25 text-[#c9a84c]/70 hover:border-[#c9a84c]/50 hover:text-[#c9a84c] transition-colors">
+                    className="text-[0.48rem] tracking-wider uppercase px-3 py-1.5 border border-[#c9a84c]/25 rounded-lg text-[#c9a84c]/70 hover:border-[#c9a84c]/50 hover:text-[#c9a84c] transition-colors">
                     {t.label}
                   </button>
                 ))}
@@ -340,13 +340,13 @@ export default function InboxPage() {
             )}
             <div className="flex gap-2 md:gap-3">
               <button onClick={() => setShowTpls(v => !v)}
-                className={`shrink-0 px-2.5 md:px-3 py-3 border text-[0.48rem] tracking-wider uppercase transition-colors ${showTpls ? "border-[#c9a84c]/40 text-[#c9a84c]/70 bg-[#c9a84c]/5" : "border-white/10 text-white/25 hover:border-white/20"}`}>
+                className={`shrink-0 px-2.5 md:px-3 py-3 border rounded-lg text-[0.48rem] tracking-wider uppercase transition-colors ${showTpls ? "border-[#c9a84c]/40 text-[#c9a84c]/70 bg-[#c9a84c]/5" : "border-white/10 text-white/25 hover:border-white/20"}`}>
                 Templates
               </button>
               <input value={input} onChange={e => setInput(e.target.value)}
                 onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
                 placeholder={`Répondre à ${activeConv.name}…`} disabled={sending}
-                className="flex-1 min-w-0 bg-[#111] border border-white/10 text-white placeholder-white/20 text-sm px-3 md:px-4 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors disabled:opacity-50"/>
+                className="flex-1 min-w-0 bg-[#111] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-3 md:px-4 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors disabled:opacity-50"/>
               <button onClick={send} disabled={!input.trim() || sending}
                 className="bg-[#c9a84c] text-black px-4 md:px-6 py-3 text-[0.58rem] font-bold tracking-[0.15em] uppercase hover:bg-[#e2c97e] transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
                 Envoyer

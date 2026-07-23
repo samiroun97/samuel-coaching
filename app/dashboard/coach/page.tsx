@@ -105,14 +105,14 @@ export default function CoachPage() {
       {/* ── Header + Tabs ── */}
       <div className="border-b border-white/5 px-8 py-5 shrink-0">
         <div className="flex items-center gap-4 mb-4">
-          <div className="w-8 h-8 border border-[#c9a84c]/40 flex items-center justify-center">
+          <div className="w-8 h-8 border border-[#c9a84c]/40 rounded-full flex items-center justify-center">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
             </svg>
           </div>
           <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-xl tracking-wider text-white leading-none">MESSAGES</h1>
         </div>
-        <div className="flex gap-0 border border-white/10">
+        <div className="flex gap-0 border border-white/10 rounded-lg overflow-hidden">
           {(["ia", "samuel"] as const).map(t => (
             <button key={t} onClick={() => setTab(t)}
               className={`flex-1 py-2.5 text-[0.7rem] tracking-[0.15em] uppercase font-bold transition-colors flex items-center justify-center gap-2 ${
@@ -145,13 +145,13 @@ export default function CoachPage() {
             {aiMessages.map((m, i) => (
               <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                 {m.role === "assistant" && (
-                  <div className="w-6 h-6 border border-[#c9a84c]/30 bg-[#c9a84c]/5 flex items-center justify-center mr-2.5 mt-0.5 shrink-0">
+                  <div className="w-6 h-6 border border-[#c9a84c]/30 bg-[#c9a84c]/5 rounded-full flex items-center justify-center mr-2.5 mt-0.5 shrink-0">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="3" y="11" width="18" height="10" rx="2"/><path d="M12 11V7"/><circle cx="12" cy="5" r="2"/><line x1="8" y1="15" x2="8" y2="15"/><line x1="12" y1="15" x2="12" y2="15"/><line x1="16" y1="15" x2="16" y2="15"/>
                     </svg>
                   </div>
                 )}
-                <div className={`max-w-sm px-4 py-3 text-xs leading-relaxed whitespace-pre-line ${
+                <div className={`max-w-sm px-4 py-3 rounded-lg text-xs leading-relaxed whitespace-pre-line ${
                   m.role === "user" ? "bg-[#c9a84c] text-black" : "bg-[#111] border border-white/10 text-white/60"
                 }`}>
                   {m.content}
@@ -160,12 +160,12 @@ export default function CoachPage() {
             ))}
             {aiLoading && (
               <div className="flex justify-start">
-                <div className="w-6 h-6 border border-[#c9a84c]/30 bg-[#c9a84c]/5 flex items-center justify-center mr-2.5 mt-0.5 shrink-0">
+                <div className="w-6 h-6 border border-[#c9a84c]/30 bg-[#c9a84c]/5 rounded-full flex items-center justify-center mr-2.5 mt-0.5 shrink-0">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="3" y="11" width="18" height="10" rx="2"/><path d="M12 11V7"/><circle cx="12" cy="5" r="2"/><line x1="8" y1="15" x2="8" y2="15"/><line x1="12" y1="15" x2="12" y2="15"/><line x1="16" y1="15" x2="16" y2="15"/>
                   </svg>
                 </div>
-                <div className="bg-[#111] border border-white/10 px-4 py-3 flex items-center gap-1.5">
+                <div className="bg-[#111] border border-white/10 rounded-lg px-4 py-3 flex items-center gap-1.5">
                   {[0,1,2].map(j => <div key={j} className="w-1.5 h-1.5 rounded-full bg-white/20 animate-bounce" style={{ animationDelay: `${j*0.15}s` }}/>)}
                 </div>
               </div>
@@ -177,9 +177,9 @@ export default function CoachPage() {
               onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendAi(); } }}
               placeholder="Pose ta question sur ton entraînement ou ta nutrition…"
               disabled={aiLoading}
-              className="flex-1 bg-[#111] border border-white/10 text-white placeholder-white/20 text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors disabled:opacity-50"/>
+              className="flex-1 bg-[#111] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors disabled:opacity-50"/>
             <button onClick={sendAi} disabled={!aiInput.trim() || aiLoading}
-              className="bg-[#c9a84c] text-black px-6 py-3 text-[0.7rem] font-bold tracking-[0.15em] uppercase hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed">
+              className="bg-[#c9a84c] text-black px-6 py-3 text-[0.7rem] font-bold tracking-[0.15em] uppercase hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed">
               Envoyer
             </button>
           </div>
@@ -193,7 +193,7 @@ export default function CoachPage() {
             {dirMsgs.length === 0 && (
               <div className="flex-1 flex items-center justify-center">
                 <div className="text-center">
-                  <div className="w-10 h-10 border border-white/10 flex items-center justify-center mx-auto mb-4">
+                  <div className="w-10 h-10 border border-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
                     </svg>
@@ -208,12 +208,12 @@ export default function CoachPage() {
               return (
                 <div key={m.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
                   {!isMe && (
-                    <div className="w-6 h-6 border border-[#c9a84c]/30 bg-[#c9a84c]/5 flex items-center justify-center mr-2.5 mt-0.5 shrink-0">
+                    <div className="w-6 h-6 border border-[#c9a84c]/30 bg-[#c9a84c]/5 rounded-full flex items-center justify-center mr-2.5 mt-0.5 shrink-0">
                       <span style={{ fontFamily: "var(--font-bebas)" }} className="text-[0.68rem] text-[#c9a84c]">SW</span>
                     </div>
                   )}
                   <div className="max-w-sm">
-                    <div className={`px-4 py-3 text-xs leading-relaxed whitespace-pre-line ${
+                    <div className={`px-4 py-3 rounded-lg text-xs leading-relaxed whitespace-pre-line ${
                       isMe ? "bg-[#c9a84c] text-black" : "bg-[#111] border border-white/10 text-white/60"
                     }`}>
                       {m.content}
@@ -232,9 +232,9 @@ export default function CoachPage() {
               onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendDirect(); } }}
               placeholder="Envoie un message à Samuel…"
               disabled={dirLoading}
-              className="flex-1 bg-[#111] border border-white/10 text-white placeholder-white/20 text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors disabled:opacity-50"/>
+              className="flex-1 bg-[#111] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors disabled:opacity-50"/>
             <button onClick={sendDirect} disabled={!dirInput.trim() || dirLoading}
-              className="bg-[#c9a84c] text-black px-6 py-3 text-[0.7rem] font-bold tracking-[0.15em] uppercase hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed">
+              className="bg-[#c9a84c] text-black px-6 py-3 text-[0.7rem] font-bold tracking-[0.15em] uppercase hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed">
               Envoyer
             </button>
           </div>

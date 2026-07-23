@@ -179,7 +179,7 @@ export default function ClientsPage() {
     setPlanSaving(false);
   };
 
-  const inp = "w-full bg-[#060606] border border-white/10 text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
+  const inp = "w-full bg-[#060606] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
   const lbl = "text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c] block mb-1.5";
 
   const filtered = clients.filter(c => {
@@ -217,7 +217,7 @@ export default function ClientsPage() {
         </div>
 
         {pendingSignups.length > 0 && (
-          <div className="border-b border-[#c9a84c]/10 bg-[#0f0d07] px-4 md:px-5 py-3 shrink-0">
+          <div className="border-b border-[#c9a84c]/10 bg-[#0f0d07] rounded-lg px-4 md:px-5 py-3 shrink-0">
             <p className="text-[0.5rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-2">
               Inscriptions en attente ({pendingSignups.length})
             </p>
@@ -319,7 +319,7 @@ export default function ClientsPage() {
                 <span className="text-[0.42rem] text-white/25 uppercase tracking-wider">Fin abo.</span>
                 <input type="date" value={selected.subscription_end ?? ""}
                   onChange={e => updateField({ subscription_end: e.target.value || null })}
-                  className="bg-transparent border border-white/10 text-white/40 text-[0.48rem] px-2 py-1 focus:outline-none focus:border-[#c9a84c]/40"/>
+                  className="bg-transparent border border-white/10 text-white/40 rounded-lg text-[0.48rem] px-2 py-1 focus:outline-none focus:border-[#c9a84c]/40"/>
               </div>
             </div>
           </div>
@@ -355,16 +355,16 @@ export default function ClientsPage() {
                   { label: "Sommeil/stress", val: selected.sommeil_stress },
                   { label: "Alimentation",   val: selected.alimentation },
                 ].map(r => (
-                  <div key={r.label} className="border border-white/7 bg-[#111] px-4 py-3">
+                  <div key={r.label} className="border border-white/7 bg-[#111] rounded-lg px-4 py-3">
                     <p className="text-[0.48rem] tracking-[0.15em] uppercase text-[#c9a84c] mb-1">{r.label}</p>
                     <p className="text-xs text-white/55">{r.val || "—"}</p>
                   </div>
                 ))}
-                <div className="col-span-2 border border-white/7 bg-[#111] px-4 py-3">
+                <div className="col-span-2 border border-white/7 bg-[#111] rounded-lg px-4 py-3">
                   <p className="text-[0.48rem] tracking-[0.15em] uppercase text-[#c9a84c] mb-1">Blessures</p>
                   <p className="text-xs text-white/55 leading-relaxed">{selected.blessures || "—"}</p>
                 </div>
-                <div className="col-span-2 border border-[#c9a84c]/10 bg-[#0f0d07] px-4 py-3">
+                <div className="col-span-2 border border-[#c9a84c]/10 bg-[#0f0d07] rounded-lg px-4 py-3">
                   <p className="text-[0.48rem] tracking-[0.15em] uppercase text-[#c9a84c] mb-1">Objectifs</p>
                   <p className="text-xs text-white/55 leading-relaxed">{selected.objectifs || "—"}</p>
                 </div>
@@ -374,7 +374,7 @@ export default function ClientsPage() {
             {/* NOTES */}
             {tab === "notes" && (
               <div className="max-w-2xl flex flex-col gap-4">
-                <div className="border border-[#c9a84c]/20 bg-[#0f0d07] p-5">
+                <div className="border border-[#c9a84c]/20 bg-[#0f0d07] rounded-lg p-5">
                   <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-3">Nouvelle note</p>
                   <textarea className={`${inp} resize-none mb-3`} rows={4} placeholder="Observations, ajustements, retours séance…" value={noteInput} onChange={e => setNoteInput(e.target.value)}/>
                   <button onClick={addNote} disabled={noteSaving || !noteInput.trim()} className="bg-[#c9a84c] text-black text-[0.58rem] font-bold tracking-[0.18em] uppercase py-2.5 px-5 hover:bg-[#e2c97e] transition-colors disabled:opacity-40">
@@ -383,7 +383,7 @@ export default function ClientsPage() {
                 </div>
                 {notes.length === 0 ? <p className="text-white/20 text-xs text-center py-4">Aucune note</p>
                   : notes.map(n => (
-                    <div key={n.id} className="border border-white/8 bg-[#111] p-4">
+                    <div key={n.id} className="border border-white/8 bg-[#111] rounded-lg p-4">
                       <div className="flex items-start justify-between mb-2">
                         <p className="text-[0.48rem] tracking-wider text-white/25">
                           {new Date(n.created_at).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
@@ -402,7 +402,7 @@ export default function ClientsPage() {
             {/* CHECK-INS */}
             {tab === "checkin" && (
               <div className="max-w-2xl flex flex-col gap-4">
-                <div className="border border-[#c9a84c]/20 bg-[#0f0d07] p-5">
+                <div className="border border-[#c9a84c]/20 bg-[#0f0d07] rounded-lg p-5">
                   <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Check-in hebdomadaire</p>
                   <div className="grid grid-cols-3 gap-3 mb-3">
                     <div><label className={lbl}>Date</label><input type="date" className={inp} value={ckForm.week_date} onChange={e => setCkForm(f => ({ ...f, week_date: e.target.value }))}/></div>
@@ -425,7 +425,7 @@ export default function ClientsPage() {
                 </div>
                 {checkins.length === 0 ? <p className="text-white/20 text-xs text-center py-4">Aucun check-in</p>
                   : checkins.map(ck => (
-                    <div key={ck.id} className="border border-white/8 bg-[#111] px-5 py-4 flex items-start justify-between gap-3">
+                    <div key={ck.id} className="border border-white/8 bg-[#111] rounded-lg px-5 py-4 flex items-start justify-between gap-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-4 mb-1.5">
                           <span className="text-[0.65rem] tracking-wider text-white/35">
@@ -452,7 +452,7 @@ export default function ClientsPage() {
             {/* PROGRAMME */}
             {tab === "programme" && (
               <div className="max-w-2xl flex flex-col gap-5">
-                <div className="border border-[#c9a84c]/20 bg-[#0f0d07] p-5">
+                <div className="border border-[#c9a84c]/20 bg-[#0f0d07] rounded-lg p-5">
                   <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Nouvelle séance — {selected.prenom}</p>
                   <div className="flex flex-col gap-3">
                     <div className="grid grid-cols-2 gap-3">
@@ -485,7 +485,7 @@ export default function ClientsPage() {
                     </p>
                     <div className="flex flex-col gap-2">
                       {seances.map(s => (
-                        <div key={s.id} className={`border px-4 py-3 flex items-start justify-between gap-3 ${s.completed_at ? "border-[#7eb8a0]/25 bg-[#7eb8a0]/5" : "border-white/8 bg-[#111]"}`}>
+                        <div key={s.id} className={`border rounded-lg px-4 py-3 flex items-start justify-between gap-3 ${s.completed_at ? "border-[#7eb8a0]/25 bg-[#7eb8a0]/5" : "border-white/8 bg-[#111]"}`}>
                           <div className="min-w-0">
                             <div className="flex items-center gap-2 mb-0.5">
                               {s.completed_at && <span className="text-[0.65rem] text-[#7eb8a0] shrink-0">✓</span>}
@@ -517,7 +517,7 @@ export default function ClientsPage() {
             {/* REPAS */}
             {tab === "repas" && (
               <div className="max-w-2xl flex flex-col gap-5">
-                <div className="border border-[#c9a84c]/20 bg-[#0f0d07] p-5">
+                <div className="border border-[#c9a84c]/20 bg-[#0f0d07] rounded-lg p-5">
                   <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">{activePlanId ? "Plan actif" : `Créer un plan — ${selected.prenom}`}</p>
                   {!activePlanId ? (
                     <div className="flex flex-col gap-3">
@@ -533,7 +533,7 @@ export default function ClientsPage() {
                   )}
                 </div>
                 {activePlanId && (
-                  <div className="border border-white/8 bg-[#111] p-5 flex flex-col gap-4">
+                  <div className="border border-white/8 bg-[#111] rounded-lg p-5 flex flex-col gap-4">
                     <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c]">Ajouter un repas</p>
                     <div className="grid grid-cols-2 gap-3">
                       <div><label className={lbl}>Type</label><select className={`${inp} cursor-pointer`} value={itemForm.meal_type} onChange={e => setItemForm(f => ({ ...f, meal_type: e.target.value }))}>{["Petit-déjeuner","Déjeuner","Dîner","Collation"].map(t => <option key={t}>{t}</option>)}</select></div>
@@ -556,7 +556,7 @@ export default function ClientsPage() {
                         <div key={type} className="mb-4">
                           <p className="text-[0.48rem] tracking-wider uppercase text-[#c9a84c]/50 mb-1.5">{type}</p>
                           {items.map(item => (
-                            <div key={item.id} className="flex items-center justify-between border border-white/8 bg-[#111] px-4 py-2.5 mb-1">
+                            <div key={item.id} className="flex items-center justify-between border border-white/8 bg-[#111] rounded-lg px-4 py-2.5 mb-1">
                               <div><p className="text-xs text-white/60">{item.name}</p><div className="flex gap-2 mt-0.5"><span className="text-[0.42rem] text-white/25">{item.calories} kcal</span><span className="text-[0.42rem] text-[#c9a84c]/55">P {item.proteines}g</span><span className="text-[0.42rem] text-[#7eb8a0]/55">G {item.glucides}g</span><span className="text-[0.42rem] text-[#e07070]/55">L {item.lipides}g</span></div></div>
                               <button onClick={async () => { await supabase.from("meal_plan_items").delete().eq("id", item.id); setMealItems(prev => prev.filter(x => x.id !== item.id)); }} className="text-white/15 hover:text-[#e07070] transition-colors"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
                             </div>
@@ -575,7 +575,7 @@ export default function ClientsPage() {
                 {journal.length === 0 ? (
                   <p className="text-white/20 text-xs text-center py-8">Aucun repas loggé par ce client</p>
                 ) : journal.map(d => (
-                  <div key={d.date} className="border border-white/8 bg-[#111]">
+                  <div key={d.date} className="border border-white/8 bg-[#111] rounded-lg">
                     <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/5">
                       <p className="text-xs text-white/70 capitalize">{new Date(d.date + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</p>
                       <div className="flex items-center gap-3 text-[0.6rem]">

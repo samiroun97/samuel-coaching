@@ -162,7 +162,7 @@ export default function OnboardingPage() {
           ))}
         </div>
 
-        <div className="bg-[#111] border border-white/10 p-8">
+        <div className="bg-[#111] border border-white/10 rounded-lg p-8">
 
           {step === 0 && (
             <div className="flex flex-col gap-5">
@@ -193,7 +193,7 @@ export default function OnboardingPage() {
                 <div className="flex flex-col gap-2">
                   {niveauOptions.map(o => (
                     <button key={o.label} type="button" onClick={() => set("niveau_activite", o.label)}
-                      className={`px-4 py-3 text-left border cursor-pointer transition-all duration-200 ${form.niveau_activite === o.label ? "border-[#c9a84c] bg-[#c9a84c]/10" : "border-white/10 hover:border-white/30"}`}>
+                      className={`px-4 py-3 text-left border rounded-lg cursor-pointer transition-all duration-200 ${form.niveau_activite === o.label ? "border-[#c9a84c] bg-[#c9a84c]/10" : "border-white/10 hover:border-white/30"}`}>
                       <p className={`text-xs tracking-[0.1em] uppercase font-bold ${form.niveau_activite === o.label ? "text-[#c9a84c]" : "text-white/60"}`}>{o.label}</p>
                       <p className="text-[0.65rem] text-white/30 mt-0.5">{o.desc}</p>
                     </button>
@@ -257,30 +257,30 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {error && <p className="text-[#e07070] text-xs mt-4 border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2">{error}</p>}
+          {error && <p className="text-[#e07070] text-xs mt-4 border border-[#e07070]/20 bg-[#e07070]/5 rounded-lg px-3 py-2">{error}</p>}
         </div>
 
         <div className="flex gap-4 mt-6">
           {step > 0 && (
             <button onClick={() => { setError(""); setStep(s => s - 1); }}
-              className="flex-1 border border-white/10 text-white/50 text-xs tracking-[0.15em] uppercase py-4 hover:border-white/30 hover:text-white transition-colors">
+              className="flex-1 border border-white/10 rounded-lg text-white/50 text-xs tracking-[0.15em] uppercase py-4 hover:border-white/30 hover:text-white transition-colors">
               ← Retour
             </button>
           )}
           {isEditing && step > 0 && (
             <button onClick={() => { setError(""); router.push("/dashboard"); }}
-              className="border border-white/10 text-white/30 text-xs tracking-[0.15em] uppercase py-4 px-5 hover:border-white/20 hover:text-white/50 transition-colors">
+              className="border border-white/10 text-white/30 text-xs tracking-[0.15em] uppercase py-4 px-5 rounded-lg hover:border-white/20 hover:text-white/50 transition-colors">
               Annuler
             </button>
           )}
           {step < steps.length - 1 ? (
             <button onClick={next}
-              className="flex-1 bg-[#c9a84c] text-black text-xs font-bold tracking-[0.15em] uppercase py-4 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200">
+              className="flex-1 bg-[#c9a84c] text-black text-xs font-bold tracking-[0.15em] uppercase py-4 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg">
               Suivant →
             </button>
           ) : (
             <button onClick={handleSubmit} disabled={loading}
-              className="flex-1 bg-[#c9a84c] text-black text-xs font-bold tracking-[0.15em] uppercase py-4 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 disabled:opacity-50">
+              className="flex-1 bg-[#c9a84c] text-black text-xs font-bold tracking-[0.15em] uppercase py-4 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg disabled:opacity-50">
               {loading ? "Enregistrement..." : isEditing ? "Enregistrer ✓" : "Terminer ✓"}
             </button>
           )}

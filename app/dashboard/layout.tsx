@@ -203,7 +203,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Synchro multi-appareils interrompue — reste discret, les données sont conservées en local */}
       {syncIssue && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1.5 px-3 py-1.5 border border-[#e07070]/30 bg-[#0a0a0a]/90 text-[#e07070] text-[0.45rem] tracking-[0.12em] uppercase print:hidden">
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1.5 px-3 py-1.5 border border-[#e07070]/30 bg-[#0a0a0a]/90 rounded-full text-[#e07070] text-[0.45rem] tracking-[0.12em] uppercase print:hidden">
           <span className="w-1.5 h-1.5 rounded-full bg-[#e07070] shrink-0"/>
           Synchro interrompue — données sauvegardées localement
         </div>
@@ -212,7 +212,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Retour CRM — Samuel en mode aperçu */}
       {isSamuel && isPreview && (
         <Link href="/crm"
-          className="fixed top-4 left-4 md:left-56 z-40 flex items-center gap-1.5 px-3 py-1.5 border border-white/15 bg-[#0a0a0a]/90 text-white/50 hover:text-white/80 hover:border-white/30 transition-all text-[0.45rem] tracking-[0.15em] uppercase print:hidden">
+          className="fixed top-4 left-4 md:left-56 z-40 flex items-center gap-1.5 px-3 py-1.5 border border-white/15 bg-[#0a0a0a]/90 rounded-full text-white/50 hover:text-white/80 hover:border-white/30 transition-all text-[0.45rem] tracking-[0.15em] uppercase print:hidden">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="15 18 9 12 15 6"/>
           </svg>
@@ -224,7 +224,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {(!isSamuel || isPreview) && (
         <>
           <button onClick={() => setFbOpen(true)}
-            className="fixed top-4 right-4 z-40 flex items-center gap-1.5 px-3 py-1.5 border transition-all text-[0.45rem] tracking-[0.15em] uppercase print:hidden"
+            className="fixed top-4 right-4 z-40 flex items-center gap-1.5 px-3 py-1.5 border transition-all text-[0.45rem] tracking-[0.15em] uppercase print:hidden rounded-full"
             style={{ backgroundColor: "#c9a84c15", borderColor: "#c9a84c50", color: "#c9a84c", boxShadow: "0 0 12px #c9a84c25" }}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
@@ -235,7 +235,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {fbOpen && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
               onClick={() => setFbOpen(false)}>
-              <div className="bg-[#0f0f0f] border border-white/10 w-full max-w-sm p-6" onClick={e => e.stopPropagation()}>
+              <div className="bg-[#0f0f0f] rounded-lg border border-white/10 w-full max-w-sm p-6" onClick={e => e.stopPropagation()}>
                 <h3 style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-white tracking-wide mb-1">Feedback</h3>
                 <p className="text-[0.45rem] text-white/30 tracking-wider mb-5">Remonte un bug ou une suggestion sur l'app</p>
 
@@ -243,7 +243,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <div className="flex gap-2 mb-4">
                   {(["bug", "suggestion", "idee"] as const).map(t => (
                     <button key={t} onClick={() => setFbType(t)}
-                      className={`flex-1 py-2 text-[0.45rem] tracking-[0.12em] uppercase border transition-all ${
+                      className={`flex-1 py-2 text-[0.45rem] tracking-[0.12em] uppercase border rounded-lg transition-all ${
                         fbType === t ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/5" : "border-white/10 text-white/30 hover:border-white/20"
                       }`}>
                       {FB_LABELS[t]}
@@ -254,18 +254,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <textarea value={fbMsg} onChange={e => setFbMsg(e.target.value)}
                   placeholder="Décris le problème ou ton idée…"
                   rows={4}
-                  className="w-full bg-[#0a0a0a] border border-white/10 text-white/70 placeholder-white/20 text-xs px-4 py-3 resize-none focus:outline-none focus:border-[#c9a84c]/40 transition-colors mb-4"/>
+                  className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg text-white/70 placeholder-white/20 text-xs px-4 py-3 resize-none focus:outline-none focus:border-[#c9a84c]/40 transition-colors mb-4"/>
 
                 {fbDone ? (
                   <div className="text-center py-2 text-[#7eb8a0] text-xs tracking-wider">Merci, c'est envoyé ✓</div>
                 ) : (
                   <div className="flex gap-2">
                     <button onClick={() => setFbOpen(false)}
-                      className="flex-1 py-2.5 border border-white/10 text-white/30 text-[0.48rem] tracking-wider uppercase hover:border-white/20 transition-colors">
+                      className="flex-1 py-2.5 border border-white/10 rounded-lg text-white/30 text-[0.48rem] tracking-wider uppercase hover:border-white/20 transition-colors">
                       Annuler
                     </button>
                     <button onClick={sendFeedback} disabled={!fbMsg.trim() || fbSending}
-                      className="flex-1 py-2.5 bg-[#c9a84c] text-black text-[0.48rem] font-bold tracking-[0.15em] uppercase hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed">
+                      className="flex-1 py-2.5 bg-[#c9a84c] text-black text-[0.48rem] font-bold tracking-[0.15em] uppercase hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed">
                       {fbSending ? "Envoi…" : "Envoyer"}
                     </button>
                   </div>

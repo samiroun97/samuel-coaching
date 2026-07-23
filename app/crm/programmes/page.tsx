@@ -138,7 +138,7 @@ export default function ProgrammesPage() {
     await load();
   };
 
-  const inp = "w-full bg-[#060606] border border-white/10 text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
+  const inp = "w-full bg-[#060606] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
   const lbl = "text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c] block mb-1.5";
 
   if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="w-5 h-5 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/></div>;
@@ -216,7 +216,7 @@ export default function ProgrammesPage() {
             <div className="max-w-2xl flex flex-col gap-4">
 
               {/* Objectif + contraintes */}
-              <div className="border border-[#c9a84c]/10 bg-[#0f0d07] px-4 py-3">
+              <div className="border border-[#c9a84c]/10 bg-[#0f0d07] rounded-lg px-4 py-3">
                 <p className="text-[0.48rem] tracking-[0.15em] uppercase text-[#c9a84c] mb-1">Objectif</p>
                 <p className="text-xs text-white/60 leading-relaxed">{selected.objectifs || "Non renseigné"}</p>
                 {selected.blessures && (
@@ -227,13 +227,13 @@ export default function ProgrammesPage() {
 
               {/* Confirmation d'envoi */}
               {sentTo === selected.email && (
-                <div className="border border-[#7eb8a0]/25 bg-[#7eb8a0]/5 px-4 py-3 text-center">
+                <div className="border border-[#7eb8a0]/25 bg-[#7eb8a0]/5 rounded-lg px-4 py-3 text-center">
                   <p className="text-xs text-[#7eb8a0]">Programme envoyé à {selected.prenom} ✓</p>
                 </div>
               )}
 
               {/* Bibliothèque d'exercices */}
-              <div className="border border-white/8 bg-[#0a0a0a]">
+              <div className="border border-white/8 bg-[#0a0a0a] rounded-lg">
                 <button onClick={() => setShowLibrary(v => !v)} className="w-full flex items-center justify-between px-4 py-2.5 text-left">
                   <span className="text-[0.55rem] tracking-[0.2em] uppercase text-white/40">Ma bibliothèque d&apos;exercices ({library.length})</span>
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={`text-white/25 transition-transform ${showLibrary ? "rotate-180" : ""}`}><polyline points="6 9 12 15 18 9"/></svg>
@@ -259,7 +259,7 @@ export default function ProgrammesPage() {
                       <input className={inp} placeholder="Lien vidéo (optionnel)" value={libForm.video_url} onChange={e => setLibForm(f => ({ ...f, video_url: e.target.value }))}/>
                     </div>
                     <button onClick={addLibItem} disabled={!libForm.nom.trim()}
-                      className="border border-white/10 text-white/30 text-[0.55rem] tracking-[0.12em] uppercase py-2 hover:border-white/20 hover:text-white/50 transition-colors disabled:opacity-30">
+                      className="border border-white/10 text-white/30 text-[0.55rem] tracking-[0.12em] uppercase py-2 rounded-lg hover:border-white/20 hover:text-white/50 transition-colors disabled:opacity-30">
                       + Ajouter à la bibliothèque
                     </button>
                   </div>
@@ -268,7 +268,7 @@ export default function ProgrammesPage() {
 
               {/* Génération */}
               {drafts.length === 0 && !showTemplates && (
-                <div className="border border-[#c9a84c]/20 bg-[#0f0d07] p-4 md:p-5 flex flex-col gap-3">
+                <div className="border border-[#c9a84c]/20 bg-[#0f0d07] rounded-lg p-4 md:p-5 flex flex-col gap-3">
                   <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c]">Programme ciblé</p>
                   <p className="text-[0.65rem] text-white/35 leading-relaxed">
                     Génère {Math.min(Math.max(selected.seances_par_semaine || 3, 2), 6)} séances adaptées à l&apos;objectif, au niveau, au lieu et aux blessures de {selected.prenom}. Tu pourras tout modifier avant d&apos;envoyer.
@@ -287,12 +287,12 @@ export default function ProgrammesPage() {
                     {generating ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Génération en cours…</> : "Générer avec l'IA →"}
                   </button>
                   <button onClick={() => setDrafts([emptySeance()])}
-                    className="border border-white/10 text-white/30 text-[0.55rem] tracking-[0.12em] uppercase py-2.5 hover:border-white/20 hover:text-white/50 transition-colors">
+                    className="border border-white/10 text-white/30 text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-lg hover:border-white/20 hover:text-white/50 transition-colors">
                     Ou créer manuellement
                   </button>
                   {templates.length > 0 && (
                     <button onClick={() => setShowTemplates(true)}
-                      className="border border-white/10 text-white/30 text-[0.55rem] tracking-[0.12em] uppercase py-2.5 hover:border-white/20 hover:text-white/50 transition-colors">
+                      className="border border-white/10 text-white/30 text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-lg hover:border-white/20 hover:text-white/50 transition-colors">
                       Ou choisir un modèle ({templates.length})
                     </button>
                   )}
@@ -300,13 +300,13 @@ export default function ProgrammesPage() {
               )}
 
               {drafts.length === 0 && showTemplates && (
-                <div className="border border-[#c9a84c]/20 bg-[#0f0d07] p-4 md:p-5 flex flex-col gap-3">
+                <div className="border border-[#c9a84c]/20 bg-[#0f0d07] rounded-lg p-4 md:p-5 flex flex-col gap-3">
                   <div className="flex items-center justify-between">
                     <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c]">Modèles enregistrés</p>
                     <button onClick={() => setShowTemplates(false)} className="text-[0.5rem] tracking-wider uppercase text-white/25 hover:text-white/50 transition-colors">Retour</button>
                   </div>
                   {templates.map(t => (
-                    <div key={t.id} className="flex items-center justify-between gap-2 border border-white/8 bg-[#111] px-3 py-2.5">
+                    <div key={t.id} className="flex items-center justify-between gap-2 border border-white/8 bg-[#111] rounded-lg px-3 py-2.5">
                       <button onClick={() => applyTemplate(t)} className="text-left min-w-0 flex-1">
                         <p className="text-xs text-white/70 truncate">{t.nom}</p>
                         <p className="text-[0.55rem] text-white/25 truncate">{t.objectif || t.type_seance || "—"}</p>
@@ -330,7 +330,7 @@ export default function ProgrammesPage() {
                   </div>
 
                   {drafts.map((d, i) => (
-                    <div key={i} className="border border-white/8 bg-[#111] p-4 flex flex-col gap-3">
+                    <div key={i} className="border border-white/8 bg-[#111] rounded-lg p-4 flex flex-col gap-3">
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-[0.5rem] tracking-[0.2em] uppercase text-[#c9a84c]">Séance {i + 1}</span>
                         <div className="flex items-center gap-3">
@@ -367,7 +367,7 @@ export default function ProgrammesPage() {
                   ))}
 
                   <button onClick={() => setDrafts(prev => [...prev, emptySeance()])}
-                    className="border border-white/10 text-white/30 text-[0.55rem] tracking-[0.12em] uppercase py-2.5 hover:border-white/20 hover:text-white/50 transition-colors">
+                    className="border border-white/10 text-white/30 text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-lg hover:border-white/20 hover:text-white/50 transition-colors">
                     + Ajouter une séance
                   </button>
 

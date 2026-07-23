@@ -295,7 +295,7 @@ export default function AccueilPage() {
       <DateNav date={selectedDate} onChange={setSelectedDate} />
 
       {/* ── Pesée ── */}
-      <div className={`border p-4 mb-4 flex flex-wrap items-center gap-3 sm:gap-4 ${entryForDate ? "border-white/5 bg-[#0d0d0d]" : "border-[#c9a84c]/20 bg-[#c9a84c]/5"}`}>
+      <div className={`border rounded-lg p-4 mb-4 flex flex-wrap items-center gap-3 sm:gap-4 ${entryForDate ? "border-white/5 bg-[#0d0d0d]" : "border-[#c9a84c]/20 bg-[#c9a84c]/5"}`}>
         <div className="flex-1 min-w-[130px]">
           <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-0.5">
             Pesée {selectedDate === today() ? "du jour" : `· ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
@@ -326,7 +326,7 @@ export default function AccueilPage() {
 
 
 {/* ── CICO Hero ── */}
-      <div className="border border-white/10 bg-[#111] p-6 mb-4">
+      <div className="border border-white/10 bg-[#111] rounded-lg p-6 mb-4">
         <div className="flex items-center justify-between mb-6">
           <Link href="/dashboard/nutrition" className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] hover:text-[#e2c97e] transition-colors">
             {selectedDate === today() ? "Bilan calorique du jour" : `Bilan calorique · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
@@ -455,17 +455,17 @@ export default function AccueilPage() {
       {/* ── Quick stats ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         {/* Poids */}
-        <div className="border border-white/10 bg-[#111] p-4">
+        <div className="border border-white/10 bg-[#111] rounded-lg p-4">
           <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1.5">Poids</p>
           <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-white tracking-wide">{lastWeight ? `${lastWeight} kg` : `${profile.poids} kg`}</p>
         </div>
         {/* Taille */}
-        <div className="border border-white/10 bg-[#111] p-4">
+        <div className="border border-white/10 bg-[#111] rounded-lg p-4">
           <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1.5">Taille</p>
           <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-white tracking-wide">{profile.taille} cm</p>
         </div>
         {/* Body fat — lien vers suivi avec flèche si check-in requis */}
-        <Link href="/dashboard/suivi" className={`border p-4 flex flex-col justify-between group transition-colors ${needsBF ? "border-[#c9a84c]/25 bg-[#c9a84c]/5 hover:bg-[#c9a84c]/8" : "border-white/10 bg-[#111] hover:border-white/15"}`}>
+        <Link href="/dashboard/suivi" className={`border rounded-lg p-4 flex flex-col justify-between group transition-colors ${needsBF ? "border-[#c9a84c]/25 bg-[#c9a84c]/5 hover:bg-[#c9a84c]/8" : "border-white/10 bg-[#111] hover:border-white/15"}`}>
           <div className="flex items-center justify-between">
             <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c]">Body fat</p>
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={needsBF ? "#c9a84c" : "rgba(255,255,255,0.2)"} strokeWidth="2" strokeLinecap="round" className="transition-transform group-hover:translate-x-0.5"><polyline points="9 18 15 12 9 6"/></svg>
@@ -480,7 +480,7 @@ export default function AccueilPage() {
           const balColor = !balDefined ? "rgba(255,255,255,0.25)" : Math.abs(balance) <= 100 ? "#c9a84c" : surplus ? "#e07070" : "#7eb8a0";
           const balLabel = !balDefined ? "Déficit" : Math.abs(balance) <= 100 ? "Maintenance" : surplus ? "Surplus" : "Déficit";
           return (
-            <div className="border bg-[#111] p-4" style={{ borderColor: `${balDefined ? balColor : "#ffffff"}30` }}>
+            <div className="border bg-[#111] rounded-lg p-4" style={{ borderColor: `${balDefined ? balColor : "#ffffff"}30` }}>
               <p className="text-[0.65rem] tracking-[0.2em] uppercase mb-1.5" style={{ color: balColor }}>{balLabel}</p>
               <p style={{ fontFamily: "var(--font-bebas)", color: balColor }} className="text-2xl tracking-wide">
                 {balDefined ? `${surplus ? "+" : ""}${balance.toLocaleString("fr-FR")} kcal` : "À définir"}
@@ -492,7 +492,7 @@ export default function AccueilPage() {
 
       {/* ── Profil entraînement ── */}
       <div className="grid md:grid-cols-2 gap-4 mb-4">
-        <div className="border border-white/10 bg-[#111] p-6">
+        <div className="border border-white/10 bg-[#111] rounded-lg p-6">
           <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Entraînement</p>
           <div className="flex flex-col gap-3">
             {[
@@ -510,7 +510,7 @@ export default function AccueilPage() {
           </div>
         </div>
 
-        <div className="border border-white/10 bg-[#111] p-6">
+        <div className="border border-white/10 bg-[#111] rounded-lg p-6">
           <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Santé & objectifs</p>
           <div className="flex flex-col gap-4">
             {[
@@ -527,7 +527,7 @@ export default function AccueilPage() {
         </div>
       </div>
 
-      <div className="border border-white/10 bg-[#111] p-6 mb-6">
+      <div className="border border-white/10 bg-[#111] rounded-lg p-6 mb-6">
         <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-3">Objectifs</p>
         <p className="text-sm text-white/55 leading-relaxed">{profile.objectifs}</p>
       </div>
@@ -535,11 +535,11 @@ export default function AccueilPage() {
       {/* ── Actions ── */}
       <div className="flex gap-4">
         <Link href="/dashboard/onboarding"
-          className="flex-1 border border-white/10 text-white/40 text-[0.7rem] tracking-[0.15em] uppercase py-4 text-center hover:border-white/20 hover:text-white/60 transition-colors">
+          className="flex-1 border border-white/10 text-white/40 rounded-lg text-[0.7rem] tracking-[0.15em] uppercase py-4 text-center hover:border-white/20 hover:text-white/60 transition-colors">
           Modifier mon profil
         </Link>
         <Link href="/dashboard/coach"
-          className="flex-1 bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.15em] uppercase py-4 text-center hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200">
+          className="flex-1 bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.15em] uppercase py-4 text-center hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg">
           Contacter Samuel →
         </Link>
       </div>

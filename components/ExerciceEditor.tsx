@@ -2,7 +2,7 @@
 import { type ExerciceItem, type ExerciceMode, type SetDetail, type SimpleField, EXERCICE_TYPES, emptyExercice, emptySet, groupExerciceRuns } from "@/lib/exercices";
 import { type LibraryEntry } from "@/lib/exerciceLibrary";
 
-const inp = "w-full bg-[#060606] border border-white/10 text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
+const inp = "w-full bg-[#060606] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
 const inpSm = "w-full bg-[#060606] border border-white/10 text-white placeholder-white/20 text-xs px-2.5 py-2 text-center focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
 const inpXs = "w-full bg-[#060606] border border-white/10 text-white placeholder-white/20 text-[0.65rem] px-2 py-1.5 text-center focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
 const lblSm = "flex items-center justify-center gap-1 text-[0.42rem] tracking-[0.18em] uppercase text-white/30 mb-1";
@@ -94,9 +94,9 @@ export default function ExerciceEditor({ items, onChange, library = [] }: { item
   const renderExercice = (i: number, isGrouped: boolean) => {
     const ex = items[i];
     return (
-      <div key={i} className="border border-white/8 bg-[#0a0a0a] p-3.5 flex flex-col gap-3">
+      <div key={i} className="border border-white/8 bg-[#0a0a0a] rounded-lg p-3.5 flex flex-col gap-3">
         <div className="flex items-center gap-2">
-          <span className="shrink-0 w-6 h-6 flex items-center justify-center text-[0.6rem] font-bold text-[#c9a84c] border border-[#c9a84c]/25 bg-[#c9a84c]/5">{i + 1}</span>
+          <span className="shrink-0 w-6 h-6 flex items-center justify-center text-[0.6rem] font-bold text-[#c9a84c] border border-[#c9a84c]/25 bg-[#c9a84c]/5 rounded-md">{i + 1}</span>
           <input className={inp} list={DATALIST_ID} placeholder="Nom de l'exercice" value={ex.nom}
             onChange={e => update(i, { nom: e.target.value })} onBlur={e => applyFromLibrary(i, e.target.value)} />
           <button type="button" onClick={() => remove(i)} className="shrink-0 text-white/15 hover:text-[#e07070] transition-colors">
@@ -109,7 +109,7 @@ export default function ExerciceEditor({ items, onChange, library = [] }: { item
             <option value="">Type d&apos;exercice…</option>
             {EXERCICE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
-          <div className="flex border border-white/10">
+          <div className="flex border border-white/10 rounded-lg overflow-hidden">
             {MODES.map(m => (
               <button key={m.key} type="button" onClick={() => setMode(i, m.key)}
                 className={`px-2.5 py-2 text-[0.55rem] tracking-[0.1em] uppercase transition-colors ${ex.mode === m.key ? "bg-[#c9a84c] text-black" : "text-white/35 hover:text-white/60"}`}>
@@ -143,7 +143,7 @@ export default function ExerciceEditor({ items, onChange, library = [] }: { item
             ))}
             {SIMPLE_FIELDS.filter(f => ex.hiddenFields.includes(f.key)).map(f => (
               <button key={f.key} type="button" onClick={() => showField(i, f.key)}
-                className="flex items-center gap-1 text-[0.5rem] tracking-[0.1em] uppercase text-white/25 border border-dashed border-white/15 px-2 py-1.5 hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors">
+                className="flex items-center gap-1 text-[0.5rem] tracking-[0.1em] uppercase text-white/25 border border-dashed border-white/15 rounded-lg px-2 py-1.5 hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors">
                 + {f.label}
               </button>
             ))}
@@ -175,7 +175,7 @@ export default function ExerciceEditor({ items, onChange, library = [] }: { item
               </div>
             ))}
             <button type="button" onClick={() => addSet(i)}
-              className="border border-white/10 text-white/30 text-[0.5rem] tracking-[0.12em] uppercase py-2 hover:border-white/20 hover:text-white/50 transition-colors">
+              className="border border-white/10 text-white/30 text-[0.5rem] tracking-[0.12em] uppercase py-2 rounded-lg hover:border-white/20 hover:text-white/50 transition-colors">
               + Ajouter une série
             </button>
           </div>
@@ -198,7 +198,7 @@ export default function ExerciceEditor({ items, onChange, library = [] }: { item
 
   const nodes: React.ReactNode[] = groupExerciceRuns(items).map(run =>
     run.groupId ? (
-      <div key={`group-${run.indices[0]}`} className="border border-[#c9a84c]/25 bg-[#c9a84c]/[0.03] p-2.5 flex flex-col gap-2.5">
+      <div key={`group-${run.indices[0]}`} className="border border-[#c9a84c]/25 bg-[#c9a84c]/[0.03] rounded-lg p-2.5 flex flex-col gap-2.5">
         <div className="flex items-center justify-between px-1">
           <input className="bg-transparent text-[0.55rem] tracking-[0.18em] uppercase text-[#c9a84c] focus:outline-none w-40"
             value={run.groupLabel} onChange={e => renameGroup(run.groupId!, e.target.value)} placeholder="Superset" />
@@ -219,7 +219,7 @@ export default function ExerciceEditor({ items, onChange, library = [] }: { item
         {library.map(l => <option key={l.id} value={l.nom} />)}
       </datalist>
       {nodes}
-      <button type="button" onClick={add} className="border border-white/10 text-white/30 text-[0.55rem] tracking-[0.12em] uppercase py-2.5 hover:border-white/20 hover:text-white/50 transition-colors">
+      <button type="button" onClick={add} className="border border-white/10 text-white/30 text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-lg hover:border-white/20 hover:text-white/50 transition-colors">
         + Ajouter un exercice
       </button>
     </div>

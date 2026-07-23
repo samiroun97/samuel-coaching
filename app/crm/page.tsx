@@ -14,7 +14,7 @@ type Ck     = { client_id: string; week_date: string; weight: number | null; com
 
 function KPI({ label, value, color, href }: { label: string; value: number | string; color?: string; href?: string }) {
   const inner = (
-    <div className={`border bg-[#0f0f0f] px-4 py-3 md:px-5 md:py-4 flex flex-col gap-1 ${href ? "hover:border-white/15 transition-colors cursor-pointer" : ""}`}
+    <div className={`border bg-[#0f0f0f] rounded-lg px-4 py-3 md:px-5 md:py-4 flex flex-col gap-1 ${href ? "hover:border-white/15 transition-colors cursor-pointer" : ""}`}
       style={{ borderColor: color ? `${color}25` : "rgba(255,255,255,0.07)" }}>
       <p style={{ fontFamily: "var(--font-bebas)", color: color ?? "white" }} className="text-3xl md:text-4xl tracking-wide leading-none">{value}</p>
       <p className="text-[0.48rem] tracking-[0.2em] uppercase text-white/30">{label}</p>
@@ -174,7 +174,7 @@ export default function CRMDashboard() {
       <div className="grid md:grid-cols-2 gap-6">
 
         {/* Recent check-ins */}
-        <div className="border border-white/7 bg-[#0f0f0f] p-4 md:p-5">
+        <div className="border border-white/7 bg-[#0f0f0f] rounded-lg p-4 md:p-5">
           <div className="flex items-center justify-between mb-4">
             <p className="text-[0.65rem] tracking-[0.22em] uppercase text-[#c9a84c]">Derniers check-ins</p>
             <Link href="/crm/clients" className="text-[0.45rem] tracking-wider uppercase text-white/20 hover:text-white/50 transition-colors">Voir tout →</Link>
@@ -209,7 +209,7 @@ export default function CRMDashboard() {
         </div>
 
         {/* Recent messages */}
-        <div className="border border-white/7 bg-[#0f0f0f] p-4 md:p-5">
+        <div className="border border-white/7 bg-[#0f0f0f] rounded-lg p-4 md:p-5">
           <div className="flex items-center justify-between mb-4">
             <p className="text-[0.65rem] tracking-[0.22em] uppercase text-[#c9a84c]">Messages en attente</p>
             <Link href="/crm/inbox" className="text-[0.45rem] tracking-wider uppercase text-white/20 hover:text-white/50 transition-colors">Inbox →</Link>
@@ -240,7 +240,7 @@ export default function CRMDashboard() {
       </div>
 
       {/* Pipeline snapshot */}
-      <div className="mt-6 border border-white/7 bg-[#0f0f0f] p-4 md:p-5">
+      <div className="mt-6 border border-white/7 bg-[#0f0f0f] rounded-lg p-4 md:p-5">
         <div className="flex items-center justify-between mb-4">
           <p className="text-[0.65rem] tracking-[0.22em] uppercase text-[#c9a84c]">Répartition pipeline</p>
           <Link href="/crm/pipeline" className="text-[0.45rem] tracking-wider uppercase text-white/20 hover:text-white/50 transition-colors">Vue complète →</Link>

@@ -16,7 +16,7 @@ type CoachSeance = { id: string; titre: string; type_seance: string | null; date
 
 function ExerciceCard({ ex }: { ex: ExerciceItem }) {
   return (
-    <div className="border border-white/8 bg-white/[0.02] px-3 py-2.5">
+    <div className="border border-white/8 bg-white/[0.02] rounded-lg px-3 py-2.5">
       <div className="flex items-center gap-2 flex-wrap">
         <p className="text-xs text-white/70 font-medium leading-snug">{ex.nom}</p>
         {ex.type && <span className="text-[0.55rem] tracking-wider uppercase text-white/30 border border-white/10 px-1.5 py-0.5 shrink-0">{ex.type}</span>}
@@ -53,7 +53,7 @@ function ExerciceCard({ ex }: { ex: ExerciceItem }) {
 function ExercicesList({ items }: { items: ExerciceItem[] }) {
   const nodes: ReactNode[] = groupExerciceRuns(items).map(run =>
     run.groupId ? (
-      <div key={`g-${run.indices[0]}`} className="border border-[#c9a84c]/25 bg-[#c9a84c]/[0.03] p-2 flex flex-col gap-2">
+      <div key={`g-${run.indices[0]}`} className="border border-[#c9a84c]/25 bg-[#c9a84c]/[0.03] rounded-lg p-2 flex flex-col gap-2">
         <p className="text-[0.55rem] tracking-[0.15em] uppercase text-[#c9a84c] px-1">{run.groupLabel || "Superset"}</p>
         {run.indices.map(k => <ExerciceCard key={k} ex={items[k]} />)}
       </div>
@@ -103,7 +103,7 @@ function DateNav({ date, onChange }: { date: string; onChange: (d: string) => vo
   };
   return (
     <div className="flex items-center gap-2 mb-6">
-      <button onClick={() => move(-1)} className="w-7 h-7 border border-white/10 text-white/40 hover:text-white/60 hover:border-white/20 transition-colors flex items-center justify-center shrink-0">
+      <button onClick={() => move(-1)} className="w-7 h-7 border border-white/10 text-white/40 rounded-lg hover:text-white/60 hover:border-white/20 transition-colors flex items-center justify-center shrink-0">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
       <div className="flex-1 relative flex items-center justify-center gap-1.5 cursor-pointer group" onClick={openPicker}>
@@ -118,7 +118,7 @@ function DateNav({ date, onChange }: { date: string; onChange: (d: string) => vo
         </svg>
         <p className="text-[0.7rem] tracking-[0.15em] uppercase text-white/50 group-hover:text-white/70 transition-colors capitalize select-none">{label}</p>
       </div>
-      <button onClick={() => move(1)} disabled={isToday} className="w-7 h-7 border border-white/10 text-white/40 hover:text-white/60 hover:border-white/20 transition-colors flex items-center justify-center shrink-0 disabled:opacity-20 disabled:cursor-not-allowed">
+      <button onClick={() => move(1)} disabled={isToday} className="w-7 h-7 border border-white/10 text-white/40 rounded-lg hover:text-white/60 hover:border-white/20 transition-colors flex items-center justify-center shrink-0 disabled:opacity-20 disabled:cursor-not-allowed">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
       {!isToday && (
@@ -285,7 +285,7 @@ export default function ProgrammePage() {
 
   const chip = (active: boolean) =>
     `px-3 py-2 text-[0.7rem] tracking-[0.1em] uppercase border cursor-pointer transition-all ${active ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10" : "border-white/10 text-white/40 hover:border-white/30 hover:text-white/60"}`;
-  const inputCls = "w-full bg-[#0a0a0a] border border-white/10 text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
+  const inputCls = "w-full bg-[#0a0a0a] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
 
   const pastDates = [...new Set(
     workouts.filter(w => !w.date.startsWith(selectedDate)).map(w => w.date.split("T")[0])
@@ -302,14 +302,14 @@ export default function ProgrammePage() {
 
       {/* ── Mon programme (séances envoyées par Samuel) ── */}
       {coachSeances.length > 0 && (
-        <div className="border border-[#c9a84c]/20 bg-[#0f0d07] mb-6">
+        <div className="border border-[#c9a84c]/20 bg-[#0f0d07] rounded-lg mb-6">
           <div className="px-5 py-3 border-b border-[#c9a84c]/10 flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[#c9a84c]">Mon programme</p>
               <span className="text-[0.62rem] text-white/25 uppercase tracking-wider">{coachSeances.length} séance{coachSeances.length > 1 ? "s" : ""} · par Samuel</span>
             </div>
             <button onClick={downloadPdf} disabled={exportingPdf}
-              className="shrink-0 flex items-center gap-1.5 border border-[#c9a84c]/30 text-[#c9a84c] text-[0.6rem] font-bold tracking-[0.12em] uppercase px-2.5 py-2 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-40">
+              className="shrink-0 flex items-center gap-1.5 border border-[#c9a84c]/30 text-[#c9a84c] rounded-lg text-[0.6rem] font-bold tracking-[0.12em] uppercase px-2.5 py-2 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-40">
               {exportingPdf ? (
                 <div className="w-3 h-3 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>
               ) : (
@@ -365,7 +365,7 @@ export default function ProgrammePage() {
 
       {/* ── Séances du jour ── */}
       {todayWorkouts.length > 0 && (
-        <div className="border border-white/10 bg-[#111] mb-6">
+        <div className="border border-white/10 bg-[#111] rounded-lg mb-6">
           <div className="flex items-center justify-between px-5 py-3 border-b border-white/5">
             <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-white">
               {selectedDate === todayStr() ? "Séances du jour" : `Séances · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
@@ -396,7 +396,7 @@ export default function ProgrammePage() {
       )}
 
       {/* ── Pas ── */}
-      <div className="border border-white/10 bg-[#111] p-5 mb-6">
+      <div className="border border-white/10 bg-[#111] rounded-lg p-5 mb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
 <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">
@@ -406,7 +406,7 @@ export default function ProgrammePage() {
           <div className="flex items-center gap-2">
             <span className="text-[0.7rem] text-white/30">{stepsKm} km</span>
             <button onClick={() => saveSteps(steps - 500)} disabled={steps === 0}
-              className="w-7 h-7 border border-white/10 text-white/40 hover:text-white/70 hover:border-white/20 transition-colors disabled:opacity-20 flex items-center justify-center text-sm">−</button>
+              className="w-7 h-7 border border-white/10 text-white/40 rounded-lg hover:text-white/70 hover:border-white/20 transition-colors disabled:opacity-20 flex items-center justify-center text-sm">−</button>
             <input
               type="number" min="0"
               className="w-20 bg-[#0a0a0a] border border-white/10 text-white text-center text-sm py-1 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
@@ -462,7 +462,7 @@ export default function ProgrammePage() {
       </div>
 
       {/* ── Formulaire séance ── */}
-      <div className="border border-white/10 bg-[#111] p-6 mb-6 flex flex-col gap-5">
+      <div className="border border-white/10 bg-[#111] rounded-lg p-6 mb-6 flex flex-col gap-5">
         <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Enregistrer une séance</p>
 
         <div>
@@ -529,7 +529,7 @@ export default function ProgrammePage() {
 
         {calResult ? (
           <div className="flex flex-col gap-3">
-            <div className="border border-[#c9a84c]/20 bg-[#c9a84c]/5 p-4 flex items-center justify-between">
+            <div className="border border-[#c9a84c]/20 bg-[#c9a84c]/5 rounded-lg p-4 flex items-center justify-between">
               <div className="flex-1 min-w-0 mr-4">
                 <div className="flex items-center gap-2 mb-1">
                   <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]">Estimation IA</p>
@@ -551,18 +551,18 @@ export default function ProgrammePage() {
             </div>
             <div className="flex gap-2">
               <button onClick={() => setCalResult(null)}
-                className="flex-1 border border-white/10 text-white/40 text-[0.7rem] tracking-[0.15em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors">
+                className="flex-1 border border-white/10 text-white/40 rounded-lg text-[0.7rem] tracking-[0.15em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors">
                 Ré-estimer
               </button>
               <button onClick={addWorkout}
-                className="flex-1 bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200">
+                className="flex-1 bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg">
                 Ajouter à ma journée →
               </button>
             </div>
           </div>
         ) : (
           <button onClick={estimate} disabled={!activity.trim() || estimating}
-            className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             {estimating
               ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Estimation en cours…</>
               : "Estimer les calories brûlées →"}
@@ -571,23 +571,23 @@ export default function ProgrammePage() {
       </div>
 
       {/* ── EAT / NEAT / TOTAL ── */}
-      <div className="border border-white/10 bg-[#111] p-5 mb-8">
+      <div className="border border-white/10 bg-[#111] rounded-lg p-5 mb-8">
         <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Dépense du jour</p>
         <div className="grid grid-cols-3 gap-3 mb-4">
           {/* EAT */}
-          <div className="border border-white/5 bg-[#0a0a0a] py-4 px-3 text-center">
+          <div className="border border-white/5 bg-[#0a0a0a] rounded-lg py-4 px-3 text-center">
             <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[#c9a84c] tracking-wide leading-none">{eatCal}</p>
             <p className="text-[0.65rem] tracking-[0.15em] uppercase text-white/30 mt-1.5">EAT</p>
             <p className="text-[0.62rem] text-white/15 mt-0.5">Exercice intentionnel</p>
           </div>
           {/* NEAT */}
-          <div className="border border-white/5 bg-[#0a0a0a] py-4 px-3 text-center">
+          <div className="border border-white/5 bg-[#0a0a0a] rounded-lg py-4 px-3 text-center">
             <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[#7eb8a0] tracking-wide leading-none">{neatCal}</p>
             <p className="text-[0.65rem] tracking-[0.15em] uppercase text-white/30 mt-1.5">NEAT</p>
             <p className="text-[0.62rem] text-white/15 mt-0.5">Activité quotidienne</p>
           </div>
           {/* Total */}
-          <div className="border border-[#c9a84c]/15 bg-[#c9a84c]/5 py-4 px-3 text-center">
+          <div className="border border-[#c9a84c]/15 bg-[#c9a84c]/5 rounded-lg py-4 px-3 text-center">
             <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-white tracking-wide leading-none">{totalCal}</p>
             <p className="text-[0.65rem] tracking-[0.15em] uppercase text-white/30 mt-1.5">Total</p>
             <p className="text-[0.62rem] text-white/15 mt-0.5">kcal brûlées</p>
@@ -622,7 +622,7 @@ export default function ProgrammePage() {
             const dayCal = dayWorkouts.reduce((s, w) => s + w.calories_burned, 0);
             const label = new Date(date + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "short" });
             return (
-              <div key={date} className="border border-white/10 bg-[#111] mb-3">
+              <div key={date} className="border border-white/10 bg-[#111] rounded-lg mb-3">
                 <div className="flex items-center justify-between px-5 py-3 border-b border-white/5">
                   <span className="text-[0.7rem] tracking-wider text-white/40 capitalize">{label}</span>
                   <span className="text-[0.7rem] tracking-wider text-white/30">{dayCal} kcal</span>

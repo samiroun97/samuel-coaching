@@ -54,7 +54,7 @@ export default function ProfilePage() {
     setNewPassword(""); setConfirmPassword("");
   };
 
-  const inp = "w-full bg-[#0a0a0a] border border-white/10 text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
+  const inp = "w-full bg-[#0a0a0a] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
   const lbl = "text-[0.7rem] tracking-[0.2em] uppercase text-white/40 block mb-1.5";
 
   return (
@@ -62,7 +62,7 @@ export default function ProfilePage() {
       <p className="text-[0.7rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-2">Paramètres</p>
       <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-5xl text-white tracking-wide mb-10">MON PROFIL</h1>
 
-      <div className="border border-white/10 bg-[#111] p-6 flex flex-col gap-5">
+      <div className="border border-white/10 bg-[#111] rounded-lg p-6 flex flex-col gap-5">
         <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Informations personnelles</p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -107,14 +107,14 @@ export default function ProfilePage() {
         {saved && <p className="text-xs text-[#7eb8a0] border border-[#7eb8a0]/20 bg-[#7eb8a0]/5 px-3 py-2">Profil mis à jour ✓ — le BMR sera recalculé automatiquement</p>}
 
         <button onClick={save} disabled={saving}
-          className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 disabled:opacity-50 flex items-center justify-center gap-2">
+          className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg disabled:opacity-50 flex items-center justify-center gap-2">
           {saving
             ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Enregistrement…</>
             : "Enregistrer"}
         </button>
       </div>
 
-      <div className="border border-white/10 bg-[#111] p-6 flex flex-col gap-5 mt-6">
+      <div className="border border-white/10 bg-[#111] rounded-lg p-6 flex flex-col gap-5 mt-6">
         <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Mot de passe</p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -132,7 +132,7 @@ export default function ProfilePage() {
         {pwdSaved && <p className="text-xs text-[#7eb8a0] border border-[#7eb8a0]/20 bg-[#7eb8a0]/5 px-3 py-2">Mot de passe mis à jour ✓</p>}
 
         <button onClick={savePassword} disabled={pwdSaving}
-          className="border border-[#c9a84c]/30 text-[#c9a84c] text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+          className="border border-[#c9a84c]/30 text-[#c9a84c] rounded-lg text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
           {pwdSaving
             ? <><div className="w-3 h-3 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>Enregistrement…</>
             : "Changer le mot de passe"}
