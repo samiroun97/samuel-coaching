@@ -3,6 +3,15 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
 import { DateNav } from "@/components/DateNav";
+import { BrowserMultiFormatReader } from "@zxing/browser";
+import type { IScannerControls } from "@zxing/browser";
+import { BarcodeFormat, DecodeHintType } from "@zxing/library";
+
+// BarcodeDetector (API native) n'existe pas sur Safari/iOS — ZXing décode en JS pur
+// via canvas, donc ça marche identiquement sur iPhone et Android.
+const BARCODE_HINTS = new Map([[DecodeHintType.POSSIBLE_FORMATS, [
+  BarcodeFormat.EAN_13, BarcodeFormat.EAN_8, BarcodeFormat.UPC_A, BarcodeFormat.UPC_E, BarcodeFormat.CODE_128,
+]]]);
 
 type Food  = { id: string; name: string; calories: number; proteines: number; glucides: number; lipides: number; repas?: string };
 type Goals = { calories: number; proteines: number; glucides: number; lipides: number };
@@ -227,8 +236,7 @@ export default function NutritionPage() {
   const [scanError, setScanError] = useState("");
   const [scannerOpen, setScannerOpen] = useState(false);
   const videoRef        = useRef<HTMLVideoElement>(null);
-  const scanStreamRef   = useRef<MediaStream | null>(null);
-  const scanIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const scanControlsRef = useRef<IScannerControls | null>(null);
   const [aiResult,    setAiResult]    = useState<AIResult | null>(null);
   const [analyzing,   setAnalyzing]   = useState(false);
   const [aiError,     setAiError]     = useState("");
@@ -532,64 +540,54 @@ export default function NutritionPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     setScanError("");
+    const url = URL.createObjectURL(file);
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const detector = new (window as any).BarcodeDetector({ formats: ["ean_13", "ean_8", "upc_a", "upc_e", "code_128"] });
-      const bitmap = await createImageBitmap(file);
-      const barcodes = await detector.detect(bitmap);
-      if (!barcodes.length) { setScanError("Code-barres non détecté. Réessaie."); return; }
-      await lookupBarcode(barcodes[0].rawValue);
-    } catch { setScanError("Erreur lors du scan."); }
+      const reader = new BrowserMultiFormatReader(BARCODE_HINTS);
+      const result = await reader.decodeFromImageUrl(url);
+      await lookupBarcode(result.getText());
+    } catch { setScanError("Code-barres non détecté. Réessaie."); }
+    finally { URL.revokeObjectURL(url); }
     if (scanRef.current) scanRef.current.value = "";
   };
 
   const stopScanner = useCallback(() => {
-    if (scanIntervalRef.current) { clearInterval(scanIntervalRef.current); scanIntervalRef.current = null; }
-    scanStreamRef.current?.getTracks().forEach(t => t.stop());
-    scanStreamRef.current = null;
+    scanControlsRef.current?.stop();
+    scanControlsRef.current = null;
     setScannerOpen(false);
   }, []);
 
-  // Ouvre un scanner caméra live avec cadre de visée ; se rabat sur la capture
-  // photo unique si le navigateur ne supporte pas la caméra en direct.
+  // Ouvre un scanner caméra live avec cadre de visée. ZXing décode les frames
+  // en JS pur (canvas), donc ça fonctionne aussi bien sur Safari/iPhone que
+  // sur Chrome/Android — contrairement à l'API native BarcodeDetector, que
+  // Safari n'a jamais implémentée.
   const openScanner = async () => {
     setScanError("");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (!("BarcodeDetector" in window)) {
-      setScanError("Scan non supporté sur ce navigateur. Tape le code manuellement.");
-      return;
-    }
     if (!navigator.mediaDevices?.getUserMedia) { scanRef.current?.click(); return; }
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-      scanStreamRef.current = stream;
-      setScannerOpen(true);
-      requestAnimationFrame(() => {
-        if (videoRef.current) { videoRef.current.srcObject = stream; videoRef.current.play().catch(() => {}); }
-      });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const detector = new (window as any).BarcodeDetector({ formats: ["ean_13", "ean_8", "upc_a", "upc_e", "code_128"] });
-      scanIntervalRef.current = setInterval(async () => {
-        if (!videoRef.current || videoRef.current.readyState < 2) return;
-        try {
-          const barcodes = await detector.detect(videoRef.current);
-          if (barcodes.length) {
-            const code: string = barcodes[0].rawValue;
-            stopScanner();
-            lookupBarcode(code);
+    setScannerOpen(true);
+    requestAnimationFrame(async () => {
+      if (!videoRef.current) return;
+      try {
+        const reader = new BrowserMultiFormatReader(BARCODE_HINTS);
+        const controls = await reader.decodeFromConstraints(
+          { video: { facingMode: "environment" } },
+          videoRef.current,
+          (result) => {
+            if (result) {
+              stopScanner();
+              lookupBarcode(result.getText());
+            }
           }
-        } catch { /* image de la frame illisible, on retente au prochain tick */ }
-      }, 350);
-    } catch {
-      setScanError("Impossible d'accéder à la caméra. Vérifie les autorisations.");
-    }
+        );
+        scanControlsRef.current = controls;
+      } catch {
+        setScanError("Impossible d'accéder à la caméra. Vérifie les autorisations.");
+        setScannerOpen(false);
+      }
+    });
   };
 
   // Coupe bien la caméra si l'utilisateur quitte la page pendant un scan.
-  useEffect(() => () => {
-    if (scanIntervalRef.current) clearInterval(scanIntervalRef.current);
-    scanStreamRef.current?.getTracks().forEach(t => t.stop());
-  }, []);
+  useEffect(() => () => { scanControlsRef.current?.stop(); }, []);
 
   const doSearch = useCallback(async (q: string) => {
     setSearching(true);
