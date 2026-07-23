@@ -33,6 +33,7 @@ export default function ProgrammesPage() {
   const [drafts,      setDrafts]      = useState<SeanceDraft[]>([]);
   const [generating,  setGenerating]  = useState(false);
   const [genError,    setGenError]    = useState("");
+  const [genDescription, setGenDescription] = useState("");
   const [sending,     setSending]     = useState(false);
   const [sentTo,      setSentTo]      = useState<string | null>(null);
   const [library,      setLibrary]      = useState<LibraryEntry[]>([]);
@@ -96,14 +97,14 @@ export default function ProgrammesPage() {
   const list = filter === "sans" ? sans : avec;
 
   const selectClient = (c: Client) => {
-    setSelected(c); setDrafts([]); setGenError(""); setSentTo(null);
+    setSelected(c); setDrafts([]); setGenError(""); setSentTo(null); setGenDescription("");
   };
 
   const generate = async () => {
     if (!selected || generating) return;
     setGenerating(true); setGenError("");
     try {
-      const res = await apiPost("/api/programme/generate", { profile: selected });
+      const res = await apiPost("/api/programme/generate", { profile: selected, description: genDescription });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Erreur génération");
       type RawSeance = { titre: string; type_seance: string; description: string; exercices: Partial<ExerciceItem>[] };
@@ -133,7 +134,7 @@ export default function ProgrammesPage() {
     })));
     setSending(false);
     if (error) { setGenError(error.message); return; }
-    setSentTo(selected.email); setDrafts([]);
+    setSentTo(selected.email); setDrafts([]); setGenDescription("");
     await load();
   };
 
@@ -272,6 +273,15 @@ export default function ProgrammesPage() {
                   <p className="text-[0.65rem] text-white/35 leading-relaxed">
                     Génère {Math.min(Math.max(selected.seances_par_semaine || 3, 2), 6)} séances adaptées à l&apos;objectif, au niveau, au lieu et aux blessures de {selected.prenom}. Tu pourras tout modifier avant d&apos;envoyer.
                   </p>
+                  <div>
+                    <label className="text-[0.5rem] tracking-[0.15em] uppercase text-white/30 block mb-1.5">
+                      Précisions pour ce programme (optionnel)
+                    </label>
+                    <textarea rows={2} className={`${inp} resize-none`}
+                      placeholder="Ex : reprise après blessure au genou, priorité sur le haut du corps ce mois-ci…"
+                      value={genDescription} onChange={e => setGenDescription(e.target.value)}/>
+                    <p className="text-[0.55rem] text-white/20 mt-1">Combiné avec le profil de {selected.prenom} (objectif enregistré, niveau, blessures, lieu…)</p>
+                  </div>
                   <button onClick={generate} disabled={generating}
                     className="bg-[#c9a84c] text-black text-[0.58rem] font-bold tracking-[0.18em] uppercase py-3 hover:bg-[#e2c97e] transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
                     {generating ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Génération en cours…</> : "Générer avec l'IA →"}

@@ -50,25 +50,25 @@ export async function POST(req: NextRequest) {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) return NextResponse.json({ error: "Clé API manquante" }, { status: 500 });
 
-    const { profile } = await req.json();
+    const { profile, description } = await req.json();
     const { prenom, age, sexe, poids, taille, objectifs, experience, niveau_activite, seances_par_semaine, duree_seance, lieu_entrainement, blessures } = profile ?? {};
-    if (!objectifs && !experience) return NextResponse.json({ error: "Profil client incomplet" }, { status: 400 });
+    if (!objectifs && !experience && !description?.trim()) return NextResponse.json({ error: "Profil client incomplet" }, { status: 400 });
 
     const nb = Math.min(Math.max(parseInt(seances_par_semaine) || 3, 2), 6);
 
     const prompt = `Tu es un coach sportif expert. Crée un programme d'entraînement hebdomadaire ciblé pour ce client.
 
 Client : ${prenom ?? "?"}, ${sexe ?? "?"}, ${age ?? "?"} ans, ${poids ?? "?"} kg, ${taille ?? "?"} cm.
-Objectif : ${objectifs || "remise en forme générale"}
+Objectif enregistré dans le profil : ${objectifs || "remise en forme générale"}
 Expérience : ${experience || "non renseignée"}
 Niveau d'activité : ${niveau_activite || "non renseigné"}
 Séances par semaine : ${nb}
 Durée par séance : ${duree_seance || "1h"}
 Lieu d'entraînement : ${lieu_entrainement || "salle de sport"}
 Blessures / limitations : ${blessures || "aucune"}
-
+${description?.trim() ? `\nPrécisions du coach pour ce programme précis (prioritaires sur l'objectif enregistré si elles le complètent ou le contredisent) : ${description.trim()}\n` : ""}
 Règles :
-- Exactement ${nb} séances, adaptées à l'objectif et au niveau du client.
+- Exactement ${nb} séances, adaptées à l'objectif (précisions du coach en priorité, sinon objectif enregistré) et au niveau du client.
 - Respecte impérativement les blessures/limitations.
 - Adapte les exercices au lieu (maison = poids du corps/haltères, salle = machines/barres, mixte = varie).
 - exercices : 5 à 8 exercices par séance (3 à 5 pour cardio), chacun avec son propre type, ses séries, répétitions (ou durée pour un exercice au temps), charge/poids et temps de repos entre séries — adapte ces valeurs par exercice selon son rôle (ex. plus de séries/repos et charge plus lourde sur les mouvements composés, moins sur l'isolation ou le gainage).
