@@ -25,7 +25,7 @@ export default function Navbar() {
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
-        <Link href="/" style={{ fontFamily: "var(--font-bebas)", filter: "blur(0.3px)", letterSpacing: "0.18em" }} className="text-2xl text-white hover:opacity-70 transition-opacity duration-300">
+        <Link href="/" style={{ fontFamily: "var(--font-bebas)", letterSpacing: "0.18em" }} className="text-2xl text-white hover:opacity-70 transition-opacity duration-300">
           SAMUEL<span style={{ color: "#c9a84c" }}>.</span><span style={{ color: "#c9a84c" }}>COACHING</span>
         </Link>
 

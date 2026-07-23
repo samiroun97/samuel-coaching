@@ -41,10 +41,10 @@ export default function SplashScreen() {
 
         <div style={{ opacity: progress > 5 ? 1 : 0, transform: progress > 5 ? "translateY(0)" : "translateY(30px)", transition: "opacity 0.8s ease, transform 0.8s ease" }}>
           <div style={{ lineHeight: 1 }}>
-            <span style={{ fontFamily: "var(--font-bebas)", fontSize: "clamp(3rem, 12vw, 8rem)", color: "white", letterSpacing: "0.1em", filter: "blur(0.3px)" }}>
+            <span style={{ fontFamily: "var(--font-bebas)", fontSize: "clamp(3rem, 12vw, 8rem)", color: "white", letterSpacing: "0.1em" }}>
               SAMUEL
             </span>
-            <span style={{ fontFamily: "var(--font-bebas)", fontSize: "clamp(3rem, 12vw, 8rem)", color: "#c9a84c", filter: "blur(0.3px)" }}>.</span>
+            <span style={{ fontFamily: "var(--font-bebas)", fontSize: "clamp(3rem, 12vw, 8rem)", color: "#c9a84c" }}>.</span>
             <div style={{ fontSize: "clamp(0.6rem, 2vw, 1rem)", letterSpacing: "0.5em", color: "#c9a84c", fontWeight: 200, marginTop: "0.5rem" }}>
               COACHING
             </div>
