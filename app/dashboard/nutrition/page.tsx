@@ -9,9 +9,14 @@ import { BarcodeFormat, DecodeHintType } from "@zxing/library";
 
 // BarcodeDetector (API native) n'existe pas sur Safari/iOS — ZXing décode en JS pur
 // via canvas, donc ça marche identiquement sur iPhone et Android.
-const BARCODE_HINTS = new Map([[DecodeHintType.POSSIBLE_FORMATS, [
-  BarcodeFormat.EAN_13, BarcodeFormat.EAN_8, BarcodeFormat.UPC_A, BarcodeFormat.UPC_E, BarcodeFormat.CODE_128,
-]]]);
+const BARCODE_HINTS = new Map<DecodeHintType, unknown>([
+  [DecodeHintType.POSSIBLE_FORMATS, [
+    BarcodeFormat.EAN_13, BarcodeFormat.EAN_8, BarcodeFormat.UPC_A, BarcodeFormat.UPC_E, BarcodeFormat.CODE_128,
+  ]],
+  // Sans ça, ZXing abandonne trop vite sur un code-barres légèrement flou/incliné —
+  // très fréquent avec une caméra tenue à la main plutôt qu'une image nette.
+  [DecodeHintType.TRY_HARDER, true],
+]);
 
 type Food  = { id: string; name: string; calories: number; proteines: number; glucides: number; lipides: number; repas?: string };
 type Goals = { calories: number; proteines: number; glucides: number; lipides: number };
@@ -578,7 +583,11 @@ export default function NutritionPage() {
       try {
         const reader = new BrowserMultiFormatReader(BARCODE_HINTS);
         const controls = await reader.decodeFromConstraints(
-          { video: { facingMode: "environment" } },
+          // Une résolution basse (souvent 640x480 par défaut) rend les barres d'un
+          // EAN/UPC illisibles de trop près ou de loin ; on demande explicitement
+          // mieux, en laissant le navigateur retomber sur une valeur plus faible
+          // si la caméra ne supporte pas cette résolution ("ideal", pas "exact").
+          { video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } } },
           videoRef.current,
           (result) => {
             if (result) {
@@ -1369,7 +1378,7 @@ export default function NutritionPage() {
           <div className="absolute inset-0 bg-black/35"/>
 
           {/* Cadre de visée */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none px-8">
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-8 gap-4">
             <div className="relative w-full max-w-sm aspect-[16/10]">
               <div className="absolute inset-0 border border-[#c9a84c]/40"/>
               <div className="absolute -top-px -left-px w-7 h-7 border-t-[3px] border-l-[3px] border-[#e2c97e]"/>
@@ -1377,6 +1386,9 @@ export default function NutritionPage() {
               <div className="absolute -bottom-px -left-px w-7 h-7 border-b-[3px] border-l-[3px] border-[#e2c97e]"/>
               <div className="absolute -bottom-px -right-px w-7 h-7 border-b-[3px] border-r-[3px] border-[#e2c97e]"/>
             </div>
+            <p className="text-white/40 text-[0.6rem] tracking-[0.12em] uppercase text-center max-w-[220px]">
+              Tiens le téléphone stable, à 10-15 cm, code-barres bien à plat et net
+            </p>
           </div>
 
           <div className="relative z-10 flex items-center justify-between px-5 pt-6">
