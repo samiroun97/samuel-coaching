@@ -294,7 +294,14 @@ export default function NutritionPage() {
         userIdRef.current = user.id;
         // Profil + body fat pour le calcul du TDEE
         const { data: p } = await supabase.from("profiles").select("poids,taille,age,sexe").eq("id", user.id).single();
-        if (p) setMiniProfile(p as MiniProfile);
+        if (p) {
+          setMiniProfile(p as MiniProfile);
+          // Objectif protéines par défaut (tant que le client n'a pas personnalisé ses
+          // objectifs) : 2g/kg de poids de corps, plus pertinent qu'une valeur fixe pour tous.
+          if (!localStorage.getItem("nutrition_goals") && p.poids) {
+            setGoals(g => ({ ...g, proteines: Math.round(p.poids * 2) }));
+          }
+        }
         try {
           const { data: bf } = await supabase.from("body_fat_entries")
             .select("body_fat").eq("user_id", user.id).order("date", { ascending: false }).limit(1);
@@ -699,9 +706,6 @@ export default function NutritionPage() {
     setGoalDraft(next); syncRaw(next);
   };
 
-  const kcalFromMacros = macroKcal(goalDraft);
-  const isCoherent     = Math.abs(kcalFromMacros - goalDraft.calories) <= 5;
-
   const inputCls = "w-full bg-[#0a0a0a] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
   const labelCls = "text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] block mb-1.5";
   const tabCls   = (active: boolean, border = true) =>
@@ -714,22 +718,16 @@ export default function NutritionPage() {
     <div className="p-4 sm:p-8 max-w-2xl">
 
       {/* Header */}
-      <div className="flex items-end justify-between mb-6">
-        <div>
-          <p className="text-[0.7rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-2">Rubrique</p>
-          <h1 style={{ fontFamily:"var(--font-bebas)" }} className="text-4xl sm:text-5xl text-white tracking-wide">NUTRITION</h1>
-        </div>
-        <button onClick={() => { setGoalDraft(goals); syncRaw(goals); setShowGoals(true); }}
-          className="text-[0.7rem] tracking-[0.15em] uppercase text-white/30 border border-white/10 px-4 py-2 hover:text-white/60 hover:border-white/20 transition-colors">
-          Mes objectifs
-        </button>
+      <div className="mb-6">
+        <p className="text-[0.7rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-2">Rubrique</p>
+        <h1 style={{ fontFamily:"var(--font-bebas)" }} className="text-4xl sm:text-5xl text-white tracking-wide">NUTRITION</h1>
       </div>
 
       <DateNav date={selectedDate} onChange={setSelectedDate} />
 
       {/* Référence du compteur : objectif fixe ou dépense réelle (TDEE) */}
       <div className="flex justify-center mb-5">
-        <div className="flex border border-white/10">
+        <div className="flex border border-white/10 rounded-lg overflow-hidden">
           <button onClick={() => setCalRef("objectif")}
             className={`px-4 py-1.5 text-[0.68rem] tracking-[0.15em] uppercase transition-colors ${!useTdee ? "bg-[#c9a84c]/10 text-[#c9a84c]" : "text-white/30 hover:text-white/50"}`}>
             Objectif
@@ -742,7 +740,12 @@ export default function NutritionPage() {
         </div>
       </div>
 
-      <CalorieRing consumed={totals.calories} goal={calTarget} goalDefined={useTdee || goalsSet}/>
+      <button onClick={() => { if (!useTdee) { setGoalDraft(goals); syncRaw(goals); setShowGoals(true); } }}
+        disabled={useTdee}
+        title={useTdee ? undefined : "Cliquer pour définir ton objectif"}
+        className="mx-auto block disabled:cursor-default">
+        <CalorieRing consumed={totals.calories} goal={calTarget} goalDefined={useTdee || goalsSet}/>
+      </button>
 
       {useTdee && (
         <p className="text-center text-[0.65rem] tracking-[0.12em] uppercase text-white/25 mt-4">
@@ -849,10 +852,10 @@ export default function NutritionPage() {
             )}
           </div>
           <button onClick={generateIdeas} disabled={ideaLoading || !canGenerateIdeas}
-            className="shrink-0 border border-[#c9a84c]/30 text-[#c9a84c] rounded-lg text-[0.7rem] tracking-[0.15em] uppercase px-3.5 py-2 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5">
+            className="shrink-0 ml-3 border border-[#c9a84c]/30 text-[#c9a84c] rounded-lg text-[0.7rem] tracking-[0.15em] uppercase px-3.5 py-2 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5">
             {ideaLoading
               ? <><div className="w-2.5 h-2.5 border border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>Génération…</>
-              : "Générer →"}
+              : "Générer"}
           </button>
         </div>
 
@@ -1334,10 +1337,6 @@ export default function NutritionPage() {
               <button onClick={() => setShowGoals(false)} className="text-white/30 hover:text-white/60 transition-colors">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
-            </div>
-            <div className={`flex items-center gap-2 mb-5 px-3 py-2 border text-[0.7rem] tracking-wider ${isCoherent?"border-[#7eb8a0]/30 text-[#7eb8a0] bg-[#7eb8a0]/5":"border-[#e07070]/30 text-[#e07070] bg-[#e07070]/5"}`}>
-              <div className={`w-1.5 h-1.5 rounded-full ${isCoherent?"bg-[#7eb8a0]":"bg-[#e07070]"}`}/>
-              {isCoherent ? `Cohérent — macros = ${kcalFromMacros} kcal` : `Incohérent — macros = ${kcalFromMacros} kcal · cible = ${goalDraft.calories} kcal`}
             </div>
             <div className="mb-5">
               <label className={labelCls}>Calories totales (kcal)</label>

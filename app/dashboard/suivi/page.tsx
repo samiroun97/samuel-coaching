@@ -94,6 +94,7 @@ export default function SuiviPage() {
   const [error,          setError]          = useState("");
   const [showUpload,     setShowUpload]     = useState(false);
   const [showManual,     setShowManual]     = useState(false);
+  const [weightHistOpen, setWeightHistOpen] = useState(false);
   const [manualVal,      setManualVal]      = useState("");
   const [manualDate,     setManualDate]     = useState("");
   const [weightInput,    setWeightInput]    = useState("");
@@ -485,7 +486,7 @@ export default function SuiviPage() {
             className="bg-[#c9a84c] text-black text-[0.68rem] font-bold tracking-[0.15em] uppercase px-4 py-2.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg disabled:opacity-40 flex items-center gap-2 shrink-0">
             {reportLoading
               ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Préparation…</>
-              : "Voir le bilan →"}
+              : "Voir le bilan"}
           </button>
         </div>
         <div className="flex items-center gap-2">
@@ -582,14 +583,14 @@ export default function SuiviPage() {
             ) : (
               <p className="text-white/30 text-xs">Aucune estimation</p>
             )}
-            <div className="flex gap-2">
+            <div className="flex gap-1.5 shrink-0">
               <button onClick={() => { setShowManual(v => !v); setShowUpload(false); setManualVal(""); setManualDate(selectedDate); }}
-                className="border border-white/10 text-white/30 text-[0.7rem] tracking-[0.12em] uppercase px-4 py-2 rounded-lg hover:border-white/20 hover:text-white/50 transition-colors">
+                className="border border-white/10 text-white/30 text-[0.62rem] tracking-[0.1em] uppercase px-3 py-2 rounded-lg hover:border-white/20 hover:text-white/50 transition-colors whitespace-nowrap">
                 {showManual ? "Annuler" : "Manuel"}
               </button>
               {!needsBF && (
                 <button onClick={() => { setShowUpload(v => !v); setShowManual(false); setResult(null); setError(""); }}
-                  className="border border-white/10 text-white/30 text-[0.7rem] tracking-[0.12em] uppercase px-4 py-2 rounded-lg hover:border-white/20 hover:text-white/50 transition-colors">
+                  className="border border-white/10 text-white/30 text-[0.62rem] tracking-[0.1em] uppercase px-3 py-2 rounded-lg hover:border-white/20 hover:text-white/50 transition-colors whitespace-nowrap">
                   {showUpload ? "Annuler" : "Estimer IA"}
                 </button>
               )}
@@ -833,31 +834,40 @@ export default function SuiviPage() {
       {/* ── Historique poids ── */}
       {weightHist.length > 1 && (
         <div className="border border-white/10 bg-[#111] rounded-lg">
-          <div className="px-5 py-3 border-b border-white/5">
+          <button onClick={() => setWeightHistOpen(v => !v)}
+            className="w-full text-left flex items-center justify-between px-5 py-3 hover:bg-white/[0.02] transition-colors">
             <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-white">Historique pesées</p>
-          </div>
-          {weightHist.slice(0, 10).map((entry, i) => {
-            const prev = weightHist[i + 1];
-            const diff = prev ? +(entry.weight - prev.weight).toFixed(1) : null;
-            return (
-              <div key={entry.id} className="flex items-center justify-between px-5 py-3 border-b border-white/5 last:border-0">
-                <p className="text-[0.65rem] text-white/40 capitalize">
-                  {new Date(entry.date + "T12:00:00").toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" })}
-                </p>
-                <div className="flex items-center gap-3">
-                  {diff !== null && (
-                    <span className={`text-[0.6rem] tracking-wider ${diff < 0 ? "text-[#7eb8a0]" : diff > 0 ? "text-[#e07070]" : "text-white/20"}`}>
-                      {diff > 0 ? "+" : ""}{diff} kg
-                    </span>
-                  )}
-                  <span className={`text-sm font-medium ${i === 0 ? "text-white" : "text-white/40"}`}>{entry.weight} kg</span>
-                  <button onClick={() => deleteWeight(entry.id)} className="text-white/15 hover:text-[#e07070] transition-colors">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                  </button>
-                </div>
-              </div>
-            );
-          })}
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+              className={`text-white/25 shrink-0 transition-transform ${weightHistOpen ? "rotate-180" : ""}`}>
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          {weightHistOpen && (
+            <div className="border-t border-white/5">
+              {weightHist.slice(0, 10).map((entry, i) => {
+                const prev = weightHist[i + 1];
+                const diff = prev ? +(entry.weight - prev.weight).toFixed(1) : null;
+                return (
+                  <div key={entry.id} className="flex items-center justify-between px-5 py-3 border-b border-white/5 last:border-0">
+                    <p className="text-[0.65rem] text-white/40 capitalize">
+                      {new Date(entry.date + "T12:00:00").toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" })}
+                    </p>
+                    <div className="flex items-center gap-3">
+                      {diff !== null && (
+                        <span className={`text-[0.6rem] tracking-wider ${diff < 0 ? "text-[#7eb8a0]" : diff > 0 ? "text-[#e07070]" : "text-white/20"}`}>
+                          {diff > 0 ? "+" : ""}{diff} kg
+                        </span>
+                      )}
+                      <span className={`text-sm font-medium ${i === 0 ? "text-white" : "text-white/40"}`}>{entry.weight} kg</span>
+                      <button onClick={() => deleteWeight(entry.id)} className="text-white/15 hover:text-[#e07070] transition-colors">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 

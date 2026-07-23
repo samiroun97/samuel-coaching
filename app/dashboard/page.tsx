@@ -540,7 +540,7 @@ export default function AccueilPage() {
         </Link>
         <Link href="/dashboard/coach"
           className="flex-1 bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.15em] uppercase py-4 text-center hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg">
-          Contacter Samuel →
+          Contacter<br/>Samuel
         </Link>
       </div>
 

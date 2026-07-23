@@ -144,6 +144,7 @@ export default function ProgrammePage() {
   const [coachSeances, setCoachSeances] = useState<CoachSeance[]>([]);
   const [openSeance,   setOpenSeance]   = useState<string | null>(null);
   const [seancesJourOpen, setSeancesJourOpen] = useState(false);
+  const [histSectionOpen, setHistSectionOpen] = useState(false);
   const [openHistDates,   setOpenHistDates]   = useState<Set<string>>(new Set());
   const [exportingPdf, setExportingPdf] = useState(false);
 
@@ -578,7 +579,7 @@ export default function ProgrammePage() {
             className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             {estimating
               ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Estimation en cours…</>
-              : "Estimer les calories brûlées →"}
+              : "Estimer les calories brûlées"}
           </button>
         )}
       </div>
@@ -629,8 +630,15 @@ export default function ProgrammePage() {
       {/* ── Historique ── */}
       {pastDates.length > 0 && (
         <div>
-          <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Historique</p>
-          {pastDates.map(date => {
+          <button onClick={() => setHistSectionOpen(v => !v)}
+            className="w-full flex items-center justify-between mb-4 hover:opacity-70 transition-opacity">
+            <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Historique</p>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+              className={`text-[#c9a84c]/60 shrink-0 transition-transform ${histSectionOpen ? "rotate-180" : ""}`}>
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          {histSectionOpen && pastDates.map(date => {
             const dayWorkouts = workouts.filter(w => w.date.startsWith(date));
             const dayCal = dayWorkouts.reduce((s, w) => s + w.calories_burned, 0);
             const label = new Date(date + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "short" });
