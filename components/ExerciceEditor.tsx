@@ -128,14 +128,16 @@ export default function ExerciceEditor({ items, onChange, library = [] }: { item
         {ex.mode === "simple" && (
           <div className="flex flex-wrap items-end gap-2 pl-8">
             {SIMPLE_FIELDS.filter(f => !ex.hiddenFields.includes(f.key)).map(f => (
-              <div key={f.key} className="w-20">
-                <label className={lblSm}>
-                  <f.icon />{f.label}
+              <div key={f.key} className="w-24">
+                <div className="flex items-center justify-center gap-1 mb-1">
+                  <span className="flex items-center gap-1 text-[0.42rem] tracking-[0.18em] uppercase text-white/30 whitespace-nowrap">
+                    <f.icon />{f.label}
+                  </span>
                   <button type="button" onClick={() => hideField(i, f.key)} title={`Retirer le champ ${f.label}`}
-                    className="ml-0.5 text-white/20 hover:text-[#e07070] transition-colors">
+                    className="text-white/25 hover:text-[#e07070] transition-colors p-1.5 -m-1.5">
                     <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                   </button>
-                </label>
+                </div>
                 <input className={inpSm} placeholder={f.placeholder} value={ex[f.key]} onChange={e => update(i, { [f.key]: e.target.value })} />
               </div>
             ))}
