@@ -143,6 +143,8 @@ export default function ProgrammePage() {
   const [editingGoal,  setEditingGoal]  = useState(false);
   const [coachSeances, setCoachSeances] = useState<CoachSeance[]>([]);
   const [openSeance,   setOpenSeance]   = useState<string | null>(null);
+  const [seancesJourOpen, setSeancesJourOpen] = useState(false);
+  const [openHistDates,   setOpenHistDates]   = useState<Set<string>>(new Set());
   const [exportingPdf, setExportingPdf] = useState(false);
 
   const toggleSeanceDone = async (s: CoachSeance) => {
@@ -366,32 +368,43 @@ export default function ProgrammePage() {
       {/* ── Séances du jour ── */}
       {todayWorkouts.length > 0 && (
         <div className="border border-white/10 bg-[#111] rounded-lg mb-6">
-          <div className="flex items-center justify-between px-5 py-3 border-b border-white/5">
+          <button onClick={() => setSeancesJourOpen(v => !v)}
+            className="w-full text-left flex items-center justify-between px-5 py-3 hover:bg-white/[0.02] transition-colors">
             <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-white">
               {selectedDate === todayStr() ? "Séances du jour" : `Séances · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
             </p>
-            <div className="flex items-center gap-1.5">
-              <span style={{ fontFamily: "var(--font-bebas)" }} className="text-lg text-[#c9a84c] tracking-wide">{eatCal}</span>
-              <span className="text-[0.62rem] text-white/25 uppercase tracking-wider">kcal</span>
-            </div>
-          </div>
-          {todayWorkouts.map(w => (
-            <div key={w.id} className="flex items-center justify-between px-5 py-3 border-b border-white/5 last:border-0">
-              <div>
-                <p className="text-xs text-white/70">{w.activity}</p>
-                <p className="text-[0.65rem] text-white/25 mt-0.5">{w.duration_minutes} min{w.description ? ` · ${w.description}` : ""}</p>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
+                <span style={{ fontFamily: "var(--font-bebas)" }} className="text-lg text-[#c9a84c] tracking-wide">{eatCal}</span>
+                <span className="text-[0.62rem] text-white/25 uppercase tracking-wider">kcal</span>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="text-xs text-white/50">{w.calories_burned} kcal</span>
-                <button onClick={() => removeWorkout(w.id)}
-                  className="text-white/20 hover:text-[#e07070] transition-colors">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                  </svg>
-                </button>
-              </div>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+                className={`text-white/25 shrink-0 transition-transform ${seancesJourOpen ? "rotate-180" : ""}`}>
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
             </div>
-          ))}
+          </button>
+          {seancesJourOpen && (
+            <div className="border-t border-white/5">
+              {todayWorkouts.map(w => (
+                <div key={w.id} className="flex items-center justify-between px-5 py-3 border-b border-white/5 last:border-0">
+                  <div>
+                    <p className="text-xs text-white/70">{w.activity}</p>
+                    <p className="text-[0.65rem] text-white/25 mt-0.5">{w.duration_minutes} min{w.description ? ` · ${w.description}` : ""}</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-white/50">{w.calories_burned} kcal</span>
+                    <button onClick={() => removeWorkout(w.id)}
+                      className="text-white/20 hover:text-[#e07070] transition-colors">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -621,29 +634,46 @@ export default function ProgrammePage() {
             const dayWorkouts = workouts.filter(w => w.date.startsWith(date));
             const dayCal = dayWorkouts.reduce((s, w) => s + w.calories_burned, 0);
             const label = new Date(date + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "short" });
+            const isOpen = openHistDates.has(date);
+            const toggle = () => setOpenHistDates(prev => {
+              const next = new Set(prev);
+              if (next.has(date)) next.delete(date); else next.add(date);
+              return next;
+            });
             return (
               <div key={date} className="border border-white/10 bg-[#111] rounded-lg mb-3">
-                <div className="flex items-center justify-between px-5 py-3 border-b border-white/5">
+                <button onClick={toggle}
+                  className="w-full text-left flex items-center justify-between gap-2 px-5 py-3 hover:bg-white/[0.02] transition-colors">
                   <span className="text-[0.7rem] tracking-wider text-white/40 capitalize">{label}</span>
-                  <span className="text-[0.7rem] tracking-wider text-white/30">{dayCal} kcal</span>
-                </div>
-                {dayWorkouts.map(w => (
-                  <div key={w.id} className="flex items-center justify-between px-5 py-2.5 border-b border-white/5 last:border-0">
-                    <div>
-                      <p className="text-xs text-white/60">{w.activity}</p>
-                      <p className="text-[0.65rem] text-white/20 mt-0.5">{w.duration_minutes} min</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs text-white/40">{w.calories_burned} kcal</span>
-                      <button onClick={() => removeWorkout(w.id)}
-                        className="text-white/20 hover:text-[#e07070] transition-colors">
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                        </svg>
-                      </button>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[0.7rem] tracking-wider text-white/30">{dayCal} kcal</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+                      className={`text-white/25 shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`}>
+                      <polyline points="6 9 12 15 18 9"/>
+                    </svg>
                   </div>
-                ))}
+                </button>
+                {isOpen && (
+                  <div className="border-t border-white/5">
+                    {dayWorkouts.map(w => (
+                      <div key={w.id} className="flex items-center justify-between px-5 py-2.5 border-b border-white/5 last:border-0">
+                        <div>
+                          <p className="text-xs text-white/60">{w.activity}</p>
+                          <p className="text-[0.65rem] text-white/20 mt-0.5">{w.duration_minutes} min</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-white/40">{w.calories_burned} kcal</span>
+                          <button onClick={() => removeWorkout(w.id)}
+                            className="text-white/20 hover:text-[#e07070] transition-colors">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             );
           })}
