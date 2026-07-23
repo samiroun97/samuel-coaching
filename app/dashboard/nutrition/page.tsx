@@ -225,6 +225,10 @@ export default function NutritionPage() {
   const selectedDateRef = useRef(realToday);
   const scanRef         = useRef<HTMLInputElement>(null);
   const [scanError, setScanError] = useState("");
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const videoRef        = useRef<HTMLVideoElement>(null);
+  const scanStreamRef   = useRef<MediaStream | null>(null);
+  const scanIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [aiResult,    setAiResult]    = useState<AIResult | null>(null);
   const [analyzing,   setAnalyzing]   = useState(false);
   const [aiError,     setAiError]     = useState("");
@@ -502,22 +506,10 @@ export default function NutritionPage() {
   };
   const stopVoice = () => { recognitionRef.current?.stop(); setListening(false); };
 
-  const handleScan = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setScanError(""); setSearching(true); setSelected(null);
+  // Résout un code-barres détecté (par la caméra live ou une photo) en produit OFF.
+  const lookupBarcode = useCallback(async (code: string) => {
+    setScanError(""); setSelected(null); setSearching(true);
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if (!("BarcodeDetector" in window)) {
-        setScanError("Scan non supporté sur ce navigateur. Tape le code manuellement.");
-        setSearching(false); return;
-      }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const detector = new (window as any).BarcodeDetector({ formats: ["ean_13", "ean_8", "upc_a", "upc_e", "code_128"] });
-      const bitmap = await createImageBitmap(file);
-      const barcodes = await detector.detect(bitmap);
-      if (!barcodes.length) { setScanError("Code-barres non détecté. Réessaie."); setSearching(false); return; }
-      const code: string = barcodes[0].rawValue;
       const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${code}.json`);
       const data = await res.json();
       if (data.status === 1 && data.product?.nutriments) {
@@ -525,14 +517,79 @@ export default function NutritionPage() {
         setSelected({ product_name: p.product_name || code, brands: p.brands, nutriments: p.nutriments });
         setQuery(p.product_name || code);
         setResults([]);
+        setSearching(false);
       } else {
         setQuery(code);
         doSearch(code);
       }
+    } catch { setScanError("Erreur lors du scan."); setSearching(false); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Repli : capture une seule photo via l'appareil photo natif (utilisé si la
+  // caméra live n'est pas disponible sur ce navigateur/appareil).
+  const handleScan = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setScanError("");
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const detector = new (window as any).BarcodeDetector({ formats: ["ean_13", "ean_8", "upc_a", "upc_e", "code_128"] });
+      const bitmap = await createImageBitmap(file);
+      const barcodes = await detector.detect(bitmap);
+      if (!barcodes.length) { setScanError("Code-barres non détecté. Réessaie."); return; }
+      await lookupBarcode(barcodes[0].rawValue);
     } catch { setScanError("Erreur lors du scan."); }
-    setSearching(false);
     if (scanRef.current) scanRef.current.value = "";
   };
+
+  const stopScanner = useCallback(() => {
+    if (scanIntervalRef.current) { clearInterval(scanIntervalRef.current); scanIntervalRef.current = null; }
+    scanStreamRef.current?.getTracks().forEach(t => t.stop());
+    scanStreamRef.current = null;
+    setScannerOpen(false);
+  }, []);
+
+  // Ouvre un scanner caméra live avec cadre de visée ; se rabat sur la capture
+  // photo unique si le navigateur ne supporte pas la caméra en direct.
+  const openScanner = async () => {
+    setScanError("");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (!("BarcodeDetector" in window)) {
+      setScanError("Scan non supporté sur ce navigateur. Tape le code manuellement.");
+      return;
+    }
+    if (!navigator.mediaDevices?.getUserMedia) { scanRef.current?.click(); return; }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+      scanStreamRef.current = stream;
+      setScannerOpen(true);
+      requestAnimationFrame(() => {
+        if (videoRef.current) { videoRef.current.srcObject = stream; videoRef.current.play().catch(() => {}); }
+      });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const detector = new (window as any).BarcodeDetector({ formats: ["ean_13", "ean_8", "upc_a", "upc_e", "code_128"] });
+      scanIntervalRef.current = setInterval(async () => {
+        if (!videoRef.current || videoRef.current.readyState < 2) return;
+        try {
+          const barcodes = await detector.detect(videoRef.current);
+          if (barcodes.length) {
+            const code: string = barcodes[0].rawValue;
+            stopScanner();
+            lookupBarcode(code);
+          }
+        } catch { /* image de la frame illisible, on retente au prochain tick */ }
+      }, 350);
+    } catch {
+      setScanError("Impossible d'accéder à la caméra. Vérifie les autorisations.");
+    }
+  };
+
+  // Coupe bien la caméra si l'utilisateur quitte la page pendant un scan.
+  useEffect(() => () => {
+    if (scanIntervalRef.current) clearInterval(scanIntervalRef.current);
+    scanStreamRef.current?.getTracks().forEach(t => t.stop());
+  }, []);
 
   const doSearch = useCallback(async (q: string) => {
     setSearching(true);
@@ -920,7 +977,7 @@ export default function NutritionPage() {
               {/* Mode tabs */}
               <div className="flex border border-white/10">
                 <button onClick={() => { setModalMode("ai"); setSelectedSaved(null); }} className={tabCls(modalMode==="ai")}>Estimation IA</button>
-                <button onClick={() => { setModalMode("search"); setSelectedSaved(null); }} className={tabCls(modalMode==="search")}>Recherche</button>
+                <button onClick={() => { setModalMode("search"); setSelectedSaved(null); }} className={tabCls(modalMode==="search")}>Scan</button>
                 <button onClick={() => { setModalMode("saved"); setSelectedSaved(null); }} className={tabCls(modalMode==="saved", false)}>
                   Mes repas{savedMeals.length > 0 && <span className="ml-1 opacity-50">({savedMeals.length})</span>}
                 </button>
@@ -1051,22 +1108,28 @@ export default function NutritionPage() {
               {/* ── SEARCH MODE ── */}
               {modalMode === "search" && (
                 <div className="flex flex-col gap-4">
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <input className="w-full bg-[#0a0a0a] border border-white/10 text-white placeholder-white/20 text-sm pl-4 pr-10 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
-                        placeholder="Rechercher un aliment…" value={query} onChange={e => { setQuery(e.target.value); setSelected(null); setScanError(""); }} autoFocus/>
-                      {searching && <div className="absolute right-3 top-1/2 -translate-y-1/2"><div className="w-3 h-3 border border-[#c9a84c] border-t-transparent rounded-full animate-spin"/></div>}
-                    </div>
-                    <button onClick={() => scanRef.current?.click()} title="Scanner un code-barres"
-                      className="border border-white/10 text-white/40 hover:text-white/70 hover:border-white/20 transition-colors px-3 flex items-center">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M3 5h2M3 5v2M21 5h-2M21 5v2M3 19h2M3 19v-2M21 19h-2M21 19v-2"/>
-                        <line x1="7" y1="8" x2="7" y2="16"/><line x1="10" y1="8" x2="10" y2="16"/>
-                        <line x1="13" y1="8" x2="13" y2="16"/><line x1="16" y1="8" x2="16" y2="11"/>
-                        <line x1="16" y1="13" x2="16" y2="16"/>
-                      </svg>
-                    </button>
-                    <input ref={scanRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleScan}/>
+                  <button onClick={openScanner}
+                    className="flex items-center justify-center gap-2.5 bg-[#c9a84c] text-black text-[0.72rem] font-bold tracking-[0.15em] uppercase py-3.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M3 5h2M3 5v2M21 5h-2M21 5v2M3 19h2M3 19v-2M21 19h-2M21 19v-2"/>
+                      <line x1="7" y1="8" x2="7" y2="16"/><line x1="10" y1="8" x2="10" y2="16"/>
+                      <line x1="13" y1="8" x2="13" y2="16"/><line x1="16" y1="8" x2="16" y2="11"/>
+                      <line x1="16" y1="13" x2="16" y2="16"/>
+                    </svg>
+                    Scanner un code-barres
+                  </button>
+                  <input ref={scanRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleScan}/>
+
+                  <div className="flex items-center gap-3">
+                    <div className="h-px flex-1 bg-white/10"/>
+                    <span className="text-[0.6rem] tracking-[0.2em] uppercase text-white/20">ou</span>
+                    <div className="h-px flex-1 bg-white/10"/>
+                  </div>
+
+                  <div className="relative">
+                    <input className="w-full bg-[#0a0a0a] border border-white/10 text-white placeholder-white/20 text-sm pl-4 pr-10 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
+                      placeholder="Rechercher un aliment par nom…" value={query} onChange={e => { setQuery(e.target.value); setSelected(null); setScanError(""); }}/>
+                    {searching && <div className="absolute right-3 top-1/2 -translate-y-1/2"><div className="w-3 h-3 border border-[#c9a84c] border-t-transparent rounded-full animate-spin"/></div>}
                   </div>
                   {scanError && <p className="text-[0.7rem] text-[#e07070]">{scanError}</p>}
 
@@ -1288,6 +1351,37 @@ export default function NutritionPage() {
               Enregistrer
             </button>
           </div>
+        </div>
+      )}
+
+      {/* ══ SCANNER CAMÉRA LIVE ══ */}
+      {scannerOpen && (
+        <div className="fixed inset-0 bg-black z-[60] flex flex-col">
+          {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+          <video ref={videoRef} autoPlay playsInline muted className="absolute inset-0 w-full h-full object-cover"/>
+          <div className="absolute inset-0 bg-black/35"/>
+
+          {/* Cadre de visée */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none px-8">
+            <div className="relative w-full max-w-sm aspect-[16/10]">
+              <div className="absolute inset-0 border border-[#c9a84c]/40"/>
+              <div className="absolute -top-px -left-px w-7 h-7 border-t-[3px] border-l-[3px] border-[#e2c97e]"/>
+              <div className="absolute -top-px -right-px w-7 h-7 border-t-[3px] border-r-[3px] border-[#e2c97e]"/>
+              <div className="absolute -bottom-px -left-px w-7 h-7 border-b-[3px] border-l-[3px] border-[#e2c97e]"/>
+              <div className="absolute -bottom-px -right-px w-7 h-7 border-b-[3px] border-r-[3px] border-[#e2c97e]"/>
+            </div>
+          </div>
+
+          <div className="relative z-10 flex items-center justify-between px-5 pt-6">
+            <p className="text-white/70 text-[0.68rem] tracking-[0.15em] uppercase">Aligne le code-barres dans le cadre</p>
+            <button onClick={stopScanner} className="text-white/70 hover:text-white transition-colors p-1">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+
+          {scanError && (
+            <p className="relative z-10 text-center text-[#e07070] text-xs mt-6 px-8">{scanError}</p>
+          )}
         </div>
       )}
     </div>

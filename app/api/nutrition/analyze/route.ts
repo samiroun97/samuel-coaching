@@ -51,6 +51,10 @@ export async function POST(req: NextRequest) {
     const response = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 1000,
+      // Température basse : sans ça le modèle peut recalculer le même repas
+      // différemment d'une fois à l'autre. On veut de la reproductibilité,
+      // pas de créativité, pour une estimation calorique.
+      temperature: 0.2,
       messages: [{ role: "user", content }],
     });
 
