@@ -27,6 +27,13 @@ function parseBFCheck(content: string): BFCheck | null {
   if (!m) return null;
   try { return JSON.parse(m[1]) as BFCheck; } catch { return null; }
 }
+const BODYFAT_FEEDBACK_RE = /^\[BODYFAT_FEEDBACK:(\{[\s\S]*\})\]$/;
+type BFFeedback = { estimated_bf: number; comment: string; photos: string[] };
+function parseBFFeedback(content: string): BFFeedback | null {
+  const m = content.match(BODYFAT_FEEDBACK_RE);
+  if (!m) return null;
+  try { return JSON.parse(m[1]) as BFFeedback; } catch { return null; }
+}
 type Client = { id: string; email: string; prenom: string; nom: string; poids: number; pipeline_stage: string | null; subscription_end: string | null; objectifs: string };
 
 const STAGE_CFG: Record<string, { label: string; color: string }> = {
@@ -270,6 +277,37 @@ export default function InboxPage() {
                   )}
                   <div className="max-w-[85%] md:max-w-md">
                     {(() => {
+                      // Signalement d'une estimation body fat jugée fausse par le client
+                      const bff = !isMe ? parseBFFeedback(m.content) : null;
+                      if (bff) {
+                        return (
+                          <div className="overflow-hidden border-l-2"
+                            style={{ borderLeftColor: "#e07070", borderTop: "1px solid #e0707025", borderRight: "1px solid #e0707025", borderBottom: "1px solid #e0707025", boxShadow: "0 0 16px #e0707015" }}>
+                            <div className="px-3 py-2 flex items-center justify-between" style={{ backgroundColor: "#e0707015" }}>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm">🚩</span>
+                                <span className="text-[0.48rem] tracking-[0.2em] uppercase font-bold text-[#e07070]">Estimation signalée</span>
+                              </div>
+                              <div className="flex items-baseline gap-1">
+                                <span style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-white tracking-wide leading-none">{bff.estimated_bf}</span>
+                                <span className="text-[0.45rem] text-white/40">%</span>
+                              </div>
+                            </div>
+                            <div className="px-4 py-3 bg-[#0d0d0d] flex flex-col gap-3">
+                              <p className="text-[0.65rem] text-white/55 leading-relaxed">{bff.comment}</p>
+                              {bff.photos?.length > 0 && (
+                                <div className="flex flex-wrap gap-2">
+                                  {bff.photos.map((p, i) => (
+                                    <a key={i} href={p} target="_blank" rel="noopener noreferrer" className="block w-16 h-20 border border-white/10 rounded-lg overflow-hidden hover:border-[#e07070]/40 transition-colors">
+                                      <img src={p} alt={`Photo ${i + 1}`} className="w-full h-full object-cover"/>
+                                    </a>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      }
                       // Body fat check-in partagé
                       const bfc = !isMe ? parseBFCheck(m.content) : null;
                       if (bfc) {

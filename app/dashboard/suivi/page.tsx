@@ -92,6 +92,10 @@ export default function SuiviPage() {
   const [estimating,     setEstimating]     = useState(false);
   const [result,         setResult]         = useState<{ body_fat_percentage: number; note: string; points_forts?: string; points_faibles?: string; conseils?: string } | null>(null);
   const [error,          setError]          = useState("");
+  const [showReportForm, setShowReportForm] = useState(false);
+  const [reportComment,  setReportComment]  = useState("");
+  const [reportSending,  setReportSending]  = useState(false);
+  const [reportSent,     setReportSent]     = useState(false);
   const [showUpload,     setShowUpload]     = useState(false);
   const [showManual,     setShowManual]     = useState(false);
   const [weightHistOpen, setWeightHistOpen] = useState(false);
@@ -302,6 +306,7 @@ export default function SuiviPage() {
   const estimate = async () => {
     if (photoCount === 0) { setError("Ajoute au moins une photo."); return; }
     setEstimating(true); setError(""); setResult(null);
+    setReportSent(false); setShowReportForm(false); setReportComment("");
     try {
       const res = await apiPost("/api/suivi/bodyfat", { photos: Object.values(photos), profile });
       if (!res.ok) throw new Error(await res.text() || `Erreur ${res.status}`);
@@ -349,6 +354,24 @@ export default function SuiviPage() {
     }
 
     setResult(null); setPhotos({}); setShowUpload(false); setShareWithCoach(false);
+  };
+
+  // Signalement d'une estimation qui semble fausse — envoyé à Samuel via l'Inbox,
+  // avec les photos utilisées pour l'estimation (jamais conservées sinon).
+  const submitReport = async () => {
+    if (!result || !reportComment.trim() || !userEmail) return;
+    setReportSending(true);
+    const payload = JSON.stringify({
+      estimated_bf: result.body_fat_percentage,
+      comment: reportComment.trim(),
+      photos: Object.values(photos),
+    });
+    await supabase.from("messages").insert({
+      from_email: userEmail,
+      to_email: SAMUEL_EMAIL,
+      content: `[BODYFAT_FEEDBACK:${payload}]`,
+    });
+    setReportSending(false); setReportSent(true); setShowReportForm(false); setReportComment("");
   };
 
   const saveManualBF = () => {
@@ -728,6 +751,37 @@ export default function SuiviPage() {
                   {sharing ? "Envoi…" : shareWithCoach ? "Enregistrer & partager →" : "Enregistrer →"}
                 </button>
               </div>
+
+              {/* Signalement d'une estimation qui semble fausse — envoie les photos à Samuel,
+                  contrairement au reste du flux où elles ne sont jamais conservées. */}
+              {userEmail !== SAMUEL_EMAIL && !reportSent && (
+                showReportForm ? (
+                  <div className="border border-white/10 bg-[#0a0a0a] rounded-lg p-4 flex flex-col gap-3">
+                    <p className="text-[0.62rem] text-white/40 leading-relaxed">
+                      Décris ce qui te semble incorrect. Tes photos seront envoyées à Samuel avec ton message pour l&apos;aider à améliorer l&apos;IA (normalement elles ne sont jamais conservées).
+                    </p>
+                    <textarea className="w-full bg-[#060606] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={3}
+                      placeholder="Ex : le % me semble beaucoup trop élevé, je m'entraîne depuis 2 ans et je suis plutôt sec..."
+                      value={reportComment} onChange={e => setReportComment(e.target.value)}/>
+                    <div className="flex gap-2">
+                      <button onClick={() => { setShowReportForm(false); setReportComment(""); }}
+                        className="flex-1 border border-white/10 text-white/40 rounded-lg text-[0.65rem] tracking-[0.15em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors">
+                        Annuler
+                      </button>
+                      <button onClick={submitReport} disabled={reportSending || !reportComment.trim()}
+                        className="flex-1 bg-[#e07070] text-black text-[0.65rem] font-bold tracking-[0.15em] uppercase py-2.5 hover:bg-[#e58888] transition-colors disabled:opacity-40 rounded-lg">
+                        {reportSending ? "Envoi…" : "Envoyer le signalement →"}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button onClick={() => setShowReportForm(true)}
+                    className="text-[0.6rem] tracking-wider uppercase text-white/20 hover:text-[#e07070]/70 transition-colors text-center py-1">
+                    Cette estimation te semble fausse ? Signale-la à Samuel →
+                  </button>
+                )
+              )}
+              {reportSent && <p className="text-[0.62rem] text-[#7eb8a0] text-center py-1">Signalement envoyé, merci ! 🙏</p>}
             </div>
           ) : (
             <button onClick={estimate} disabled={photoCount === 0 || estimating}
