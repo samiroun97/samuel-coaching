@@ -12,6 +12,7 @@ type Profile = {
 };
 
 const ECHEANCES = ["1 mois", "3 mois", "6 mois", "1 an", "Pas d'échéance précise"];
+const LIEUX = ["Salle de musculation", "Extérieur", "Maison"];
 type Goals = { calories: number; proteines: number; glucides: number; lipides: number };
 type Food  = { calories: number; proteines: number; glucides: number; lipides: number };
 type Log   = { date: string; calories_burned: number };
@@ -152,7 +153,7 @@ export default function AccueilPage() {
   const [calView,      setCalView]      = useState<"tdee" | "goal">("tdee");
   const [selectedDate, setSelectedDate] = useState(today());
   const [showObjForm,  setShowObjForm]  = useState(false);
-  const [objForm,      setObjForm]      = useState({ objectifs: "", echeance: "", echeanceDate: "", seances: "" });
+  const [objForm,      setObjForm]      = useState({ objectifs: "", echeance: "", echeanceDate: "", seances: "", lieux: [] as string[] });
   const [objSaving,    setObjSaving]    = useState(false);
 
   // Static data — loads once on mount
@@ -269,7 +270,8 @@ export default function AccueilPage() {
 
   const openObjForm = () => {
     if (!profile) return;
-    setObjForm({ objectifs: profile.objectifs || "", echeance: profile.objectif_echeance || "", echeanceDate: "", seances: String(profile.seances_par_semaine || "") });
+    const knownLieux = (profile.lieu_entrainement || "").split(",").map(s => s.trim()).filter(s => LIEUX.includes(s));
+    setObjForm({ objectifs: profile.objectifs || "", echeance: profile.objectif_echeance || "", echeanceDate: "", seances: String(profile.seances_par_semaine || ""), lieux: knownLieux });
     setShowObjForm(true);
   };
 
@@ -280,6 +282,7 @@ export default function AccueilPage() {
       objectifs: objForm.objectifs.trim(),
       objectif_echeance: objForm.echeance || null,
       seances_par_semaine: objForm.seances ? parseInt(objForm.seances) : profile?.seances_par_semaine,
+      lieu_entrainement: objForm.lieux.length ? objForm.lieux.join(", ") : profile?.lieu_entrainement,
       objectif_pending: false,
     };
     await supabase.from("profiles").update(fields).eq("id", userId);
@@ -621,6 +624,25 @@ export default function AccueilPage() {
                       setObjForm(f => ({ ...f, echeanceDate: val, echeance: val ? label : f.echeance }));
                     }}
                     className="bg-[#060606] border border-white/10 rounded-lg text-white text-xs px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"/>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[0.6rem] tracking-[0.15em] uppercase text-white/40 block mb-1.5">Où veux-tu t'entraîner ? (plusieurs choix possibles)</label>
+                <div className="flex flex-wrap gap-2">
+                  {LIEUX.map(l => {
+                    const checked = objForm.lieux.includes(l);
+                    return (
+                      <button key={l} type="button"
+                        onClick={() => setObjForm(f => ({ ...f, lieux: checked ? f.lieux.filter(x => x !== l) : [...f.lieux, l] }))}
+                        className={`flex items-center gap-1.5 text-[0.65rem] tracking-wider px-3 py-2 rounded-lg border transition-colors ${checked ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-white/15 text-white/40 hover:border-white/30"}`}>
+                        <span className={`w-3 h-3 rounded-sm border flex items-center justify-center shrink-0 ${checked ? "border-black" : "border-white/25"}`}>
+                          {checked && <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                        </span>
+                        {l}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
