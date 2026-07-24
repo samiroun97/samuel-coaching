@@ -12,18 +12,24 @@ export default function SplashScreen() {
     if (sessionStorage.getItem("splash_seen")) { setHidden(true); return; }
     sessionStorage.setItem("splash_seen", "1");
     const interval = setInterval(() => {
-      setProgress((p) => {
-        if (p >= 100) {
-          clearInterval(interval);
-          setFading(true);
-          setTimeout(() => setHidden(true), 500);
-          return 100;
-        }
-        return p + 4;
-      });
-    }, 20);
+      setProgress((p) => (p >= 100 ? 100 : p + 1.5));
+    }, 24);
     return () => clearInterval(interval);
   }, []);
+
+  // Petit temps de pause une fois la barre pleine avant de lancer le fondu,
+  // pour laisser le tracé cardio "respirer" au lieu de disparaître d'un coup.
+  useEffect(() => {
+    if (progress < 100) return;
+    const t = setTimeout(() => setFading(true), 400);
+    return () => clearTimeout(t);
+  }, [progress]);
+
+  useEffect(() => {
+    if (!fading) return;
+    const t = setTimeout(() => setHidden(true), 700);
+    return () => clearTimeout(t);
+  }, [fading]);
 
   if (hidden) return null;
 
@@ -34,7 +40,7 @@ export default function SplashScreen() {
     >
       <div className="text-center px-6">
 
-        <p className="text-[#c9a84c] text-[0.65rem] tracking-[0.4em] uppercase mb-10"
+        <p className="text-[#c9a84c] text-[0.65rem] tracking-[0.4em] uppercase mb-8"
           style={{ opacity: progress > 15 ? 1 : 0, transition: "opacity 0.6s ease" }}>
           FITNESS · TRANSFORMATION · EXCELLENCE
         </p>
@@ -44,14 +50,32 @@ export default function SplashScreen() {
             <span style={{ fontFamily: "var(--font-bebas)", fontSize: "clamp(3rem, 12vw, 8rem)", color: "white", letterSpacing: "0.1em" }}>
               SAMUEL
             </span>
-            <span style={{ fontFamily: "var(--font-bebas)", fontSize: "clamp(3rem, 12vw, 8rem)", color: "#c9a84c" }}>.</span>
+            <span className="animate-heartbeat-pulse inline-block"
+              style={{ fontFamily: "var(--font-bebas)", fontSize: "clamp(3rem, 12vw, 8rem)", color: "#c9a84c" }}>.</span>
             <div style={{ fontSize: "clamp(0.6rem, 2vw, 1rem)", letterSpacing: "0.5em", color: "#c9a84c", fontWeight: 200, marginTop: "0.5rem" }}>
               COACHING
             </div>
           </div>
         </div>
 
-        <div className="mt-14 w-56 mx-auto">
+        {/* Tracé cardio : ligne de base fixe + segment lumineux qui balaye en boucle,
+            comme un moniteur de fréquence cardiaque — clin d'œil sportif/dynamique. */}
+        <div className="mt-8 w-full max-w-[260px] mx-auto"
+          style={{ opacity: progress > 30 ? 1 : 0, transition: "opacity 0.6s ease" }}>
+          <svg viewBox="0 0 260 40" className="w-full h-auto" fill="none">
+            <path
+              d="M0,20 H60 L68,20 L74,4 L82,36 L90,10 L96,20 H130 L138,20 L144,4 L152,36 L160,10 L166,20 H260"
+              stroke="#c9a84c" strokeOpacity="0.18" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+            />
+            <path
+              d="M0,20 H60 L68,20 L74,4 L82,36 L90,10 L96,20 H130 L138,20 L144,4 L152,36 L160,10 L166,20 H260"
+              stroke="#e2c97e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+              pathLength={300} strokeDasharray="60 300" className="animate-heartbeat-sweep"
+            />
+          </svg>
+        </div>
+
+        <div className="mt-6 w-56 mx-auto">
           <div className="h-px bg-white/10 relative overflow-hidden">
             <div
               className="absolute left-0 top-0 h-full bg-[#c9a84c]"
