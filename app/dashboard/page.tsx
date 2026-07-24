@@ -568,13 +568,17 @@ export default function AccueilPage() {
         </div>
       </div>
 
-      <div className="border border-white/10 bg-[#111] rounded-lg p-6 mb-6">
+      <button onClick={openObjForm}
+        className="w-full text-left border border-white/10 bg-[#111] hover:border-[#c9a84c]/30 hover:bg-[#c9a84c]/5 rounded-lg p-6 mb-6 transition-colors group">
         <div className="flex items-center justify-between mb-3">
-          <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Objectifs</p>
+          <div className="flex items-center gap-2">
+            <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Objectifs</p>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-0 group-hover:opacity-60 transition-opacity"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          </div>
           {profile.objectif_echeance && <p className="text-[0.62rem] text-white/25 tracking-wider uppercase">Échéance : {profile.objectif_echeance}</p>}
         </div>
         <p className="text-sm text-white/55 leading-relaxed">{profile.objectifs}</p>
-      </div>
+      </button>
 
       {/* ── Actions ── */}
       <div className="flex gap-4">
