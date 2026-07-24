@@ -467,31 +467,48 @@ export default function NutritionPage() {
     setAnalyzing(false);
   };
 
-  // Décode depuis un object URL (pas un FileReader/base64) : une photo de téléphone en
-  // pleine résolution (10-20 Mo+) ferait doubler sa taille en mémoire une fois encodée en
-  // base64 avant même d'être redimensionnée, ce qui suffit à faire planter l'onglet sur les
-  // appareils avec peu de RAM. L'object URL laisse le navigateur décoder directement le Blob.
-  const compressImage = (file: File): Promise<string> =>
-    new Promise((resolve, reject) => {
-      const objectUrl = URL.createObjectURL(file);
-      const img = new Image();
-      img.onload = () => {
-        try {
-          const scale = Math.min(800 / img.width, 800 / img.height, 1);
-          const canvas = document.createElement("canvas");
-          canvas.width = Math.floor(img.width * scale);
-          canvas.height = Math.floor(img.height * scale);
-          canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
-          resolve(canvas.toDataURL("image/jpeg", 0.65));
-        } catch (err) {
-          reject(err);
-        } finally {
-          URL.revokeObjectURL(objectUrl);
-        }
-      };
-      img.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error("Image illisible")); };
-      img.src = objectUrl;
-    });
+  // createImageBitmap + resizeWidth laisse le décodeur sous-échantillonner directement
+  // pendant le décodage au lieu de matérialiser la photo en pleine résolution en mémoire :
+  // une photo de téléphone récent (12-48 Mpx) peut peser 150-200 Mo une fois décodée en
+  // bitmap brut via un simple <img>, largement de quoi planter l'onglet sur un appareil
+  // avec peu de RAM disponible au moment de la prise de vue. bitmap.close() libère la
+  // mémoire immédiatement au lieu d'attendre le passage du garbage collector.
+  const compressImage = async (file: File): Promise<string> => {
+    try {
+      const bitmap = await createImageBitmap(file, { resizeWidth: 1000, resizeQuality: "medium" });
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = bitmap.width;
+        canvas.height = bitmap.height;
+        canvas.getContext("2d")!.drawImage(bitmap, 0, 0);
+        return canvas.toDataURL("image/jpeg", 0.65);
+      } finally {
+        bitmap.close();
+      }
+    } catch {
+      // Repli pour les navigateurs sans support des options de redimensionnement.
+      return new Promise<string>((resolve, reject) => {
+        const objectUrl = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+          try {
+            const scale = Math.min(800 / img.width, 800 / img.height, 1);
+            const canvas = document.createElement("canvas");
+            canvas.width = Math.floor(img.width * scale);
+            canvas.height = Math.floor(img.height * scale);
+            canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL("image/jpeg", 0.65));
+          } catch (err) {
+            reject(err);
+          } finally {
+            URL.revokeObjectURL(objectUrl);
+          }
+        };
+        img.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error("Image illisible")); };
+        img.src = objectUrl;
+      });
+    }
+  };
 
   const selectPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return;
@@ -594,7 +611,16 @@ export default function NutritionPage() {
           // EAN/UPC illisibles de trop près ou de loin ; on demande explicitement
           // mieux, en laissant le navigateur retomber sur une valeur plus faible
           // si la caméra ne supporte pas cette résolution ("ideal", pas "exact").
-          { video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } } },
+          // focusMode "continuous" : sans ça, certaines caméras gardent une mise au
+          // point fixe pensée pour un cadrage lointain et ne refont jamais le point
+          // quand on approche le code-barres — résultat systématiquement flou.
+          {
+            video: {
+              facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 },
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              advanced: [{ focusMode: "continuous" } as any],
+            },
+          },
           videoRef.current,
           (result) => {
             if (result) {
@@ -1007,15 +1033,15 @@ export default function NutritionPage() {
                 <div className="flex flex-col gap-4">
                   <div className="grid grid-cols-2 gap-2">
                     <button onClick={() => photoRef.current?.click()} disabled={analyzing}
-                      className="flex items-center justify-center gap-2 border border-white/10 text-white/40 rounded-lg text-[0.7rem] tracking-[0.1em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors disabled:opacity-40">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      className="flex items-center justify-center gap-2 border border-white/10 text-white/40 rounded-lg text-[0.7rem] tracking-[0.1em] uppercase px-3 py-2.5 hover:border-white/20 hover:text-white/60 transition-colors disabled:opacity-40">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
                         <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/>
                       </svg>
                       {photoPreview ? "Reprendre une photo" : "Prendre une photo"}
                     </button>
                     <button onClick={() => galleryRef.current?.click()} disabled={analyzing}
-                      className="flex items-center justify-center gap-2 border border-white/10 text-white/40 rounded-lg text-[0.7rem] tracking-[0.1em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors disabled:opacity-40">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      className="flex items-center justify-center gap-2 border border-white/10 text-white/40 rounded-lg text-[0.7rem] tracking-[0.1em] uppercase px-3 py-2.5 hover:border-white/20 hover:text-white/60 transition-colors disabled:opacity-40">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
                         <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
                       </svg>
                       {photoPreview ? "Changer la photo" : "Choisir une photo"}
@@ -1386,7 +1412,7 @@ export default function NutritionPage() {
               <div className="absolute -bottom-px -right-px w-7 h-7 border-b-[3px] border-r-[3px] border-[#e2c97e]"/>
             </div>
             <p className="text-white/40 text-[0.6rem] tracking-[0.12em] uppercase text-center max-w-[220px]">
-              Tiens le téléphone stable, à 10-15 cm, code-barres bien à plat et net
+              Tiens le téléphone stable, à 15-20 cm (trop près = flou), code-barres bien à plat
             </p>
           </div>
 
