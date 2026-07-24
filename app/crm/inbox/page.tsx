@@ -62,6 +62,11 @@ export default function InboxPage() {
   const [loading,     setLoading]     = useState(true);
   const [showTpls,    setShowTpls]    = useState(false);
   const [treated,     setTreated]     = useState<Set<string>>(new Set());
+  const [corrections, setCorrections] = useState<Map<string, { coach_comment: string; corrected_estimate: number | null }>>(new Map());
+  const [correctingId,      setCorrectingId]      = useState<string | null>(null);
+  const [correctionComment, setCorrectionComment] = useState("");
+  const [correctionValue,   setCorrectionValue]   = useState("");
+  const [correctionSaving,  setCorrectionSaving]  = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -71,15 +76,31 @@ export default function InboxPage() {
 
   useEffect(() => {
     (async () => {
-      const [{ data: c }, { data: m }] = await Promise.all([
+      const [{ data: c }, { data: m }, { data: bfc }] = await Promise.all([
         supabase.from("profiles").select("id,email,prenom,nom,poids,pipeline_stage,subscription_end,objectifs").order("updated_at", { ascending: false }),
         supabase.from("messages").select("*").order("created_at", { ascending: true }),
+        supabase.from("bodyfat_ai_corrections").select("message_id,coach_comment,corrected_estimate"),
       ]);
       setClients((c ?? []) as Client[]);
       setMsgs((m ?? []) as Msg[]);
+      setCorrections(new Map((bfc ?? []).filter(r => r.message_id).map(r => [r.message_id as string, { coach_comment: r.coach_comment, corrected_estimate: r.corrected_estimate }])));
       setLoading(false);
     })();
   }, []);
+
+  const submitCorrection = async (messageId: string, estimated_bf: number, client_comment: string) => {
+    if (!correctionComment.trim()) return;
+    setCorrectionSaving(true);
+    const corrected_estimate = correctionValue ? parseFloat(correctionValue) : null;
+    const { error } = await supabase.from("bodyfat_ai_corrections").insert({
+      message_id: messageId, original_estimate: estimated_bf, client_comment,
+      coach_comment: correctionComment.trim(), corrected_estimate,
+    });
+    setCorrectionSaving(false);
+    if (error) { alert(`Erreur lors de l'enregistrement : ${error.message}`); return; }
+    setCorrections(prev => new Map(prev).set(messageId, { coach_comment: correctionComment.trim(), corrected_estimate }));
+    setCorrectingId(null); setCorrectionComment(""); setCorrectionValue("");
+  };
 
   useEffect(() => {
     const ch = supabase.channel("crm_inbox")
@@ -303,6 +324,40 @@ export default function InboxPage() {
                                     </a>
                                   ))}
                                 </div>
+                              )}
+
+                              {/* Correction coach -> réinjectée dans le prompt IA des prochaines estimations */}
+                              {corrections.has(m.id) ? (
+                                <div className="border-t border-white/5 pt-3">
+                                  <p className="text-[0.45rem] tracking-[0.15em] uppercase text-[#7eb8a0] mb-1">✓ Correction envoyée à l&apos;IA{corrections.get(m.id)!.corrected_estimate !== null ? ` · ${corrections.get(m.id)!.corrected_estimate}%` : ""}</p>
+                                  <p className="text-[0.62rem] text-white/40 leading-relaxed">{corrections.get(m.id)!.coach_comment}</p>
+                                </div>
+                              ) : correctingId === m.id ? (
+                                <div className="border-t border-white/5 pt-3 flex flex-col gap-2">
+                                  <div className="flex gap-2 items-center">
+                                    <input type="number" step="0.1" placeholder="% correct (optionnel)" value={correctionValue}
+                                      onChange={e => setCorrectionValue(e.target.value)}
+                                      className="w-32 bg-[#060606] border border-white/10 rounded-lg text-white placeholder-white/20 text-xs px-2.5 py-2 focus:outline-none focus:border-[#c9a84c]/40"/>
+                                  </div>
+                                  <textarea rows={2} placeholder="Ce que l'IA a mal évalué et comment corriger (ex : sous-estime le gras abdominal chez les hommes avec cette morphologie...)"
+                                    value={correctionComment} onChange={e => setCorrectionComment(e.target.value)}
+                                    className="w-full bg-[#060606] border border-white/10 rounded-lg text-white placeholder-white/20 text-xs px-2.5 py-2 focus:outline-none focus:border-[#c9a84c]/40 resize-none"/>
+                                  <div className="flex gap-2">
+                                    <button onClick={() => { setCorrectingId(null); setCorrectionComment(""); setCorrectionValue(""); }}
+                                      className="flex-1 border border-white/10 text-white/40 rounded-lg text-[0.55rem] tracking-wider uppercase py-2 hover:border-white/20 hover:text-white/60 transition-colors">
+                                      Annuler
+                                    </button>
+                                    <button onClick={() => submitCorrection(m.id, bff.estimated_bf, bff.comment)} disabled={correctionSaving || !correctionComment.trim()}
+                                      className="flex-1 bg-[#c9a84c] text-black text-[0.55rem] font-bold tracking-wider uppercase py-2 hover:bg-[#e2c97e] transition-colors disabled:opacity-40 rounded-lg">
+                                      {correctionSaving ? "Envoi…" : "Envoyer à l'IA →"}
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <button onClick={() => setCorrectingId(m.id)}
+                                  className="text-[0.55rem] tracking-wider uppercase text-white/25 hover:text-[#c9a84c] transition-colors text-left border-t border-white/5 pt-3">
+                                  Corriger cette estimation →
+                                </button>
                               )}
                             </div>
                           </div>

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import { createClient } from "@supabase/supabase-js";
 import { requireUser } from "@/lib/apiAuth";
 
 export async function POST(req: NextRequest) {
@@ -41,6 +42,30 @@ Objectif déclaré par le client : ${objectifs || "non renseigné"}`
       return NextResponse.json({ error: "Aucune image valide" }, { status: 400 });
     }
 
+    // Corrections apportées par le coach sur d'anciennes estimations jugées fausses —
+    // réinjectées comme contexte pour calibrer les prochaines estimations. Table interne
+    // (RLS coach-only), donc lue ici via la clé service_role qui contourne RLS : ce n'est
+    // pas un vrai réentraînement du modèle, mais un ajustement du prompt par l'usage réel.
+    let correctionsBlock = "";
+    try {
+      const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      if (serviceKey) {
+        const admin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceKey);
+        const { data: corrections } = await admin
+          .from("bodyfat_ai_corrections")
+          .select("original_estimate,corrected_estimate,coach_comment")
+          .order("created_at", { ascending: false })
+          .limit(20);
+        if (corrections?.length) {
+          correctionsBlock = `\n\nRetours d'ajustement d'un coach humain expert sur des estimations précédentes de CE MÊME système — prends-les en compte pour calibrer ton estimation actuelle si les cas se ressemblent :\n${
+            corrections.map((c, i) =>
+              `${i + 1}. Estimation IA initiale : ${c.original_estimate ?? "?"}%${c.corrected_estimate !== null && c.corrected_estimate !== undefined ? `, valeur corrigée par le coach : ${c.corrected_estimate}%` : ""}. Retour du coach : ${c.coach_comment}`
+            ).join("\n")
+          }`;
+        }
+      }
+    } catch { /* best-effort : l'estimation continue sans le contexte de calibration */ }
+
     const client = new Anthropic({ apiKey });
     const response = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
@@ -65,7 +90,7 @@ Retourne UNIQUEMENT ce JSON valide, sans texte avant ni après :
   "conseils": "5-6 phrases de conseils pratiques et personnalisés, construits explicitement à partir de l'objectif déclaré par le client ci-dessus (rappelle en une phrase le lien avec cet objectif, puis détaille : priorités d'entraînement, ajustements nutrition, et éventuellement récupération/habitudes). Si aucun objectif n'est renseigné, dis-le et donne des conseils génériques mais toujours détaillés."
 }
 
-Sois direct, bienveillant et concret — développe chaque point plutôt que de rester en surface, surtout les conseils qui doivent être construits sur mesure pour cet objectif précis, pas des généralités interchangeables d'un client à l'autre. Chaque champ texte max 700 caractères (jusqu'à 900 pour "conseils").`,
+Sois direct, bienveillant et concret — développe chaque point plutôt que de rester en surface, surtout les conseils qui doivent être construits sur mesure pour cet objectif précis, pas des généralités interchangeables d'un client à l'autre. Chaque champ texte max 700 caractères (jusqu'à 900 pour "conseils").${correctionsBlock}`,
             },
           ],
         },
