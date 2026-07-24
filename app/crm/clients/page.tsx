@@ -37,7 +37,6 @@ type DaySummary = { date: string; calories: number; proteines: number; glucides:
 type MealPlan = { id: string; name: string; notes: string | null; is_active: boolean };
 type MealItem = { id: string; plan_id: string; meal_type: string; name: string; calories: number; proteines: number; glucides: number; lipides: number };
 
-const imc = (p: number, t: number) => (p / ((t / 100) ** 2)).toFixed(1);
 const todayStr = () => new Date().toISOString().split("T")[0];
 
 export default function ClientsPage() {
@@ -58,6 +57,7 @@ export default function ClientsPage() {
   const [mealItems,    setMealItems]    = useState<MealItem[]>([]);
   const [activePlanId, setActivePlanId] = useState<string | null>(null);
   const [journal,      setJournal]      = useState<DaySummary[]>([]);
+  const [bodyFat,      setBodyFat]      = useState<number | null>(null);
 
   // Forms
   const [noteInput,    setNoteInput]    = useState("");
@@ -94,17 +94,19 @@ export default function ClientsPage() {
   };
 
   const selectClient = async (c: Client) => {
-    setSelected(c); setTab("profil");
+    setSelected(c); setTab("profil"); setBodyFat(null);
     setNoteInput(""); setCkForm({ week_date: todayStr(), weight: "", body_fat: "", compliance: 0, notes: "" }); setSeanceErr("");
     setSeanceForm({ titre: "", type_seance: "", date_prevue: "", semaine: "", description: "", exercices: [] });
-    const [{ data: s }, { data: n }, { data: ck }, { data: js }] = await Promise.all([
+    const [{ data: s }, { data: n }, { data: ck }, { data: js }, { data: bf }] = await Promise.all([
       supabase.from("programme_seances").select("*").eq("assigned_to_email", c.email).order("created_at", { ascending: false }),
       supabase.from("coach_notes").select("*").eq("client_id", c.id).order("created_at", { ascending: false }),
       supabase.from("weekly_checkins").select("*").eq("client_id", c.id).order("week_date", { ascending: false }),
       supabase.from("daily_summaries").select("date,calories,proteines,glucides,lipides,foods").eq("user_id", c.id).order("date", { ascending: false }).limit(14),
+      supabase.from("body_fat_entries").select("body_fat").eq("user_id", c.id).order("date", { ascending: false }).limit(1),
     ]);
     setSeances((s ?? []) as Seance[]); setNotes((n ?? []) as Note[]); setCheckins((ck ?? []) as Checkin[]);
     setJournal((js ?? []) as DaySummary[]);
+    setBodyFat(bf?.[0]?.body_fat ?? null);
     await loadMealPlans(c.id);
   };
 
@@ -302,7 +304,7 @@ export default function ClientsPage() {
                 <div className="min-w-0">
                 <p className="text-[0.45rem] tracking-[0.2em] text-white/25 uppercase truncate">{selected.email}</p>
                 <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl md:text-4xl text-white tracking-wide">{selected.prenom} {selected.nom}</h2>
-                <p className="text-white/30 text-xs mt-0.5">{selected.age} ans · {selected.sexe} · {selected.poids} kg · {selected.taille} cm · IMC {imc(selected.poids, selected.taille)}</p>
+                <p className="text-white/30 text-xs mt-0.5">{selected.age} ans · {selected.sexe} · {selected.poids} kg · {selected.taille} cm{bodyFat !== null && ` · Body fat ${bodyFat}%`}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3 shrink-0">
