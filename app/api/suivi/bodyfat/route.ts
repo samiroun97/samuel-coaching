@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     const client = new Anthropic({ apiKey });
     const response = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 600,
+      max_tokens: 900,
       messages: [
         {
           role: "user",
@@ -59,12 +59,12 @@ Retourne UNIQUEMENT ce JSON valide, sans texte avant ni après :
 {
   "body_fat_percentage": 18.5,
   "note": "Estimation basée sur la répartition adipeuse visible (max 80 car.)",
-  "points_forts": "1-2 phrases courtes sur les points forts visibles (muscles, proportions, etc.)",
-  "points_faibles": "1-2 phrases courtes sur les zones à améliorer (stockage graisseux, etc.)",
-  "conseils": "1-2 phrases courtes de conseil pratique personnalisé"
+  "points_forts": "3-4 phrases détaillées sur les points forts visibles (muscles, proportions, symétrie, posture, etc.), avec des exemples concrets observés sur les photos",
+  "points_faibles": "3-4 phrases détaillées sur les zones à améliorer (stockage graisseux, déséquilibres, zones à travailler en priorité, etc.), avec des exemples concrets observés sur les photos",
+  "conseils": "3-4 phrases détaillées de conseils pratiques et personnalisés (entraînement, nutrition, priorités des prochaines semaines), directement liés aux points faibles identifiés"
 }
 
-Sois direct, bienveillant et concret. Chaque champ texte max 120 caractères.`,
+Sois direct, bienveillant et concret — développe chaque point plutôt que de rester en surface. Chaque champ texte max 500 caractères.`,
             },
           ],
         },
