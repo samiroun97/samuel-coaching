@@ -152,7 +152,7 @@ export default function AccueilPage() {
   const [calView,      setCalView]      = useState<"tdee" | "goal">("tdee");
   const [selectedDate, setSelectedDate] = useState(today());
   const [showObjForm,  setShowObjForm]  = useState(false);
-  const [objForm,      setObjForm]      = useState({ objectifs: "", echeance: "", seances: "" });
+  const [objForm,      setObjForm]      = useState({ objectifs: "", echeance: "", echeanceDate: "", seances: "" });
   const [objSaving,    setObjSaving]    = useState(false);
 
   // Static data — loads once on mount
@@ -269,7 +269,7 @@ export default function AccueilPage() {
 
   const openObjForm = () => {
     if (!profile) return;
-    setObjForm({ objectifs: profile.objectifs || "", echeance: profile.objectif_echeance || "", seances: String(profile.seances_par_semaine || "") });
+    setObjForm({ objectifs: profile.objectifs || "", echeance: profile.objectif_echeance || "", echeanceDate: "", seances: String(profile.seances_par_semaine || "") });
     setShowObjForm(true);
   };
 
@@ -604,13 +604,23 @@ export default function AccueilPage() {
 
               <div>
                 <label className="text-[0.6rem] tracking-[0.15em] uppercase text-white/40 block mb-1.5">Dans combien de temps ?</label>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 mb-2">
                   {ECHEANCES.map(e => (
-                    <button key={e} type="button" onClick={() => setObjForm(f => ({ ...f, echeance: e }))}
+                    <button key={e} type="button" onClick={() => setObjForm(f => ({ ...f, echeance: e, echeanceDate: "" }))}
                       className={`text-[0.65rem] tracking-wider px-3 py-2 rounded-lg border transition-colors ${objForm.echeance === e ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-white/15 text-white/40 hover:border-white/30"}`}>
                       {e}
                     </button>
                   ))}
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[0.58rem] text-white/25 uppercase tracking-wider shrink-0">ou une date précise</span>
+                  <input type="date" value={objForm.echeanceDate}
+                    onChange={e => {
+                      const val = e.target.value;
+                      const label = val ? new Date(val + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }) : "";
+                      setObjForm(f => ({ ...f, echeanceDate: val, echeance: val ? label : f.echeance }));
+                    }}
+                    className="bg-[#060606] border border-white/10 rounded-lg text-white text-xs px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"/>
                 </div>
               </div>
 
