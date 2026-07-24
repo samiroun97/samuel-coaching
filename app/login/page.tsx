@@ -109,7 +109,7 @@ export default function LoginPage() {
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setError("Cette adresse email n'est pas valide (ex : ton@email.com)."); return; }
       setLoading(true);
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: "https://samuel-coaching-five.vercel.app/reset-password",
+        redirectTo: `${window.location.origin}/reset-password`,
       });
       if (error) setError(translateError(error.message));
       else setSuccess("Email envoyé ! Clique sur le lien reçu pour choisir un nouveau mot de passe.");
@@ -137,7 +137,7 @@ export default function LoginPage() {
         password,
         options: {
           data: { full_name: nom.trim() },
-          emailRedirectTo: "https://samuel-coaching-five.vercel.app/dashboard",
+          emailRedirectTo: `${window.location.origin}/dashboard`,
         },
       });
       if (error) {
