@@ -4,12 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
-import { type ExerciceItem, serializeExercices, parseExercices } from "@/lib/exercices";
-import ExerciceEditor from "@/components/ExerciceEditor";
-import { type LibraryEntry, listLibrary } from "@/lib/exerciceLibrary";
 
 const SAMUEL_EMAIL = "sam97waelti@gmail.com";
-const SEANCE_TYPES = ["Haut du corps","Bas du corps","Full body","Cardio","Boxe","Natation","CrossFit","Yoga","Autre"];
 
 const STATUS_CFG = {
   actif:   { label: "Actif",   color: "#7eb8a0" },
@@ -46,7 +42,7 @@ export default function ClientsPage() {
   const [filterStage,  setFilterStage]  = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [selected, setSelected] = useState<Client | null>(null);
-  const [tab,      setTab]      = useState<"profil"|"notes"|"checkin"|"programme"|"repas"|"journal">("profil");
+  const [tab,      setTab]      = useState<"profil"|"notes"|"checkin"|"repas"|"journal">("profil");
   const [loading,  setLoading]  = useState(true);
   const [pendingSignups, setPendingSignups] = useState<PendingSignup[]>([]);
 
@@ -65,10 +61,6 @@ export default function ClientsPage() {
   const [noteSaving,   setNoteSaving]   = useState(false);
   const [ckForm,       setCkForm]       = useState({ week_date: todayStr(), weight: "", body_fat: "", compliance: 0, notes: "" });
   const [ckSaving,     setCkSaving]     = useState(false);
-  const [seanceForm,   setSeanceForm]   = useState<{ titre: string; type_seance: string; date_prevue: string; semaine: string; description: string; exercices: ExerciceItem[] }>({ titre: "", type_seance: "", date_prevue: "", semaine: "", description: "", exercices: [] });
-  const [seanceSaving, setSeanceSaving] = useState(false);
-  const [seanceErr,    setSeanceErr]    = useState("");
-  const [library,      setLibrary]      = useState<LibraryEntry[]>([]);
   const [planName,     setPlanName]     = useState("");
   const [planNotes,    setPlanNotes]    = useState("");
   const [planSaving,   setPlanSaving]   = useState(false);
@@ -82,7 +74,6 @@ export default function ClientsPage() {
       .then(({ data }) => { setClients((data ?? []) as Client[]); setLoading(false); });
     supabase.rpc("get_pending_signups")
       .then(({ data }) => setPendingSignups((data ?? []) as PendingSignup[]));
-    listLibrary().then(setLibrary).catch(() => { /* table pas encore créée */ });
   }, []);
 
   const loadMealPlans = async (id: string) => {
@@ -97,8 +88,7 @@ export default function ClientsPage() {
 
   const selectClient = async (c: Client) => {
     setSelected(c); setTab("profil"); setBodyFat(null);
-    setNoteInput(""); setCkForm({ week_date: todayStr(), weight: "", body_fat: "", compliance: 0, notes: "" }); setSeanceErr("");
-    setSeanceForm({ titre: "", type_seance: "", date_prevue: "", semaine: "", description: "", exercices: [] });
+    setNoteInput(""); setCkForm({ week_date: todayStr(), weight: "", body_fat: "", compliance: 0, notes: "" });
     const [{ data: s }, { data: n }, { data: ck }, { data: js }, { data: bf }] = await Promise.all([
       supabase.from("programme_seances").select("*").eq("assigned_to_email", c.email).order("created_at", { ascending: false }),
       supabase.from("coach_notes").select("*").eq("client_id", c.id).order("created_at", { ascending: false }),
@@ -168,30 +158,6 @@ export default function ClientsPage() {
     }).select().single();
     if (data) { setCheckins(prev => [data as Checkin, ...prev].sort((a, b) => b.week_date.localeCompare(a.week_date))); setCkForm({ week_date: todayStr(), weight: "", body_fat: "", compliance: 0, notes: "" }); }
     setCkSaving(false);
-  };
-
-  const sendSeance = async () => {
-    if (!selected || !seanceForm.titre) { setSeanceErr("Titre requis"); return; }
-    setSeanceSaving(true); setSeanceErr("");
-    const { error } = await supabase.from("programme_seances").insert({
-      assigned_to_email: selected.email, titre: seanceForm.titre, type_seance: seanceForm.type_seance || null,
-      date_prevue: seanceForm.date_prevue || null, semaine: seanceForm.semaine ? parseInt(seanceForm.semaine) || null : null,
-      description: seanceForm.description || null, exercices: serializeExercices(seanceForm.exercices),
-    });
-    if (error) { setSeanceErr(error.message); setSeanceSaving(false); return; }
-    const { data } = await supabase.from("programme_seances").select("*").eq("assigned_to_email", selected.email).order("created_at", { ascending: false });
-    setSeances((data ?? []) as Seance[]);
-    setSeanceForm({ titre: "", type_seance: "", date_prevue: "", semaine: "", description: "", exercices: [] });
-    setSeanceSaving(false);
-  };
-
-  const duplicateSeance = (s: Seance) => {
-    setSeanceForm({
-      titre: s.titre, type_seance: s.type_seance || "", date_prevue: "",
-      semaine: s.semaine ? String(s.semaine + 1) : "",
-      description: s.description || "", exercices: parseExercices(s.exercices),
-    });
-    setSeanceErr("");
   };
 
   const createPlan = async () => {
@@ -373,7 +339,6 @@ export default function ClientsPage() {
               { key: "profil",     label: "Profil" },
               { key: "notes",      label: `Notes (${notes.length})` },
               { key: "checkin",    label: `Check-ins (${checkins.length})` },
-              { key: "programme",  label: `Programme (${seances.length})` },
               { key: "repas",      label: `Plan repas${activePlanId ? " ✓" : ""}` },
               { key: "journal",    label: `Journal (${journal.length})` },
             ] as const).map(({ key, label }) => (
@@ -382,6 +347,13 @@ export default function ClientsPage() {
                 {label}
               </button>
             ))}
+            {/* Renvoie vers la même section Programmes (bibliothèque + modèles + IA) que le menu
+                CRM, pré-sélectionnée sur ce client — plus de formulaire de séance dupliqué ici. */}
+            <Link href={`/crm/programmes?client=${encodeURIComponent(selected.email)}`}
+              className="py-3 mr-5 text-[0.58rem] tracking-[0.12em] uppercase border-b-2 border-transparent text-white/30 hover:text-white/50 transition-colors whitespace-nowrap flex items-center gap-1">
+              Programme ({seances.length})
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </Link>
           </div>
 
           {/* Tab content */}
@@ -502,71 +474,6 @@ export default function ClientsPage() {
                       </button>
                     </div>
                   ))}
-              </div>
-            )}
-
-            {/* PROGRAMME */}
-            {tab === "programme" && (
-              <div className="max-w-2xl flex flex-col gap-5">
-                <div className="border border-[#c9a84c]/20 bg-[#0f0d07] rounded-lg p-5">
-                  <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Nouvelle séance — {selected.prenom}</p>
-                  <div className="flex flex-col gap-3">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div><label className={lbl}>Titre *</label><input className={inp} placeholder="Séance haut du corps" value={seanceForm.titre} onChange={e => setSeanceForm(f => ({ ...f, titre: e.target.value }))}/></div>
-                      <div><label className={lbl}>Type</label>
-                        <select className={`${inp} cursor-pointer`} value={seanceForm.type_seance} onChange={e => setSeanceForm(f => ({ ...f, type_seance: e.target.value }))}>
-                          <option value="">Choisir…</option>{SEANCE_TYPES.map(t => <option key={t}>{t}</option>)}
-                        </select>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div><label className={lbl}>Date prévue</label><input className={inp} type="date" value={seanceForm.date_prevue} onChange={e => setSeanceForm(f => ({ ...f, date_prevue: e.target.value }))}/></div>
-                      <div><label className={lbl}>Semaine (optionnel)</label><input className={inp} type="number" min="1" placeholder="1" value={seanceForm.semaine} onChange={e => setSeanceForm(f => ({ ...f, semaine: e.target.value }))}/></div>
-                    </div>
-                    <div><label className={lbl}>Description</label><textarea className={`${inp} resize-none`} rows={2} placeholder="Objectif, intensité, conseils…" value={seanceForm.description} onChange={e => setSeanceForm(f => ({ ...f, description: e.target.value }))}/></div>
-                    <div>
-                      <label className={lbl}>Exercices</label>
-                      <ExerciceEditor items={seanceForm.exercices} onChange={items => setSeanceForm(f => ({ ...f, exercices: items }))} library={library}/>
-                    </div>
-                    {seanceErr && <p className="text-xs text-[#e07070] px-3 py-2 border border-[#e07070]/20 bg-[#e07070]/5">{seanceErr}</p>}
-                    <button onClick={sendSeance} disabled={seanceSaving} className="bg-[#c9a84c] text-black text-[0.58rem] font-bold tracking-[0.18em] uppercase py-3 hover:bg-[#e2c97e] transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
-                      {seanceSaving ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Envoi…</> : `Envoyer à ${selected.prenom} →`}
-                    </button>
-                  </div>
-                </div>
-                {seances.length > 0 && (
-                  <div>
-                    <p className="text-[0.5rem] tracking-[0.2em] uppercase text-white/25 mb-3">
-                      Séances envoyées ({seances.length}) · {seances.filter(s => s.completed_at).length} terminée{seances.filter(s => s.completed_at).length > 1 ? "s" : ""}
-                    </p>
-                    <div className="flex flex-col gap-2">
-                      {seances.map(s => (
-                        <div key={s.id} className={`border rounded-lg px-4 py-3 flex items-start justify-between gap-3 ${s.completed_at ? "border-[#7eb8a0]/25 bg-[#7eb8a0]/5" : "border-white/8 bg-[#111]"}`}>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2 mb-0.5">
-                              {s.completed_at && <span className="text-[0.65rem] text-[#7eb8a0] shrink-0">✓</span>}
-                              {s.type_seance && <span className="text-[0.55rem] tracking-wider uppercase text-[#c9a84c] border border-[#c9a84c]/20 px-1.5 py-0.5">{s.type_seance}</span>}
-                              {s.semaine && <span className="text-[0.55rem] tracking-wider uppercase text-white/30 border border-white/10 px-1.5 py-0.5">Sem. {s.semaine}</span>}
-                              <p className={`text-xs ${s.completed_at ? "text-white/45" : "text-white/65"}`}>{s.titre}</p>
-                            </div>
-                            {s.completed_at
-                              ? <p className="text-[0.6rem] text-[#7eb8a0]/70">Terminée le {new Date(s.completed_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}</p>
-                              : s.date_prevue && <p className="text-[0.6rem] text-white/25">Prévue {new Date(s.date_prevue + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" })}</p>}
-                          </div>
-                          <div className="shrink-0 flex items-center gap-2.5">
-                            <button onClick={() => duplicateSeance(s)} title="Dupliquer dans le formulaire" className="text-white/25 hover:text-[#c9a84c] transition-colors">
-                              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-                            </button>
-                            <button onClick={async () => { await supabase.from("programme_seances").delete().eq("id", s.id); setSeances(prev => prev.filter(x => x.id !== s.id)); }}
-                              className="text-white/15 hover:text-[#e07070] transition-colors">
-                              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             )}
 

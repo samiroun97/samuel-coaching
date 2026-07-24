@@ -1,6 +1,7 @@
 "use client";
 export const dynamic = "force-dynamic";
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
 import { type ExerciceItem, serializeExercices, normalizeExercice } from "@/lib/exercices";
@@ -25,6 +26,8 @@ type SeanceDraft = { titre: string; type_seance: string; date_prevue: string; se
 const emptySeance = (): SeanceDraft => ({ titre: "", type_seance: "", date_prevue: "", semaine: "", description: "", exercices: [] });
 
 export default function ProgrammesPage() {
+  const searchParams   = useSearchParams();
+  const preselectEmail = searchParams.get("client");
   const [clients,     setClients]     = useState<Client[]>([]);
   const [seanceCount, setSeanceCount] = useState<Map<string, number>>(new Map());
   const [filter,      setFilter]      = useState<"sans" | "avec">("sans");
@@ -99,6 +102,14 @@ export default function ProgrammesPage() {
   const selectClient = (c: Client) => {
     setSelected(c); setDrafts([]); setGenError(""); setSentTo(null); setGenDescription("");
   };
+
+  // Arrivée depuis la fiche client (CRM > Clients > Programme) avec ?client=email
+  useEffect(() => {
+    if (!preselectEmail || selected) return;
+    const c = clients.find(cl => cl.email === preselectEmail);
+    if (c) selectClient(c);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preselectEmail, clients]);
 
   const generate = async () => {
     if (!selected || generating) return;
