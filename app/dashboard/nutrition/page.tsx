@@ -240,6 +240,8 @@ export default function NutritionPage() {
   const scanRef         = useRef<HTMLInputElement>(null);
   const [scanError, setScanError] = useState("");
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [torchOn, setTorchOn] = useState(false);
+  const [torchAvailable, setTorchAvailable] = useState(false);
   const videoRef        = useRef<HTMLVideoElement>(null);
   const scanControlsRef = useRef<IScannerControls | null>(null);
   const [aiResult,    setAiResult]    = useState<AIResult | null>(null);
@@ -544,9 +546,8 @@ export default function NutritionPage() {
   const stopVoice = () => { recognitionRef.current?.stop(); setListening(false); };
 
   // Résout un code-barres détecté (par la caméra live ou une photo) en produit OFF.
-  // Un match direct par code-barres est sans ambiguïté (contrairement à une recherche
-  // par nom) : l'aliment est donc ajouté au journal directement, portion 100g par défaut,
-  // sans étape de confirmation manuelle.
+  // Passe par le même état `selected` que la recherche par nom : ça affiche la carte
+  // de confirmation avec quantité éditable au lieu d'ajouter direct à 100g.
   const lookupBarcode = useCallback(async (code: string) => {
     setScanError(""); setSelected(null); setSearching(true);
     try {
@@ -554,16 +555,9 @@ export default function NutritionPage() {
       const data = await res.json();
       if (data.status === 1 && data.product?.nutriments) {
         const p = data.product;
-        setFoods(f => [...f, {
-          id: Date.now().toString(),
-          name: p.product_name || code,
-          calories:  Math.round(p.nutriments["energy-kcal_100g"] ?? 0),
-          proteines: Math.round(p.nutriments.proteins_100g ?? 0),
-          glucides:  Math.round(p.nutriments.carbohydrates_100g ?? 0),
-          lipides:   Math.round(p.nutriments.fat_100g ?? 0),
-        }]);
+        setSelected({ product_name: p.product_name || code, brands: p.brands, nutriments: p.nutriments });
+        setQuantity("100");
         setSearching(false);
-        resetModal();
       } else {
         setQuery(code);
         doSearch(code);
@@ -592,7 +586,19 @@ export default function NutritionPage() {
     scanControlsRef.current?.stop();
     scanControlsRef.current = null;
     setScannerOpen(false);
+    setTorchOn(false);
+    setTorchAvailable(false);
   }, []);
+
+  // La torche aide surtout contre le flou : en faible lumière la caméra allonge le
+  // temps d'exposition, donc le moindre tremblement de main floute l'image (pas un
+  // problème de mise au point). Support très inégal (quasi absent sur Safari/iOS),
+  // donc le bouton n'apparaît que si le zxing détecte la capacité sur le stream.
+  const toggleTorch = async () => {
+    if (!scanControlsRef.current?.switchTorch) return;
+    const next = !torchOn;
+    try { await scanControlsRef.current.switchTorch(next); setTorchOn(next); } catch { /* non supporté */ }
+  };
 
   // Ouvre un scanner caméra live avec cadre de visée. ZXing décode les frames
   // en JS pur (canvas), donc ça fonctionne aussi bien sur Safari/iPhone que
@@ -630,6 +636,7 @@ export default function NutritionPage() {
           }
         );
         scanControlsRef.current = controls;
+        setTorchAvailable(!!controls.switchTorch);
       } catch {
         setScanError("Impossible d'accéder à la caméra. Vérifie les autorisations.");
         setScannerOpen(false);
@@ -1164,6 +1171,13 @@ export default function NutritionPage() {
                     Scanner un code-barres
                   </button>
                   <input ref={scanRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleScan}/>
+                  {/* Repli manuel : l'appli caméra native fait sa propre mise au point/exposition
+                      avant la capture, donc le résultat est souvent bien plus net qu'une frame
+                      prise en direct sur le flux vidéo — utile quand le scan live reste flou. */}
+                  <button onClick={() => scanRef.current?.click()}
+                    className="text-[0.68rem] tracking-[0.15em] uppercase text-white/30 hover:text-white/55 transition-colors -mt-1">
+                    Ou prendre une photo du code-barres
+                  </button>
 
                   <div className="flex items-center gap-3">
                     <div className="h-px flex-1 bg-white/10"/>
@@ -1418,9 +1432,19 @@ export default function NutritionPage() {
 
           <div className="relative z-10 flex items-center justify-between px-5 pt-6">
             <p className="text-white/70 text-[0.68rem] tracking-[0.15em] uppercase">Aligne le code-barres dans le cadre</p>
-            <button onClick={stopScanner} className="text-white/70 hover:text-white transition-colors p-1">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
+            <div className="flex items-center gap-3">
+              {torchAvailable && (
+                <button onClick={toggleTorch}
+                  className={`p-1.5 rounded-full transition-colors ${torchOn ? "text-[#e2c97e] bg-[#c9a84c]/15" : "text-white/70 hover:text-white"}`}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill={torchOn ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 18h6M10 22h4M15 14c1.5-1.26 2-2.5 2-4a5 5 0 0 0-10 0c0 1.5.5 2.74 2 4 .93.78 1 1.5 1 2h4c0-.5.07-1.22 1-2Z"/>
+                  </svg>
+                </button>
+              )}
+              <button onClick={stopScanner} className="text-white/70 hover:text-white transition-colors p-1">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
           </div>
 
           {scanError && (
