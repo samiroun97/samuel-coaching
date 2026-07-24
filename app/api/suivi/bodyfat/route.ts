@@ -10,10 +10,11 @@ export async function POST(req: NextRequest) {
     if (!apiKey) return NextResponse.json({ error: "Clé API manquante" }, { status: 500 });
 
     const { photos, profile } = await req.json();
-    const { sexe, poids, taille, age } = profile ?? {};
+    const { sexe, poids, taille, age, objectifs, experience, niveau_activite, seances_par_semaine } = profile ?? {};
 
     const profileStr = profile
-      ? `Profil : ${sexe ?? "?"}, ${age ?? "?"}ans, ${poids ?? "?"}kg, ${taille ?? "?"}cm`
+      ? `Profil : ${sexe ?? "?"}, ${age ?? "?"}ans, ${poids ?? "?"}kg, ${taille ?? "?"}cm, niveau ${niveau_activite ?? "?"}/${experience ?? "?"}, ${seances_par_semaine ?? "?"} séances/semaine.
+Objectif déclaré par le client : ${objectifs || "non renseigné"}`
       : "Profil non renseigné.";
 
     type ValidMediaType = "image/jpeg" | "image/png" | "image/gif" | "image/webp";
@@ -43,7 +44,7 @@ export async function POST(req: NextRequest) {
     const client = new Anthropic({ apiKey });
     const response = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 900,
+      max_tokens: 1300,
       messages: [
         {
           role: "user",
@@ -61,10 +62,10 @@ Retourne UNIQUEMENT ce JSON valide, sans texte avant ni après :
   "note": "Estimation basée sur la répartition adipeuse visible (max 80 car.)",
   "points_forts": "3-4 phrases détaillées sur les points forts visibles (muscles, proportions, symétrie, posture, etc.), avec des exemples concrets observés sur les photos",
   "points_faibles": "3-4 phrases détaillées sur les zones à améliorer (stockage graisseux, déséquilibres, zones à travailler en priorité, etc.), avec des exemples concrets observés sur les photos",
-  "conseils": "3-4 phrases détaillées de conseils pratiques et personnalisés (entraînement, nutrition, priorités des prochaines semaines), directement liés aux points faibles identifiés"
+  "conseils": "5-6 phrases de conseils pratiques et personnalisés, construits explicitement à partir de l'objectif déclaré par le client ci-dessus (rappelle en une phrase le lien avec cet objectif, puis détaille : priorités d'entraînement, ajustements nutrition, et éventuellement récupération/habitudes). Si aucun objectif n'est renseigné, dis-le et donne des conseils génériques mais toujours détaillés."
 }
 
-Sois direct, bienveillant et concret — développe chaque point plutôt que de rester en surface. Chaque champ texte max 500 caractères.`,
+Sois direct, bienveillant et concret — développe chaque point plutôt que de rester en surface, surtout les conseils qui doivent être construits sur mesure pour cet objectif précis, pas des généralités interchangeables d'un client à l'autre. Chaque champ texte max 700 caractères (jusqu'à 900 pour "conseils").`,
             },
           ],
         },
