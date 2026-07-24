@@ -199,6 +199,13 @@ export default function SuiviPage() {
       for (let i = 0; i < 7; i++) { dates.push(d.toISOString().split("T")[0]); d.setDate(d.getDate() + 1); }
       const weekEnd = dates[6];
 
+      // Semaine en cours non terminée : les jours à venir ne doivent ni compter comme
+      // repos, ni fausser les moyennes (steps, NEAT/EAT, sessions). Pour une semaine déjà
+      // passée, todayStr est après weekEnd donc tous les jours restent comptés normalement.
+      const todayStr = new Date().toISOString().split("T")[0];
+      const effectiveDates = dates.filter(dt => dt <= todayStr);
+      const dayCount = effectiveDates.length || 1;
+
       const { data: summaries } = await supabase.from("daily_summaries")
         .select("date,calories,proteines,glucides,lipides").eq("user_id", userId).gte("date", reportWeekMonday).lte("date", weekEnd);
       const daysLogged   = summaries?.length ?? 0;
@@ -209,21 +216,21 @@ export default function SuiviPage() {
 
       const logs: { date: string; duration_minutes?: number; calories_burned?: number }[] =
         JSON.parse(localStorage.getItem("programme_logs") ?? "[]");
-      const weekLogs = logs.filter(l => dates.includes((l.date || "").split("T")[0]));
+      const weekLogs = logs.filter(l => effectiveDates.includes((l.date || "").split("T")[0]));
       const sessionsCount         = weekLogs.length;
       const totalTrainingMinutes  = weekLogs.reduce((s, l) => s + (l.duration_minutes ?? 0), 0);
       const totalEat              = weekLogs.reduce((s, l) => s + (l.calories_burned ?? 0), 0);
       const trainedDates          = new Set(weekLogs.map(l => (l.date || "").split("T")[0]));
-      const restDays              = dates.filter(dt => !trainedDates.has(dt)).length;
+      const restDays              = effectiveDates.filter(dt => !trainedDates.has(dt)).length;
       const targetSessions        = profile?.seances_par_semaine ?? null;
 
-      const totalSteps = dates.reduce((s, dt) => s + (parseInt(localStorage.getItem(`steps_${dt}`) ?? "0") || 0), 0);
-      const avgSteps = Math.round(totalSteps / 7);
+      const totalSteps = effectiveDates.reduce((s, dt) => s + (parseInt(localStorage.getItem(`steps_${dt}`) ?? "0") || 0), 0);
+      const avgSteps = Math.round(totalSteps / dayCount);
       const stepsGoal = parseInt(localStorage.getItem("steps_goal") ?? "10000") || 10000;
 
       const poidsRef = profile?.poids ?? weightHist[0]?.weight ?? 70;
-      const avgNeatPerDay = Math.round((totalSteps / 7) * 0.04 * (poidsRef / 70));
-      const avgEatPerDay  = Math.round(totalEat / 7);
+      const avgNeatPerDay = Math.round((totalSteps / dayCount) * 0.04 * (poidsRef / 70));
+      const avgEatPerDay  = Math.round(totalEat / dayCount);
 
       const bmrVal = (() => {
         if (!profile?.poids || !profile?.taille || !profile?.age) return 1800;
@@ -256,7 +263,7 @@ export default function SuiviPage() {
       const stats = {
         weekStart: reportWeekMonday, weekEnd, daysLogged, avgCalories, avgTdee, balanceStatus, balancePerDay,
         avgProteines, goalProteines, avgGlucides, goalGlucides, avgLipides, goalLipides, goalCalories,
-        sessionsCount, totalTrainingMinutes, targetSessions, restDays,
+        sessionsCount, totalTrainingMinutes, targetSessions, restDays, daysElapsed: dayCount,
         avgSteps, stepsGoal, weightStart, weightEnd,
       };
 

@@ -20,6 +20,7 @@ export type WeeklyReportData = {
   targetSessions: number | null;
   totalTrainingMinutes: number;
   restDays: number;
+  daysElapsed: number;
   avgSteps: number;
   stepsGoal: number;
   weightStart: number | null;
@@ -150,7 +151,7 @@ export function WeeklyReport({ data }: { data: WeeklyReportData }) {
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 print:gap-2 mb-6 print:mb-3 print:grid-cols-3">
         <StatCard label="Calories / jour" value={`${fmtInt(data.avgCalories)} kcal`} gold />
         <StatCard label="Séances" value={data.targetSessions ? `${data.sessionsCount} / ${data.targetSessions}` : `${data.sessionsCount}`} gold />
-        <StatCard label="Jours de repos" value={`${data.restDays} / 7`} />
+        <StatCard label="Jours de repos" value={`${data.restDays} / ${data.daysElapsed}`} />
         <StatCard label="TDEE moyen" value={`${fmtInt(data.avgTdee)} kcal`} />
         <StatCard label="Pas / jour" value={fmtInt(data.avgSteps)} gold />
         <StatCard label="Poids" value={data.weightStart !== null && data.weightEnd !== null ? `${data.weightStart} → ${data.weightEnd} kg` : "—"} />
