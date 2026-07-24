@@ -12,8 +12,8 @@ export default function SplashScreen() {
     if (sessionStorage.getItem("splash_seen")) { setHidden(true); return; }
     sessionStorage.setItem("splash_seen", "1");
     const interval = setInterval(() => {
-      setProgress((p) => (p >= 100 ? 100 : p + 1.5));
-    }, 24);
+      setProgress((p) => (p >= 100 ? 100 : p + 1));
+    }, 32);
     return () => clearInterval(interval);
   }, []);
 
@@ -21,13 +21,13 @@ export default function SplashScreen() {
   // pour laisser le tracé cardio "respirer" au lieu de disparaître d'un coup.
   useEffect(() => {
     if (progress < 100) return;
-    const t = setTimeout(() => setFading(true), 400);
+    const t = setTimeout(() => setFading(true), 800);
     return () => clearTimeout(t);
   }, [progress]);
 
   useEffect(() => {
     if (!fading) return;
-    const t = setTimeout(() => setHidden(true), 700);
+    const t = setTimeout(() => setHidden(true), 900);
     return () => clearTimeout(t);
   }, [fading]);
 
@@ -36,7 +36,7 @@ export default function SplashScreen() {
   return (
     <div
       className="fixed inset-0 z-[9999] bg-[#0a0a0a] flex flex-col items-center justify-center"
-      style={{ opacity: fading ? 0 : 1, transition: "opacity 0.7s ease" }}
+      style={{ opacity: fading ? 0 : 1, transition: "opacity 0.9s ease" }}
     >
       <div className="text-center px-6">
 
