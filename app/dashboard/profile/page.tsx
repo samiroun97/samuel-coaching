@@ -1,12 +1,18 @@
 "use client";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { isPushSupported, subscribeToPush, unsubscribeFromPush } from "@/lib/push";
 
 export default function ProfilePage() {
   const [form, setForm] = useState({ prenom: "", nom: "", age: "", poids: "", taille: "", sexe: "" });
   const [saving, setSaving] = useState(false);
   const [saved,  setSaved]  = useState(false);
   const [error,  setError]  = useState("");
+
+  const [pushSupported, setPushSupported] = useState(false);
+  const [pushEnabled,   setPushEnabled]   = useState(false);
+  const [pushLoading,   setPushLoading]   = useState(false);
+  const [pushError,     setPushError]     = useState("");
 
   const [newPassword,     setNewPassword]     = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -25,8 +31,24 @@ export default function ProfilePage() {
         age: data.age?.toString() ?? "", poids: data.poids?.toString() ?? "",
         taille: data.taille?.toString() ?? "", sexe: data.sexe ?? "",
       });
+
+      setPushSupported(isPushSupported());
+      const { count } = await supabase.from("push_subscriptions")
+        .select("id", { count: "exact", head: true }).eq("user_id", user.id);
+      setPushEnabled((count ?? 0) > 0);
     })();
   }, []);
+
+  const togglePush = async () => {
+    setPushError(""); setPushLoading(true);
+    try {
+      if (pushEnabled) { await unsubscribeFromPush(); setPushEnabled(false); }
+      else { await subscribeToPush(); setPushEnabled(true); }
+    } catch (e: unknown) {
+      setPushError(e instanceof Error ? e.message : "Erreur");
+    }
+    setPushLoading(false);
+  };
 
   const save = async () => {
     setSaving(true); setError(""); setSaved(false);
@@ -112,6 +134,35 @@ export default function ProfilePage() {
             ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Enregistrement…</>
             : "Enregistrer"}
         </button>
+      </div>
+
+      <div className="border border-white/10 bg-[#111] rounded-lg p-6 flex flex-col gap-4 mt-6">
+        <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Notifications</p>
+
+        {!pushSupported ? (
+          <p className="text-xs text-white/30 leading-relaxed">
+            Ton navigateur ne supporte pas les notifications. Sur iPhone, installe d&apos;abord l&apos;app sur l&apos;écran d&apos;accueil (Safari → Partager → Sur l&apos;écran d&apos;accueil), puis reviens ici depuis l&apos;icône.
+          </p>
+        ) : (
+          <div className="flex items-center justify-between">
+            <div className="pr-4">
+              <p className="text-[0.7rem] tracking-[0.1em] uppercase text-white/50">Rappels repas</p>
+              <p className="text-[0.62rem] text-white/25 mt-0.5">
+                {pushEnabled
+                  ? "Un rappel vers midi et vers 18-19h si tu n'as pas encore loggué le repas"
+                  : "Reçois un rappel vers midi et vers 18-19h pour penser à logguer tes repas"}
+              </p>
+            </div>
+            <button onClick={togglePush} disabled={pushLoading}
+              className={`w-10 h-5.5 rounded-full transition-all relative shrink-0 disabled:opacity-50 ${pushEnabled ? "bg-[#c9a84c]" : "bg-white/10"}`}
+              style={{ minWidth: 40, height: 22 }}>
+              <span className={`absolute top-[3px] w-4 h-4 rounded-full bg-white transition-transform ${pushEnabled ? "translate-x-[20px]" : "translate-x-[3px]"}`}
+                style={{ display: "block" }}/>
+            </button>
+          </div>
+        )}
+
+        {pushError && <p className="text-xs text-[#e07070] border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2">{pushError}</p>}
       </div>
 
       <div className="border border-white/10 bg-[#111] rounded-lg p-6 flex flex-col gap-5 mt-6">

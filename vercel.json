@@ -1,0 +1,6 @@
+{
+  "crons": [
+    { "path": "/api/push/send-reminders?meal=dejeuner", "schedule": "0 11 * * *" },
+    { "path": "/api/push/send-reminders?meal=diner", "schedule": "0 17 * * *" }
+  ]
+}
