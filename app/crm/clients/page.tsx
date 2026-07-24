@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { apiPost } from "@/lib/apiClient";
 import { type ExerciceItem, serializeExercices, parseExercices } from "@/lib/exercices";
 import ExerciceEditor from "@/components/ExerciceEditor";
 import { type LibraryEntry, listLibrary } from "@/lib/exerciceLibrary";
@@ -74,6 +75,7 @@ export default function ClientsPage() {
   const [itemForm,     setItemForm]     = useState({ meal_type: "Petit-déjeuner", name: "", calories: "", proteines: "", glucides: "", lipides: "" });
   const [statusSaving, setStatusSaving] = useState(false);
   const [deleting,     setDeleting]     = useState(false);
+  const [deletingPendingId, setDeletingPendingId] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.from("profiles").select("*").order("updated_at", { ascending: false })
@@ -120,26 +122,31 @@ export default function ClientsPage() {
     setStatusSaving(false);
   };
 
-  // Retire le client de la fiche CRM (profil + son historique coaching). Ne supprime
-  // pas son compte de connexion — s'il se reconnecte, il repasse par l'onboarding.
+  // Supprime un compte entièrement (connexion + tout son historique coaching) via la
+  // route serveur /api/crm/delete-client — un compte auth ne peut être supprimé qu'avec
+  // la clé service_role, jamais depuis le navigateur.
+  const deleteAccount = async (id: string, email: string) => {
+    const res = await apiPost("/api/crm/delete-client", { id, email });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) { alert(`Erreur lors de la suppression : ${body.error ?? res.statusText}`); return false; }
+    setClients(prev => prev.filter(c => c.id !== id));
+    setPendingSignups(prev => prev.filter(p => p.id !== id));
+    return true;
+  };
+
   const deleteClient = async () => {
     if (!selected) return;
-    if (!window.confirm(`Supprimer définitivement ${selected.prenom} ${selected.nom} et tout son historique (notes, check-ins, séances, plan repas) ? Cette action est irréversible.`)) return;
+    if (!window.confirm(`Supprimer définitivement ${selected.prenom} ${selected.nom} (compte + tout son historique) ? Cette action est irréversible.`)) return;
     setDeleting(true);
-    await Promise.all([
-      supabase.from("coach_notes").delete().eq("client_id", selected.id),
-      supabase.from("weekly_checkins").delete().eq("client_id", selected.id),
-      supabase.from("programme_seances").delete().eq("assigned_to_email", selected.email),
-      supabase.from("meal_plans").delete().eq("client_id", selected.id),
-      supabase.from("daily_summaries").delete().eq("user_id", selected.id),
-      supabase.from("messages").delete().or(`from_email.eq.${selected.email},to_email.eq.${selected.email}`),
-    ]);
-    const { data, error } = await supabase.from("profiles").delete().eq("id", selected.id).select();
+    if (await deleteAccount(selected.id, selected.email)) setSelected(null);
     setDeleting(false);
-    if (error) { alert(`Erreur lors de la suppression : ${error.message}`); return; }
-    if (!data || data.length === 0) { alert("La suppression n'a rien modifié — il manque probablement une autorisation en base (policy RLS) pour supprimer un profil. Demande à Claude de l'ajouter."); return; }
-    setClients(prev => prev.filter(c => c.id !== selected.id));
-    setSelected(null);
+  };
+
+  const deletePendingSignup = async (p: PendingSignup) => {
+    if (!window.confirm(`Supprimer définitivement le compte ${p.full_name || p.email} ? Cette action est irréversible.`)) return;
+    setDeletingPendingId(p.id);
+    await deleteAccount(p.id, p.email);
+    setDeletingPendingId(null);
   };
 
   const addNote = async () => {
@@ -253,11 +260,17 @@ export default function ClientsPage() {
                     <p className="text-[0.65rem] text-white/70 truncate">{p.full_name || "Sans nom"}</p>
                     <p className="text-[0.5rem] text-white/30 truncate">{p.email}</p>
                   </div>
-                  <div className="flex flex-col items-end gap-0.5 shrink-0">
-                    <span className={`text-[0.4rem] tracking-wider uppercase px-1.5 py-0.5 border whitespace-nowrap ${p.email_confirmed_at ? "text-[#7eb8a0] border-[#7eb8a0]/30" : "text-[#e09070] border-[#e09070]/30"}`}>
-                      {p.email_confirmed_at ? "Email confirmé" : "Confirmation en attente"}
-                    </span>
-                    <span className="text-[0.42rem] text-white/20">{new Date(p.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}</span>
+                  <div className="flex items-start gap-2 shrink-0">
+                    <div className="flex flex-col items-end gap-0.5">
+                      <span className={`text-[0.4rem] tracking-wider uppercase px-1.5 py-0.5 border whitespace-nowrap ${p.email_confirmed_at ? "text-[#7eb8a0] border-[#7eb8a0]/30" : "text-[#e09070] border-[#e09070]/30"}`}>
+                        {p.email_confirmed_at ? "Email confirmé" : "Confirmation en attente"}
+                      </span>
+                      <span className="text-[0.42rem] text-white/20">{new Date(p.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}</span>
+                    </div>
+                    <button onClick={() => deletePendingSignup(p)} disabled={deletingPendingId === p.id}
+                      title="Supprimer ce compte" className="text-white/15 hover:text-[#e07070] transition-colors disabled:opacity-40 mt-px">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
                   </div>
                 </div>
               ))}
