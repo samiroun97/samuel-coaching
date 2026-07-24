@@ -43,7 +43,6 @@ const TEMPLATES = [
   { label: "Rappel suivi",      text: "Bonjour ! Je voulais juste faire un point avec toi — comment ça se passe cette semaine côté nutrition et entraînements ?" },
   { label: "Relance inactivité",text: "Salut ! Je n'ai pas eu de tes nouvelles depuis quelques jours. Tout va bien ? Je suis là si tu as des questions ou besoin d'ajustements." },
   { label: "Félicitations",     text: "Excellent travail cette semaine ! Tes efforts paient vraiment, continue comme ça 💪" },
-  { label: "Préciser objectif", text: "Pour te construire un plan vraiment adapté, j'aimerais qu'on précise ton objectif ensemble — réponds-moi sur ces 3 points :\n\n1️⃣ Objectif — donne-moi plus de détails sur ce que tu souhaites atteindre exactement.\n2️⃣ Échéance — dans combien de temps veux-tu l'atteindre ? (1 mois / 3 mois / 6 mois / 1 an / pas d'échéance précise)\n3️⃣ Engagement — combien de séances par semaine peux-tu y consacrer ?" },
 ];
 
 export default function InboxPage() {

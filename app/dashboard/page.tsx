@@ -8,7 +8,10 @@ type Profile = {
   niveau_activite: string; experience: string; seances_par_semaine: number;
   duree_seance: string; lieu_entrainement: string;
   blessures: string; alimentation: string; sommeil_stress: string; objectifs: string;
+  objectif_echeance: string | null; objectif_pending: boolean;
 };
+
+const ECHEANCES = ["1 mois", "3 mois", "6 mois", "1 an", "Pas d'échéance précise"];
 type Goals = { calories: number; proteines: number; glucides: number; lipides: number };
 type Food  = { calories: number; proteines: number; glucides: number; lipides: number };
 type Log   = { date: string; calories_burned: number };
@@ -148,6 +151,9 @@ export default function AccueilPage() {
   const [daysSinceBF,  setDaysSinceBF]  = useState<number | null>(null);
   const [calView,      setCalView]      = useState<"tdee" | "goal">("tdee");
   const [selectedDate, setSelectedDate] = useState(today());
+  const [showObjForm,  setShowObjForm]  = useState(false);
+  const [objForm,      setObjForm]      = useState({ objectifs: "", echeance: "", seances: "" });
+  const [objSaving,    setObjSaving]    = useState(false);
 
   // Static data — loads once on mount
   useEffect(() => {
@@ -261,6 +267,26 @@ export default function AccueilPage() {
     setTimeout(() => setWeightSaved(false), 2000);
   };
 
+  const openObjForm = () => {
+    if (!profile) return;
+    setObjForm({ objectifs: profile.objectifs || "", echeance: profile.objectif_echeance || "", seances: String(profile.seances_par_semaine || "") });
+    setShowObjForm(true);
+  };
+
+  const submitObjForm = async () => {
+    if (!userId || !objForm.objectifs.trim()) return;
+    setObjSaving(true);
+    const fields = {
+      objectifs: objForm.objectifs.trim(),
+      objectif_echeance: objForm.echeance || null,
+      seances_par_semaine: objForm.seances ? parseInt(objForm.seances) : profile?.seances_par_semaine,
+      objectif_pending: false,
+    };
+    await supabase.from("profiles").update(fields).eq("id", userId);
+    setProfile(p => p ? { ...p, ...fields, objectif_pending: false } as Profile : p);
+    setObjSaving(false); setShowObjForm(false);
+  };
+
 
   if (!profile) return (
     <div className="flex items-center justify-center h-64">
@@ -290,6 +316,18 @@ export default function AccueilPage() {
           {new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}
         </p>
       </div>
+
+      {/* ── Demande de précision d'objectif (déclenchée par le coach) ── */}
+      {profile.objectif_pending && (
+        <button onClick={openObjForm}
+          className="w-full text-left border border-[#c9a84c]/30 bg-[#c9a84c]/5 hover:bg-[#c9a84c]/8 rounded-lg p-4 mb-4 flex items-center justify-between gap-3 transition-colors group">
+          <div>
+            <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-0.5">Ton coach veut en savoir plus</p>
+            <p className="text-xs text-white/50">Précise ton objectif pour qu'on te construise un plan adapté</p>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" strokeWidth="2" strokeLinecap="round" className="shrink-0 transition-transform group-hover:translate-x-0.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      )}
 
       {/* ── Sélecteur de date global ── */}
       <DateNav date={selectedDate} onChange={setSelectedDate} />
@@ -528,7 +566,10 @@ export default function AccueilPage() {
       </div>
 
       <div className="border border-white/10 bg-[#111] rounded-lg p-6 mb-6">
-        <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-3">Objectifs</p>
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Objectifs</p>
+          {profile.objectif_echeance && <p className="text-[0.62rem] text-white/25 tracking-wider uppercase">Échéance : {profile.objectif_echeance}</p>}
+        </div>
         <p className="text-sm text-white/55 leading-relaxed">{profile.objectifs}</p>
       </div>
 
@@ -543,6 +584,56 @@ export default function AccueilPage() {
           Contacter<br/>Samuel
         </Link>
       </div>
+
+      {/* ── Questionnaire de précision d'objectif ── */}
+      {showObjForm && (
+        <div className="fixed inset-0 bg-black/75 z-50 flex items-center justify-center px-4" onClick={() => setShowObjForm(false)}>
+          <div className="bg-[#0a0a0a] border border-white/10 rounded-lg w-full max-w-md max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="p-6 flex flex-col gap-5">
+              <div>
+                <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1">Précise ton objectif</p>
+                <p className="text-xs text-white/30">Pour que Samuel te construise un plan vraiment adapté</p>
+              </div>
+
+              <div>
+                <label className="text-[0.6rem] tracking-[0.15em] uppercase text-white/40 block mb-1.5">Ton objectif, en détail</label>
+                <textarea className="w-full bg-[#060606] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={4}
+                  placeholder="Ex : perdre 5 kg de graisse tout en gardant ma masse musculaire, pour être à l'aise cet été..."
+                  value={objForm.objectifs} onChange={e => setObjForm(f => ({ ...f, objectifs: e.target.value }))}/>
+              </div>
+
+              <div>
+                <label className="text-[0.6rem] tracking-[0.15em] uppercase text-white/40 block mb-1.5">Dans combien de temps ?</label>
+                <div className="flex flex-wrap gap-2">
+                  {ECHEANCES.map(e => (
+                    <button key={e} type="button" onClick={() => setObjForm(f => ({ ...f, echeance: e }))}
+                      className={`text-[0.65rem] tracking-wider px-3 py-2 rounded-lg border transition-colors ${objForm.echeance === e ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-white/15 text-white/40 hover:border-white/30"}`}>
+                      {e}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[0.6rem] tracking-[0.15em] uppercase text-white/40 block mb-1.5">Séances / semaine que tu peux y consacrer</label>
+                <div className="flex flex-wrap gap-2">
+                  {["2", "3", "4", "5", "6"].map(n => (
+                    <button key={n} type="button" onClick={() => setObjForm(f => ({ ...f, seances: n }))}
+                      className={`w-10 h-10 border rounded-lg text-sm font-bold transition-all ${objForm.seances === n ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-white/15 text-white/40 hover:border-white/30"}`}>
+                      {n}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <button onClick={submitObjForm} disabled={objSaving || !objForm.objectifs.trim()}
+                className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.18em] uppercase py-3 hover:bg-[#e2c97e] transition-colors disabled:opacity-40 rounded-lg">
+                {objSaving ? "Envoi…" : "Envoyer à Samuel →"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

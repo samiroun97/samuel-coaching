@@ -28,7 +28,7 @@ const STAGE_CFG = {
 type StatusKey = keyof typeof STATUS_CFG;
 type StageKey  = keyof typeof STAGE_CFG;
 
-type Client   = { id: string; email: string; prenom: string; nom: string; age: number; poids: number; taille: number; sexe: string; niveau_activite: string; experience: string; seances_par_semaine: number; lieu_entrainement: string; blessures: string; alimentation: string; sommeil_stress: string; objectifs: string; updated_at: string; status: StatusKey | null; subscription_end: string | null; pipeline_stage: StageKey | null };
+type Client   = { id: string; email: string; prenom: string; nom: string; age: number; poids: number; taille: number; sexe: string; niveau_activite: string; experience: string; seances_par_semaine: number; lieu_entrainement: string; blessures: string; alimentation: string; sommeil_stress: string; objectifs: string; objectif_echeance: string | null; objectif_pending: boolean; updated_at: string; status: StatusKey | null; subscription_end: string | null; pipeline_stage: StageKey | null };
 type PendingSignup = { id: string; email: string; full_name: string | null; created_at: string; email_confirmed_at: string | null };
 type Seance   = { id: string; titre: string; type_seance: string | null; date_prevue: string | null; semaine: number | null; description: string | null; exercices: string | null; completed_at: string | null };
 type Note     = { id: string; client_id: string; content: string; created_at: string };
@@ -112,7 +112,7 @@ export default function ClientsPage() {
     await loadMealPlans(c.id);
   };
 
-  const updateField = async (fields: Record<string, string | null>) => {
+  const updateField = async (fields: Record<string, string | boolean | null>) => {
     if (!selected) return;
     setStatusSaving(true);
     await supabase.from("profiles").update(fields).eq("id", selected.id);
@@ -408,7 +408,20 @@ export default function ClientsPage() {
                   <p className="text-xs text-white/55 leading-relaxed">{selected.blessures || "—"}</p>
                 </div>
                 <div className="col-span-2 border border-[#c9a84c]/10 bg-[#0f0d07] rounded-lg px-4 py-3">
-                  <p className="text-[0.48rem] tracking-[0.15em] uppercase text-[#c9a84c] mb-1">Objectifs</p>
+                  <div className="flex items-start justify-between gap-3 mb-1">
+                    <p className="text-[0.48rem] tracking-[0.15em] uppercase text-[#c9a84c]">Objectifs{selected.objectif_echeance && ` · Échéance : ${selected.objectif_echeance}`}</p>
+                    {selected.objectif_pending ? (
+                      <button disabled={statusSaving} onClick={() => updateField({ objectif_pending: false })}
+                        className="shrink-0 text-[0.48rem] tracking-wider uppercase text-[#c9a84c]/60 hover:text-[#c9a84c] transition-colors whitespace-nowrap">
+                        En attente de réponse · Annuler
+                      </button>
+                    ) : (
+                      <button disabled={statusSaving} onClick={() => updateField({ objectif_pending: true })}
+                        className="shrink-0 text-[0.48rem] tracking-wider uppercase text-white/30 hover:text-[#c9a84c] transition-colors whitespace-nowrap border border-white/10 hover:border-[#c9a84c]/40 rounded-lg px-2 py-1">
+                        Demander précision →
+                      </button>
+                    )}
+                  </div>
                   <p className="text-xs text-white/55 leading-relaxed">{selected.objectifs || "—"}</p>
                 </div>
               </div>
