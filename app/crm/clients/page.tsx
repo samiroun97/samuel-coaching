@@ -73,6 +73,7 @@ export default function ClientsPage() {
   const [planSaving,   setPlanSaving]   = useState(false);
   const [itemForm,     setItemForm]     = useState({ meal_type: "Petit-déjeuner", name: "", calories: "", proteines: "", glucides: "", lipides: "" });
   const [statusSaving, setStatusSaving] = useState(false);
+  const [deleting,     setDeleting]     = useState(false);
 
   useEffect(() => {
     supabase.from("profiles").select("*").order("updated_at", { ascending: false })
@@ -115,6 +116,28 @@ export default function ClientsPage() {
     setSelected(updated);
     setClients(prev => prev.map(c => c.id === selected.id ? updated : c));
     setStatusSaving(false);
+  };
+
+  // Retire le client de la fiche CRM (profil + son historique coaching). Ne supprime
+  // pas son compte de connexion — s'il se reconnecte, il repasse par l'onboarding.
+  const deleteClient = async () => {
+    if (!selected) return;
+    if (!window.confirm(`Supprimer définitivement ${selected.prenom} ${selected.nom} et tout son historique (notes, check-ins, séances, plan repas) ? Cette action est irréversible.`)) return;
+    setDeleting(true);
+    await Promise.all([
+      supabase.from("coach_notes").delete().eq("client_id", selected.id),
+      supabase.from("weekly_checkins").delete().eq("client_id", selected.id),
+      supabase.from("programme_seances").delete().eq("assigned_to_email", selected.email),
+      supabase.from("meal_plans").delete().eq("client_id", selected.id),
+      supabase.from("daily_summaries").delete().eq("user_id", selected.id),
+      supabase.from("messages").delete().or(`from_email.eq.${selected.email},to_email.eq.${selected.email}`),
+    ]);
+    const { data, error } = await supabase.from("profiles").delete().eq("id", selected.id).select();
+    setDeleting(false);
+    if (error) { alert(`Erreur lors de la suppression : ${error.message}`); return; }
+    if (!data || data.length === 0) { alert("La suppression n'a rien modifié — il manque probablement une autorisation en base (policy RLS) pour supprimer un profil. Demande à Claude de l'ajouter."); return; }
+    setClients(prev => prev.filter(c => c.id !== selected.id));
+    setSelected(null);
   };
 
   const addNote = async () => {
@@ -288,6 +311,11 @@ export default function ClientsPage() {
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
                   Inbox
                 </Link>
+                <button onClick={deleteClient} disabled={deleting}
+                  className="flex items-center gap-1.5 px-3 py-1.5 border border-[#e07070]/20 text-[#e07070]/50 hover:text-[#e07070] hover:border-[#e07070]/40 transition-all text-[0.45rem] tracking-[0.15em] uppercase disabled:opacity-40">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                  {deleting ? "Suppression…" : "Supprimer"}
+                </button>
                 <button onClick={() => setSelected(null)} className="text-white/20 hover:text-white/50 transition-colors">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
