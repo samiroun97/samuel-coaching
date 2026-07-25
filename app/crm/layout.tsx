@@ -8,6 +8,9 @@ import { startStateSync, SYNC_STATUS_EVENT } from "@/lib/syncStorage";
 
 const SAMUEL_EMAIL = "sam97waelti@gmail.com";
 
+// Mêmes préfixes que app/crm/ia/page.tsx — juste pour compter les signalements en attente.
+const AI_FEEDBACK_RE = /^\[(?:NUTRITION|PROGRAMME|ACTIVITE)_FEEDBACK:/;
+
 function Icon({ name }: { name: string }) {
   const p = { width: 15, height: 15, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.5, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
   switch (name) {
@@ -18,6 +21,7 @@ function Icon({ name }: { name: string }) {
     case "doc":    return <svg {...p}><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>;
     case "logout": return <svg {...p}><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>;
     case "eye":    return <svg {...p}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>;
+    case "sparkle": return <svg {...p}><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z"/></svg>;
     default: return null;
   }
 }
@@ -27,6 +31,7 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [ready,     setReady]     = useState(false);
   const [unreadSet, setUnreadSet] = useState<Set<string>>(new Set());
+  const [aiPending, setAiPending] = useState(0);
   const [syncIssue, setSyncIssue] = useState(false);
 
   useEffect(() => {
@@ -46,7 +51,7 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
       await startStateSync(user.id);
 
       // Conversations où le dernier message vient du client (pas Samuel) et non marquées traitées
-      const { data: msgs } = await supabase.from("messages").select("from_email,to_email,created_at").order("created_at", { ascending: true });
+      const { data: msgs } = await supabase.from("messages").select("id,from_email,to_email,content,created_at").order("created_at", { ascending: true });
       if (msgs) {
         let treated = new Set<string>();
         try { treated = new Set(JSON.parse(localStorage.getItem("crm_treated_convs") ?? "[]")); } catch { /* ignore */ }
@@ -56,6 +61,14 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
           if (client !== SAMUEL_EMAIL) last.set(client, m.from_email);
         }
         setUnreadSet(new Set([...last.entries()].filter(([client, from]) => from !== SAMUEL_EMAIL && !treated.has(client)).map(([client]) => client)));
+
+        // Signalements IA (nutrition/programme/activité) pas encore corrigés depuis /crm/ia
+        const feedbackMsgs = msgs.filter(m => m.from_email !== SAMUEL_EMAIL && AI_FEEDBACK_RE.test(m.content));
+        if (feedbackMsgs.length > 0) {
+          const { data: corrections } = await supabase.from("ai_corrections").select("message_id").not("message_id", "is", null);
+          const corrected = new Set((corrections ?? []).map(c => c.message_id));
+          setAiPending(feedbackMsgs.filter(m => !corrected.has(m.id)).length);
+        }
       }
       setReady(true);
     })();
@@ -87,6 +100,7 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
     { href: "/crm/clients",    label: "Clients",    icon: "users", badge: 0 },
     { href: "/crm/programmes", label: "Programmes", icon: "doc",   badge: 0 },
     { href: "/crm/inbox",      label: "Inbox",      icon: "chat",  badge: unread },
+    { href: "/crm/ia",         label: "IA",         icon: "sparkle", badge: aiPending },
   ];
 
   if (!ready) return (
