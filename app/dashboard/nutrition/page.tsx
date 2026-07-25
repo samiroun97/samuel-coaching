@@ -38,6 +38,72 @@ type PhotoDraft = { photoPreview: string | null; description: string; portionSiz
 // la modale se ferme et la photo/l'estimation en cours disparaissent. On sauvegarde donc le
 // brouillon dans sessionStorage dès qu'une photo est prise, pour le restaurer après un reload.
 const PHOTO_DRAFT_KEY = "nutrition_photo_draft";
+// Posée avant la compression (l'étape risquée en mémoire) et retirée juste après : si l'onglet
+// est tué pendant ce traitement, elle reste seule en sessionStorage et permet de distinguer
+// « reload pendant le traitement » d'un simple abandon, pour prévenir l'utilisateur au lieu
+// de le laisser deviner pourquoi sa photo a disparu.
+const PHOTO_PENDING_KEY = "nutrition_photo_pending";
+
+const MAX_PHOTO_DIM = 900;
+
+// Repli qui passe par un <img> plutôt qu'un createImageBitmap. Contre-intuitif mais
+// volontaire : sur mobile, le pipeline de décodage d'un <img> (utilisé aussi pour l'affichage
+// normal des pages) sait sous-échantillonner une photo dès lors qu'on la dessine dans un
+// canvas plus petit, alors que createImageBitmap matérialise le bitmap complet en mémoire
+// quand ses options de redimensionnement ne sont pas honorées (voir supportsBitmapResize).
+function downscaleViaImage(file: File): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const scale = Math.min(MAX_PHOTO_DIM / img.width, MAX_PHOTO_DIM / img.height, 1);
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.floor(img.width * scale);
+        canvas.height = Math.floor(img.height * scale);
+        canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", 0.6));
+      } catch (err) {
+        reject(err);
+      } finally {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+    img.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error("Image illisible")); };
+    img.src = objectUrl;
+  });
+}
+
+// createImageBitmap + resizeWidth est censé laisser le décodeur sous-échantillonner
+// directement pendant le décodage au lieu de matérialiser la photo en pleine résolution —
+// MAIS Safari/iOS avant la version 16.4 accepte ces options sans erreur et les ignore
+// silencieusement : le bitmap ressort alors en pleine résolution (une photo de téléphone
+// récent, 12-48 Mpx, peut peser 150-200 Mo décodée en brut), largement de quoi planter
+// l'onglet — sans jamais déclencher de catch, puisqu'aucune exception n'est levée. On
+// vérifie donc une fois pour toutes (résultat mis en cache pour la durée de vie de la page)
+// si le résultat correspond vraiment à ce qui est demandé avant de faire confiance à ce
+// chemin ; sinon on bascule directement sur downscaleViaImage.
+let bitmapResizeSupport: Promise<boolean> | null = null;
+function supportsBitmapResize(): Promise<boolean> {
+  if (!bitmapResizeSupport) {
+    bitmapResizeSupport = (async () => {
+      try {
+        const probe = document.createElement("canvas");
+        probe.width = 20; probe.height = 20;
+        const blob = await new Promise<Blob | null>(r => probe.toBlob(r, "image/png"));
+        if (!blob) return false;
+        const bitmap = await createImageBitmap(blob, { resizeWidth: 10, resizeQuality: "low" });
+        const honored = bitmap.width === 10;
+        bitmap.close();
+        return honored;
+      } catch {
+        return false;
+      }
+    })();
+  }
+  return bitmapResizeSupport;
+}
+
 type MiniProfile = { poids: number; taille: number; age: number; sexe: string };
 
 // Même calcul que l'accueil : Katch-McArdle si body fat connu, sinon Mifflin-St Jeor
@@ -269,8 +335,18 @@ export default function NutritionPage() {
   // Restaure un brouillon photo interrompu par un reload (retour d'appareil photo natif).
   useEffect(() => {
     try {
+      const wasPending = sessionStorage.getItem(PHOTO_PENDING_KEY);
+      if (wasPending) sessionStorage.removeItem(PHOTO_PENDING_KEY);
       const raw = sessionStorage.getItem(PHOTO_DRAFT_KEY);
-      if (!raw) return;
+      if (!raw) {
+        // Marque encore posée mais aucun brouillon : le reload a eu lieu pendant la
+        // compression elle-même, avant qu'il y ait quoi que ce soit à sauvegarder.
+        if (wasPending) {
+          setShowAdd(true); setModalMode("ai");
+          setAiError("La photo précédente a fait planter la page (mémoire insuffisante). Réessaie — si ça persiste, choisis-la depuis ta galerie juste après l'avoir prise plutôt que directement depuis l'appareil photo.");
+        }
+        return;
+      }
       const draft = JSON.parse(raw) as PhotoDraft;
       if (!draft.photoPreview) return;
       setShowAdd(true); setModalMode("ai");
@@ -469,47 +545,23 @@ export default function NutritionPage() {
     setAnalyzing(false);
   };
 
-  // createImageBitmap + resizeWidth laisse le décodeur sous-échantillonner directement
-  // pendant le décodage au lieu de matérialiser la photo en pleine résolution en mémoire :
-  // une photo de téléphone récent (12-48 Mpx) peut peser 150-200 Mo une fois décodée en
-  // bitmap brut via un simple <img>, largement de quoi planter l'onglet sur un appareil
-  // avec peu de RAM disponible au moment de la prise de vue. bitmap.close() libère la
-  // mémoire immédiatement au lieu d'attendre le passage du garbage collector.
   const compressImage = async (file: File): Promise<string> => {
-    try {
-      const bitmap = await createImageBitmap(file, { resizeWidth: 1000, resizeQuality: "medium" });
+    if (await supportsBitmapResize()) {
       try {
-        const canvas = document.createElement("canvas");
-        canvas.width = bitmap.width;
-        canvas.height = bitmap.height;
-        canvas.getContext("2d")!.drawImage(bitmap, 0, 0);
-        return canvas.toDataURL("image/jpeg", 0.65);
-      } finally {
-        bitmap.close();
-      }
-    } catch {
-      // Repli pour les navigateurs sans support des options de redimensionnement.
-      return new Promise<string>((resolve, reject) => {
-        const objectUrl = URL.createObjectURL(file);
-        const img = new Image();
-        img.onload = () => {
-          try {
-            const scale = Math.min(800 / img.width, 800 / img.height, 1);
-            const canvas = document.createElement("canvas");
-            canvas.width = Math.floor(img.width * scale);
-            canvas.height = Math.floor(img.height * scale);
-            canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
-            resolve(canvas.toDataURL("image/jpeg", 0.65));
-          } catch (err) {
-            reject(err);
-          } finally {
-            URL.revokeObjectURL(objectUrl);
-          }
-        };
-        img.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error("Image illisible")); };
-        img.src = objectUrl;
-      });
+        // bitmap.close() libère la mémoire immédiatement au lieu d'attendre le GC.
+        const bitmap = await createImageBitmap(file, { resizeWidth: MAX_PHOTO_DIM, resizeQuality: "low" });
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = bitmap.width;
+          canvas.height = bitmap.height;
+          canvas.getContext("2d")!.drawImage(bitmap, 0, 0);
+          return canvas.toDataURL("image/jpeg", 0.6);
+        } finally {
+          bitmap.close();
+        }
+      } catch { /* repli ci-dessous */ }
     }
+    return downscaleViaImage(file);
   };
 
   const selectPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -517,6 +569,9 @@ export default function NutritionPage() {
     setAiError(""); setAiResult(null);
     if (photoRef.current) photoRef.current.value = "";
     if (galleryRef.current) galleryRef.current.value = "";
+    // Posée avant compressImage (l'étape coûteuse en mémoire) : si l'onglet est tué pendant
+    // le traitement, cette marque seule survit et permet d'expliquer le crash au retour.
+    try { sessionStorage.setItem(PHOTO_PENDING_KEY, "1"); } catch { /* ignore */ }
     try {
       const compressed = await compressImage(file);
       setPhotoPreview(compressed);
@@ -528,6 +583,8 @@ export default function NutritionPage() {
       } catch { /* quota dépassé, tant pis */ }
     } catch {
       setAiError("Impossible de traiter cette photo — réessaie ou choisis-en une autre.");
+    } finally {
+      try { sessionStorage.removeItem(PHOTO_PENDING_KEY); } catch { /* ignore */ }
     }
   };
 
