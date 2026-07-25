@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import { createClient } from "@supabase/supabase-js";
 import { requireUser } from "@/lib/apiAuth";
 
 const PROMPT = `Tu es un nutritionniste expert. Analyse ce repas.
@@ -31,6 +32,31 @@ export async function POST(req: NextRequest) {
     // une estimation pour une portion standard/typique.
     const portionMultiplier = portion === "grande" ? 1.15 : portion === "petite" ? 0.85 : 1;
 
+    // Corrections apportées par le coach sur d'anciennes estimations jugées fausses (via la
+    // rubrique IA du CRM) — réinjectées comme contexte pour calibrer l'estimation actuelle.
+    // Table interne (RLS coach-only), donc lue ici via la clé service_role qui contourne RLS :
+    // ce n'est pas un vrai réentraînement du modèle, mais un ajustement du prompt par l'usage réel.
+    let correctionsBlock = "";
+    try {
+      const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      if (serviceKey) {
+        const admin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceKey);
+        const { data: corrections } = await admin
+          .from("ai_corrections")
+          .select("original_data,coach_comment")
+          .eq("category", "nutrition")
+          .order("created_at", { ascending: false })
+          .limit(20);
+        if (corrections?.length) {
+          correctionsBlock = `\n\nRetours d'ajustement d'un coach humain expert sur des estimations précédentes de CE MÊME système — prends-les en compte pour calibrer ton estimation actuelle si les cas se ressemblent :\n${
+            corrections.map((c, i) => `${i + 1}. ${c.original_data ? `Estimation IA initiale : ${JSON.stringify(c.original_data)}. ` : ""}Retour du coach : ${c.coach_comment}`).join("\n")
+          }`;
+        }
+      }
+    } catch { /* best-effort : l'estimation continue sans le contexte de calibration */ }
+
+    const promptWithCorrections = PROMPT + correctionsBlock;
+
     let content: Anthropic.Messages.MessageParam["content"];
 
     if (type === "photo" && image) {
@@ -40,10 +66,10 @@ export async function POST(req: NextRequest) {
       const precisions = text?.trim() ? `Précisions données par l'utilisateur : "${text.trim()}".` : "";
       content = [
         { type: "image", source: { type: "base64", media_type: mediaType, data: image.slice(comma + 1) } },
-        { type: "text", text: [precisions, PROMPT].filter(Boolean).join("\n") },
+        { type: "text", text: [precisions, promptWithCorrections].filter(Boolean).join("\n") },
       ];
     } else if (type === "text" && text) {
-      content = [{ type: "text", text: [`Repas : "${text}"`, PROMPT].filter(Boolean).join("\n") }];
+      content = [{ type: "text", text: [`Repas : "${text}"`, promptWithCorrections].filter(Boolean).join("\n") }];
     } else {
       return NextResponse.json({ error: "Paramètres invalides" }, { status: 400 });
     }
