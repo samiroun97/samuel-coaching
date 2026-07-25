@@ -14,6 +14,8 @@ type PerfRecord = { date: string; calories: number; duration: number; descriptio
 type PerfHistory = Record<string, PerfRecord[]>;
 type CoachSeance = { id: string; titre: string; type_seance: string | null; date_prevue: string | null; semaine: number | null; description: string | null; exercices: string | null; completed_at: string | null };
 
+const SAMUEL_EMAIL = "sam97waelti@gmail.com";
+
 function ExerciceCard({ ex }: { ex: ExerciceItem }) {
   return (
     <div className="border border-white/8 bg-white/[0.02] rounded-lg px-3 py-2.5">
@@ -176,11 +178,27 @@ export default function ProgrammePage() {
   const [calError,    setCalError]    = useState("");
   const [intensity,   setIntensity]   = useState<IntensityKey>("haute");
   const recognitionRef = useRef<{ start(): void; stop(): void } | null>(null);
+  const userEmailRef = useRef("");
+
+  // Signalement d'une estimation d'activité qui semble fausse — envoyée à Samuel via
+  // l'Inbox, pour recalibrer l'IA depuis la rubrique IA du CRM (cf. app/crm/ia).
+  const [showActReportForm, setShowActReportForm] = useState(false);
+  const [actReportComment,  setActReportComment]  = useState("");
+  const [actReportSending,  setActReportSending]  = useState(false);
+  const [actReportSent,     setActReportSent]     = useState(false);
+
+  // Signalement d'un problème sur une séance du programme assigné par Samuel — par id de
+  // séance, pour permettre de signaler plusieurs séances indépendamment.
+  const [reportingSeanceId,   setReportingSeanceId]   = useState<string | null>(null);
+  const [seanceReportComment, setSeanceReportComment] = useState("");
+  const [seanceReportSending, setSeanceReportSending] = useState(false);
+  const [seanceReportSentIds, setSeanceReportSentIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+      userEmailRef.current = user.email ?? "";
       const { data: p } = await supabase.from("profiles").select("prenom,poids,taille,age,sexe").eq("id", user.id).single();
       if (p) setProfile(p as Profile);
       if (user.email) {
@@ -227,6 +245,7 @@ export default function ProgrammePage() {
   const estimate = async () => {
     if (!activity.trim() || !durationMin) return;
     setEstimating(true); setCalError(""); setCalResult(null);
+    setShowActReportForm(false); setActReportComment(""); setActReportSent(false);
     try {
       const res = await apiPost("/api/programme/calories", { activity, duration_minutes: durationMin, description, profile });
       if (!res.ok) { const t = await res.text(); throw new Error(t || `Erreur ${res.status}`); }
@@ -235,6 +254,38 @@ export default function ProgrammePage() {
       setCalResult(data);
     } catch (e: unknown) { setCalError(e instanceof Error ? e.message : "Erreur"); }
     setEstimating(false);
+  };
+
+  // Signalement d'une estimation de calories brûlées jugée fausse.
+  const submitActReport = async () => {
+    if (!calResult || !actReportComment.trim() || !userEmailRef.current) return;
+    setActReportSending(true);
+    const payload = JSON.stringify({
+      activity, duration_minutes: durationMin, description,
+      calories_brulees: calResult.calories_brulees, comment: actReportComment.trim(),
+    });
+    await supabase.from("messages").insert({
+      from_email: userEmailRef.current, to_email: SAMUEL_EMAIL,
+      content: `[ACTIVITE_FEEDBACK:${payload}]`,
+    });
+    setActReportSending(false); setActReportSent(true); setShowActReportForm(false); setActReportComment("");
+  };
+
+  // Signalement d'un problème sur une séance précise du programme assigné par Samuel.
+  const submitSeanceReport = async (s: CoachSeance) => {
+    if (!seanceReportComment.trim() || !userEmailRef.current) return;
+    setSeanceReportSending(true);
+    const payload = JSON.stringify({
+      titre: s.titre, type_seance: s.type_seance, description: s.description,
+      comment: seanceReportComment.trim(),
+    });
+    await supabase.from("messages").insert({
+      from_email: userEmailRef.current, to_email: SAMUEL_EMAIL,
+      content: `[PROGRAMME_FEEDBACK:${payload}]`,
+    });
+    setSeanceReportSending(false);
+    setSeanceReportSentIds(prev => new Set(prev).add(s.id));
+    setReportingSeanceId(null); setSeanceReportComment("");
   };
 
   const addWorkout = () => {
@@ -356,6 +407,33 @@ export default function ProgrammePage() {
                              : "bg-[#c9a84c] text-black hover:bg-[#e2c97e]"}`}>
                       {done ? "✓ Séance terminée — annuler" : "Marquer comme terminée"}
                     </button>
+
+                    {/* Signalement d'un problème sur cette séance (exercice inadapté, charge
+                        irréaliste...) — envoyé à Samuel pour ajuster les prochains programmes. */}
+                    {seanceReportSentIds.has(s.id) ? (
+                      <p className="text-[0.6rem] text-[#7eb8a0] text-center mt-2">Signalement envoyé, merci ! 🙏</p>
+                    ) : reportingSeanceId === s.id ? (
+                      <div className="border border-white/10 bg-[#0a0a0a] rounded-lg p-3 mt-2 flex flex-col gap-2">
+                        <textarea className="w-full bg-[#060606] border border-white/10 rounded-lg text-white placeholder-white/20 text-xs px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={2}
+                          placeholder="Ex : la charge suggérée est trop lourde pour cet exercice à mon niveau..."
+                          value={seanceReportComment} onChange={e => setSeanceReportComment(e.target.value)}/>
+                        <div className="flex gap-2">
+                          <button onClick={() => { setReportingSeanceId(null); setSeanceReportComment(""); }}
+                            className="flex-1 border border-white/10 text-white/40 rounded-lg text-[0.6rem] tracking-[0.1em] uppercase py-2 hover:border-white/20 hover:text-white/60 transition-colors">
+                            Annuler
+                          </button>
+                          <button onClick={() => submitSeanceReport(s)} disabled={seanceReportSending || !seanceReportComment.trim()}
+                            className="flex-1 bg-[#e07070] text-black text-[0.6rem] font-bold tracking-[0.1em] uppercase py-2 hover:bg-[#e58888] transition-colors disabled:opacity-40 rounded-lg">
+                            {seanceReportSending ? "Envoi…" : "Envoyer →"}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button onClick={() => setReportingSeanceId(s.id)}
+                        className="text-[0.55rem] tracking-wider uppercase text-white/20 hover:text-[#e07070]/70 transition-colors text-center py-1 mt-2 w-full">
+                        Un souci avec cette séance ? Signale-la à Samuel →
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
@@ -573,6 +651,32 @@ export default function ProgrammePage() {
                 Ajouter à ma journée →
               </button>
             </div>
+
+            {/* Signalement d'une estimation de calories brûlées jugée fausse. */}
+            {actReportSent ? (
+              <p className="text-[0.62rem] text-[#7eb8a0] text-center py-1">Signalement envoyé, merci ! 🙏</p>
+            ) : showActReportForm ? (
+              <div className="border border-white/10 bg-[#0a0a0a] rounded-lg p-4 flex flex-col gap-3">
+                <textarea className="w-full bg-[#060606] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={3}
+                  placeholder="Ex : pour cette durée et cette activité, ça me semble bien trop élevé..."
+                  value={actReportComment} onChange={e => setActReportComment(e.target.value)}/>
+                <div className="flex gap-2">
+                  <button onClick={() => { setShowActReportForm(false); setActReportComment(""); }}
+                    className="flex-1 border border-white/10 text-white/40 rounded-lg text-[0.65rem] tracking-[0.15em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors">
+                    Annuler
+                  </button>
+                  <button onClick={submitActReport} disabled={actReportSending || !actReportComment.trim()}
+                    className="flex-1 bg-[#e07070] text-black text-[0.65rem] font-bold tracking-[0.15em] uppercase py-2.5 hover:bg-[#e58888] transition-colors disabled:opacity-40 rounded-lg">
+                    {actReportSending ? "Envoi…" : "Envoyer le signalement →"}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button onClick={() => setShowActReportForm(true)}
+                className="text-[0.6rem] tracking-wider uppercase text-white/20 hover:text-[#e07070]/70 transition-colors text-center py-1">
+                Cette estimation te semble fausse ? Signale-la à Samuel →
+              </button>
+            )}
           </div>
         ) : (
           <button onClick={estimate} disabled={!activity.trim() || estimating}
