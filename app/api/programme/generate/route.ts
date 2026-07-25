@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import { createClient } from "@supabase/supabase-js";
 import { requireUser } from "@/lib/apiAuth";
 import { EXERCICE_TYPES } from "@/lib/exercices";
 
@@ -56,6 +57,28 @@ export async function POST(req: NextRequest) {
 
     const nb = Math.min(Math.max(parseInt(seances_par_semaine) || 3, 2), 6);
 
+    // Corrections apportées par le coach sur d'anciens programmes jugés inadaptés (via la
+    // rubrique IA du CRM) — réinjectées comme contexte pour calibrer la génération actuelle.
+    // Table interne (RLS coach-only), donc lue ici via la clé service_role qui contourne RLS.
+    let correctionsBlock = "";
+    try {
+      const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      if (serviceKey) {
+        const admin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceKey);
+        const { data: corrections } = await admin
+          .from("ai_corrections")
+          .select("coach_comment")
+          .eq("category", "programme")
+          .order("created_at", { ascending: false })
+          .limit(20);
+        if (corrections?.length) {
+          correctionsBlock = `\n\nRetours d'ajustement d'un coach humain expert sur des programmes précédents générés par CE MÊME système — prends-les en compte si pertinent pour ce client :\n${
+            corrections.map((c, i) => `${i + 1}. ${c.coach_comment}`).join("\n")
+          }`;
+        }
+      }
+    } catch { /* best-effort : la génération continue sans le contexte de calibration */ }
+
     const prompt = `Tu es un coach sportif expert. Crée un programme d'entraînement hebdomadaire ciblé pour ce client.
 
 Client : ${prenom ?? "?"}, ${sexe ?? "?"}, ${age ?? "?"} ans, ${poids ?? "?"} kg, ${taille ?? "?"} cm.
@@ -75,7 +98,7 @@ Règles :
 - poids : cohérent avec le niveau et le poids de corps du client ; "poids du corps" si l'exercice ne nécessite pas de charge externe.
 - note : conseil technique court par exercice si pertinent (posture, tempo, sécurité), sinon chaîne vide.
 - description : 1 phrase — objectif de la séance et intensité.
-- Tout en français.`;
+- Tout en français.${correctionsBlock}`;
 
     const client = new Anthropic({ apiKey });
     const response = await client.messages.create({
