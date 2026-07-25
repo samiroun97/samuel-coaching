@@ -44,6 +44,8 @@ const PHOTO_DRAFT_KEY = "nutrition_photo_draft";
 // de le laisser deviner pourquoi sa photo a disparu.
 const PHOTO_PENDING_KEY = "nutrition_photo_pending";
 
+const SAMUEL_EMAIL = "sam97waelti@gmail.com";
+
 const MAX_PHOTO_DIM = 900;
 
 // Repli qui passe par un <img> plutôt qu'un createImageBitmap. Contre-intuitif mais
@@ -301,6 +303,7 @@ export default function NutritionPage() {
   const [mealPlan,    setMealPlan]    = useState<MealPlan | null>(null);
   const [description, setDescription] = useState("");
   const userIdRef       = useRef("");
+  const userEmailRef    = useRef("");
   const syncTimer       = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const selectedDateRef = useRef(realToday);
   const scanRef         = useRef<HTMLInputElement>(null);
@@ -314,6 +317,12 @@ export default function NutritionPage() {
   const [analyzing,   setAnalyzing]   = useState(false);
   const [aiError,     setAiError]     = useState("");
   const [listening,   setListening]   = useState(false);
+  // Signalement d'une estimation qui semble fausse — envoie la photo à Samuel (contrairement
+  // au reste du flux où elle n'est jamais conservée), pour recalibrer l'IA depuis le CRM.
+  const [showReportForm, setShowReportForm] = useState(false);
+  const [reportComment,  setReportComment]  = useState("");
+  const [reportSending,  setReportSending]  = useState(false);
+  const [reportSent,     setReportSent]     = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [portionSize,  setPortionSize]  = useState<"petite" | "moyenne" | "grande" | null>(null);
   const photoRef       = useRef<HTMLInputElement>(null);
@@ -370,6 +379,7 @@ export default function NutritionPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         userIdRef.current = user.id;
+        userEmailRef.current = user.email ?? "";
         // Profil + body fat pour le calcul du TDEE
         const { data: p } = await supabase.from("profiles").select("poids,taille,age,sexe").eq("id", user.id).single();
         if (p) {
@@ -533,6 +543,7 @@ export default function NutritionPage() {
   const runAnalysis = async () => {
     if (!photoPreview && !description.trim()) return;
     setAnalyzing(true); setAiError(""); setAiResult(null);
+    setShowReportForm(false); setReportComment(""); setReportSent(false);
     try {
       const res = await apiPost("/api/nutrition/analyze", photoPreview
         ? { type: "photo", image: photoPreview, text: description, portion: portionSize }
@@ -543,6 +554,26 @@ export default function NutritionPage() {
       setAiResult(data);
     } catch (e: unknown) { setAiError(e instanceof Error ? e.message : "Erreur IA"); }
     setAnalyzing(false);
+  };
+
+  // Signalement d'une estimation qui semble fausse — envoyé à Samuel via l'Inbox, avec la
+  // photo utilisée pour l'estimation (jamais conservée sinon), pour recalibrer l'IA depuis
+  // la rubrique IA du CRM (cf. app/crm/ia).
+  const submitReport = async () => {
+    if (!aiResult || !reportComment.trim() || !userEmailRef.current) return;
+    setReportSending(true);
+    const payload = JSON.stringify({
+      calories: aiResult.calories, proteines: aiResult.proteines,
+      glucides: aiResult.glucides, lipides: aiResult.lipides,
+      name: aiResult.name, description: description.trim(),
+      photo: photoPreview, comment: reportComment.trim(),
+    });
+    await supabase.from("messages").insert({
+      from_email: userEmailRef.current,
+      to_email: SAMUEL_EMAIL,
+      content: `[NUTRITION_FEEDBACK:${payload}]`,
+    });
+    setReportSending(false); setReportSent(true); setShowReportForm(false); setReportComment("");
   };
 
   const compressImage = async (file: File): Promise<string> => {
@@ -1209,6 +1240,37 @@ export default function NutritionPage() {
                           Ajouter au journal →
                         </button>
                       </div>
+
+                      {/* Signalement d'une estimation qui semble fausse — envoie la photo à
+                          Samuel, contrairement au reste du flux où elle n'est jamais conservée. */}
+                      {!reportSent && (
+                        showReportForm ? (
+                          <div className="border border-white/10 bg-[#0a0a0a] rounded-lg p-4 flex flex-col gap-3">
+                            <p className="text-[0.62rem] text-white/40 leading-relaxed">
+                              Décris ce qui te semble incorrect. Ta photo sera envoyée à Samuel avec ton message pour l&apos;aider à améliorer l&apos;IA (normalement elle n&apos;est jamais conservée).
+                            </p>
+                            <textarea className="w-full bg-[#060606] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={3}
+                              placeholder="Ex : ce plat fait bien plus que 400 kcal, il y avait de l'huile et du fromage en plus..."
+                              value={reportComment} onChange={e => setReportComment(e.target.value)}/>
+                            <div className="flex gap-2">
+                              <button onClick={() => { setShowReportForm(false); setReportComment(""); }}
+                                className="flex-1 border border-white/10 text-white/40 rounded-lg text-[0.65rem] tracking-[0.15em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors">
+                                Annuler
+                              </button>
+                              <button onClick={submitReport} disabled={reportSending || !reportComment.trim()}
+                                className="flex-1 bg-[#e07070] text-black text-[0.65rem] font-bold tracking-[0.15em] uppercase py-2.5 hover:bg-[#e58888] transition-colors disabled:opacity-40 rounded-lg">
+                                {reportSending ? "Envoi…" : "Envoyer le signalement →"}
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <button onClick={() => setShowReportForm(true)}
+                            className="text-[0.6rem] tracking-wider uppercase text-white/20 hover:text-[#e07070]/70 transition-colors text-center py-1">
+                            Cette estimation te semble fausse ? Signale-la à Samuel →
+                          </button>
+                        )
+                      )}
+                      {reportSent && <p className="text-[0.62rem] text-[#7eb8a0] text-center py-1">Signalement envoyé, merci ! 🙏</p>}
                     </div>
                   )}
                 </div>
