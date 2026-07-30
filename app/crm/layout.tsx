@@ -63,7 +63,9 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
         setUnreadSet(new Set([...last.entries()].filter(([client, from]) => from !== SAMUEL_EMAIL && !treated.has(client)).map(([client]) => client)));
 
         // Signalements IA (nutrition/programme/activité) pas encore corrigés depuis /crm/ia
-        const feedbackMsgs = msgs.filter(m => m.from_email !== SAMUEL_EMAIL && AI_FEEDBACK_RE.test(m.content));
+        // Pas de filtre from_email : seul le formulaire de signalement génère ce format,
+        // donc un signalement testé depuis le compte du coach doit aussi compter.
+        const feedbackMsgs = msgs.filter(m => AI_FEEDBACK_RE.test(m.content));
         if (feedbackMsgs.length > 0) {
           const { data: corrections } = await supabase.from("ai_corrections").select("message_id").not("message_id", "is", null);
           const corrected = new Set((corrections ?? []).map(c => c.message_id));

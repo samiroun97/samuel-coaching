@@ -3,8 +3,6 @@ export const dynamic = "force-dynamic";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 
-const SAMUEL_EMAIL = "sam97waelti@gmail.com";
-
 type Profile = { id: string; email: string; prenom: string; nom: string };
 type Msg = { id: string; from_email: string; to_email: string; content: string; created_at: string };
 type Correction = {
@@ -13,7 +11,12 @@ type Correction = {
   client_comment: string | null; coach_comment: string; created_at: string;
 };
 
+// Catégories réellement stockées en base — chacune alimente un prompt IA distinct
+// (cf. app/api/nutrition/analyze, app/api/programme/calories, app/api/programme/generate).
+// Ne pas fusionner en base : seule la rubrique CRM ci-dessous regroupe programme+activite
+// à l'affichage, pour ne pas mélanger les deux contextes de calibration.
 type Category = "nutrition" | "programme" | "activite";
+const CATEGORY_LABELS: Record<Category, string> = { nutrition: "Nutrition", programme: "Programme", activite: "Calcul calories" };
 
 type NutritionFeedback = { calories: number; proteines: number; glucides: number; lipides: number; name: string; description: string; photo: string | null; comment: string };
 type ActiviteFeedback  = { activity: string; duration_minutes: number; calories_brulees: number; comment: string };
@@ -29,10 +32,19 @@ function parseJson<T>(re: RegExp, content: string): T | null {
   try { return JSON.parse(m[1]) as T; } catch { return null; }
 }
 
-const TABS: { key: Category; label: string; re: RegExp }[] = [
-  { key: "nutrition", label: "Nutrition", re: NUTRITION_RE },
-  { key: "programme", label: "Programme", re: PROGRAMME_RE },
-  { key: "activite",  label: "Activité",  re: ACTIVITE_RE },
+// Détecte la vraie catégorie d'un message à partir de son contenu — indépendant de
+// l'onglet CRM actif, puisque l'onglet "Entraînement" regroupe programme + activite.
+function detectCategory(content: string): Category | null {
+  if (NUTRITION_RE.test(content)) return "nutrition";
+  if (ACTIVITE_RE.test(content))  return "activite";
+  if (PROGRAMME_RE.test(content)) return "programme";
+  return null;
+}
+
+type UiTab = "nutrition" | "entrainement";
+const UI_TABS: { key: UiTab; label: string; categories: Category[]; test: (c: string) => boolean }[] = [
+  { key: "nutrition",    label: "Nutrition",    categories: ["nutrition"],          test: c => NUTRITION_RE.test(c) },
+  { key: "entrainement", label: "Entraînement", categories: ["programme", "activite"], test: c => ACTIVITE_RE.test(c) || PROGRAMME_RE.test(c) },
 ];
 
 export default function CrmIaPage() {
@@ -40,15 +52,16 @@ export default function CrmIaPage() {
   const [msgs,        setMsgs]        = useState<Msg[]>([]);
   const [corrections, setCorrections] = useState<Correction[]>([]);
   const [loading,     setLoading]     = useState(true);
-  const [tab,         setTab]         = useState<Category>("nutrition");
+  const [tab,         setTab]         = useState<UiTab>("nutrition");
 
   const [correctingId,      setCorrectingId]      = useState<string | null>(null);
   const [correctionValue,   setCorrectionValue]   = useState("");
   const [correctionComment, setCorrectionComment] = useState("");
   const [correctionSaving,  setCorrectionSaving]  = useState(false);
 
-  const [noteText,   setNoteText]   = useState("");
-  const [noteSaving, setNoteSaving] = useState(false);
+  const [noteText,        setNoteText]        = useState("");
+  const [noteSubCategory, setNoteSubCategory]  = useState<Category>("programme");
+  const [noteSaving,      setNoteSaving]       = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -69,24 +82,27 @@ export default function CrmIaPage() {
     return p ? `${p.prenom} ${p.nom}`.trim() : email;
   };
 
-  const re = TABS.find(t => t.key === tab)!.re;
+  const uiTab = UI_TABS.find(t => t.key === tab)!;
   // Signalements de la catégorie active, avec leur correction si elle existe.
+  // Pas de filtre sur from_email : seuls les formulaires de signalement client génèrent
+  // ce format de contenu, donc le regex suffit à identifier un signalement (même si le
+  // client testé est le compte du coach lui-même).
   const items = msgs
-    .filter(m => m.from_email !== SAMUEL_EMAIL && re.test(m.content))
-    .map(m => ({ msg: m, correction: corrections.find(c => c.message_id === m.id) ?? null }));
+    .filter(m => uiTab.test(m.content))
+    .map(m => ({ msg: m, category: detectCategory(m.content)!, correction: corrections.find(c => c.message_id === m.id) ?? null }));
   const pending  = items.filter(i => !i.correction);
   const resolved = items.filter(i => i.correction);
   // Notes générales (pas liées à un signalement) de la catégorie active.
-  const standaloneNotes = corrections.filter(c => c.category === tab && !c.message_id);
+  const standaloneNotes = corrections.filter(c => uiTab.categories.includes(c.category) && !c.message_id);
 
-  const submitCorrection = async (messageId: string, originalData: Record<string, unknown> | null, clientComment: string) => {
+  const submitCorrection = async (messageId: string, category: Category, originalData: Record<string, unknown> | null, clientComment: string) => {
     if (!correctionComment.trim()) return;
     setCorrectionSaving(true);
     const correctedData = correctionValue.trim()
       ? { valeur: isNaN(Number(correctionValue)) ? correctionValue.trim() : Number(correctionValue) }
       : null;
     const { data, error } = await supabase.from("ai_corrections").insert({
-      category: tab, message_id: messageId, original_data: originalData,
+      category, message_id: messageId, original_data: originalData,
       corrected_data: correctedData, client_comment: clientComment, coach_comment: correctionComment.trim(),
     }).select().single();
     setCorrectionSaving(false);
@@ -98,8 +114,9 @@ export default function CrmIaPage() {
   const submitNote = async () => {
     if (!noteText.trim()) return;
     setNoteSaving(true);
+    const category: Category = tab === "entrainement" ? noteSubCategory : "nutrition";
     const { data, error } = await supabase.from("ai_corrections").insert({
-      category: tab, message_id: null, original_data: null, corrected_data: null,
+      category, message_id: null, original_data: null, corrected_data: null,
       client_comment: null, coach_comment: noteText.trim(),
     }).select().single();
     setNoteSaving(false);
@@ -120,8 +137,8 @@ export default function CrmIaPage() {
 
       {/* Tabs */}
       <div className="flex border border-white/10 mb-6 rounded-lg overflow-hidden">
-        {TABS.map(t => {
-          const count = msgs.filter(m => m.from_email !== SAMUEL_EMAIL && t.re.test(m.content) && !corrections.some(c => c.message_id === m.id)).length;
+        {UI_TABS.map(t => {
+          const count = msgs.filter(m => t.test(m.content) && !corrections.some(c => c.message_id === m.id)).length;
           return (
             <button key={t.key} onClick={() => setTab(t.key)}
               className={`flex-1 py-3 text-[0.68rem] tracking-[0.15em] uppercase transition-colors flex items-center justify-center gap-1.5 ${
@@ -137,10 +154,21 @@ export default function CrmIaPage() {
 
       {/* Nourrir l'IA — note libre, pas liée à un signalement */}
       <div className="border border-[#c9a84c]/20 bg-[#c9a84c]/5 rounded-lg p-4 mb-8 flex flex-col gap-3">
-        <p className="text-[0.68rem] tracking-[0.15em] uppercase text-[#c9a84c]">Nourrir l&apos;IA — {TABS.find(t => t.key === tab)!.label}</p>
+        <p className="text-[0.68rem] tracking-[0.15em] uppercase text-[#c9a84c]">Nourrir l&apos;IA — {uiTab.label}</p>
         <p className="text-[0.62rem] text-white/40 leading-relaxed">
           Ajoute une info générale que l&apos;IA doit prendre en compte pour cette catégorie, sans attendre un signalement client (ex : une règle spécifique, une erreur récurrente que tu observes...).
         </p>
+        {tab === "entrainement" && (
+          <div className="flex gap-2">
+            {(["programme", "activite"] as Category[]).map(c => (
+              <button key={c} onClick={() => setNoteSubCategory(c)}
+                className={`px-3 py-1.5 rounded-lg text-[0.6rem] tracking-wider uppercase transition-colors ${
+                  noteSubCategory === c ? "bg-[#c9a84c] text-black font-bold" : "border border-white/10 text-white/40 hover:text-white/60"}`}>
+                {CATEGORY_LABELS[c]}
+              </button>
+            ))}
+          </div>
+        )}
         <textarea className="w-full bg-[#060606] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={2}
           placeholder="Ex : pour les plats de pâtes maison, compte toujours au moins 15g d'huile d'olive même si le client ne la mentionne pas..."
           value={noteText} onChange={e => setNoteText(e.target.value)}/>
@@ -158,8 +186,8 @@ export default function CrmIaPage() {
         <p className="text-white/20 text-xs mb-8">Aucun signalement en attente sur cette catégorie.</p>
       ) : (
         <div className="flex flex-col gap-3 mb-8">
-          {pending.map(({ msg }) => (
-            <SignalementCard key={msg.id} category={tab} msg={msg} clientName={clientName(msg.from_email)}
+          {pending.map(({ msg, category }) => (
+            <SignalementCard key={msg.id} category={category} msg={msg} clientName={clientName(msg.from_email)}
               correction={null}
               correcting={correctingId === msg.id}
               onStartCorrect={() => setCorrectingId(msg.id)}
@@ -167,19 +195,20 @@ export default function CrmIaPage() {
               correctionValue={correctionValue} setCorrectionValue={setCorrectionValue}
               correctionComment={correctionComment} setCorrectionComment={setCorrectionComment}
               correctionSaving={correctionSaving}
-              onSubmitCorrect={(originalData, clientComment) => submitCorrection(msg.id, originalData, clientComment)}
+              onSubmitCorrect={(originalData, clientComment) => submitCorrection(msg.id, category, originalData, clientComment)}
             />
           ))}
         </div>
       )}
 
-      {/* Historique : signalements traités + notes générales */}
+      {/* Historique : signalements traités + notes générales — permet de vérifier tout
+          ce qui a été effectivement transmis à l'IA (visible aussi juste après un envoi). */}
       {(resolved.length > 0 || standaloneNotes.length > 0) && (
         <>
           <p className="text-[0.68rem] tracking-[0.15em] uppercase text-white/30 mb-3">Historique</p>
           <div className="flex flex-col gap-3">
-            {resolved.map(({ msg, correction }) => (
-              <SignalementCard key={msg.id} category={tab} msg={msg} clientName={clientName(msg.from_email)}
+            {resolved.map(({ msg, category, correction }) => (
+              <SignalementCard key={msg.id} category={category} msg={msg} clientName={clientName(msg.from_email)}
                 correction={correction} correcting={false}
                 onStartCorrect={() => {}} onCancelCorrect={() => {}}
                 correctionValue="" setCorrectionValue={() => {}}
@@ -189,7 +218,9 @@ export default function CrmIaPage() {
             ))}
             {standaloneNotes.map(c => (
               <div key={c.id} className="border-l-2 border-[#7eb8a0] bg-[#0d0d0d] px-4 py-3">
-                <p className="text-[0.5rem] tracking-[0.15em] uppercase text-[#7eb8a0] mb-1">✓ Note générale envoyée à l&apos;IA</p>
+                <p className="text-[0.5rem] tracking-[0.15em] uppercase text-[#7eb8a0] mb-1">
+                  ✓ Note générale envoyée à l&apos;IA{tab === "entrainement" ? ` · ${CATEGORY_LABELS[c.category]}` : ""}
+                </p>
                 <p className="text-[0.68rem] text-white/50 leading-relaxed">{c.coach_comment}</p>
                 <p className="text-[0.55rem] text-white/15 mt-1">{new Date(c.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}</p>
               </div>
@@ -229,6 +260,7 @@ function SignalementCard({
         <div className="flex items-center gap-2 min-w-0">
           <span className="text-sm shrink-0">🚩</span>
           <span className="text-xs text-white/70 truncate">{clientName}</span>
+          <span className="text-[0.5rem] tracking-wider uppercase text-white/20 shrink-0">{CATEGORY_LABELS[category]}</span>
         </div>
         <span className="text-[0.55rem] text-white/25 shrink-0">{new Date(msg.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}</span>
       </div>
