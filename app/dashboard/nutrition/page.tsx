@@ -293,6 +293,8 @@ export default function NutritionPage() {
   const [miniProfile, setMiniProfile] = useState<MiniProfile | null>(null);
   const [bodyFat,     setBodyFat]     = useState<number | null>(null);
   const [tdeeParts,   setTdeeParts]   = useState({ neat: 0, eat: 0 });
+  const [deletedFood, setDeletedFood] = useState<{ food: Food; index: number } | null>(null);
+  const undoTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const [modalMode, setModalMode] = useState<"ai"|"search"|"saved">("ai");
   const [ideas,       setIdeas]       = useState<IdeaResult[]>([]);
@@ -1053,22 +1055,30 @@ export default function NutritionPage() {
                 <p className="text-xs text-white/70">{f.name}</p>
                 <p className="text-[0.7rem] text-white/25 mt-0.5">P {f.proteines}g · G {f.glucides}g · L {f.lipides}g</p>
               </div>
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-3.5">
                 <span className="text-xs text-white/50">{f.calories} kcal</span>
                 <button onClick={() => setFoods(fs => [...fs, { ...f, id: Date.now().toString() }])}
                   title="Reprendre cet aliment aujourd'hui"
-                  className="text-white/20 hover:text-[#c9a84c] transition-colors opacity-0 group-hover:opacity-100">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                  className="text-white/35 hover:text-[#c9a84c] transition-colors opacity-70 group-hover:opacity-100">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
                 </button>
                 <button
                   onClick={() => isFav ? setSavedMeals(s => s.filter(m => m.name !== f.name)) : saveMeal(f)}
                   title={isFav ? "Retirer des favoris" : "Ajouter aux favoris"}
-                  className={`transition-colors ${isFav ? "text-[#c9a84c] opacity-100" : "text-white/20 hover:text-[#c9a84c] opacity-0 group-hover:opacity-100"}`}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill={isFav ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  className={`transition-colors ${isFav ? "text-[#c9a84c] opacity-100" : "text-white/35 hover:text-[#c9a84c] opacity-70 group-hover:opacity-100"}`}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill={isFav ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                 </button>
-                <button onClick={() => setFoods(fs => fs.filter(x => x.id !== f.id))}
-                  className="text-white/20 hover:text-[#e07070] transition-colors opacity-0 group-hover:opacity-100">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <button
+                  onClick={() => {
+                    const index = foods.findIndex(x => x.id === f.id);
+                    setFoods(fs => fs.filter(x => x.id !== f.id));
+                    clearTimeout(undoTimer.current);
+                    setDeletedFood({ food: f, index });
+                    undoTimer.current = setTimeout(() => setDeletedFood(null), 6000);
+                  }}
+                  title="Supprimer"
+                  className="text-[#e07070]/60 hover:text-[#e07070] transition-colors opacity-70 group-hover:opacity-100 ml-1.5">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
                 </button>
               </div>
             </div>
@@ -1569,6 +1579,28 @@ export default function NutritionPage() {
           {scanError && (
             <p className="relative z-10 text-center text-[#e07070] text-xs mt-6 px-8">{scanError}</p>
           )}
+        </div>
+      )}
+
+      {/* ══ ANNULER SUPPRESSION ══ */}
+      {deletedFood && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[70] flex items-center gap-4 bg-[#1a1a1a] border border-white/15 rounded-lg px-5 py-3 shadow-lg">
+          <span className="text-xs text-white/70">
+            &quot;{deletedFood.food.name}&quot; supprimé
+          </span>
+          <button
+            onClick={() => {
+              clearTimeout(undoTimer.current);
+              setFoods(fs => {
+                const copy = [...fs];
+                copy.splice(Math.min(deletedFood.index, copy.length), 0, deletedFood.food);
+                return copy;
+              });
+              setDeletedFood(null);
+            }}
+            className="text-[0.7rem] tracking-[0.15em] uppercase text-[#c9a84c] hover:text-[#e2c97e] transition-colors">
+            Annuler
+          </button>
         </div>
       )}
     </div>
