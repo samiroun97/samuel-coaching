@@ -206,13 +206,27 @@ export default function SuiviPage() {
       const effectiveDates = dates.filter(dt => dt <= todayStr);
       const dayCount = effectiveDates.length || 1;
 
-      const { data: summaries } = await supabase.from("daily_summaries")
-        .select("date,calories,proteines,glucides,lipides").eq("user_id", userId).gte("date", reportWeekMonday).lte("date", weekEnd);
-      const daysLogged   = summaries?.length ?? 0;
-      const avgCalories  = daysLogged ? Math.round(summaries!.reduce((s, r) => s + (r.calories  ?? 0), 0) / daysLogged) : 0;
-      const avgProteines = daysLogged ? Math.round(summaries!.reduce((s, r) => s + (r.proteines ?? 0), 0) / daysLogged) : 0;
-      const avgGlucides  = daysLogged ? Math.round(summaries!.reduce((s, r) => s + (r.glucides  ?? 0), 0) / daysLogged) : 0;
-      const avgLipides   = daysLogged ? Math.round(summaries!.reduce((s, r) => s + (r.lipides   ?? 0), 0) / daysLogged) : 0;
+      // Lu depuis le stockage local (même source que "Aliments du jour"), pas depuis la
+      // synchro Supabase : celle-ci est différée/best-effort et peut prendre du retard sur
+      // l'appareil du client, alors que le local reflète toujours exactement ce qu'il a logué.
+      const dayTotals = effectiveDates.map(dt => {
+        try {
+          const raw = localStorage.getItem(`nutrition_${dt}`);
+          const items: { calories?: number; proteines?: number; glucides?: number; lipides?: number }[] = raw ? JSON.parse(raw) : [];
+          type Totals = { calories: number; proteines: number; glucides: number; lipides: number };
+          return items.reduce<Totals>((acc, f) => ({
+            calories:  acc.calories  + (f.calories  ?? 0),
+            proteines: acc.proteines + (f.proteines ?? 0),
+            glucides:  acc.glucides  + (f.glucides  ?? 0),
+            lipides:   acc.lipides   + (f.lipides   ?? 0),
+          }), { calories: 0, proteines: 0, glucides: 0, lipides: 0 });
+        } catch { return { calories: 0, proteines: 0, glucides: 0, lipides: 0 }; }
+      });
+      const daysLogged   = dayTotals.filter(t => t.calories > 0).length;
+      const avgCalories  = daysLogged ? Math.round(dayTotals.reduce((s, t) => s + t.calories,  0) / daysLogged) : 0;
+      const avgProteines = daysLogged ? Math.round(dayTotals.reduce((s, t) => s + t.proteines, 0) / daysLogged) : 0;
+      const avgGlucides  = daysLogged ? Math.round(dayTotals.reduce((s, t) => s + t.glucides,  0) / daysLogged) : 0;
+      const avgLipides   = daysLogged ? Math.round(dayTotals.reduce((s, t) => s + t.lipides,   0) / daysLogged) : 0;
 
       const logs: { date: string; duration_minutes?: number; calories_burned?: number }[] =
         JSON.parse(localStorage.getItem("programme_logs") ?? "[]");
