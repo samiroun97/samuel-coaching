@@ -102,8 +102,11 @@ export function WeeklyReport({ data }: { data: WeeklyReportData }) {
   const fmtDate = (d: string) => new Date(d + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
   const statusColor = data.balanceStatus === "surplus" ? "#e07070" : data.balanceStatus === "deficit" ? "#7eb8a0" : "#c9a84c";
   const statusLabel = data.balanceStatus === "surplus" ? "Surplus calorique" : data.balanceStatus === "deficit" ? "Déficit calorique" : "Maintien calorique";
-  const weekConsumed = data.avgCalories * 7;
-  const weekBurned = data.avgTdee * 7;
+  // On ne compte que les jours écoulés (daysElapsed) : pour une semaine en cours non
+  // terminée, les jours à venir n'ont pas encore de dépense/consommation réelle et ne
+  // doivent pas être extrapolés dans le total (sinon leur BMR apparaît comme déjà "brûlé").
+  const weekConsumed = data.avgCalories * data.daysElapsed;
+  const weekBurned = data.avgTdee * data.daysElapsed;
   const weekBalance = weekConsumed - weekBurned;
 
   return (
@@ -133,11 +136,11 @@ export function WeeklyReport({ data }: { data: WeeklyReportData }) {
         </div>
         <div className="grid grid-cols-3 gap-4 border-t border-white/5 pt-4 print:pt-2">
           <div>
-            <p className="text-[0.6rem] tracking-[0.15em] uppercase text-white/25 mb-1">Brûlées / semaine</p>
+            <p className="text-[0.6rem] tracking-[0.15em] uppercase text-white/25 mb-1">Brûlées ({data.daysElapsed}/7 j.)</p>
             <p className="text-lg text-white/80">{fmtInt(weekBurned)} kcal</p>
           </div>
           <div>
-            <p className="text-[0.6rem] tracking-[0.15em] uppercase text-white/25 mb-1">Consommées / semaine</p>
+            <p className="text-[0.6rem] tracking-[0.15em] uppercase text-white/25 mb-1">Consommées ({data.daysElapsed}/7 j.)</p>
             <p className="text-lg text-white/80">{fmtInt(weekConsumed)} kcal</p>
           </div>
           <div>

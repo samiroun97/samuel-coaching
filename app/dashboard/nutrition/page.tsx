@@ -297,6 +297,7 @@ export default function NutritionPage() {
   const undoTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const [modalMode, setModalMode] = useState<"ai"|"search"|"saved">("ai");
+  const [addMealType, setAddMealType] = useState<string>(MEAL_TYPES[0]);
   const [ideas,       setIdeas]       = useState<IdeaResult[]>([]);
   const [ideaMealType, setIdeaMealType] = useState<string>(MEAL_TYPES[0]);
   const [ideaLoading, setIdeaLoading] = useState(false);
@@ -790,17 +791,17 @@ export default function NutritionPage() {
 
   const addFood = () => {
     if (modalMode === "ai" && aiResult) {
-      setFoods(f => [...f, { id:Date.now().toString(), ...aiResult }]);
+      setFoods(f => [...f, { id:Date.now().toString(), ...aiResult, repas: addMealType }]);
     } else if (modalMode === "search" && selected && computed) {
-      setFoods(f => [...f, { id:Date.now().toString(), name:selected.product_name, ...computed }]);
+      setFoods(f => [...f, { id:Date.now().toString(), name:selected.product_name, ...computed, repas: addMealType }]);
     } else if (modalMode === "saved" && selectedSaved && savedComputed) {
-      setFoods(f => [...f, { id:Date.now().toString(), name:selectedSaved.name, ...savedComputed }]);
+      setFoods(f => [...f, { id:Date.now().toString(), name:selectedSaved.name, ...savedComputed, repas: addMealType }]);
     } else return;
     resetModal();
   };
 
   const resetModal = () => {
-    setShowAdd(false); setModalMode("ai");
+    setShowAdd(false); setModalMode("ai"); setAddMealType(MEAL_TYPES[0]);
     setDescription(""); setAiResult(null); setAiError(""); setListening(false);
     setPhotoPreview(null); setPortionSize(null);
     setQuery(""); setResults([]); setSelected(null); setQuantity("100"); setSelectedSaved(null);
@@ -1052,7 +1053,7 @@ export default function NutritionPage() {
             return (
             <div key={f.id} className="flex items-center justify-between px-5 py-3 border-b border-white/5 last:border-0 group">
               <div>
-                <p className="text-xs text-white/70">{f.name}</p>
+                <p className="text-xs text-white/70">{f.name}{f.repas && <span className="text-[0.6rem] text-[#c9a84c]/50 uppercase tracking-wider ml-2">{f.repas}</span>}</p>
                 <p className="text-[0.7rem] text-white/25 mt-0.5">P {f.proteines}g · G {f.glucides}g · L {f.lipides}g</p>
               </div>
               <div className="flex items-center gap-3.5">
@@ -1131,6 +1132,19 @@ export default function NutritionPage() {
                 <button onClick={() => { setModalMode("saved"); setSelectedSaved(null); }} className={tabCls(modalMode==="saved", false)}>
                   Mes repas{savedMeals.length > 0 && <span className="ml-1 opacity-50">({savedMeals.length})</span>}
                 </button>
+              </div>
+
+              {/* Moment de la journée : s'applique aux 3 modes ci-dessous */}
+              <div>
+                <label className={labelCls}>Moment du repas</label>
+                <div className="flex gap-1.5">
+                  {MEAL_TYPES.map(t => (
+                    <button key={t} onClick={() => setAddMealType(t)}
+                      className={`flex-1 py-1.5 text-[0.5rem] tracking-[0.06em] uppercase border transition-colors ${addMealType === t ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10" : "border-white/10 text-white/30 hover:border-white/20 hover:text-white/50"}`}>
+                      {t}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* ── AI MODE ── */}
