@@ -1,5 +1,7 @@
 export type ReportSection = { point_fort: string; point_faible: string; conseil: string };
 
+export type DailyBreakdownEntry = { date: string; calories: number; tdee: number; balance: number };
+
 export type WeeklyReportData = {
   clientName?: string;
   weekStart: string;
@@ -26,6 +28,8 @@ export type WeeklyReportData = {
   weightStart: number | null;
   weightEnd: number | null;
   objectifs?: string | null;
+  dailyBreakdown?: DailyBreakdownEntry[];
+  synthese?: string;
   nutrition: ReportSection;
   neat: ReportSection;
   eat: ReportSection;
@@ -65,6 +69,24 @@ function MacroBar({ label, avg, goal, color }: { label: string; avg: number; goa
       <div className="h-1.5 bg-white/5">
         <div className="h-full" style={{ width: `${pct}%`, backgroundColor: color }} />
       </div>
+    </div>
+  );
+}
+
+function DayMini({ entry }: { entry: DailyBreakdownEntry }) {
+  const d = new Date(entry.date + "T12:00:00");
+  const label = d.toLocaleDateString("fr-FR", { weekday: "short" }).replace(".", "");
+  const dayNum = d.getDate();
+  const status = Math.abs(entry.balance) <= 100 ? "maintenance" : entry.balance > 0 ? "surplus" : "deficit";
+  const color = status === "surplus" ? "#e07070" : status === "deficit" ? "#7eb8a0" : "#c9a84c";
+  return (
+    <div className="flex-1 min-w-[4.2rem] border border-white/10 bg-[#111] p-2.5 text-center break-inside-avoid">
+      <p className="text-[0.6rem] tracking-wider uppercase text-white/30 capitalize">{label} {dayNum}</p>
+      <p className="text-[0.65rem] text-white/40 mt-1.5">{fmtInt(entry.tdee)} kcal</p>
+      <p className="text-[0.62rem] text-white/15 -mt-0.5">TDEE</p>
+      <p style={{ ...bebas, color }} className="text-base tracking-wide mt-1">
+        {entry.balance > 0 ? "+" : ""}{fmtInt(entry.balance)}
+      </p>
     </div>
   );
 }
@@ -124,6 +146,15 @@ export function WeeklyReport({ data }: { data: WeeklyReportData }) {
         {data.objectifs && <p className="text-[0.68rem] tracking-[0.15em] uppercase text-[#c9a84c]/70 mt-2">{data.objectifs}</p>}
       </div>
 
+      {/* Synthèse du coach */}
+      {data.synthese && (
+        <div className="relative border border-[#c9a84c]/30 bg-[#c9a84c]/[0.04] p-5 print:p-4 mb-6 print:mb-3 break-inside-avoid">
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-[#c9a84c]" />
+          <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-2">Le mot de Samuel</p>
+          <p className="text-[0.8rem] text-white/75 leading-relaxed">{data.synthese}</p>
+        </div>
+      )}
+
       {/* Résultat de la semaine */}
       <div className="relative border p-6 print:p-4 mb-6 print:mb-3 break-inside-avoid" style={{ borderColor: `${statusColor}40`, backgroundColor: "#111" }}>
         <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ backgroundColor: statusColor }} />
@@ -149,6 +180,16 @@ export function WeeklyReport({ data }: { data: WeeklyReportData }) {
           </div>
         </div>
       </div>
+
+      {/* Détail jour par jour */}
+      {data.dailyBreakdown && data.dailyBreakdown.length > 0 && (
+        <div className="mb-6 print:mb-3 break-inside-avoid">
+          <p className="text-[0.65rem] tracking-[0.2em] uppercase text-white/30 mb-2">Jour par jour</p>
+          <div className="flex gap-2 print:gap-1.5">
+            {data.dailyBreakdown.map(entry => <DayMini key={entry.date} entry={entry} />)}
+          </div>
+        </div>
+      )}
 
       {/* Stats grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 print:gap-2 mb-6 print:mb-3 print:grid-cols-3">

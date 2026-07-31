@@ -22,10 +22,11 @@ export async function POST(req: NextRequest) {
           content: `Tu es Samuel, coach sportif expert. Voici le bilan chiffré de la semaine de ton client :
 ${JSON.stringify(stats, null, 2)}
 
-Génère un retour en 3 domaines. CHAQUE conseil doit être directement lié à l'objectif déclaré ("objectifs") et au profil du client ("experience", "niveauActivite"). Sois direct, concret, sans généralités.
+Génère un retour en 3 domaines, plus une synthèse globale. CHAQUE conseil doit être directement lié à l'objectif déclaré ("objectifs") et au profil du client ("experience", "niveauActivite"). Sois direct, concret, sans généralités.
 
-Retourne UNIQUEMENT ce JSON valide, sans texte avant ni après. Chaque champ = 1 phrase courte et percutante (max 120 caractères) :
+Retourne UNIQUEMENT ce JSON valide, sans texte avant ni après :
 {
+"synthese": "Rétrospective de coach sur l'ENSEMBLE de la semaine (3-4 phrases, ton direct et personnel, comme si tu parlais à ton client). Base-toi sur dailyBreakdown pour repérer la tendance jour par jour (ex: gros excès en début de semaine compensés ensuite, régularité, jours à zéro...) et relie nutrition + activité + entraînement. Termine par une direction claire pour la semaine prochaine.",
 "nutrition": {
 "point_fort": "ce qui fonctionne dans les apports caloriques cette semaine par rapport à l'objectif du client",
 "point_faible": "le principal écart constaté (surplus, déficit trop fort, irrégularité) — constat chiffré, pas de liste d'aliments",
@@ -42,6 +43,8 @@ Retourne UNIQUEMENT ce JSON valide, sans texte avant ni après. Chaque champ = 1
 "conseil": "conseil prioritaire pour la semaine prochaine ; si restDays = 0, insiste sur la récupération obligatoire"
 }
 }
+
+Chaque champ de "nutrition", "neat" et "eat" = 1 phrase courte et percutante (max 120 caractères). "synthese" peut faire 3-4 phrases (max ~400 caractères).
 
 Base-toi uniquement sur les données fournies. Si une donnée est à 0 ou absente, adapte sans inventer de chiffre.`,
         },

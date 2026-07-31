@@ -260,6 +260,17 @@ export default function SuiviPage() {
       const balanceStatus: "deficit" | "surplus" | "maintenance" =
         Math.abs(balancePerDay) <= 100 ? "maintenance" : balancePerDay > 0 ? "surplus" : "deficit";
 
+      // Détail jour par jour (mini visu + contexte pour la synthèse du coach) : même BMR
+      // que la moyenne (poids/profil stables sur la semaine), NEAT/EAT propres à chaque jour.
+      const dailyBreakdown = effectiveDates.map((dt, i) => {
+        const steps = parseInt(localStorage.getItem(`steps_${dt}`) ?? "0") || 0;
+        const neat  = Math.round(steps * 0.04 * (poidsRef / 70));
+        const eat   = logs.filter(l => (l.date || "").split("T")[0] === dt).reduce((s, l) => s + (l.calories_burned ?? 0), 0);
+        const tdee  = bmrVal + neat + eat;
+        const calories = Math.round(dayTotals[i].calories);
+        return { date: dt, calories, tdee, balance: calories - tdee };
+      });
+
       const sortedByDateDesc = [...weightHist].sort((a, b) => b.date.localeCompare(a.date));
       const weightStart = sortedByDateDesc.find(w => w.date <= weekMonday)?.weight
         ?? sortedByDateDesc[sortedByDateDesc.length - 1]?.weight ?? null;
@@ -278,7 +289,7 @@ export default function SuiviPage() {
         weekStart: reportWeekMonday, weekEnd, daysLogged, avgCalories, avgTdee, balanceStatus, balancePerDay,
         avgProteines, goalProteines, avgGlucides, goalGlucides, avgLipides, goalLipides, goalCalories,
         sessionsCount, totalTrainingMinutes, targetSessions, restDays, daysElapsed: dayCount,
-        avgSteps, stepsGoal, weightStart, weightEnd,
+        avgSteps, stepsGoal, weightStart, weightEnd, dailyBreakdown,
       };
 
       const res = await apiPost("/api/suivi/weekly-report", {
@@ -291,6 +302,7 @@ export default function SuiviPage() {
       sessionStorage.setItem("pending_weekly_report", JSON.stringify({
         ...stats,
         clientName: profile?.prenom,
+        synthese: feedback.synthese,
         nutrition: feedback.nutrition,
         neat: feedback.neat,
         eat: feedback.eat,
