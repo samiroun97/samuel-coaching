@@ -307,7 +307,7 @@ export default function NutritionPage() {
   const [description, setDescription] = useState("");
   const userIdRef       = useRef("");
   const userEmailRef    = useRef("");
-  const syncTimer       = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const syncTimers      = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const selectedDateRef = useRef(realToday);
   const scanRef         = useRef<HTMLInputElement>(null);
   const [scanError, setScanError] = useState("");
@@ -455,21 +455,27 @@ export default function NutritionPage() {
     } catch { setTdeeParts({ neat: 0, eat: 0 }); }
   }, [selectedDate, miniProfile]);
   useEffect(() => {
-    localStorage.setItem(`nutrition_${selectedDateRef.current}`, JSON.stringify(foods));
-    // Sync différé vers Supabase
-    clearTimeout(syncTimer.current);
-    syncTimer.current = setTimeout(async () => {
+    // Capturé ici (et non lu dans le setTimeout) : la ref peut déjà pointer sur un autre
+    // jour par le temps que le minuteur se déclenche si l'utilisateur navigue entre-temps.
+    const date = selectedDateRef.current;
+    localStorage.setItem(`nutrition_${date}`, JSON.stringify(foods));
+    // Sync différée vers Supabase, débounced PAR JOUR (Map plutôt qu'un minuteur unique) :
+    // changer de jour dans les 3s ne doit jamais annuler la synchro d'un autre jour déjà
+    // en attente, sinon cette modif n'est jamais renvoyée et le bilan hebdo devient faux.
+    clearTimeout(syncTimers.current.get(date));
+    syncTimers.current.set(date, setTimeout(async () => {
+      syncTimers.current.delete(date);
       if (!userIdRef.current) return;
       const t = foods.reduce((acc, f) => ({
         calories: acc.calories + f.calories, proteines: acc.proteines + f.proteines,
         glucides: acc.glucides + f.glucides, lipides: acc.lipides + f.lipides,
       }), { calories: 0, proteines: 0, glucides: 0, lipides: 0 });
       await supabase.from("daily_summaries").upsert({
-        user_id: userIdRef.current, date: selectedDateRef.current, ...t,
+        user_id: userIdRef.current, date, ...t,
         foods: foods.map(f => ({ name: f.name, calories: f.calories, proteines: f.proteines, glucides: f.glucides, lipides: f.lipides, repas: f.repas ?? null })),
         updated_at: new Date().toISOString(),
       }, { onConflict: "user_id,date" });
-    }, 3000);
+    }, 3000));
   }, [foods]);
   useEffect(() => { localStorage.setItem(`hydration_${selectedDateRef.current}`, water.toString()); }, [water]);
   useEffect(() => { localStorage.setItem("nutrition_saved_meals", JSON.stringify(savedMeals)); }, [savedMeals]);
