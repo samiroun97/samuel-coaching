@@ -161,6 +161,7 @@ export default function SuiviPage() {
   const [editingBFDate,  setEditingBFDate]  = useState<string | null>(null);
   const [bfPhotos,       setBfPhotos]       = useState<Record<string, string[]>>({});
   const [viewingPhoto,   setViewingPhoto]   = useState<string | null>(null);
+  const [estimateDate,   setEstimateDate]   = useState(today());
   const fileRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const uploadSectionRef = useRef<HTMLDivElement>(null);
   const [reportLoading, setReportLoading] = useState(false);
@@ -392,7 +393,7 @@ export default function SuiviPage() {
 
   const estimate = async () => {
     if (photoCount === 0) { setError("Ajoute au moins une photo."); return; }
-    setEstimating(true); setError(""); setResult(null);
+    setEstimating(true); setError(""); setResult(null); setEstimateDate(today());
     setReportSent(false); setShowReportForm(false); setReportComment("");
     try {
       const res = await apiPost("/api/suivi/bodyfat", { photos: Object.values(photos), profile });
@@ -409,7 +410,7 @@ export default function SuiviPage() {
     const entryId = Date.now().toString();
     const entry: BodyFatEntry = {
       id: entryId,
-      date: new Date().toISOString(),
+      date: new Date(estimateDate + "T12:00:00").toISOString(),
       body_fat: result.body_fat_percentage,
       note: result.note,
       points_forts: result.points_forts,
@@ -417,7 +418,7 @@ export default function SuiviPage() {
       conseils: result.conseils,
       shared: shareWithCoach,
     };
-    const next = [entry, ...bfHist];
+    const next = [entry, ...bfHist].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     setBfHist(next);
     localStorage.setItem(`bodyfat_history_${userId}`, JSON.stringify(next));
     if (userId) {
@@ -448,7 +449,7 @@ export default function SuiviPage() {
       setSharing(false);
     }
 
-    setResult(null); setPhotos({}); setShowUpload(false); setShareWithCoach(false);
+    setResult(null); setPhotos({}); setShowUpload(false); setShareWithCoach(false); setEstimateDate(today());
   };
 
   // Signalement d'une estimation qui semble fausse — envoyé à Samuel via l'Inbox,
@@ -765,7 +766,7 @@ export default function SuiviPage() {
         <div ref={uploadSectionRef} className="border border-white/10 bg-[#111] rounded-lg p-5 mb-4 scroll-mt-4">
           <div className="flex items-center justify-between mb-1">
             <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Photos corporelles</p>
-            <span className="text-[0.62rem] text-white/20 tracking-wider">Non conservées après l'estimation</span>
+            <span className="text-[0.62rem] text-white/20 tracking-wider">Conservées dans ton historique privé</span>
           </div>
           <p className="text-[0.65rem] text-white/20 mb-5 tracking-wider">Plus il y a de photos, plus l'estimation est précise</p>
 
@@ -819,6 +820,14 @@ export default function SuiviPage() {
                   {result.conseils       && <FeedbackRow color="#c9a84c" label="Conseils"       text={result.conseils}/>}
                 </div>
               )}
+
+              {/* Date du check-in : par défaut aujourd'hui, modifiable si les photos ont été
+                  prises un autre jour (ex : upload différé). */}
+              <div className="border border-white/8 bg-[#0f0f0f] rounded-lg px-4 py-3 flex items-center justify-between">
+                <p className="text-[0.7rem] tracking-[0.1em] uppercase text-white/50">Date du check-in</p>
+                <input type="date" max={today()} value={estimateDate} onChange={e => setEstimateDate(e.target.value || today())}
+                  className="bg-[#0a0a0a] border border-white/10 text-white/70 text-[0.7rem] px-2.5 py-1.5 rounded focus:outline-none focus:border-[#c9a84c]/40"/>
+              </div>
 
               {/* Toggle partage coach */}
               <div className="border border-white/8 bg-[#0f0f0f] rounded-lg px-4 py-3 flex items-center justify-between">
