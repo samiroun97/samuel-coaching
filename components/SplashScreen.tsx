@@ -75,19 +75,6 @@ export default function SplashScreen() {
           </svg>
         </div>
 
-        <div className="mt-6 w-56 mx-auto">
-          <div className="h-px bg-white/10 relative overflow-hidden">
-            <div
-              className="absolute left-0 top-0 h-full bg-[#c9a84c]"
-              style={{ width: `${progress}%`, transition: "width 0.05s linear" }}
-            />
-          </div>
-          <p className="text-white/30 text-[0.55rem] tracking-[0.35em] uppercase mt-3 text-center"
-            style={{ opacity: progress > 20 ? 1 : 0, transition: "opacity 0.4s ease" }}>
-            Chargement
-          </p>
-        </div>
-
       </div>
     </div>
   );
