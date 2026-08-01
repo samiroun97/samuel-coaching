@@ -410,7 +410,7 @@ export default function SuiviPage() {
     const entryId = Date.now().toString();
     const entry: BodyFatEntry = {
       id: entryId,
-      date: new Date(estimateDate + "T12:00:00").toISOString(),
+      date: new Date((estimateDate || today()) + "T12:00:00").toISOString(),
       body_fat: result.body_fat_percentage,
       note: result.note,
       points_forts: result.points_forts,
@@ -825,7 +825,7 @@ export default function SuiviPage() {
                   prises un autre jour (ex : upload différé). */}
               <div className="border border-white/8 bg-[#0f0f0f] rounded-lg px-4 py-3 flex items-center justify-between">
                 <p className="text-[0.7rem] tracking-[0.1em] uppercase text-white/50">Date du check-in</p>
-                <input type="date" max={today()} value={estimateDate} onChange={e => setEstimateDate(e.target.value || today())}
+                <input type="date" max={today()} value={estimateDate} onChange={e => setEstimateDate(e.target.value)}
                   className="bg-[#0a0a0a] border border-white/10 text-white/70 text-[0.7rem] px-2.5 py-1.5 rounded focus:outline-none focus:border-[#c9a84c]/40"/>
               </div>
 
