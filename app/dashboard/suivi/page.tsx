@@ -53,6 +53,56 @@ function deleteBodyFatRemote(userId: string, id: string) {
   void supabase.from("body_fat_entries").delete().eq("id", id).eq("user_id", userId);
 }
 
+function dataUriToBlob(dataUri: string): Blob {
+  const [meta, base64] = dataUri.split(",");
+  const mime = meta.match(/data:(.*?);/)?.[1] ?? "image/jpeg";
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new Blob([bytes], { type: mime });
+}
+
+// Upload best-effort : une photo qui échoue à l'upload ne doit jamais empêcher
+// l'enregistrement du résultat chiffré (déjà sauvegardé séparément).
+async function uploadBFPhotos(userId: string, entryId: string, photos: Record<string, string>, shared: boolean) {
+  const paths: string[] = [];
+  for (const [slot, dataUri] of Object.entries(photos)) {
+    const path = `${userId}/${entryId}/${slot}.jpg`;
+    const { error } = await supabase.storage.from("body-photos")
+      .upload(path, dataUriToBlob(dataUri), { contentType: "image/jpeg", upsert: true });
+    if (!error) paths.push(path);
+  }
+  if (paths.length) {
+    await supabase.from("body_photos").insert(
+      paths.map(photo_path => ({ user_id: userId, photo_path, session_id: entryId, shared_with_coach: shared }))
+    );
+  }
+  return paths;
+}
+
+async function loadBFPhotos(entryIds: string[]): Promise<Record<string, string[]>> {
+  if (entryIds.length === 0) return {};
+  const { data: rows } = await supabase.from("body_photos").select("session_id,photo_path").in("session_id", entryIds);
+  if (!rows?.length) return {};
+  const { data: signed } = await supabase.storage.from("body-photos")
+    .createSignedUrls(rows.map(r => r.photo_path), 3600);
+  const urlByPath = new Map((signed ?? []).map(s => [s.path, s.signedUrl]));
+  const out: Record<string, string[]> = {};
+  for (const r of rows) {
+    const url = r.photo_path ? urlByPath.get(r.photo_path) : undefined;
+    if (url) (out[r.session_id] ??= []).push(url);
+  }
+  return out;
+}
+
+function deleteBFPhotosRemote(userId: string, entryId: string) {
+  void (async () => {
+    const { data: rows } = await supabase.from("body_photos").select("photo_path").eq("session_id", entryId).eq("user_id", userId);
+    if (rows?.length) await supabase.storage.from("body-photos").remove(rows.map(r => r.photo_path));
+    await supabase.from("body_photos").delete().eq("session_id", entryId).eq("user_id", userId);
+  })();
+}
+
 const SLOTS = [
   { key: "face",          label: "Face" },
   { key: "dos",           label: "Dos" },
@@ -109,6 +159,8 @@ export default function SuiviPage() {
   const [editingBFId,    setEditingBFId]    = useState<string | null>(null);
   const [editingBFVal,   setEditingBFVal]   = useState("");
   const [editingBFDate,  setEditingBFDate]  = useState<string | null>(null);
+  const [bfPhotos,       setBfPhotos]       = useState<Record<string, string[]>>({});
+  const [viewingPhoto,   setViewingPhoto]   = useState<string | null>(null);
   const fileRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const uploadSectionRef = useRef<HTMLDivElement>(null);
   const [reportLoading, setReportLoading] = useState(false);
@@ -151,7 +203,9 @@ export default function SuiviPage() {
       const wRaw = localStorage.getItem(`weight_history_${user.id}`);
       const wh: WeightEntry[]  = wRaw ? JSON.parse(wRaw) : [];
       setWeightHist(wh);
-      setBfHist(await loadBodyFatHistory(user.id));
+      const bh = await loadBodyFatHistory(user.id);
+      setBfHist(bh);
+      loadBFPhotos(bh.map(e => e.id)).then(setBfPhotos);
       const lastWeight = wh[0]?.weight ?? (p as Profile | null)?.poids;
       if (lastWeight) setWeightInput(String(lastWeight));
       if (lastWeight) setCkWeight(String(lastWeight));
@@ -366,7 +420,15 @@ export default function SuiviPage() {
     const next = [entry, ...bfHist];
     setBfHist(next);
     localStorage.setItem(`bodyfat_history_${userId}`, JSON.stringify(next));
-    if (userId) upsertBodyFatRemote(userId, entry);
+    if (userId) {
+      upsertBodyFatRemote(userId, entry);
+      if (Object.keys(photos).length > 0) {
+        uploadBFPhotos(userId, entryId, photos, shareWithCoach)
+          .then(() => loadBFPhotos([entryId]))
+          .then(urls => setBfPhotos(prev => ({ ...prev, ...urls })))
+          .catch(() => { /* best-effort : l'estimation chiffrée reste sauvegardée même si l'upload échoue */ });
+      }
+    }
 
     if (shareWithCoach && userEmail && userEmail !== SAMUEL_EMAIL) {
       setSharing(true);
@@ -390,7 +452,7 @@ export default function SuiviPage() {
   };
 
   // Signalement d'une estimation qui semble fausse — envoyé à Samuel via l'Inbox,
-  // avec les photos utilisées pour l'estimation (jamais conservées sinon).
+  // avec les photos utilisées pour l'estimation (indépendant du check-in body_photos).
   const submitReport = async () => {
     if (!result || !reportComment.trim() || !userEmail) return;
     setReportSending(true);
@@ -423,7 +485,8 @@ export default function SuiviPage() {
     const next = bfHist.filter(e => e.id !== id);
     setBfHist(next);
     localStorage.setItem(`bodyfat_history_${userId}`, JSON.stringify(next));
-    if (userId) deleteBodyFatRemote(userId, id);
+    if (userId) { deleteBodyFatRemote(userId, id); deleteBFPhotosRemote(userId, id); }
+    setBfPhotos(prev => Object.fromEntries(Object.entries(prev).filter(([key]) => key !== id)));
   };
 
   const deleteWeight = (id: string) => {
@@ -448,6 +511,7 @@ export default function SuiviPage() {
     localStorage.setItem(`bodyfat_history_${userId}`, JSON.stringify(next));
     const updated = next.find(e => e.id === entryId);
     if (updated) upsertBodyFatRemote(userId, updated);
+    void supabase.from("body_photos").update({ shared_with_coach: shared }).eq("session_id", entryId).eq("user_id", userId);
   };
 
   const saveBFEditDate = (id: string, dateVal: string) => {
@@ -762,8 +826,8 @@ export default function SuiviPage() {
                   <p className="text-[0.7rem] tracking-[0.1em] uppercase text-white/50">Partager avec Samuel</p>
                   <p className="text-[0.62rem] text-white/25 mt-0.5">
                     {shareWithCoach
-                      ? "L'estimation et le feedback IA seront envoyés à ton coach"
-                      : "Les photos ne sont jamais conservées, seule l'estimation peut être partagée si tu coches"}
+                      ? "L'estimation, le feedback IA et les photos seront visibles par ton coach"
+                      : "Tes photos sont conservées dans ton historique privé ; coche pour les rendre aussi visibles par ton coach"}
                   </p>
                 </div>
                 <button onClick={() => setShareWithCoach(v => !v)}
@@ -785,13 +849,13 @@ export default function SuiviPage() {
                 </button>
               </div>
 
-              {/* Signalement d'une estimation qui semble fausse — envoie les photos à Samuel,
-                  contrairement au reste du flux où elles ne sont jamais conservées. */}
+              {/* Signalement d'une estimation qui semble fausse — envoie les photos à Samuel
+                  via un message dédié, séparément du check-in enregistré ci-dessus. */}
               {userEmail !== SAMUEL_EMAIL && !reportSent && (
                 showReportForm ? (
                   <div className="border border-white/10 bg-[#0a0a0a] rounded-lg p-4 flex flex-col gap-3">
                     <p className="text-[0.62rem] text-white/40 leading-relaxed">
-                      Décris ce qui te semble incorrect. Tes photos seront envoyées à Samuel avec ton message pour l&apos;aider à améliorer l&apos;IA (normalement elles ne sont jamais conservées).
+                      Décris ce qui te semble incorrect. Tes photos seront envoyées à Samuel avec ton message pour l&apos;aider à améliorer l&apos;IA.
                     </p>
                     <textarea className="w-full bg-[#060606] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={3}
                       placeholder="Ex : le % me semble beaucoup trop élevé, je m'entraîne depuis 2 ans et je suis plutôt sec..."
@@ -904,6 +968,17 @@ export default function SuiviPage() {
                   </div>
                 </div>
 
+                {/* Photos du check-in : évolution visuelle */}
+                {bfPhotos[entry.id]?.length > 0 && (
+                  <div className="flex gap-1.5 px-5 pb-3">
+                    {bfPhotos[entry.id].map((url, pi) => (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img key={pi} src={url} alt="" onClick={() => setViewingPhoto(url)}
+                        className="w-12 h-12 object-cover border border-white/10 rounded cursor-pointer hover:border-[#c9a84c]/40 transition-colors"/>
+                    ))}
+                  </div>
+                )}
+
                 {/* Feedback IA sauvegardé */}
                 {hasFeedback && (
                   <div className="mx-5 mb-3 border border-white/5 bg-[#0a0a0a] divide-y divide-white/5">
@@ -955,6 +1030,17 @@ export default function SuiviPage() {
               })}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Visionneuse plein écran pour les photos de check-in */}
+      {viewingPhoto && (
+        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4" onClick={() => setViewingPhoto(null)}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={viewingPhoto} alt="" className="max-w-full max-h-full object-contain"/>
+          <button onClick={() => setViewingPhoto(null)} className="absolute top-4 right-4 text-white/60 hover:text-white transition-colors">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
         </div>
       )}
 

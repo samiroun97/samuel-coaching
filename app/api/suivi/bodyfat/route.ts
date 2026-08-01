@@ -81,6 +81,10 @@ Objectif déclaré par le client : ${objectifs || "non renseigné"}`
 ${profileStr}
 Nombre de photos fournies : ${imageContent.length}/5 (face, dos, profil, jambe avant, jambe arrière).
 
+Avant de conclure, raisonne brièvement à partir de marqueurs visuels concrets ET SPÉCIFIQUES à CES photos précises (visibilité/nombre de stries abdominales, vascularité bras/abdos, séparation des muscles, graisse au niveau des hanches/bas du dos/taille, rondeur du visage) — n'utilise jamais une valeur "ronde" ou "typique" par défaut si les photos montrent un niveau de détail différent. Ce raisonnement reste interne : ne l'inclus pas dans le JSON final.
+
+Chaque check-in est indépendant : si des corrections précédentes du coach (ci-dessous) concernent CE client, elles doivent primer sur tes repères visuels génériques — mais elles ne justifient jamais de recopier mécaniquement le même chiffre qu'un check-in antérieur. Donne le pourcentage qui correspond à ce que tu vois MAINTENANT sur ces photos, avec une décimale précise (pas seulement des multiples de 0.5).
+
 Retourne UNIQUEMENT ce JSON valide, sans texte avant ni après :
 {
   "body_fat_percentage": 18.5,
