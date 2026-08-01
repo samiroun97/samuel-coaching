@@ -17,28 +17,18 @@ type BodyFatEntry = {
 };
 
 async function loadBodyFatHistory(userId: string): Promise<BodyFatEntry[]> {
+  // Supabase est la seule source de vérité : un résultat vide veut dire "aucune entrée",
+  // jamais un signal pour réinjecter un ancien cache local (qui pourrait contenir des
+  // entrées déjà supprimées côté serveur et les faire réapparaître).
   const { data } = await supabase.from("body_fat_entries")
     .select("*").eq("user_id", userId).order("date", { ascending: false });
-  if (data && data.length > 0) {
-    const bh: BodyFatEntry[] = data.map(r => ({
-      id: r.id, date: r.date, body_fat: r.body_fat, note: r.note ?? "",
-      points_forts: r.points_forts ?? undefined, points_faibles: r.points_faibles ?? undefined,
-      conseils: r.conseils ?? undefined, shared: r.shared ?? false,
-    }));
-    localStorage.setItem(`bodyfat_history_${userId}`, JSON.stringify(bh));
-    return bh;
-  }
-  // Table distante vide : reprise ponctuelle de l'historique local existant (pré-migration)
-  const bRaw = localStorage.getItem(`bodyfat_history_${userId}`) ?? localStorage.getItem("bodyfat_history");
-  const localBH: BodyFatEntry[] = bRaw ? JSON.parse(bRaw) : [];
-  if (localBH.length > 0) {
-    await supabase.from("body_fat_entries").insert(localBH.map(e => ({
-      id: e.id, user_id: userId, date: e.date, body_fat: e.body_fat, note: e.note,
-      points_forts: e.points_forts, points_faibles: e.points_faibles, conseils: e.conseils,
-      shared: e.shared ?? false,
-    })));
-  }
-  return localBH;
+  const bh: BodyFatEntry[] = (data ?? []).map(r => ({
+    id: r.id, date: r.date, body_fat: r.body_fat, note: r.note ?? "",
+    points_forts: r.points_forts ?? undefined, points_faibles: r.points_faibles ?? undefined,
+    conseils: r.conseils ?? undefined, shared: r.shared ?? false,
+  }));
+  localStorage.setItem(`bodyfat_history_${userId}`, JSON.stringify(bh));
+  return bh;
 }
 
 function upsertBodyFatRemote(userId: string, entry: BodyFatEntry) {
@@ -49,8 +39,9 @@ function upsertBodyFatRemote(userId: string, entry: BodyFatEntry) {
   });
 }
 
-function deleteBodyFatRemote(userId: string, id: string) {
-  void supabase.from("body_fat_entries").delete().eq("id", id).eq("user_id", userId);
+async function deleteBodyFatRemote(userId: string, id: string) {
+  const { error } = await supabase.from("body_fat_entries").delete().eq("id", id).eq("user_id", userId);
+  return error;
 }
 
 function dataUriToBlob(dataUri: string): Blob {
@@ -482,11 +473,18 @@ export default function SuiviPage() {
     setManualVal(""); setManualDate(""); setShowManual(false);
   };
 
-  const deleteBF = (id: string) => {
+  // La suppression Supabase est attendue avant de mettre à jour l'état local : sinon un
+  // refresh juste après le clic peut annuler la requête réseau en vol, et l'entrée "revient"
+  // au chargement suivant alors qu'elle n'a en réalité jamais été supprimée côté serveur.
+  const deleteBF = async (id: string) => {
+    if (userId) {
+      const error = await deleteBodyFatRemote(userId, id);
+      if (error) { setError("Suppression impossible, réessaie."); return; }
+      deleteBFPhotosRemote(userId, id);
+    }
     const next = bfHist.filter(e => e.id !== id);
     setBfHist(next);
     localStorage.setItem(`bodyfat_history_${userId}`, JSON.stringify(next));
-    if (userId) { deleteBodyFatRemote(userId, id); deleteBFPhotosRemote(userId, id); }
     setBfPhotos(prev => Object.fromEntries(Object.entries(prev).filter(([key]) => key !== id)));
   };
 
