@@ -1054,42 +1054,55 @@ export default function NutritionPage() {
         </div>
         {foods.length === 0
           ? <p className="px-5 py-4 text-[0.7rem] tracking-wider text-white/20 uppercase">Aucun aliment ajouté</p>
-          : foods.map(f => {
-            const isFav = savedMeals.some(s => s.name === f.name);
+          : [...MEAL_TYPES, "Autres"].map(type => {
+            const items = foods.filter(f => (f.repas ?? "Autres") === type);
+            if (!items.length) return null;
+            const groupCal = items.reduce((s, f) => s + f.calories, 0);
             return (
-            <div key={f.id} className="flex items-center justify-between px-5 py-3 border-b border-white/5 last:border-0 group">
-              <div>
-                <p className="text-xs text-white/70">{f.name}{f.repas && <span className="text-[0.6rem] text-[#c9a84c]/50 uppercase tracking-wider ml-2">{f.repas}</span>}</p>
-                <p className="text-[0.7rem] text-white/25 mt-0.5">P {f.proteines}g · G {f.glucides}g · L {f.lipides}g</p>
+              <div key={type} className="border-b border-white/5 last:border-0">
+                <div className="flex items-center justify-between px-5 pt-3 pb-1.5">
+                  <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/60">{type}</p>
+                  <p className="text-[0.62rem] text-white/20">{groupCal} kcal</p>
+                </div>
+                {items.map(f => {
+                  const isFav = savedMeals.some(s => s.name === f.name);
+                  return (
+                  <div key={f.id} className="flex items-center justify-between px-5 py-3 border-t border-white/[0.03] first:border-0 group">
+                    <div>
+                      <p className="text-xs text-white/70">{f.name}</p>
+                      <p className="text-[0.7rem] text-white/25 mt-0.5">P {f.proteines}g · G {f.glucides}g · L {f.lipides}g</p>
+                    </div>
+                    <div className="flex items-center gap-3.5">
+                      <span className="text-xs text-white/50">{f.calories} kcal</span>
+                      <button onClick={() => setFoods(fs => [...fs, { ...f, id: Date.now().toString() }])}
+                        title="Reprendre cet aliment aujourd'hui"
+                        className="text-white/35 hover:text-[#c9a84c] transition-colors opacity-70 group-hover:opacity-100">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                      </button>
+                      <button
+                        onClick={() => isFav ? setSavedMeals(s => s.filter(m => m.name !== f.name)) : saveMeal(f)}
+                        title={isFav ? "Retirer des favoris" : "Ajouter aux favoris"}
+                        className={`transition-colors ${isFav ? "text-[#c9a84c] opacity-100" : "text-white/35 hover:text-[#c9a84c] opacity-70 group-hover:opacity-100"}`}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill={isFav ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                      </button>
+                      <button
+                        onClick={() => {
+                          const index = foods.findIndex(x => x.id === f.id);
+                          setFoods(fs => fs.filter(x => x.id !== f.id));
+                          clearTimeout(undoTimer.current);
+                          setDeletedFood({ food: f, index });
+                          undoTimer.current = setTimeout(() => setDeletedFood(null), 6000);
+                        }}
+                        title="Supprimer"
+                        className="text-[#e07070]/60 hover:text-[#e07070] transition-colors opacity-70 group-hover:opacity-100 ml-1.5">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                );})}
               </div>
-              <div className="flex items-center gap-3.5">
-                <span className="text-xs text-white/50">{f.calories} kcal</span>
-                <button onClick={() => setFoods(fs => [...fs, { ...f, id: Date.now().toString() }])}
-                  title="Reprendre cet aliment aujourd'hui"
-                  className="text-white/35 hover:text-[#c9a84c] transition-colors opacity-70 group-hover:opacity-100">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-                </button>
-                <button
-                  onClick={() => isFav ? setSavedMeals(s => s.filter(m => m.name !== f.name)) : saveMeal(f)}
-                  title={isFav ? "Retirer des favoris" : "Ajouter aux favoris"}
-                  className={`transition-colors ${isFav ? "text-[#c9a84c] opacity-100" : "text-white/35 hover:text-[#c9a84c] opacity-70 group-hover:opacity-100"}`}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill={isFav ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                </button>
-                <button
-                  onClick={() => {
-                    const index = foods.findIndex(x => x.id === f.id);
-                    setFoods(fs => fs.filter(x => x.id !== f.id));
-                    clearTimeout(undoTimer.current);
-                    setDeletedFood({ food: f, index });
-                    undoTimer.current = setTimeout(() => setDeletedFood(null), 6000);
-                  }}
-                  title="Supprimer"
-                  className="text-[#e07070]/60 hover:text-[#e07070] transition-colors opacity-70 group-hover:opacity-100 ml-1.5">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-                </button>
-              </div>
-            </div>
-          );})
+            );
+          })
         }
       </div>
 
