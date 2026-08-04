@@ -31,12 +31,13 @@ async function loadBodyFatHistory(userId: string): Promise<BodyFatEntry[]> {
   return bh;
 }
 
-function upsertBodyFatRemote(userId: string, entry: BodyFatEntry) {
-  void supabase.from("body_fat_entries").upsert({
+async function upsertBodyFatRemote(userId: string, entry: BodyFatEntry) {
+  const { error } = await supabase.from("body_fat_entries").upsert({
     id: entry.id, user_id: userId, date: entry.date, body_fat: entry.body_fat,
     note: entry.note, points_forts: entry.points_forts, points_faibles: entry.points_faibles,
     conseils: entry.conseils, shared: entry.shared ?? false,
   });
+  return error;
 }
 
 async function deleteBodyFatRemote(userId: string, id: string) {
@@ -409,11 +410,17 @@ export default function SuiviPage() {
       conseils: result.conseils,
       shared: shareWithCoach,
     };
+    // L'écriture Supabase est attendue avant de mettre à jour l'état local : sinon un
+    // refresh juste après l'enregistrement peut annuler la requête en vol, et l'entrée
+    // n'existe jamais côté serveur alors qu'elle est brièvement visible à l'écran.
+    if (userId) {
+      const error = await upsertBodyFatRemote(userId, entry);
+      if (error) { setError("Enregistrement impossible, réessaie."); return; }
+    }
     const next = [entry, ...bfHist].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     setBfHist(next);
     localStorage.setItem(`bodyfat_history_${userId}`, JSON.stringify(next));
     if (userId) {
-      upsertBodyFatRemote(userId, entry);
       if (Object.keys(photos).length > 0) {
         uploadBFPhotos(userId, entryId, photos, shareWithCoach)
           .then(() => loadBFPhotos([entryId]))
@@ -461,15 +468,18 @@ export default function SuiviPage() {
     setReportSending(false); setReportSent(true); setShowReportForm(false); setReportComment("");
   };
 
-  const saveManualBF = () => {
+  const saveManualBF = async () => {
     const val = parseFloat(manualVal.replace(",", "."));
     if (isNaN(val) || val <= 0 || val > 60) return;
     const dateStr = manualDate || today();
     const entry: BodyFatEntry = { id: Date.now().toString(), date: new Date(dateStr + "T12:00:00").toISOString(), body_fat: +val.toFixed(1), note: "Saisie manuelle" };
+    if (userId) {
+      const error = await upsertBodyFatRemote(userId, entry);
+      if (error) { setError("Enregistrement impossible, réessaie."); return; }
+    }
     const next = [entry, ...bfHist].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     setBfHist(next);
     localStorage.setItem(`bodyfat_history_${userId}`, JSON.stringify(next));
-    if (userId) upsertBodyFatRemote(userId, entry);
     setManualVal(""); setManualDate(""); setShowManual(false);
   };
 
@@ -494,31 +504,46 @@ export default function SuiviPage() {
     localStorage.setItem(`weight_history_${userId}`, JSON.stringify(next));
   };
 
-  const saveBFEdit = (id: string) => {
+  const saveBFEdit = async (id: string) => {
     const val = parseFloat(editingBFVal.replace(",", "."));
     if (isNaN(val)) { setEditingBFId(null); return; }
     const next = bfHist.map(e => e.id === id ? { ...e, body_fat: +val.toFixed(1) } : e);
+    if (userId) {
+      const updated = next.find(e => e.id === id);
+      if (updated) {
+        const error = await upsertBodyFatRemote(userId, updated);
+        if (error) { setError("Enregistrement impossible, réessaie."); setEditingBFId(null); return; }
+      }
+    }
     setBfHist(next); localStorage.setItem(`bodyfat_history_${userId}`, JSON.stringify(next));
-    if (userId) { const updated = next.find(e => e.id === id); if (updated) upsertBodyFatRemote(userId, updated); }
     setEditingBFId(null);
   };
 
-  const togglePhotoSharing = (entryId: string, shared: boolean) => {
+  const togglePhotoSharing = async (entryId: string, shared: boolean) => {
     if (!userId) return;
     const next = bfHist.map(e => e.id === entryId ? { ...e, shared } : e);
+    const updated = next.find(e => e.id === entryId);
+    if (updated) {
+      const error = await upsertBodyFatRemote(userId, updated);
+      if (error) { setError("Enregistrement impossible, réessaie."); return; }
+    }
     setBfHist(next);
     localStorage.setItem(`bodyfat_history_${userId}`, JSON.stringify(next));
-    const updated = next.find(e => e.id === entryId);
-    if (updated) upsertBodyFatRemote(userId, updated);
     void supabase.from("body_photos").update({ shared_with_coach: shared }).eq("session_id", entryId).eq("user_id", userId);
   };
 
-  const saveBFEditDate = (id: string, dateVal: string) => {
+  const saveBFEditDate = async (id: string, dateVal: string) => {
     if (!dateVal) { setEditingBFDate(null); return; }
     const next = bfHist.map(e => e.id === id ? { ...e, date: new Date(dateVal + "T12:00:00").toISOString() } : e)
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    if (userId) {
+      const updated = next.find(e => e.id === id);
+      if (updated) {
+        const error = await upsertBodyFatRemote(userId, updated);
+        if (error) { setError("Enregistrement impossible, réessaie."); setEditingBFDate(null); return; }
+      }
+    }
     setBfHist(next); localStorage.setItem(`bodyfat_history_${userId}`, JSON.stringify(next));
-    if (userId) { const updated = next.find(e => e.id === id); if (updated) upsertBodyFatRemote(userId, updated); }
     setEditingBFDate(null);
   };
 
