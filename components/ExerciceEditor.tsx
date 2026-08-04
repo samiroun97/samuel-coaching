@@ -1,5 +1,5 @@
 "use client";
-import { type ExerciceItem, type ExerciceMode, type SetDetail, type SimpleField, EXERCICE_TYPES, emptyExercice, emptySet, groupExerciceRuns } from "@/lib/exercices";
+import { type ExerciceItem, type ExerciceMode, type SetDetail, type SimpleField, type ExerciceRun, EXERCICE_TYPES, emptyExercice, emptySet, groupExerciceRuns } from "@/lib/exercices";
 import { type LibraryEntry } from "@/lib/exerciceLibrary";
 
 const inp = "w-full bg-[#060606] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
@@ -11,12 +11,19 @@ const IconSeries = () => <svg width="9" height="9" viewBox="0 0 24 24" fill="non
 const IconReps = () => <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M17 1l4 4-4 4M3 11V9a4 4 0 014-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 01-4 4H3"/></svg>;
 const IconPoids = () => <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M6.5 6.5h11a2 2 0 012 2v7a2 2 0 01-2 2h-11a2 2 0 01-2-2v-7a2 2 0 012-2zM2 9v6M22 9v6"/></svg>;
 const IconRepos = () => <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>;
+const IconUp = () => <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 15 12 9 6 15"/></svg>;
+const IconDown = () => <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>;
 
 const MODES: { key: ExerciceMode; label: string }[] = [
   { key: "simple", label: "Simple" },
   { key: "avance", label: "Avancé" },
   { key: "libre", label: "Texte libre" },
 ];
+
+// Presets courants pour un groupe d'exercices enchaînés sans repos : biset (2 exercices),
+// triset (3), circuit (4+), ou superset générique. Choisis dans une liste plutôt que tapés
+// à la main pour rester cohérent d'une séance à l'autre.
+const GROUP_LABELS = ["Superset", "Biset", "Triset", "Circuit"];
 
 const SIMPLE_FIELDS: { key: SimpleField; label: string; icon: () => React.ReactNode; placeholder: string }[] = [
   { key: "series",      label: "Séries", icon: IconSeries, placeholder: "4" },
@@ -91,12 +98,45 @@ export default function ExerciceEditor({ items, onChange, library = [] }: { item
   const renameGroup = (groupId: string, label: string) =>
     onChange(items.map(it => (it.groupId === groupId ? { ...it, groupLabel: label } : it)));
 
-  const renderExercice = (i: number, isGrouped: boolean) => {
+  // Réordonnancement — pensé pour le tactile (boutons monter/descendre plutôt que
+  // du drag & drop) : on déplace des "runs" entiers (un exercice seul, ou un groupe
+  // en bloc) pour ne jamais casser la contiguïté d'un superset/biset/triset.
+  const runs = groupExerciceRuns(items);
+  const flattenRuns = (rs: ExerciceRun[]): ExerciceItem[] => rs.flatMap(r => r.indices.map(idx => items[idx]));
+
+  const moveRun = (runPos: number, dir: -1 | 1) => {
+    const target = runPos + dir;
+    if (target < 0 || target >= runs.length) return;
+    const next = [...runs];
+    [next[runPos], next[target]] = [next[target], next[runPos]];
+    onChange(flattenRuns(next));
+  };
+
+  // Réordonne un exercice à l'intérieur de son propre groupe (sans en sortir).
+  const moveWithinGroup = (run: ExerciceRun, pos: number, dir: -1 | 1) => {
+    const target = pos + dir;
+    if (target < 0 || target >= run.indices.length) return;
+    const newIndices = [...run.indices];
+    [newIndices[pos], newIndices[target]] = [newIndices[target], newIndices[pos]];
+    onChange(flattenRuns(runs.map(r => (r === run ? { ...r, indices: newIndices } : r))));
+  };
+
+  const renderExercice = (i: number, isGrouped: boolean, onMoveUp?: () => void, onMoveDown?: () => void) => {
     const ex = items[i];
     return (
       <div key={i} className="border border-white/8 bg-[#0a0a0a] rounded-lg p-3.5 flex flex-col gap-3">
         <div className="flex items-center gap-2">
           <span className="shrink-0 w-6 h-6 flex items-center justify-center text-[0.6rem] font-bold text-[#c9a84c] border border-[#c9a84c]/25 bg-[#c9a84c]/5 rounded-md">{i + 1}</span>
+          <div className="shrink-0 flex flex-col border border-white/10 rounded-md overflow-hidden">
+            <button type="button" onClick={onMoveUp} disabled={!onMoveUp} title="Monter"
+              className="w-5 h-4 flex items-center justify-center text-white/30 hover:text-[#c9a84c] hover:bg-white/5 transition-colors disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-white/30 border-b border-white/10">
+              <IconUp/>
+            </button>
+            <button type="button" onClick={onMoveDown} disabled={!onMoveDown} title="Descendre"
+              className="w-5 h-4 flex items-center justify-center text-white/30 hover:text-[#c9a84c] hover:bg-white/5 transition-colors disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-white/30">
+              <IconDown/>
+            </button>
+          </div>
           <input className={inp} list={DATALIST_ID} placeholder="Nom de l'exercice" value={ex.nom}
             onChange={e => update(i, { nom: e.target.value })} onBlur={e => applyFromLibrary(i, e.target.value)} />
           <button type="button" onClick={() => remove(i)} className="shrink-0 text-white/15 hover:text-[#e07070] transition-colors">
@@ -196,20 +236,40 @@ export default function ExerciceEditor({ items, onChange, library = [] }: { item
     );
   };
 
-  const nodes: React.ReactNode[] = groupExerciceRuns(items).map(run =>
+  const nodes: React.ReactNode[] = runs.map((run, runPos) =>
     run.groupId ? (
       <div key={`group-${run.indices[0]}`} className="border border-[#c9a84c]/25 bg-[#c9a84c]/[0.03] rounded-lg p-2.5 flex flex-col gap-2.5">
-        <div className="flex items-center justify-between px-1">
-          <input className="bg-transparent text-[0.55rem] tracking-[0.18em] uppercase text-[#c9a84c] focus:outline-none w-40"
-            value={run.groupLabel} onChange={e => renameGroup(run.groupId!, e.target.value)} placeholder="Superset" />
-          <button type="button" onClick={() => unlinkGroup(run.groupId!)} className="text-[0.48rem] tracking-wider uppercase text-white/25 hover:text-[#e07070] transition-colors">
-            Délier
-          </button>
+        <div className="flex items-center justify-between px-1 gap-2">
+          <select className="bg-transparent text-[0.55rem] tracking-[0.18em] uppercase text-[#c9a84c] focus:outline-none cursor-pointer"
+            value={run.groupLabel || "Superset"} onChange={e => renameGroup(run.groupId!, e.target.value)}>
+            {GROUP_LABELS.map(l => <option key={l} value={l} className="bg-[#111] text-white normal-case tracking-normal">{l}</option>)}
+          </select>
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="flex border border-white/10 rounded-md overflow-hidden">
+              <button type="button" onClick={() => moveRun(runPos, -1)} disabled={runPos === 0} title="Monter le groupe"
+                className="w-5 h-5 flex items-center justify-center text-white/30 hover:text-[#c9a84c] hover:bg-white/5 transition-colors disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-white/30 border-r border-white/10">
+                <IconUp/>
+              </button>
+              <button type="button" onClick={() => moveRun(runPos, 1)} disabled={runPos === runs.length - 1} title="Descendre le groupe"
+                className="w-5 h-5 flex items-center justify-center text-white/30 hover:text-[#c9a84c] hover:bg-white/5 transition-colors disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-white/30">
+                <IconDown/>
+              </button>
+            </div>
+            <button type="button" onClick={() => unlinkGroup(run.groupId!)} className="text-[0.48rem] tracking-wider uppercase text-white/25 hover:text-[#e07070] transition-colors">
+              Délier
+            </button>
+          </div>
         </div>
-        {run.indices.map(k => renderExercice(k, true))}
+        {run.indices.map((k, pos) => renderExercice(k, true,
+          pos > 0 ? () => moveWithinGroup(run, pos, -1) : undefined,
+          pos < run.indices.length - 1 ? () => moveWithinGroup(run, pos, 1) : undefined,
+        ))}
       </div>
     ) : (
-      renderExercice(run.indices[0], false)
+      renderExercice(run.indices[0], false,
+        runPos > 0 ? () => moveRun(runPos, -1) : undefined,
+        runPos < runs.length - 1 ? () => moveRun(runPos, 1) : undefined,
+      )
     )
   );
 
