@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
 import { type ExerciceItem, serializeExercices, normalizeExercice } from "@/lib/exercices";
+import { serializeNotesLibres } from "@/lib/notesLibres";
 import ExerciceEditor from "@/components/ExerciceEditor";
 import { type LibraryEntry, listLibrary, addLibraryEntry, deleteLibraryEntry } from "@/lib/exerciceLibrary";
 import { type ProgrammeTemplate, listTemplates, saveTemplate, deleteTemplate, templateToExercices } from "@/lib/programmeTemplates";
@@ -21,9 +22,9 @@ const STAGE_CFG: Record<string, { label: string; color: string }> = {
 };
 
 type Client = { id: string; email: string; prenom: string; nom: string; age: number; poids: number; taille: number; sexe: string; niveau_activite: string; experience: string; seances_par_semaine: number; duree_seance: string; lieu_entrainement: string; blessures: string; objectifs: string; pipeline_stage: string | null };
-type SeanceDraft = { titre: string; type_seance: string; date_prevue: string; semaine: string; description: string; exercices: ExerciceItem[] };
+type SeanceDraft = { titre: string; type_seance: string; date_prevue: string; semaine: string; description: string; exercices: ExerciceItem[]; notesLibres: string[] };
 
-const emptySeance = (): SeanceDraft => ({ titre: "", type_seance: "", date_prevue: "", semaine: "", description: "", exercices: [] });
+const emptySeance = (): SeanceDraft => ({ titre: "", type_seance: "", date_prevue: "", semaine: "", description: "", exercices: [], notesLibres: [] });
 
 export default function ProgrammesPage() {
   const searchParams   = useSearchParams();
@@ -129,6 +130,14 @@ export default function ProgrammesPage() {
   const setDraft = (i: number, patch: Partial<SeanceDraft>) =>
     setDrafts(prev => prev.map((d, j) => j === i ? { ...d, ...patch } : d));
 
+  // Notes libres d'une séance : des points en texte libre qui ne sont pas des exercices
+  // (ex: "bien s'hydrater avant", "focus respiration"…).
+  const addNoteLibre = (i: number) => setDraft(i, { notesLibres: [...drafts[i].notesLibres, ""] });
+  const setNoteLibre = (i: number, ni: number, value: string) =>
+    setDraft(i, { notesLibres: drafts[i].notesLibres.map((n, j) => j === ni ? value : n) });
+  const removeNoteLibre = (i: number, ni: number) =>
+    setDraft(i, { notesLibres: drafts[i].notesLibres.filter((_, j) => j !== ni) });
+
   const sendAll = async () => {
     if (!selected || sending) return;
     const valid = drafts.filter(d => d.titre.trim());
@@ -142,6 +151,7 @@ export default function ProgrammesPage() {
       semaine: d.semaine ? parseInt(d.semaine) || null : null,
       description: d.description || null,
       exercices: serializeExercices(d.exercices),
+      notes_libres: serializeNotesLibres(d.notesLibres),
     })));
     setSending(false);
     if (error) { setGenError(error.message); return; }
@@ -373,6 +383,25 @@ export default function ProgrammesPage() {
                       <div>
                         <label className={lbl}>Exercices</label>
                         <ExerciceEditor items={d.exercices} onChange={items => setDraft(i, { exercices: items })} library={library}/>
+                      </div>
+                      <div>
+                        <label className={lbl}>Notes libres (optionnel)</label>
+                        <p className="text-[0.55rem] text-white/20 mb-2 -mt-1">Pas forcément des exercices : consignes, rappels, précisions… ex. « bien s&apos;hydrater avant », « focus respiration ».</p>
+                        <div className="flex flex-col gap-2">
+                          {d.notesLibres.map((n, ni) => (
+                            <div key={ni} className="flex items-center gap-2">
+                              <input className={inp} placeholder="Ex : arriver 10 min en avance pour l'échauffement…"
+                                value={n} onChange={e => setNoteLibre(i, ni, e.target.value)}/>
+                              <button type="button" onClick={() => removeNoteLibre(i, ni)} className="shrink-0 text-white/15 hover:text-[#e07070] transition-colors">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                              </button>
+                            </div>
+                          ))}
+                          <button type="button" onClick={() => addNoteLibre(i)}
+                            className="border border-white/10 text-white/30 text-[0.55rem] tracking-[0.12em] uppercase py-2 rounded-lg hover:border-white/20 hover:text-white/50 transition-colors">
+                            + Ajouter une note libre
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}

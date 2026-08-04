@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, type ReactNode } from "react";
 import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
 import { type ExerciceItem, parseExercices, groupExerciceRuns } from "@/lib/exercices";
+import { parseNotesLibres } from "@/lib/notesLibres";
 
 type Profile = { prenom: string; poids: number; taille: number; age: number; sexe: string };
 type LoggedWorkout = {
@@ -12,7 +13,7 @@ type LoggedWorkout = {
 };
 type PerfRecord = { date: string; calories: number; duration: number; description: string };
 type PerfHistory = Record<string, PerfRecord[]>;
-type CoachSeance = { id: string; titre: string; type_seance: string | null; date_prevue: string | null; semaine: number | null; description: string | null; exercices: string | null; completed_at: string | null };
+type CoachSeance = { id: string; titre: string; type_seance: string | null; date_prevue: string | null; semaine: number | null; description: string | null; exercices: string | null; notes_libres: string | null; completed_at: string | null };
 
 const SAMUEL_EMAIL = "sam97waelti@gmail.com";
 
@@ -399,6 +400,15 @@ export default function ProgrammePage() {
                     {s.exercices && (
                       <div className="flex flex-col gap-2 mb-4">
                         <ExercicesList items={parseExercices(s.exercices)} />
+                      </div>
+                    )}
+                    {s.notes_libres && parseNotesLibres(s.notes_libres).length > 0 && (
+                      <div className="border border-white/8 bg-white/[0.02] rounded-lg px-3 py-2.5 mb-4 flex flex-col gap-1.5">
+                        {parseNotesLibres(s.notes_libres).map((n, ni) => (
+                          <p key={ni} className="text-[0.68rem] text-white/50 leading-relaxed flex items-start gap-1.5">
+                            <span className="text-[#c9a84c] shrink-0">•</span>{n}
+                          </p>
+                        ))}
                       </div>
                     )}
                     <button onClick={() => toggleSeanceDone(s)}

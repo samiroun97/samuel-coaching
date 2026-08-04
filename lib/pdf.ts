@@ -1,7 +1,8 @@
 import { jsPDF } from "jspdf";
 import { type ExerciceItem, parseExercices } from "@/lib/exercices";
+import { parseNotesLibres } from "@/lib/notesLibres";
 
-type CoachSeance = { titre: string; type_seance: string | null; date_prevue: string | null; semaine?: number | null; description: string | null; exercices: string | null };
+type CoachSeance = { titre: string; type_seance: string | null; date_prevue: string | null; semaine?: number | null; description: string | null; exercices: string | null; notes_libres?: string | null };
 
 const GOLD = { r: 201, g: 168, b: 76 };
 const GOLD_LIGHT = { r: 226, g: 201, b: 126 };
@@ -220,6 +221,20 @@ export function generateProgrammePdf(seances: CoachSeance[], clientName?: string
         drawExerciceCard(ex, ei, false);
         ei += 1;
       }
+    }
+
+    const notes = parseNotesLibres(s.notes_libres);
+    if (notes.length) {
+      y += 3;
+      notes.forEach(n => {
+        const lines = doc.splitTextToSize(`•  ${n}`, pageW - margin * 2 - 4);
+        ensureSpace(lines.length * 4 + 1);
+        doc.setFont("helvetica", "italic");
+        doc.setFontSize(8.5);
+        doc.setTextColor(GRAY.r, GRAY.g, GRAY.b);
+        doc.text(lines, margin + 2, y + 3.5);
+        y += lines.length * 4 + 1;
+      });
     }
 
     y += 6;
