@@ -240,10 +240,14 @@ export default function ExerciceEditor({ items, onChange, library = [] }: { item
     run.groupId ? (
       <div key={`group-${run.indices[0]}`} className="border border-[#c9a84c]/25 bg-[#c9a84c]/[0.03] rounded-lg p-2.5 flex flex-col gap-2.5">
         <div className="flex items-center justify-between px-1 gap-2">
-          <select className="bg-transparent text-[0.55rem] tracking-[0.18em] uppercase text-[#c9a84c] focus:outline-none cursor-pointer"
-            value={run.groupLabel || "Superset"} onChange={e => renameGroup(run.groupId!, e.target.value)}>
-            {GROUP_LABELS.map(l => <option key={l} value={l} className="bg-[#111] text-white normal-case tracking-normal">{l}</option>)}
-          </select>
+          <div className="relative shrink-0">
+            <select className="appearance-none bg-[#0c0a05] border border-[#c9a84c]/40 rounded-md text-[0.6rem] font-bold tracking-[0.1em] uppercase text-[#c9a84c] focus:outline-none focus:border-[#c9a84c] cursor-pointer pl-2.5 pr-6 py-1.5"
+              value={run.groupLabel || "Superset"} onChange={e => renameGroup(run.groupId!, e.target.value)}>
+              {GROUP_LABELS.map(l => <option key={l} value={l} className="bg-[#111] text-white normal-case tracking-normal">{l}</option>)}
+            </select>
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+              className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[#c9a84c]"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
           <div className="flex items-center gap-2 shrink-0">
             <div className="flex border border-white/10 rounded-md overflow-hidden">
               <button type="button" onClick={() => moveRun(runPos, -1)} disabled={runPos === 0} title="Monter le groupe"

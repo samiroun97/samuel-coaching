@@ -375,10 +375,6 @@ export default function ProgrammesPage() {
                           </select>
                         </div>
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div><label className={lbl}>Date prévue</label><input type="date" className={inp} value={d.date_prevue} onChange={e => setDraft(i, { date_prevue: e.target.value })}/></div>
-                        <div><label className={lbl}>Semaine (optionnel)</label><input type="number" min="1" className={inp} placeholder="1" value={d.semaine} onChange={e => setDraft(i, { semaine: e.target.value })}/></div>
-                      </div>
                       <div><label className={lbl}>Description</label><textarea className={`${inp} resize-none`} rows={2} value={d.description} onChange={e => setDraft(i, { description: e.target.value })}/></div>
                       <div>
                         <label className={lbl}>Exercices</label>
