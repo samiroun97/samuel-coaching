@@ -7,6 +7,7 @@ import { apiPost } from "@/lib/apiClient";
 import { type ExerciceItem, serializeExercices, normalizeExercice } from "@/lib/exercices";
 import { serializeNotesLibres } from "@/lib/notesLibres";
 import ExerciceEditor from "@/components/ExerciceEditor";
+import { SeanceBody } from "@/components/SeancePreview";
 import { type LibraryEntry, listLibrary, addLibraryEntry, deleteLibraryEntry } from "@/lib/exerciceLibrary";
 import { type ProgrammeTemplate, listTemplates, saveTemplate, deleteTemplate, templateToExercices } from "@/lib/programmeTemplates";
 
@@ -23,6 +24,7 @@ const STAGE_CFG: Record<string, { label: string; color: string }> = {
 
 type Client = { id: string; email: string; prenom: string; nom: string; age: number; poids: number; taille: number; sexe: string; niveau_activite: string; experience: string; seances_par_semaine: number; duree_seance: string; lieu_entrainement: string; blessures: string; objectifs: string; pipeline_stage: string | null };
 type SeanceDraft = { titre: string; type_seance: string; date_prevue: string; semaine: string; description: string; exercices: ExerciceItem[]; notesLibres: string[] };
+type SentSeance = { id: string; titre: string; type_seance: string | null; date_prevue: string | null; semaine: number | null; description: string | null; exercices: string | null; notes_libres: string | null; completed_at: string | null };
 
 const emptySeance = (): SeanceDraft => ({ titre: "", type_seance: "", date_prevue: "", semaine: "", description: "", exercices: [], notesLibres: [] });
 
@@ -45,6 +47,16 @@ export default function ProgrammesPage() {
   const [libForm,      setLibForm]      = useState({ nom: "", type: "", note_default: "", video_url: "" });
   const [templates,    setTemplates]    = useState<ProgrammeTemplate[]>([]);
   const [showTemplates, setShowTemplates] = useState(false);
+  const [sentSeances,  setSentSeances]  = useState<SentSeance[]>([]);
+  const [openSentId,   setOpenSentId]   = useState<string | null>(null);
+
+  // Séances déjà envoyées à ce client — pour que le coach ait un aperçu visuel de
+  // ce qui a été effectivement reçu, pas juste un message "envoyé ✓".
+  const loadSentSeances = async (email: string) => {
+    const { data } = await supabase.from("programme_seances").select("*")
+      .eq("assigned_to_email", email).order("created_at", { ascending: false });
+    setSentSeances((data ?? []) as SentSeance[]);
+  };
 
   const loadLibrary = async () => { try { setLibrary(await listLibrary()); } catch { /* table pas encore créée */ } };
   const loadTemplates = async () => { try { setTemplates(await listTemplates()); } catch { /* table pas encore créée */ } };
@@ -101,7 +113,8 @@ export default function ProgrammesPage() {
   const list = filter === "sans" ? sans : avec;
 
   const selectClient = (c: Client) => {
-    setSelected(c); setDrafts([]); setGenError(""); setSentTo(null); setGenDescription("");
+    setSelected(c); setDrafts([]); setGenError(""); setSentTo(null); setGenDescription(""); setOpenSentId(null);
+    loadSentSeances(c.email);
   };
 
   // Arrivée depuis la fiche client (CRM > Clients > Programme) avec ?client=email
@@ -153,7 +166,7 @@ export default function ProgrammesPage() {
     const valid = drafts.filter(d => d.titre.trim());
     if (!valid.length) return;
     setSending(true);
-    const { error } = await supabase.from("programme_seances").insert(valid.map(d => ({
+    const { data: inserted, error } = await supabase.from("programme_seances").insert(valid.map(d => ({
       assigned_to_email: selected.email,
       titre: d.titre.trim(),
       type_seance: d.type_seance || null,
@@ -162,11 +175,15 @@ export default function ProgrammesPage() {
       description: d.description || null,
       exercices: serializeExercices(d.exercices),
       notes_libres: serializeNotesLibres(d.notesLibres),
-    })));
+    }))).select();
     setSending(false);
     if (error) { setGenError(error.message); return; }
     setSentTo(selected.email); setDrafts([]); setGenDescription("");
+    // Ouvre directement l'aperçu de ce qui vient d'être envoyé, au lieu de laisser
+    // le coach avec un simple message "envoyé ✓" sans visuel dessus.
+    if (inserted && inserted[0]) setOpenSentId(inserted[0].id as string);
     await load();
+    await loadSentSeances(selected.email);
   };
 
   const inp = "w-full bg-[#060606] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
@@ -259,7 +276,38 @@ export default function ProgrammesPage() {
               {/* Confirmation d'envoi */}
               {sentTo === selected.email && (
                 <div className="border border-[#7eb8a0]/25 bg-[#7eb8a0]/5 rounded-lg px-4 py-3 text-center">
-                  <p className="text-xs text-[#7eb8a0]">Programme envoyé à {selected.prenom} ✓</p>
+                  <p className="text-xs text-[#7eb8a0]">Programme envoyé à {selected.prenom} ✓ — aperçu ci-dessous</p>
+                </div>
+              )}
+
+              {/* Séances déjà envoyées — aperçu visuel identique à ce que le client voit */}
+              {sentSeances.length > 0 && (
+                <div className="border border-white/8 bg-[#0a0a0a] rounded-lg">
+                  <p className="px-4 pt-3 pb-2 text-[0.55rem] tracking-[0.2em] uppercase text-white/40">
+                    Séances envoyées à {selected.prenom} ({sentSeances.length})
+                  </p>
+                  {sentSeances.map(s => {
+                    const open = openSentId === s.id;
+                    return (
+                      <div key={s.id} className="border-t border-white/5">
+                        <button onClick={() => setOpenSentId(open ? null : s.id)}
+                          className="w-full text-left px-4 py-2.5 flex items-center justify-between gap-2 hover:bg-white/[0.02] transition-colors">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              {s.completed_at && <span className="text-[0.7rem] text-[#7eb8a0] shrink-0">✓</span>}
+                              {s.type_seance && <span className="text-[0.62rem] tracking-wider uppercase text-[#c9a84c] border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">{s.type_seance}</span>}
+                              {s.semaine && <span className="text-[0.62rem] tracking-wider uppercase text-white/30 border border-white/10 px-1.5 py-0.5 shrink-0">Sem. {s.semaine}</span>}
+                              <p className="text-xs text-white/70 truncate">{s.titre}</p>
+                            </div>
+                            {s.date_prevue && <p className="text-[0.65rem] text-white/25 mt-0.5">{new Date(s.date_prevue + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</p>}
+                          </div>
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+                            className={`text-white/25 shrink-0 transition-transform ${open ? "rotate-180" : ""}`}><polyline points="6 9 12 15 18 9"/></svg>
+                        </button>
+                        {open && <div className="px-4 pb-4"><SeanceBody s={s} /></div>}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 
