@@ -228,8 +228,9 @@ export default function ExerciceEditor({ items, onChange, library = [] }: { item
           </div>
         )}
 
-        <div className="pl-8 grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <input className={`${inpSm} text-left`} placeholder="Note technique (optionnel)" value={ex.note} onChange={e => update(i, { note: e.target.value })} />
+        <div className="pl-8 flex flex-col gap-2">
+          <textarea className={`${inpSm} text-left resize-none`} rows={2} placeholder="Note libre sur cet exercice (optionnel) : consigne, précision, variante…"
+            value={ex.note} onChange={e => update(i, { note: e.target.value })} />
           <input className={`${inpSm} text-left`} placeholder="Lien vidéo (optionnel)" value={ex.videoUrl} onChange={e => update(i, { videoUrl: e.target.value })} />
         </div>
       </div>

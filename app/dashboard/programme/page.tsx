@@ -48,7 +48,7 @@ function ExerciceCard({ ex }: { ex: ExerciceItem }) {
           </div>
         )
       )}
-      {ex.note && <p className="text-[0.65rem] text-white/35 italic mt-1.5 leading-relaxed">{ex.note}</p>}
+      {ex.note && <p className="text-[0.65rem] text-white/35 italic mt-1.5 leading-relaxed whitespace-pre-line">{ex.note}</p>}
     </div>
   );
 }
