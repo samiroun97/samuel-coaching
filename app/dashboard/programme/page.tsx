@@ -406,7 +406,7 @@ export default function ProgrammePage() {
                       <div className="border border-white/8 bg-white/[0.02] rounded-lg px-3 py-2.5 mb-4 flex flex-col gap-1.5">
                         {parseNotesLibres(s.notes_libres).map((n, ni) => (
                           <p key={ni} className="text-[0.68rem] text-white/50 leading-relaxed flex items-start gap-1.5">
-                            <span className="text-[#c9a84c] shrink-0">•</span>{n}
+                            <span className="text-[#c9a84c] shrink-0">•</span><span className="whitespace-pre-line">{n}</span>
                           </p>
                         ))}
                       </div>
