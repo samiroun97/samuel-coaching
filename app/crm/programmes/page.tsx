@@ -131,12 +131,8 @@ export default function ProgrammesPage() {
     setDrafts(prev => prev.map((d, j) => j === i ? { ...d, ...patch } : d));
 
   // Notes libres d'une séance : des points en texte libre qui ne sont pas des exercices
-  // (ex: "bien s'hydrater avant", "focus respiration"…).
-  const addNoteLibre = (i: number) => setDraft(i, { notesLibres: [...drafts[i].notesLibres, ""] });
-  const setNoteLibre = (i: number, ni: number, value: string) =>
-    setDraft(i, { notesLibres: drafts[i].notesLibres.map((n, j) => j === ni ? value : n) });
-  const removeNoteLibre = (i: number, ni: number) =>
-    setDraft(i, { notesLibres: drafts[i].notesLibres.filter((_, j) => j !== ni) });
+  // (ex: "bien s'hydrater avant", "focus respiration"…). Une ligne tapée = un point affiché avec une puce.
+  const setNotesLibresText = (i: number, text: string) => setDraft(i, { notesLibres: text.split("\n") });
 
   const sendAll = async () => {
     if (!selected || sending) return;
@@ -382,22 +378,10 @@ export default function ProgrammesPage() {
                       </div>
                       <div>
                         <label className={lbl}>Notes libres (optionnel)</label>
-                        <p className="text-[0.55rem] text-white/20 mb-2 -mt-1">Pas forcément des exercices : consignes, rappels, précisions… ex. « bien s&apos;hydrater avant », « focus respiration ».</p>
-                        <div className="flex flex-col gap-2">
-                          {d.notesLibres.map((n, ni) => (
-                            <div key={ni} className="flex items-center gap-2">
-                              <input className={inp} placeholder="Ex : arriver 10 min en avance pour l'échauffement…"
-                                value={n} onChange={e => setNoteLibre(i, ni, e.target.value)}/>
-                              <button type="button" onClick={() => removeNoteLibre(i, ni)} className="shrink-0 text-white/15 hover:text-[#e07070] transition-colors">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                              </button>
-                            </div>
-                          ))}
-                          <button type="button" onClick={() => addNoteLibre(i)}
-                            className="border border-white/10 text-white/30 text-[0.55rem] tracking-[0.12em] uppercase py-2 rounded-lg hover:border-white/20 hover:text-white/50 transition-colors">
-                            + Ajouter une note libre
-                          </button>
-                        </div>
+                        <p className="text-[0.55rem] text-white/20 mb-2 -mt-1">Pas forcément des exercices : consignes, rappels, précisions… Une ligne = un point affiché avec une puce.</p>
+                        <textarea className={`${inp} resize-none`} rows={4}
+                          placeholder={"Ex :\nbien s'hydrater avant\nfocus respiration\narriver 10 min en avance pour l'échauffement…"}
+                          value={d.notesLibres.join("\n")} onChange={e => setNotesLibresText(i, e.target.value)}/>
                       </div>
                     </div>
                   ))}
