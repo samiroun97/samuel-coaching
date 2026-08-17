@@ -787,7 +787,7 @@ export default function NutritionPage() {
   };
 
   // Macros du produit sauvegardé, recalculées pour la quantité choisie
-  const savedFactor   = selectedSaved?.base_qty ? (parseFloat(savedQty.replace(",", ".")) || 0) / selectedSaved.base_qty : 1;
+  const savedFactor   = selectedSaved ? (parseFloat(savedQty.replace(",", ".")) || 0) / (selectedSaved.base_qty ?? 100) : 1;
   const savedComputed = selectedSaved ? {
     calories:  Math.round(selectedSaved.calories  * savedFactor),
     proteines: Math.round(selectedSaved.proteines * savedFactor),
@@ -1475,7 +1475,7 @@ export default function NutritionPage() {
                   ) : (
                     <div className="flex flex-col gap-1.5">
                       {savedMeals.map(meal => (
-                        <div key={meal.id} onClick={() => { setShowNewProd(false); setSelectedSaved(s => s?.id === meal.id ? null : meal); setSavedQty(String(meal.base_qty ?? "")); }}
+                        <div key={meal.id} onClick={() => { setShowNewProd(false); setSelectedSaved(s => s?.id === meal.id ? null : meal); setSavedQty(String(meal.base_qty ?? 100)); }}
                           className={`flex items-center justify-between px-4 py-3 border cursor-pointer transition-all ${selectedSaved?.id === meal.id ? "border-[#c9a84c] bg-[#c9a84c]/5" : "border-white/10 hover:border-white/20"}`}>
                           <div>
                             <p className="text-xs text-white/70">{meal.name}</p>
@@ -1496,7 +1496,7 @@ export default function NutritionPage() {
                   )}
 
                   {/* Quantité + macros recalculées pour les produits à quantité de base */}
-                  {selectedSaved?.base_qty && savedComputed && (
+                  {selectedSaved && savedComputed && (
                     <div className="border border-[#c9a84c]/20 bg-[#c9a84c]/5 rounded-lg p-4 flex flex-col gap-4">
                       <div><label className={labelCls}>Quantité ({selectedSaved.unit ?? "g"})</label>
                         <input className={inputCls} type="number" inputMode="decimal" value={savedQty} onChange={e => setSavedQty(e.target.value)}/>
@@ -1519,7 +1519,7 @@ export default function NutritionPage() {
 
                   {selectedSaved && (
                     <button onClick={addFood} className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg">
-                      Ajouter &quot;{selectedSaved.name}&quot;{selectedSaved.base_qty ? ` (${savedQty || 0} ${selectedSaved.unit ?? "g"})` : ""} au journal →
+                      Ajouter &quot;{selectedSaved.name}&quot; ({savedQty || 0} {selectedSaved.unit ?? "g"}) au journal →
                     </button>
                   )}
                 </div>
