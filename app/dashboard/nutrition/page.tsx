@@ -1080,7 +1080,7 @@ export default function NutritionPage() {
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
                       </button>
                       <button
-                        onClick={() => isFav ? setSavedMeals(s => s.filter(m => m.name !== f.name)) : saveMeal(f)}
+                        onClick={() => isFav ? setSavedMeals(s => s.filter(m => m.name !== f.name)) : saveMeal({ ...f, base_qty: 100, unit: "g" })}
                         title={isFav ? "Retirer des favoris" : "Ajouter aux favoris"}
                         className={`transition-colors ${isFav ? "text-[#c9a84c] opacity-100" : "text-white/35 hover:text-[#c9a84c] opacity-70 group-hover:opacity-100"}`}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill={isFav ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
@@ -1274,7 +1274,7 @@ export default function NutritionPage() {
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <button onClick={() => saveMeal(aiResult)} disabled={savedMeals.some(s => s.name === aiResult.name)}
+                        <button onClick={() => saveMeal({ ...aiResult, base_qty: 100, unit: "g" })} disabled={savedMeals.some(s => s.name === aiResult.name)}
                           className="flex-1 border border-white/10 text-white/40 rounded-lg text-[0.7rem] tracking-[0.15em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-1.5">
                           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
                           {savedMeals.some(s => s.name === aiResult.name) ? "Déjà sauvegardé" : "Sauvegarder"}
