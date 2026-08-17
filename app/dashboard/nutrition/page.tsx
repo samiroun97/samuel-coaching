@@ -31,7 +31,7 @@ type SavedMeal = { id: string; name: string; calories: number; proteines: number
 type DayHistory = { date: string; label: string; calories: number };
 type MealPlanItem = { id: string; meal_type: string; name: string; calories: number; proteines: number; glucides: number; lipides: number };
 type MealPlan = { id: string; name: string; notes: string | null; items: MealPlanItem[] };
-type PhotoDraft = { photoPreview: string | null; description: string; portionSize: "petite" | "moyenne" | "grande" | null };
+type PhotoDraft = { photoPreview: string | null; description: string; portionSize: "petite" | "moyenne" | "grande" | null; gramsInput?: string };
 
 // Sur mobile (PWA), ouvrir l'appareil photo natif via <input capture> peut faire recharger
 // la page au retour (l'OS libère la mémoire de la webview) : tout le state React est perdu,
@@ -328,6 +328,7 @@ export default function NutritionPage() {
   const [reportSent,     setReportSent]     = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [portionSize,  setPortionSize]  = useState<"petite" | "moyenne" | "grande" | null>(null);
+  const [gramsInput,   setGramsInput]   = useState("");
   const photoRef       = useRef<HTMLInputElement>(null);
   const galleryRef     = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<{ start(): void; stop(): void } | null>(null);
@@ -365,6 +366,7 @@ export default function NutritionPage() {
       setPhotoPreview(draft.photoPreview);
       setDescription(draft.description ?? "");
       setPortionSize(draft.portionSize ?? null);
+      setGramsInput(draft.gramsInput ?? "");
     } catch { /* ignore */ }
   }, []);
 
@@ -372,10 +374,10 @@ export default function NutritionPage() {
   useEffect(() => {
     if (!photoPreview) return;
     try {
-      const draft: PhotoDraft = { photoPreview, description, portionSize };
+      const draft: PhotoDraft = { photoPreview, description, portionSize, gramsInput };
       sessionStorage.setItem(PHOTO_DRAFT_KEY, JSON.stringify(draft));
     } catch { /* ignore */ }
-  }, [photoPreview, description, portionSize]);
+  }, [photoPreview, description, portionSize, gramsInput]);
 
   useEffect(() => {
     (async () => {
@@ -554,9 +556,10 @@ export default function NutritionPage() {
     setAnalyzing(true); setAiError(""); setAiResult(null);
     setShowReportForm(false); setReportComment(""); setReportSent(false);
     try {
+      const grams = parseFloat(gramsInput.replace(",", ".")) || undefined;
       const res = await apiPost("/api/nutrition/analyze", photoPreview
-        ? { type: "photo", image: photoPreview, text: description, portion: portionSize }
-        : { type: "text", text: description, portion: portionSize });
+        ? { type: "photo", image: photoPreview, text: description, portion: portionSize, grams }
+        : { type: "text", text: description, portion: portionSize, grams });
       if (!res.ok) { const t = await res.text(); throw new Error(t || `Erreur ${res.status}`); }
       const data = await res.json();
       if (data.error) throw new Error(data.error);
@@ -618,7 +621,7 @@ export default function NutritionPage() {
       // Sauvegarde immédiate : si le retour de l'appareil photo recharge la page,
       // ce brouillon permet de retrouver la photo au lieu de tout perdre.
       try {
-        const draft: PhotoDraft = { photoPreview: compressed, description, portionSize };
+        const draft: PhotoDraft = { photoPreview: compressed, description, portionSize, gramsInput };
         sessionStorage.setItem(PHOTO_DRAFT_KEY, JSON.stringify(draft));
       } catch { /* quota dépassé, tant pis */ }
     } catch {
@@ -809,7 +812,7 @@ export default function NutritionPage() {
   const resetModal = () => {
     setShowAdd(false); setModalMode("ai"); setAddMealType(MEAL_TYPES[0]);
     setDescription(""); setAiResult(null); setAiError(""); setListening(false);
-    setPhotoPreview(null); setPortionSize(null);
+    setPhotoPreview(null); setPortionSize(null); setGramsInput("");
     setQuery(""); setResults([]); setSelected(null); setQuantity("100"); setSelectedSaved(null);
     setSavedQty("100"); setShowNewProd(false); setNewProd(emptyProd);
     try { sessionStorage.removeItem(PHOTO_DRAFT_KEY); } catch { /* ignore */ }
@@ -1218,8 +1221,16 @@ export default function NutritionPage() {
                   </div>
 
                   <div>
+                    <label className={labelCls}>Poids en grammes (optionnel)</label>
+                    <input className={inputCls} type="number" inputMode="decimal" placeholder="Ex : 150"
+                      value={gramsInput}
+                      onChange={e => { setGramsInput(e.target.value); if (e.target.value.trim()) setPortionSize(null); setAiResult(null); }}/>
+                    <p className="text-[0.65rem] text-white/20 mt-1">Plus précis que la taille de portion ci-dessous — l&apos;IA l&apos;utilisera comme poids exact du repas.</p>
+                  </div>
+
+                  <div>
                     <label className={labelCls}>Taille de la portion (optionnel)</label>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className={`grid grid-cols-3 gap-2 transition-opacity ${gramsInput.trim() ? "opacity-30 pointer-events-none" : ""}`}>
                       {(["petite", "moyenne", "grande"] as const).map(p => (
                         <button key={p} onClick={() => { setPortionSize(v => v === p ? null : p); setAiResult(null); }}
                           className={`border text-[0.68rem] tracking-[0.1em] uppercase py-2 capitalize transition-colors ${portionSize === p ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10 rounded-lg" : "border-white/10 text-white/40 hover:border-white/20 hover:text-white/60 rounded-lg"}`}>

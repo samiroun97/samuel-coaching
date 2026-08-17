@@ -25,12 +25,16 @@ export async function POST(req: NextRequest) {
     }
 
     const client = new Anthropic({ apiKey });
-    const { type, image, text, portion } = await req.json();
+    const { type, image, text, portion, grams } = await req.json();
 
-    // Le réglage de portion (petite/grande) est appliqué mathématiquement après coup
-    // (+/-15%), pas laissé à l'appréciation de l'IA : on lui demande donc toujours
-    // une estimation pour une portion standard/typique.
-    const portionMultiplier = portion === "grande" ? 1.15 : portion === "petite" ? 0.85 : 1;
+    // Un poids exact fourni par l'utilisateur est plus précis qu'un réglage petite/grande :
+    // il est transmis à l'IA comme donnée de calcul, donc on n'applique pas le multiplicateur
+    // par-dessus (ça reviendrait à ajuster deux fois la même chose).
+    const exactWeight = typeof grams === "number" && grams > 0 ? grams : undefined;
+    const portionMultiplier = exactWeight ? 1 : portion === "grande" ? 1.15 : portion === "petite" ? 0.85 : 1;
+    const weightInstruction = exactWeight
+      ? `\n\nPoids total du repas précisé par l'utilisateur : ${exactWeight}g. Utilise cette valeur exacte comme base de ton calcul plutôt que d'estimer le poids toi-même.`
+      : "";
 
     // Corrections apportées par le coach sur d'anciennes estimations jugées fausses (via la
     // rubrique IA du CRM) — réinjectées comme contexte pour calibrer l'estimation actuelle.
@@ -55,7 +59,7 @@ export async function POST(req: NextRequest) {
       }
     } catch { /* best-effort : l'estimation continue sans le contexte de calibration */ }
 
-    const promptWithCorrections = PROMPT + correctionsBlock;
+    const promptWithCorrections = PROMPT + weightInstruction + correctionsBlock;
 
     let content: Anthropic.Messages.MessageParam["content"];
 
