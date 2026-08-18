@@ -1,9 +1,14 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { isPushSupported, subscribeToPush, unsubscribeFromPush } from "@/lib/push";
+import { isCoachUser } from "@/lib/coach";
 
 export default function ProfilePage() {
+  const router = useRouter();
+  const [isCoach, setIsCoach] = useState(false);
   const [form, setForm] = useState({ prenom: "", nom: "", age: "", poids: "", taille: "", sexe: "" });
   const [saving, setSaving] = useState(false);
   const [saved,  setSaved]  = useState(false);
@@ -24,6 +29,7 @@ export default function ProfilePage() {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+      isCoachUser(user.id).then(setIsCoach);
       const { data } = await supabase.from("profiles")
         .select("prenom,nom,age,poids,taille,sexe").eq("id", user.id).single();
       if (data) setForm({
@@ -82,7 +88,20 @@ export default function ProfilePage() {
   return (
     <div className="p-4 sm:p-8 max-w-lg">
       <p className="text-[0.7rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-2">Paramètres</p>
-      <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-5xl text-white tracking-wide mb-10">MON PROFIL</h1>
+      <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-5xl text-white tracking-wide mb-10">COMPTE</h1>
+
+      {isCoach && (
+        <div className="border border-[#c9a84c]/25 bg-[#c9a84c]/5 rounded-lg p-5 flex items-center justify-between gap-4 mb-6">
+          <div>
+            <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1">Espace coach</p>
+            <p className="text-[0.62rem] text-white/35 tracking-wider">Tu es actuellement dans ton espace perso (aperçu adhérent)</p>
+          </div>
+          <Link href="/crm"
+            className="shrink-0 bg-[#c9a84c] text-black text-[0.65rem] font-bold tracking-[0.15em] uppercase px-4 py-2.5 hover:bg-[#e2c97e] transition-colors rounded-lg">
+            Retour espace coach →
+          </Link>
+        </div>
+      )}
 
       <div className="border border-white/10 bg-[#111] rounded-lg p-6 flex flex-col gap-5">
         <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Informations personnelles</p>
@@ -189,6 +208,15 @@ export default function ProfilePage() {
             : "Changer le mot de passe"}
         </button>
       </div>
+
+      <button
+        onClick={async () => { await supabase.auth.signOut(); router.push("/login"); }}
+        className="w-full border border-white/10 text-white/40 rounded-lg text-[0.7rem] tracking-[0.15em] uppercase py-3.5 mt-6 hover:border-[#e07070]/40 hover:text-[#e07070] transition-colors flex items-center justify-center gap-2">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
+        </svg>
+        Déconnexion
+      </button>
     </div>
   );
 }
