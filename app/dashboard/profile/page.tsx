@@ -8,11 +8,13 @@ type Profile = {
   prenom: string; nom: string; age: number | null; poids: number | null; taille: number | null; sexe: string | null;
   objectifs: string | null; objectif_echeance: string | null; objectif_pending: boolean;
   seances_par_semaine: number | null; lieu_entrainement: string | null;
+  blessures: string | null; alimentation: string | null; sommeil_stress: string | null;
 };
 
 const FB_LABELS: Record<string, string> = { bug: "🐛 Bug", suggestion: "💡 Suggestion", idee: "✨ Idée" };
 const ECHEANCES = ["1 mois", "3 mois", "6 mois", "1 an", "Pas d'échéance précise"];
 const LIEUX = ["Salle de musculation", "Extérieur", "Maison"];
+const STRESS_OPTIONS = ["Faible (je dors bien, peu de stress)", "Modéré", "Élevé (peu de sommeil, stress chronique)"];
 
 function GearIcon() {
   return (
@@ -37,7 +39,10 @@ export default function ProfilePage() {
 
   const [userId,      setUserId]      = useState<string | null>(null);
   const [showObjForm, setShowObjForm] = useState(false);
-  const [objForm,     setObjForm]     = useState({ objectifs: "", echeance: "", echeanceDate: "", seances: "", lieux: [] as string[] });
+  const [objForm,     setObjForm]     = useState({
+    objectifs: "", echeance: "", echeanceDate: "", seances: "", lieux: [] as string[],
+    blessures: "", alimentation: "", sommeilStress: "",
+  });
   const [objSaving,   setObjSaving]   = useState(false);
 
   useEffect(() => {
@@ -50,7 +55,7 @@ export default function ProfilePage() {
       setIsCoach(coach);
       if (!coach) getMyCoachEmail(user.id).then(setCoachEmail);
       const { data } = await supabase.from("profiles")
-        .select("prenom,nom,age,poids,taille,sexe,objectifs,objectif_echeance,objectif_pending,seances_par_semaine,lieu_entrainement")
+        .select("prenom,nom,age,poids,taille,sexe,objectifs,objectif_echeance,objectif_pending,seances_par_semaine,lieu_entrainement,blessures,alimentation,sommeil_stress")
         .eq("id", user.id).single();
       if (data) setProfile(data as Profile);
     })();
@@ -68,7 +73,11 @@ export default function ProfilePage() {
   const openObjForm = () => {
     if (!profile) return;
     const knownLieux = (profile.lieu_entrainement || "").split(",").map(s => s.trim()).filter(s => LIEUX.includes(s));
-    setObjForm({ objectifs: profile.objectifs || "", echeance: profile.objectif_echeance || "", echeanceDate: "", seances: String(profile.seances_par_semaine || ""), lieux: knownLieux });
+    setObjForm({
+      objectifs: profile.objectifs || "", echeance: profile.objectif_echeance || "", echeanceDate: "",
+      seances: String(profile.seances_par_semaine || ""), lieux: knownLieux,
+      blessures: profile.blessures || "", alimentation: profile.alimentation || "", sommeilStress: profile.sommeil_stress || "",
+    });
     setShowObjForm(true);
   };
 
@@ -80,6 +89,9 @@ export default function ProfilePage() {
       objectif_echeance: objForm.echeance || null,
       seances_par_semaine: objForm.seances ? parseInt(objForm.seances) : profile?.seances_par_semaine,
       lieu_entrainement: objForm.lieux.length ? objForm.lieux.join(", ") : profile?.lieu_entrainement,
+      blessures: objForm.blessures.trim() || null,
+      alimentation: objForm.alimentation.trim() || null,
+      sommeil_stress: objForm.sommeilStress || null,
       objectif_pending: false,
     };
     await supabase.from("profiles").update(fields).eq("id", userId);
@@ -150,6 +162,7 @@ export default function ProfilePage() {
           {profile?.objectif_echeance && <p className="text-[0.62rem] text-white/25 tracking-wider uppercase">Échéance : {profile.objectif_echeance}</p>}
         </div>
         <p className="text-sm text-white/55 leading-relaxed">{profile?.objectifs || "Aucun objectif renseigné"}</p>
+        <p className="text-[0.6rem] text-white/20 tracking-wider mt-3">Blessures · Alimentation · Sommeil/stress · Lieu · Séances/sem.</p>
       </button>
 
       <Link href="/dashboard/profile/preferences"
@@ -273,6 +286,32 @@ export default function ProfilePage() {
                     <button key={n} type="button" onClick={() => setObjForm(f => ({ ...f, seances: n }))}
                       className={`w-10 h-10 border rounded-lg text-sm font-bold transition-all ${objForm.seances === n ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-white/15 text-white/40 hover:border-white/30"}`}>
                       {n}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[0.6rem] tracking-[0.15em] uppercase text-white/40 block mb-1.5">Blessures</label>
+                <textarea className="w-full bg-[#060606] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={2}
+                  placeholder="Ex : douleur genou gauche... (ou 'aucune')"
+                  value={objForm.blessures} onChange={e => setObjForm(f => ({ ...f, blessures: e.target.value }))}/>
+              </div>
+
+              <div>
+                <label className="text-[0.6rem] tracking-[0.15em] uppercase text-white/40 block mb-1.5">Alimentation</label>
+                <textarea className="w-full bg-[#060606] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={2}
+                  placeholder="Ex : végétarien, allergie... (ou 'standard')"
+                  value={objForm.alimentation} onChange={e => setObjForm(f => ({ ...f, alimentation: e.target.value }))}/>
+              </div>
+
+              <div>
+                <label className="text-[0.6rem] tracking-[0.15em] uppercase text-white/40 block mb-1.5">Sommeil / stress</label>
+                <div className="flex flex-wrap gap-2">
+                  {STRESS_OPTIONS.map(o => (
+                    <button key={o} type="button" onClick={() => setObjForm(f => ({ ...f, sommeilStress: o }))}
+                      className={`text-[0.65rem] tracking-wider px-3 py-2 rounded-lg border transition-colors ${objForm.sommeilStress === o ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-white/15 text-white/40 hover:border-white/30"}`}>
+                      {o}
                     </button>
                   ))}
                 </div>
