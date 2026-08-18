@@ -39,6 +39,7 @@ const navItems = [
   { label: "Activité",  href: "/dashboard/programme",  icon: "programme" },
   { label: "Suivi",     href: "/dashboard/suivi",      icon: "suivi" },
   { label: "Messages",  href: "/dashboard/coach",      icon: "coach" },
+  { label: "Compte",    href: "/dashboard/profile",    icon: "profile" },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -179,15 +180,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </nav>
 
         <div className="px-2 py-3 border-t border-white/5 flex flex-col gap-0.5">
-          <Link href="/dashboard/profile"
-            className={`flex items-center gap-3 px-3 py-2.5 text-[0.6rem] tracking-[0.12em] uppercase transition-all duration-150 border-l-2 ${
-              pathname === "/dashboard/profile"
-                ? "text-[#c9a84c] bg-[#c9a84c]/5 border-[#c9a84c]"
-                : "text-white/20 hover:text-white/40 hover:bg-white/[0.03] border-transparent"
-            }`}>
-            <NavIcon name="profile"/>
-            Mon profil
-          </Link>
           <button
             onClick={async () => { await supabase.auth.signOut(); router.push("/login"); }}
             className="flex items-center gap-3 px-3 py-2.5 text-[0.6rem] tracking-[0.12em] uppercase text-white/20 hover:text-white/40 transition-colors w-full border-l-2 border-transparent">
