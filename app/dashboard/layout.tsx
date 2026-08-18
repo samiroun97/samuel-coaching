@@ -203,17 +203,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       )}
 
-      {/* Retour CRM — Samuel en mode aperçu */}
-      {isCoach && isPreview && (
-        <Link href="/crm"
-          className="fixed top-4 left-4 md:left-56 z-40 flex items-center gap-1.5 px-3 py-1.5 border border-white/15 bg-[#0a0a0a]/90 rounded-full text-white/50 hover:text-white/80 hover:border-white/30 transition-all text-[0.45rem] tracking-[0.15em] uppercase print:hidden">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="15 18 9 12 15 6"/>
-          </svg>
-          Retour CRM
-        </Link>
-      )}
-
       {/* Feedback button — clients + preview mode */}
       {(!isCoach || isPreview) && (
         <>
