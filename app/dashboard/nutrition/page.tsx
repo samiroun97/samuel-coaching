@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
+import { getMyCoachEmail } from "@/lib/coach";
 import { DateNav } from "@/components/DateNav";
 import { BrowserMultiFormatReader } from "@zxing/browser";
 import type { IScannerControls } from "@zxing/browser";
@@ -43,8 +44,6 @@ const PHOTO_DRAFT_KEY = "nutrition_photo_draft";
 // « reload pendant le traitement » d'un simple abandon, pour prévenir l'utilisateur au lieu
 // de le laisser deviner pourquoi sa photo a disparu.
 const PHOTO_PENDING_KEY = "nutrition_photo_pending";
-
-const SAMUEL_EMAIL = "sam97waelti@gmail.com";
 
 const MAX_PHOTO_DIM = 900;
 
@@ -307,6 +306,7 @@ export default function NutritionPage() {
   const [description, setDescription] = useState("");
   const userIdRef       = useRef("");
   const userEmailRef    = useRef("");
+  const coachEmailRef   = useRef<string | null>(null);
   const syncTimers      = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const selectedDateRef = useRef(realToday);
   const scanRef         = useRef<HTMLInputElement>(null);
@@ -385,6 +385,7 @@ export default function NutritionPage() {
       if (user) {
         userIdRef.current = user.id;
         userEmailRef.current = user.email ?? "";
+        getMyCoachEmail(user.id).then(email => { coachEmailRef.current = email; });
         // Profil + body fat pour le calcul du TDEE
         const { data: p } = await supabase.from("profiles").select("poids,taille,age,sexe").eq("id", user.id).single();
         if (p) {
@@ -572,7 +573,7 @@ export default function NutritionPage() {
   // photo utilisée pour l'estimation (jamais conservée sinon), pour recalibrer l'IA depuis
   // la rubrique IA du CRM (cf. app/crm/ia).
   const submitReport = async () => {
-    if (!aiResult || !reportComment.trim() || !userEmailRef.current) return;
+    if (!aiResult || !reportComment.trim() || !userEmailRef.current || !coachEmailRef.current) return;
     setReportSending(true);
     const payload = JSON.stringify({
       calories: aiResult.calories, proteines: aiResult.proteines,
@@ -582,7 +583,7 @@ export default function NutritionPage() {
     });
     await supabase.from("messages").insert({
       from_email: userEmailRef.current,
-      to_email: SAMUEL_EMAIL,
+      to_email: coachEmailRef.current,
       content: `[NUTRITION_FEEDBACK:${payload}]`,
     });
     setReportSending(false); setReportSent(true); setShowReportForm(false); setReportComment("");

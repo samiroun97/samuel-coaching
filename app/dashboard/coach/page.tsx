@@ -2,8 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
-
-const SAMUEL_EMAIL = "sam97waelti@gmail.com";
+import { getMyCoachEmail } from "@/lib/coach";
 
 type AiMessage  = { role: "user" | "assistant"; content: string };
 type DirectMsg  = { id: string; from_email: string; to_email: string; content: string; created_at: string };
@@ -16,6 +15,7 @@ const WELCOME: AiMessage = {
 export default function CoachPage() {
   const [tab,       setTab]       = useState<"ia" | "samuel">("ia");
   const [userEmail, setUserEmail] = useState("");
+  const [coachEmail, setCoachEmail] = useState<string | null>(null);
 
   // IA chat
   const [aiMessages, setAiMessages] = useState<AiMessage[]>([WELCOME]);
@@ -37,6 +37,7 @@ export default function CoachPage() {
       if (!user?.email) return;
       setUserEmail(user.email);
       loadDirectMessages(user.email);
+      getMyCoachEmail(user.id).then(setCoachEmail);
     })();
   }, []);
 
@@ -86,12 +87,12 @@ export default function CoachPage() {
 
   const sendDirect = async () => {
     const text = dirInput.trim();
-    if (!text || dirLoading || !userEmail) return;
+    if (!text || dirLoading || !userEmail || !coachEmail) return;
     setDirLoading(true);
     setDirInput("");
     const { error } = await supabase.from("messages").insert({
       from_email: userEmail,
-      to_email: SAMUEL_EMAIL,
+      to_email: coachEmail,
       content: text,
     });
     if (error) setDirInput(text);

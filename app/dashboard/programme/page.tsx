@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
+import { getMyCoachEmail } from "@/lib/coach";
 import { SeanceBody } from "@/components/SeancePreview";
 
 type Profile = { prenom: string; poids: number; taille: number; age: number; sexe: string };
@@ -13,8 +14,6 @@ type LoggedWorkout = {
 type PerfRecord = { date: string; calories: number; duration: number; description: string };
 type PerfHistory = Record<string, PerfRecord[]>;
 type CoachSeance = { id: string; titre: string; type_seance: string | null; date_prevue: string | null; semaine: number | null; description: string | null; exercices: string | null; notes_libres: string | null; completed_at: string | null };
-
-const SAMUEL_EMAIL = "sam97waelti@gmail.com";
 
 const DURATIONS = [
   { label: "15 min", min: 15 }, { label: "30 min", min: 30 }, { label: "45 min", min: 45 },
@@ -129,6 +128,7 @@ export default function ProgrammePage() {
   const [intensity,   setIntensity]   = useState<IntensityKey>("haute");
   const recognitionRef = useRef<{ start(): void; stop(): void } | null>(null);
   const userEmailRef = useRef("");
+  const coachEmailRef = useRef<string | null>(null);
 
   // Signalement d'une estimation d'activité qui semble fausse — envoyée à Samuel via
   // l'Inbox, pour recalibrer l'IA depuis la rubrique IA du CRM (cf. app/crm/ia).
@@ -149,6 +149,7 @@ export default function ProgrammePage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       userEmailRef.current = user.email ?? "";
+      getMyCoachEmail(user.id).then(email => { coachEmailRef.current = email; });
       const { data: p } = await supabase.from("profiles").select("prenom,poids,taille,age,sexe").eq("id", user.id).single();
       if (p) setProfile(p as Profile);
       if (user.email) {
@@ -208,14 +209,14 @@ export default function ProgrammePage() {
 
   // Signalement d'une estimation de calories brûlées jugée fausse.
   const submitActReport = async () => {
-    if (!calResult || !actReportComment.trim() || !userEmailRef.current) return;
+    if (!calResult || !actReportComment.trim() || !userEmailRef.current || !coachEmailRef.current) return;
     setActReportSending(true);
     const payload = JSON.stringify({
       activity, duration_minutes: durationMin, description,
       calories_brulees: calResult.calories_brulees, comment: actReportComment.trim(),
     });
     await supabase.from("messages").insert({
-      from_email: userEmailRef.current, to_email: SAMUEL_EMAIL,
+      from_email: userEmailRef.current, to_email: coachEmailRef.current,
       content: `[ACTIVITE_FEEDBACK:${payload}]`,
     });
     setActReportSending(false); setActReportSent(true); setShowActReportForm(false); setActReportComment("");
@@ -223,14 +224,14 @@ export default function ProgrammePage() {
 
   // Signalement d'un problème sur une séance précise du programme assigné par Samuel.
   const submitSeanceReport = async (s: CoachSeance) => {
-    if (!seanceReportComment.trim() || !userEmailRef.current) return;
+    if (!seanceReportComment.trim() || !userEmailRef.current || !coachEmailRef.current) return;
     setSeanceReportSending(true);
     const payload = JSON.stringify({
       titre: s.titre, type_seance: s.type_seance, description: s.description,
       comment: seanceReportComment.trim(),
     });
     await supabase.from("messages").insert({
-      from_email: userEmailRef.current, to_email: SAMUEL_EMAIL,
+      from_email: userEmailRef.current, to_email: coachEmailRef.current,
       content: `[PROGRAMME_FEEDBACK:${payload}]`,
     });
     setSeanceReportSending(false);

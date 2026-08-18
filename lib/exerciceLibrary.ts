@@ -15,9 +15,10 @@ export async function listLibrary(): Promise<LibraryEntry[]> {
   return (data ?? []) as LibraryEntry[];
 }
 
-export async function addLibraryEntry(entry: { nom: string; type: string; note_default: string; video_url: string }) {
+export async function addLibraryEntry(entry: { nom: string; type: string; note_default: string; video_url: string }, coachId: string) {
   const { data, error } = await supabase.from("exercice_bibliotheque").insert({
     nom: entry.nom.trim(), type: entry.type || null, note_default: entry.note_default.trim() || null, video_url: entry.video_url.trim() || null,
+    coach_id: coachId,
   }).select().single();
   if (error) throw error;
   return data as LibraryEntry;

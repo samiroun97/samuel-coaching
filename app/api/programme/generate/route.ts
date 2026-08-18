@@ -46,7 +46,8 @@ const SCHEMA = {
 
 export async function POST(req: NextRequest) {
   try {
-    if (!(await requireUser(req))) return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    const caller = await requireUser(req);
+    if (!caller) return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
 
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) return NextResponse.json({ error: "Clé API manquante" }, { status: 500 });
@@ -65,12 +66,16 @@ export async function POST(req: NextRequest) {
       const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
       if (serviceKey) {
         const admin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceKey);
-        const { data: corrections } = await admin
+        // Cette route est appelée depuis le CRM (le coach génère un programme pour un client) :
+        // caller est donc le coach lui-même, pas un client.
+        const { data: coachRow } = await admin.from("coaches").select("id").eq("profile_id", caller.id).maybeSingle();
+        const { data: corrections } = coachRow ? await admin
           .from("ai_corrections")
           .select("coach_comment")
           .eq("category", "programme")
+          .eq("coach_id", coachRow.id)
           .order("created_at", { ascending: false })
-          .limit(20);
+          .limit(20) : { data: null };
         if (corrections?.length) {
           correctionsBlock = `\n\nRetours d'ajustement d'un coach humain expert sur des programmes précédents générés par CE MÊME système — prends-les en compte si pertinent pour ce client :\n${
             corrections.map((c, i) => `${i + 1}. ${c.coach_comment}`).join("\n")

@@ -6,8 +6,7 @@ import { apiPost } from "@/lib/apiClient";
 import { DateNav } from "@/components/DateNav";
 import { LineChart } from "@/components/LineChart";
 import { FeedbackRow } from "@/components/FeedbackRow";
-
-const SAMUEL_EMAIL = "sam97waelti@gmail.com";
+import { isCoachUser, getMyCoachEmail } from "@/lib/coach";
 
 type Profile      = { prenom?: string; sexe?: string; poids?: number; taille?: number; age?: number; objectifs?: string; seances_par_semaine?: number; experience?: string; niveau_activite?: string };
 type WeightEntry  = { id: string; date: string; weight: number };
@@ -125,6 +124,8 @@ export default function SuiviPage() {
   const [profile,        setProfile]        = useState<Profile | null>(null);
   const [userId,         setUserId]         = useState<string | null>(null);
   const [userEmail,      setUserEmail]      = useState<string>("");
+  const [isCoach,        setIsCoach]        = useState(false);
+  const [coachEmail,     setCoachEmail]     = useState<string | null>(null);
   const [selectedDate,   setSelectedDate]   = useState(() => {
     try { return localStorage.getItem("selected_date") || today(); } catch { return today(); }
   });
@@ -190,6 +191,8 @@ export default function SuiviPage() {
       if (!user) return;
       setUserId(user.id);
       setUserEmail(user.email ?? "");
+      isCoachUser(user.id).then(setIsCoach);
+      getMyCoachEmail(user.id).then(setCoachEmail);
       const { data: p } = await supabase.from("profiles").select("prenom,poids,taille,age,sexe,objectifs,seances_par_semaine,experience,niveau_activite").eq("id", user.id).single();
       if (p) setProfile(p as Profile);
 
@@ -429,7 +432,7 @@ export default function SuiviPage() {
       }
     }
 
-    if (shareWithCoach && userEmail && userEmail !== SAMUEL_EMAIL) {
+    if (shareWithCoach && userEmail && coachEmail) {
       setSharing(true);
       const payload = JSON.stringify({
         bf: entry.body_fat,
@@ -441,7 +444,7 @@ export default function SuiviPage() {
       });
       await supabase.from("messages").insert({
         from_email: userEmail,
-        to_email: SAMUEL_EMAIL,
+        to_email: coachEmail,
         content: `[BODYFAT_CHECK:${payload}]`,
       });
       setSharing(false);
@@ -453,7 +456,7 @@ export default function SuiviPage() {
   // Signalement d'une estimation qui semble fausse — envoyé à Samuel via l'Inbox,
   // avec les photos utilisées pour l'estimation (indépendant du check-in body_photos).
   const submitReport = async () => {
-    if (!result || !reportComment.trim() || !userEmail) return;
+    if (!result || !reportComment.trim() || !userEmail || !coachEmail) return;
     setReportSending(true);
     const payload = JSON.stringify({
       estimated_bf: result.body_fat_percentage,
@@ -462,7 +465,7 @@ export default function SuiviPage() {
     });
     await supabase.from("messages").insert({
       from_email: userEmail,
-      to_email: SAMUEL_EMAIL,
+      to_email: coachEmail,
       content: `[BODYFAT_FEEDBACK:${payload}]`,
     });
     setReportSending(false); setReportSent(true); setShowReportForm(false); setReportComment("");
@@ -559,7 +562,7 @@ export default function SuiviPage() {
       </div>
 
       {/* ── Check-in hebdomadaire (client → coach) ── */}
-      {userEmail !== SAMUEL_EMAIL && (
+      {!isCoach && (
         <div className={`border rounded-lg mb-6 ${ckDoneThisWeek && !ckOpen ? "border-[#7eb8a0]/25 bg-[#7eb8a0]/5" : "border-[#c9a84c]/25 bg-[#c9a84c]/5"}`}>
           <button onClick={() => setCkOpen(o => !o)} className="w-full flex items-center justify-between px-5 py-4 text-left">
             <div>
@@ -883,7 +886,7 @@ export default function SuiviPage() {
 
               {/* Signalement d'une estimation qui semble fausse — envoie les photos à Samuel
                   via un message dédié, séparément du check-in enregistré ci-dessus. */}
-              {userEmail !== SAMUEL_EMAIL && !reportSent && (
+              {!isCoach && !reportSent && (
                 showReportForm ? (
                   <div className="border border-white/10 bg-[#0a0a0a] rounded-lg p-4 flex flex-col gap-3">
                     <p className="text-[0.62rem] text-white/40 leading-relaxed">

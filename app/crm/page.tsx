@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
-const SAMUEL_EMAIL = "sam97waelti@gmail.com";
 const STAGE_LABEL: Record<string, string> = { prospect: "Prospect", onboarding: "Onboarding", actif: "Actif", en_risque: "En risque", churne: "Churné", reactive: "Réactivé" };
 const STAGE_COLOR: Record<string, string> = { prospect: "#888", onboarding: "#c9a84c", actif: "#7eb8a0", en_risque: "#e09070", churne: "#e07070", reactive: "#a08ec9" };
 
@@ -29,9 +28,12 @@ export default function CRMDashboard() {
   const [checkins, setCheckins] = useState<Ck[]>([]);
   const [loading,  setLoading]  = useState(true);
   const [treated,  setTreated]  = useState<Set<string>>(new Set());
+  const [myEmail,  setMyEmail]  = useState("");
 
   useEffect(() => {
     (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setMyEmail(user?.email ?? "");
       const [{ data: c }, { data: m }, { data: ck }] = await Promise.all([
         supabase.from("profiles").select("id,email,prenom,nom,status,subscription_end,pipeline_stage,updated_at").order("updated_at", { ascending: false }),
         supabase.from("messages").select("from_email,to_email,content,created_at").order("created_at", { ascending: true }),
@@ -72,13 +74,13 @@ export default function CRMDashboard() {
   const now       = Date.now();
   const in14      = clients.filter(c => { if (!c.subscription_end) return false; const d = new Date(c.subscription_end).getTime(); return d > now && d < now + 14 * 86400000; }).length;
 
-  // Unread convs: last message from client (not Samuel)
+  // Unread convs: last message from client (pas moi)
   const convLastFrom = new Map<string, Msg>();
   for (const m of msgs) {
-    const client = m.from_email === SAMUEL_EMAIL ? m.to_email : m.from_email;
-    if (client !== SAMUEL_EMAIL) convLastFrom.set(client, m);
+    const client = m.from_email === myEmail ? m.to_email : m.from_email;
+    if (client !== myEmail) convLastFrom.set(client, m);
   }
-  const nonRepondus = [...convLastFrom.entries()].filter(([email, m]) => m.from_email !== SAMUEL_EMAIL && !treated.has(email)).length;
+  const nonRepondus = [...convLastFrom.entries()].filter(([email, m]) => m.from_email !== myEmail && !treated.has(email)).length;
 
   const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().split("T")[0];
   const ckThisWeek = checkins.filter(c => c.week_date >= weekAgo).length;
@@ -88,7 +90,7 @@ export default function CRMDashboard() {
   const alerts: Alert[] = [];
 
   for (const [email, m] of convLastFrom) {
-    if (m.from_email !== SAMUEL_EMAIL && !treated.has(email)) {
+    if (m.from_email !== myEmail && !treated.has(email)) {
       const profile = clients.find(c => c.email === email);
       const name = profile ? `${profile.prenom} ${profile.nom}` : email;
       const ago = Math.floor((now - new Date(m.created_at).getTime()) / 3600000);
@@ -114,7 +116,7 @@ export default function CRMDashboard() {
 
   // Recent messages (last per conv, from client, non traités)
   const recentMsgs = [...convLastFrom.entries()]
-    .filter(([email, m]) => m.from_email !== SAMUEL_EMAIL && !treated.has(email))
+    .filter(([email, m]) => m.from_email !== myEmail && !treated.has(email))
     .map(([, m]) => m)
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, 5)

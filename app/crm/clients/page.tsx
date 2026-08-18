@@ -5,8 +5,6 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
 
-const SAMUEL_EMAIL = "sam97waelti@gmail.com";
-
 const STATUS_CFG = {
   actif:   { label: "Actif",   color: "#7eb8a0" },
   essai:   { label: "Essai",   color: "#c9a84c" },

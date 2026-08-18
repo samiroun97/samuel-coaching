@@ -3,8 +3,7 @@ export const dynamic = "force-dynamic";
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-
-const SAMUEL_EMAIL = "sam97waelti@gmail.com";
+import { getMyCoachId } from "@/lib/coach";
 
 type Msg    = { id: string; from_email: string; to_email: string; content: string; created_at: string };
 
@@ -67,6 +66,8 @@ export default function InboxPage() {
   const [correctionComment, setCorrectionComment] = useState("");
   const [correctionValue,   setCorrectionValue]   = useState("");
   const [correctionSaving,  setCorrectionSaving]  = useState(false);
+  const [myEmail,     setMyEmail]     = useState("");
+  const [myCoachId,   setMyCoachId]   = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -76,6 +77,9 @@ export default function InboxPage() {
 
   useEffect(() => {
     (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setMyEmail(user?.email ?? "");
+      if (user) getMyCoachId(user.id).then(setMyCoachId);
       const [{ data: c }, { data: m }, { data: bfc }] = await Promise.all([
         supabase.from("profiles").select("id,email,prenom,nom,poids,pipeline_stage,subscription_end,objectifs").order("updated_at", { ascending: false }),
         supabase.from("messages").select("*").order("created_at", { ascending: true }),
@@ -89,12 +93,12 @@ export default function InboxPage() {
   }, []);
 
   const submitCorrection = async (messageId: string, estimated_bf: number, client_comment: string) => {
-    if (!correctionComment.trim()) return;
+    if (!correctionComment.trim() || !myCoachId) return;
     setCorrectionSaving(true);
     const corrected_estimate = correctionValue ? parseFloat(correctionValue) : null;
     const { error } = await supabase.from("bodyfat_ai_corrections").insert({
       message_id: messageId, original_estimate: estimated_bf, client_comment,
-      coach_comment: correctionComment.trim(), corrected_estimate,
+      coach_comment: correctionComment.trim(), corrected_estimate, coach_id: myCoachId,
     });
     setCorrectionSaving(false);
     if (error) { alert(`Erreur lors de l'enregistrement : ${error.message}`); return; }
@@ -107,7 +111,7 @@ export default function InboxPage() {
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, p => {
         const m = p.new as Msg;
         setMsgs(prev => [...prev, m]);
-        if (m.from_email !== SAMUEL_EMAIL) {
+        if (m.from_email !== myEmail) {
           setTreated(prev => {
             const next = new Set(prev);
             next.delete(m.from_email);
@@ -138,15 +142,15 @@ export default function InboxPage() {
   const convs: Conv[] = (() => {
     const map = new Map<string, Msg[]>();
     for (const m of msgs) {
-      const key = m.from_email === SAMUEL_EMAIL ? m.to_email : m.from_email;
-      if (key === SAMUEL_EMAIL) continue;
+      const key = m.from_email === myEmail ? m.to_email : m.from_email;
+      if (key === myEmail) continue;
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(m);
     }
     return [...map.entries()].map(([email, ms]) => {
       const p = clients.find(c => c.email === email);
       const last = ms[ms.length - 1];
-      return { email, name: p ? `${p.prenom} ${p.nom}` : email, msgs: ms, lastMsg: last, unread: last.from_email !== SAMUEL_EMAIL && !treated.has(email) };
+      return { email, name: p ? `${p.prenom} ${p.nom}` : email, msgs: ms, lastMsg: last, unread: last.from_email !== myEmail && !treated.has(email) };
     }).sort((a, b) => {
       if (a.unread !== b.unread) return a.unread ? -1 : 1;
       return new Date(b.lastMsg.created_at).getTime() - new Date(a.lastMsg.created_at).getTime();
@@ -170,7 +174,7 @@ export default function InboxPage() {
     const text = input.trim();
     if (!text || sending || !activeEmail) return;
     setSending(true); setInput(""); setShowTpls(false);
-    await supabase.from("messages").insert({ from_email: SAMUEL_EMAIL, to_email: activeEmail, content: text });
+    await supabase.from("messages").insert({ from_email: myEmail, to_email: activeEmail, content: text });
     setTreated(prev => {
       const next = new Set(prev);
       next.add(activeEmail);
@@ -213,7 +217,7 @@ export default function InboxPage() {
                   </span>
                 </div>
                 <p className="text-[0.48rem] text-white/30 truncate">
-                  {conv.lastMsg.from_email === SAMUEL_EMAIL ? "Vous : " : ""}
+                  {conv.lastMsg.from_email === myEmail ? "Vous : " : ""}
                   {(() => {
                     const fb = parseFeedback(conv.lastMsg.content);
                     if (fb) return `${FEEDBACK_CFG[fb.type].emoji} ${FEEDBACK_CFG[fb.type].label} — ${fb.text}`;
@@ -288,7 +292,7 @@ export default function InboxPage() {
           {/* Messages */}
           <div className="flex-1 overflow-y-auto px-3 md:px-8 py-4 md:py-6 flex flex-col gap-3">
             {activeConv.msgs.map(m => {
-              const isMe = m.from_email === SAMUEL_EMAIL;
+              const isMe = m.from_email === myEmail;
               return (
                 <div key={m.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
                   {!isMe && (

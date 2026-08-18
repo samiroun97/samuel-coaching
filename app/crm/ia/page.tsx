@@ -2,6 +2,7 @@
 export const dynamic = "force-dynamic";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { getMyCoachId } from "@/lib/coach";
 
 type Profile = { id: string; email: string; prenom: string; nom: string };
 type Msg = { id: string; from_email: string; to_email: string; content: string; created_at: string };
@@ -62,9 +63,12 @@ export default function CrmIaPage() {
   const [noteText,        setNoteText]        = useState("");
   const [noteSubCategory, setNoteSubCategory]  = useState<Category>("programme");
   const [noteSaving,      setNoteSaving]       = useState(false);
+  const [myCoachId,       setMyCoachId]        = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) getMyCoachId(user.id).then(setMyCoachId);
       const [{ data: p }, { data: m }, { data: c }] = await Promise.all([
         supabase.from("profiles").select("id,email,prenom,nom"),
         supabase.from("messages").select("*").order("created_at", { ascending: false }),
@@ -96,7 +100,7 @@ export default function CrmIaPage() {
   const standaloneNotes = corrections.filter(c => uiTab.categories.includes(c.category) && !c.message_id);
 
   const submitCorrection = async (messageId: string, category: Category, originalData: Record<string, unknown> | null, clientComment: string) => {
-    if (!correctionComment.trim()) return;
+    if (!correctionComment.trim() || !myCoachId) return;
     setCorrectionSaving(true);
     const correctedData = correctionValue.trim()
       ? { valeur: isNaN(Number(correctionValue)) ? correctionValue.trim() : Number(correctionValue) }
@@ -104,6 +108,7 @@ export default function CrmIaPage() {
     const { data, error } = await supabase.from("ai_corrections").insert({
       category, message_id: messageId, original_data: originalData,
       corrected_data: correctedData, client_comment: clientComment, coach_comment: correctionComment.trim(),
+      coach_id: myCoachId,
     }).select().single();
     setCorrectionSaving(false);
     if (error || !data) { alert(`Erreur lors de l'enregistrement : ${error?.message ?? "inconnue"}`); return; }
@@ -112,12 +117,12 @@ export default function CrmIaPage() {
   };
 
   const submitNote = async () => {
-    if (!noteText.trim()) return;
+    if (!noteText.trim() || !myCoachId) return;
     setNoteSaving(true);
     const category: Category = tab === "entrainement" ? noteSubCategory : "nutrition";
     const { data, error } = await supabase.from("ai_corrections").insert({
       category, message_id: null, original_data: null, corrected_data: null,
-      client_comment: null, coach_comment: noteText.trim(),
+      client_comment: null, coach_comment: noteText.trim(), coach_id: myCoachId,
     }).select().single();
     setNoteSaving(false);
     if (error || !data) { alert(`Erreur lors de l'enregistrement : ${error?.message ?? "inconnue"}`); return; }

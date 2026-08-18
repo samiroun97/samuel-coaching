@@ -17,13 +17,14 @@ export async function listTemplates(): Promise<ProgrammeTemplate[]> {
   return (data ?? []) as ProgrammeTemplate[];
 }
 
-export async function saveTemplate(entry: { nom: string; objectif: string; type_seance: string; description: string; exercices: ExerciceItem[] }) {
+export async function saveTemplate(entry: { nom: string; objectif: string; type_seance: string; description: string; exercices: ExerciceItem[] }, coachId: string) {
   const { data, error } = await supabase.from("programme_templates").insert({
     nom: entry.nom.trim(),
     objectif: entry.objectif.trim() || null,
     type_seance: entry.type_seance || null,
     description: entry.description.trim() || null,
     exercices: serializeExercices(entry.exercices),
+    coach_id: coachId,
   }).select().single();
   if (error) throw error;
   return data as ProgrammeTemplate;

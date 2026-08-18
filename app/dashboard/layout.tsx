@@ -5,8 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { startStateSync, SYNC_STATUS_EVENT } from "@/lib/syncStorage";
-
-const SAMUEL_EMAIL = "sam97waelti@gmail.com";
+import { isCoachUser, getMyCoachEmail } from "@/lib/coach";
 
 function NavIcon({ name, size = 17 }: { name: string; size?: number }) {
   const p = {
@@ -46,8 +45,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
   const pathname = usePathname();
     const [ready,        setReady]        = useState(false);
-  const [isSamuel,     setIsSamuel]     = useState(false);
+  const [isCoach,      setIsCoach]      = useState(false);
   const [currentEmail, setCurrentEmail] = useState("");
+  const [coachEmail,   setCoachEmail]   = useState<string | null>(null);
   const [unread,       setUnread]       = useState(false);
   const [fbOpen,       setFbOpen]       = useState(false);
   const [fbType,       setFbType]       = useState<"bug"|"suggestion"|"idee">("suggestion");
@@ -68,14 +68,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     supabase.auth.getUser().then(async ({ data }) => {
       if (!data.user) { router.push("/login"); return; }
       const email = data.user.email ?? "";
-      setIsSamuel(email === SAMUEL_EMAIL);
+      const coach = await isCoachUser(data.user.id);
+      setIsCoach(coach);
       setCurrentEmail(email);
+      if (!coach) getMyCoachEmail(data.user.id).then(setCoachEmail);
 
-      // Samuel → CRM (sauf aperçu client explicite)
+      // Coach → CRM (sauf aperçu client explicite)
       // Le mode aperçu est persistant pour la session : il survit aux clics
       // sur les liens internes qui ne portent pas ?preview=1, et il est
-      // effacé quand Samuel retourne sur le CRM.
-      if (email === SAMUEL_EMAIL) {
+      // effacé quand le coach retourne sur le CRM.
+      if (coach) {
         if (window.location.search.includes("preview=1")) sessionStorage.setItem("client_preview", "1");
         const preview = sessionStorage.getItem("client_preview") === "1";
         setIsPreview(preview);
@@ -91,8 +93,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       // Sync multi-appareils : rapatrier l'état du compte avant d'afficher les pages
       await startStateSync(data.user.id);
 
-      // Vérifier messages non lus (pour clients, pas pour Samuel)
-      if (email !== SAMUEL_EMAIL) {
+      // Vérifier messages non lus (pour les adhérents, pas pour le coach)
+      if (!coach) {
         const lastSeen = localStorage.getItem(`msg_seen_${email}`) ?? "1970-01-01";
         const { count } = await supabase
           .from("messages")
@@ -108,7 +110,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   // Subscription aux nouveaux messages
   useEffect(() => {
-    if (!currentEmail || currentEmail === SAMUEL_EMAIL) return;
+    if (!currentEmail || isCoach) return;
     const channel = supabase.channel(`unread_${currentEmail}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, (p) => {
         if (p.new.to_email === currentEmail && pathname !== "/dashboard/coach") {
@@ -117,7 +119,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [currentEmail]);
+  }, [currentEmail, isCoach]);
 
   // Marquer comme lu quand on arrive sur la page Messages
   useEffect(() => {
@@ -137,7 +139,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (!fbMsg.trim() || fbSending) return;
     setFbSending(true);
     const content = `[FEEDBACK:${fbType}]\n${fbMsg.trim()}`;
-    await supabase.from("messages").insert({ from_email: currentEmail, to_email: SAMUEL_EMAIL, content });
+    if (coachEmail) await supabase.from("messages").insert({ from_email: currentEmail, to_email: coachEmail, content });
     setFbSending(false); setFbDone(true); setFbMsg("");
     setTimeout(() => { setFbOpen(false); setFbDone(false); }, 1800);
   };
@@ -210,7 +212,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       )}
 
       {/* Retour CRM — Samuel en mode aperçu */}
-      {isSamuel && isPreview && (
+      {isCoach && isPreview && (
         <Link href="/crm"
           className="fixed top-4 left-4 md:left-56 z-40 flex items-center gap-1.5 px-3 py-1.5 border border-white/15 bg-[#0a0a0a]/90 rounded-full text-white/50 hover:text-white/80 hover:border-white/30 transition-all text-[0.45rem] tracking-[0.15em] uppercase print:hidden">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -221,7 +223,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       )}
 
       {/* Feedback button — clients + preview mode */}
-      {(!isSamuel || isPreview) && (
+      {(!isCoach || isPreview) && (
         <>
           <button onClick={() => setFbOpen(true)}
             className="fixed top-4 right-4 z-40 flex items-center gap-1.5 px-3 py-1.5 border transition-all text-[0.45rem] tracking-[0.15em] uppercase print:hidden rounded-full"

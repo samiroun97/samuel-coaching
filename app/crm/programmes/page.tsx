@@ -10,6 +10,7 @@ import ExerciceEditor from "@/components/ExerciceEditor";
 import { SeanceBody } from "@/components/SeancePreview";
 import { type LibraryEntry, listLibrary, addLibraryEntry, deleteLibraryEntry } from "@/lib/exerciceLibrary";
 import { type ProgrammeTemplate, listTemplates, saveTemplate, deleteTemplate, templateToExercices } from "@/lib/programmeTemplates";
+import { getMyCoachId } from "@/lib/coach";
 
 const SEANCE_TYPES = ["Haut du corps","Bas du corps","Full body","Cardio","Boxe","Natation","CrossFit","Yoga","Autre"];
 
@@ -49,6 +50,7 @@ export default function ProgrammesPage() {
   const [showTemplates, setShowTemplates] = useState(false);
   const [sentSeances,  setSentSeances]  = useState<SentSeance[]>([]);
   const [openSentId,   setOpenSentId]   = useState<string | null>(null);
+  const [myCoachId,    setMyCoachId]    = useState<string | null>(null);
 
   // Séances déjà envoyées à ce client — pour que le coach ait un aperçu visuel de
   // ce qui a été effectivement reçu, pas juste un message "envoyé ✓".
@@ -60,12 +62,15 @@ export default function ProgrammesPage() {
 
   const loadLibrary = async () => { try { setLibrary(await listLibrary()); } catch { /* table pas encore créée */ } };
   const loadTemplates = async () => { try { setTemplates(await listTemplates()); } catch { /* table pas encore créée */ } };
-  useEffect(() => { loadLibrary(); loadTemplates(); }, []);
+  useEffect(() => {
+    loadLibrary(); loadTemplates();
+    supabase.auth.getUser().then(({ data }) => { if (data.user) getMyCoachId(data.user.id).then(setMyCoachId); });
+  }, []);
 
   const addLibItem = async () => {
-    if (!libForm.nom.trim()) return;
+    if (!libForm.nom.trim() || !myCoachId) return;
     try {
-      const entry = await addLibraryEntry(libForm);
+      const entry = await addLibraryEntry(libForm, myCoachId);
       setLibrary(prev => [...prev, entry].sort((a, b) => a.nom.localeCompare(b.nom)));
       setLibForm({ nom: "", type: "", note_default: "", video_url: "" });
     } catch (e: unknown) { setGenError(e instanceof Error ? e.message : "Erreur bibliothèque"); }
@@ -83,9 +88,9 @@ export default function ProgrammesPage() {
   };
   const saveAsTemplate = async (d: SeanceDraft) => {
     const nom = window.prompt("Nom du modèle ?", d.titre);
-    if (!nom || !nom.trim()) return;
+    if (!nom || !nom.trim() || !myCoachId) return;
     try {
-      const t = await saveTemplate({ nom, objectif: selected?.objectifs ?? "", type_seance: d.type_seance, description: d.description, exercices: d.exercices });
+      const t = await saveTemplate({ nom, objectif: selected?.objectifs ?? "", type_seance: d.type_seance, description: d.description, exercices: d.exercices }, myCoachId);
       setTemplates(prev => [t, ...prev]);
     } catch (e: unknown) { setGenError(e instanceof Error ? e.message : "Erreur modèle"); }
   };

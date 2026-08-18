@@ -5,8 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { startStateSync, SYNC_STATUS_EVENT } from "@/lib/syncStorage";
-
-const SAMUEL_EMAIL = "sam97waelti@gmail.com";
+import { isCoachUser } from "@/lib/coach";
 
 // Mêmes préfixes que app/crm/ia/page.tsx — juste pour compter les signalements en attente.
 const AI_FEEDBACK_RE = /^\[(?:NUTRITION|PROGRAMME|ACTIVITE)_FEEDBACK:/;
@@ -33,6 +32,7 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
   const [unreadSet, setUnreadSet] = useState<Set<string>>(new Set());
   const [aiPending, setAiPending] = useState(0);
   const [syncIssue, setSyncIssue] = useState(false);
+  const [myEmail,   setMyEmail]   = useState("");
 
   useEffect(() => {
     const onSyncStatus = (e: Event) => setSyncIssue(!(e as CustomEvent<{ ok: boolean }>).detail.ok);
@@ -45,22 +45,25 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
     sessionStorage.removeItem("client_preview");
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user || user.email !== SAMUEL_EMAIL) { router.push("/login"); return; }
+      if (!user || !(await isCoachUser(user.id))) { router.push("/login"); return; }
+      const email = user.email ?? "";
+      setMyEmail(email);
 
       // Sync multi-appareils (conversations traitées, etc.)
       await startStateSync(user.id);
 
-      // Conversations où le dernier message vient du client (pas Samuel) et non marquées traitées
+      // Conversations où le dernier message vient du client (pas de moi) et non marquées traitées.
+      // RLS restreint déjà cette requête aux messages où je suis expéditeur ou destinataire.
       const { data: msgs } = await supabase.from("messages").select("id,from_email,to_email,content,created_at").order("created_at", { ascending: true });
       if (msgs) {
         let treated = new Set<string>();
         try { treated = new Set(JSON.parse(localStorage.getItem("crm_treated_convs") ?? "[]")); } catch { /* ignore */ }
         const last = new Map<string, string>();
         for (const m of msgs) {
-          const client = m.from_email === SAMUEL_EMAIL ? m.to_email : m.from_email;
-          if (client !== SAMUEL_EMAIL) last.set(client, m.from_email);
+          const client = m.from_email === email ? m.to_email : m.from_email;
+          if (client !== email) last.set(client, m.from_email);
         }
-        setUnreadSet(new Set([...last.entries()].filter(([client, from]) => from !== SAMUEL_EMAIL && !treated.has(client)).map(([client]) => client)));
+        setUnreadSet(new Set([...last.entries()].filter(([client, from]) => from !== email && !treated.has(client)).map(([client]) => client)));
 
         // Signalements IA (nutrition/programme/activité) pas encore corrigés depuis /crm/ia
         // Pas de filtre from_email : seul le formulaire de signalement génère ce format,
@@ -79,10 +82,11 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
   // Ecoute en temps réel : un nouveau message client doit faire apparaître le badge
   // immédiatement, même sur une conversation déjà "traitée" ou déjà ouverte.
   useEffect(() => {
+    if (!myEmail) return;
     const ch = supabase.channel("crm_layout_messages")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, p => {
         const m = p.new as { from_email: string; to_email: string };
-        if (m.from_email === SAMUEL_EMAIL) {
+        if (m.from_email === myEmail) {
           setUnreadSet(prev => { if (!prev.has(m.to_email)) return prev; const next = new Set(prev); next.delete(m.to_email); return next; });
         } else {
           let treated = new Set<string>();
@@ -93,7 +97,7 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
         }
       }).subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, []);
+  }, [myEmail]);
 
   const unread = unreadSet.size;
 
@@ -137,7 +141,7 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
         <div className="px-2 py-3 border-t border-white/5 flex flex-col gap-0.5">
           <Link href="/dashboard?preview=1"
             className="flex items-center gap-2.5 px-3 py-2.5 text-[0.6rem] tracking-[0.1em] uppercase text-white/20 hover:text-white/50 border-l-2 border-transparent hover:border-white/10 transition-all">
-            <Icon name="eye"/>Aperçu client
+            <Icon name="eye"/>Mon espace perso
           </Link>
           <button onClick={async () => { await supabase.auth.signOut(); router.push("/login"); }}
             className="flex items-center gap-2.5 px-3 py-2.5 text-[0.6rem] tracking-[0.1em] uppercase text-white/20 hover:text-white/50 border-l-2 border-transparent transition-all w-full">

@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { apiPost } from "@/lib/apiClient";
 
 const steps = ["Identité", "Entraînement", "Santé", "Objectifs"];
 
@@ -114,8 +115,11 @@ export default function OnboardingPage() {
       taille: parseFloat(form.taille), seances_par_semaine: parseInt(form.seances_par_semaine),
       updated_at: new Date().toISOString(),
     });
-    if (error) { setError(`Erreur: ${error.message}`); setLoading(false); }
-    else router.push("/dashboard");
+    if (error) { setError(`Erreur: ${error.message}`); setLoading(false); return; }
+    // Rattache l'adhérent à un coach s'il ne l'est pas déjà (voir /api/onboarding/link-coach) —
+    // best-effort : une erreur ici ne doit jamais bloquer l'accès au dashboard.
+    try { await apiPost("/api/onboarding/link-coach", {}); } catch { /* ignore */ }
+    router.push("/dashboard");
   };
 
   const inputClass = "w-full bg-[#0a0a0a] border border-white/10 text-white placeholder-white/20 text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/50 transition-colors";

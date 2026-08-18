@@ -5,7 +5,8 @@ import { requireUser } from "@/lib/apiAuth";
 
 export async function POST(req: NextRequest) {
   try {
-    if (!(await requireUser(req))) return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    const caller = await requireUser(req);
+    if (!caller) return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
 
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) return NextResponse.json({ error: "Clé API manquante" }, { status: 500 });
@@ -51,11 +52,13 @@ Objectif déclaré par le client : ${objectifs || "non renseigné"}`
       const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
       if (serviceKey) {
         const admin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceKey);
-        const { data: corrections } = await admin
+        const { data: link } = await admin.from("coach_clients").select("coach_id").eq("client_id", caller.id).limit(1).maybeSingle();
+        const { data: corrections } = link ? await admin
           .from("bodyfat_ai_corrections")
           .select("original_estimate,corrected_estimate,coach_comment")
+          .eq("coach_id", link.coach_id)
           .order("created_at", { ascending: false })
-          .limit(20);
+          .limit(20) : { data: null };
         if (corrections?.length) {
           correctionsBlock = `\n\nRetours d'ajustement d'un coach humain expert sur des estimations précédentes de CE MÊME système — prends-les en compte pour calibrer ton estimation actuelle si les cas se ressemblent :\n${
             corrections.map((c, i) =>
