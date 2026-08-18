@@ -4,9 +4,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { isPushSupported, subscribeToPush, unsubscribeFromPush } from "@/lib/push";
-import { isCoachUser, getMyCoachEmail } from "@/lib/coach";
+import { isCoachUser } from "@/lib/coach";
 
-type SectionKey = "profil" | "notifications" | "password" | "suggestion";
+type SectionKey = "profil" | "notifications" | "password";
 
 // Ligne cliquable style "liste de préférences" : label + chevron, qui déroule
 // son contenu (children) juste en dessous quand ouverte.
@@ -73,21 +73,11 @@ export default function PreferencesPage() {
   const [pwdSaved,  setPwdSaved]  = useState(false);
   const [pwdError,  setPwdError]  = useState("");
 
-  const [currentEmail, setCurrentEmail] = useState("");
-  const [coachEmail,   setCoachEmail]   = useState<string | null>(null);
-  const [fbType,    setFbType]    = useState<"bug"|"suggestion"|"idee">("suggestion");
-  const [fbMsg,     setFbMsg]     = useState("");
-  const [fbSending, setFbSending] = useState(false);
-  const [fbDone,    setFbDone]    = useState(false);
-
   useEffect(() => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      setCurrentEmail(user.email ?? "");
-      const coach = await isCoachUser(user.id);
-      setIsCoach(coach);
-      if (!coach) getMyCoachEmail(user.id).then(setCoachEmail);
+      isCoachUser(user.id).then(setIsCoach);
       const { data } = await supabase.from("profiles")
         .select("prenom,nom,age,poids,taille,sexe").eq("id", user.id).single();
       if (data) setForm({
@@ -139,17 +129,6 @@ export default function PreferencesPage() {
     setPwdSaved(true);
     setNewPassword(""); setConfirmPassword("");
   };
-
-  const sendFeedback = async () => {
-    if (!fbMsg.trim() || fbSending) return;
-    setFbSending(true);
-    const content = `[FEEDBACK:${fbType}]\n${fbMsg.trim()}`;
-    if (coachEmail) await supabase.from("messages").insert({ from_email: currentEmail, to_email: coachEmail, content });
-    setFbSending(false); setFbDone(true); setFbMsg("");
-    setTimeout(() => { setOpenSection(null); setFbDone(false); }, 1800);
-  };
-
-  const FB_LABELS: Record<string, string> = { bug: "🐛 Bug", suggestion: "💡 Suggestion", idee: "✨ Idée" };
 
   const inp = "w-full bg-[#0a0a0a] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
   const lbl = "text-[0.7rem] tracking-[0.2em] uppercase text-white/40 block mb-1.5";
@@ -294,35 +273,6 @@ export default function PreferencesPage() {
       {/* ── Autre ── */}
       <GroupLabel>Autre</GroupLabel>
       <div className={groupCls}>
-        <Row label="Suggestion" sublabel="Remonte un bug ou une idée" open={openSection === "suggestion"} onClick={() => toggle("suggestion")}>
-          <div className="flex flex-col gap-4">
-            <div className="flex gap-2">
-              {(["bug", "suggestion", "idee"] as const).map(t => (
-                <button key={t} onClick={() => setFbType(t)}
-                  className={`flex-1 py-2 text-[0.45rem] tracking-[0.12em] uppercase border rounded-lg transition-all ${
-                    fbType === t ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/5" : "border-white/10 text-white/30 hover:border-white/20"
-                  }`}>
-                  {FB_LABELS[t]}
-                </button>
-              ))}
-            </div>
-
-            <textarea value={fbMsg} onChange={e => setFbMsg(e.target.value)}
-              placeholder="Décris le problème ou ton idée…"
-              rows={4}
-              className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg text-white/70 placeholder-white/20 text-xs px-4 py-3 resize-none focus:outline-none focus:border-[#c9a84c]/40 transition-colors"/>
-
-            {fbDone ? (
-              <div className="text-center py-2 text-[#7eb8a0] text-xs tracking-wider">Merci, c'est envoyé ✓</div>
-            ) : (
-              <button onClick={sendFeedback} disabled={!fbMsg.trim() || fbSending}
-                className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                {fbSending ? "Envoi…" : "Envoyer"}
-              </button>
-            )}
-          </div>
-        </Row>
-
         <LinkRow label="Nous contacter" href="/dashboard/coach"/>
         <LinkRow label="Mentions légales" href="/mentions-legales"/>
         <LinkRow label="Se déconnecter" danger onClick={async () => { await supabase.auth.signOut(); router.push("/login"); }}/>

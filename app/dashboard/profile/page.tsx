@@ -2,9 +2,11 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { isCoachUser } from "@/lib/coach";
+import { isCoachUser, getMyCoachEmail } from "@/lib/coach";
 
 type Profile = { prenom: string; nom: string; age: number | null; poids: number | null; taille: number | null; sexe: string | null };
+
+const FB_LABELS: Record<string, string> = { bug: "🐛 Bug", suggestion: "💡 Suggestion", idee: "✨ Idée" };
 
 function GearIcon() {
   return (
@@ -19,16 +21,36 @@ export default function ProfilePage() {
   const [isCoach, setIsCoach] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
 
+  const [currentEmail, setCurrentEmail] = useState("");
+  const [coachEmail,   setCoachEmail]   = useState<string | null>(null);
+  const [fbOpen,    setFbOpen]    = useState(false);
+  const [fbType,    setFbType]    = useState<"bug"|"suggestion"|"idee">("suggestion");
+  const [fbMsg,     setFbMsg]     = useState("");
+  const [fbSending, setFbSending] = useState(false);
+  const [fbDone,    setFbDone]    = useState(false);
+
   useEffect(() => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      isCoachUser(user.id).then(setIsCoach);
+      setCurrentEmail(user.email ?? "");
+      const coach = await isCoachUser(user.id);
+      setIsCoach(coach);
+      if (!coach) getMyCoachEmail(user.id).then(setCoachEmail);
       const { data } = await supabase.from("profiles")
         .select("prenom,nom,age,poids,taille,sexe").eq("id", user.id).single();
       if (data) setProfile(data as Profile);
     })();
   }, []);
+
+  const sendFeedback = async () => {
+    if (!fbMsg.trim() || fbSending) return;
+    setFbSending(true);
+    const content = `[FEEDBACK:${fbType}]\n${fbMsg.trim()}`;
+    if (coachEmail) await supabase.from("messages").insert({ from_email: currentEmail, to_email: coachEmail, content });
+    setFbSending(false); setFbDone(true); setFbMsg("");
+    setTimeout(() => { setFbOpen(false); setFbDone(false); }, 1800);
+  };
 
   const initials = `${profile?.prenom?.[0] ?? ""}${profile?.nom?.[0] ?? ""}`.toUpperCase();
 
@@ -72,7 +94,7 @@ export default function ProfilePage() {
       </div>
 
       <Link href="/dashboard/profile/preferences"
-        className="flex items-center justify-between border border-white/10 bg-[#111] rounded-lg px-5 py-4 hover:bg-white/[0.03] transition-colors">
+        className="flex items-center justify-between border border-white/10 bg-[#111] rounded-lg px-5 py-4 hover:bg-white/[0.03] transition-colors mb-4">
         <div className="flex items-center gap-3">
           <span className="text-white/40"><GearIcon/></span>
           <p className="text-sm text-white/70">Préférences</p>
@@ -81,6 +103,51 @@ export default function ProfilePage() {
           <polyline points="9 18 15 12 9 6"/>
         </svg>
       </Link>
+
+      <div className="border border-white/10 bg-[#111] rounded-lg overflow-hidden">
+        <button onClick={() => setFbOpen(o => !o)}
+          className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-white/[0.03] transition-colors">
+          <div className="flex items-center gap-3">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-white/40">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <p className="text-sm text-white/70">Suggestion</p>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+            className={`text-white/25 shrink-0 transition-transform ${fbOpen ? "rotate-90" : ""}`}>
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+
+        {fbOpen && (
+          <div className="px-5 pb-5 border-t border-white/5 pt-5 flex flex-col gap-4">
+            <div className="flex gap-2">
+              {(["bug", "suggestion", "idee"] as const).map(t => (
+                <button key={t} onClick={() => setFbType(t)}
+                  className={`flex-1 py-2 text-[0.45rem] tracking-[0.12em] uppercase border rounded-lg transition-all ${
+                    fbType === t ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/5" : "border-white/10 text-white/30 hover:border-white/20"
+                  }`}>
+                  {FB_LABELS[t]}
+                </button>
+              ))}
+            </div>
+
+            <textarea value={fbMsg} onChange={e => setFbMsg(e.target.value)}
+              placeholder="Décris le problème ou ton idée…"
+              rows={4}
+              className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg text-white/70 placeholder-white/20 text-xs px-4 py-3 resize-none focus:outline-none focus:border-[#c9a84c]/40 transition-colors"/>
+
+            {fbDone ? (
+              <div className="text-center py-2 text-[#7eb8a0] text-xs tracking-wider">Merci, c'est envoyé ✓</div>
+            ) : (
+              <button onClick={sendFeedback} disabled={!fbMsg.trim() || fbSending}
+                className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                {fbSending ? "Envoi…" : "Envoyer"}
+              </button>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
