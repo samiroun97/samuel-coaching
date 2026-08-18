@@ -11,8 +11,6 @@ type Profile = {
   objectif_echeance: string | null; objectif_pending: boolean;
 };
 
-const ECHEANCES = ["1 mois", "3 mois", "6 mois", "1 an", "Pas d'échéance précise"];
-const LIEUX = ["Salle de musculation", "Extérieur", "Maison"];
 type Goals = { calories: number; proteines: number; glucides: number; lipides: number };
 type Food  = { calories: number; proteines: number; glucides: number; lipides: number };
 type Log   = { date: string; calories_burned: number };
@@ -152,9 +150,6 @@ export default function AccueilPage() {
   const [daysSinceBF,  setDaysSinceBF]  = useState<number | null>(null);
   const [calView,      setCalView]      = useState<"tdee" | "goal">("tdee");
   const [selectedDate, setSelectedDate] = useState(today());
-  const [showObjForm,  setShowObjForm]  = useState(false);
-  const [objForm,      setObjForm]      = useState({ objectifs: "", echeance: "", echeanceDate: "", seances: "", lieux: [] as string[] });
-  const [objSaving,    setObjSaving]    = useState(false);
 
   // Static data — loads once on mount
   useEffect(() => {
@@ -268,29 +263,6 @@ export default function AccueilPage() {
     setTimeout(() => setWeightSaved(false), 2000);
   };
 
-  const openObjForm = () => {
-    if (!profile) return;
-    const knownLieux = (profile.lieu_entrainement || "").split(",").map(s => s.trim()).filter(s => LIEUX.includes(s));
-    setObjForm({ objectifs: profile.objectifs || "", echeance: profile.objectif_echeance || "", echeanceDate: "", seances: String(profile.seances_par_semaine || ""), lieux: knownLieux });
-    setShowObjForm(true);
-  };
-
-  const submitObjForm = async () => {
-    if (!userId || !objForm.objectifs.trim()) return;
-    setObjSaving(true);
-    const fields = {
-      objectifs: objForm.objectifs.trim(),
-      objectif_echeance: objForm.echeance || null,
-      seances_par_semaine: objForm.seances ? parseInt(objForm.seances) : profile?.seances_par_semaine,
-      lieu_entrainement: objForm.lieux.length ? objForm.lieux.join(", ") : profile?.lieu_entrainement,
-      objectif_pending: false,
-    };
-    await supabase.from("profiles").update(fields).eq("id", userId);
-    setProfile(p => p ? { ...p, ...fields, objectif_pending: false } as Profile : p);
-    setObjSaving(false); setShowObjForm(false);
-  };
-
-
   if (!profile) return (
     <div className="flex items-center justify-center h-64">
       <div className="w-5 h-5 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>
@@ -319,18 +291,6 @@ export default function AccueilPage() {
           {new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}
         </p>
       </div>
-
-      {/* ── Demande de précision d'objectif (déclenchée par le coach) ── */}
-      {profile.objectif_pending && (
-        <button onClick={openObjForm}
-          className="w-full text-left border border-[#c9a84c]/30 bg-[#c9a84c]/5 hover:bg-[#c9a84c]/8 rounded-lg p-4 mb-4 flex items-center justify-between gap-3 transition-colors group">
-          <div>
-            <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-0.5">Ton coach veut en savoir plus</p>
-            <p className="text-xs text-white/50">Précise ton objectif pour qu'on te construise un plan adapté</p>
-          </div>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" strokeWidth="2" strokeLinecap="round" className="shrink-0 transition-transform group-hover:translate-x-0.5"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-      )}
 
       {/* ── Sélecteur de date global ── */}
       <DateNav date={selectedDate} onChange={setSelectedDate} />
@@ -532,7 +492,7 @@ export default function AccueilPage() {
       </div>
 
       {/* ── Profil entraînement ── */}
-      <div className="grid md:grid-cols-2 gap-4 mb-4">
+      <div className="mb-4">
         <div className="border border-white/10 bg-[#111] rounded-lg p-6">
           <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Entraînement</p>
           <div className="flex flex-col gap-3">
@@ -550,126 +510,7 @@ export default function AccueilPage() {
             ))}
           </div>
         </div>
-
-        <div className="border border-white/10 bg-[#111] rounded-lg p-6">
-          <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Santé & objectifs</p>
-          <div className="flex flex-col gap-4">
-            {[
-              { label: "Blessures",      val: profile.blessures },
-              { label: "Alimentation",   val: profile.alimentation },
-              { label: "Sommeil/stress", val: profile.sommeil_stress },
-            ].map(r => (
-              <div key={r.label}>
-                <p className="text-[0.65rem] tracking-[0.18em] uppercase text-white/25 mb-1">{r.label}</p>
-                <p className="text-xs text-white/55 leading-relaxed">{r.val}</p>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
-
-      <button onClick={openObjForm}
-        className="w-full text-left border border-white/10 bg-[#111] hover:border-[#c9a84c]/30 hover:bg-[#c9a84c]/5 rounded-lg p-6 mb-6 transition-colors group">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Objectifs</p>
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-0 group-hover:opacity-60 transition-opacity"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-          </div>
-          {profile.objectif_echeance && <p className="text-[0.62rem] text-white/25 tracking-wider uppercase">Échéance : {profile.objectif_echeance}</p>}
-        </div>
-        <p className="text-sm text-white/55 leading-relaxed">{profile.objectifs}</p>
-      </button>
-
-      {/* ── Actions ── */}
-      <div className="flex gap-4">
-        <Link href="/dashboard/onboarding"
-          className="flex-1 border border-white/10 text-white/40 rounded-lg text-[0.7rem] tracking-[0.15em] uppercase py-4 text-center hover:border-white/20 hover:text-white/60 transition-colors">
-          Modifier mon profil
-        </Link>
-        <Link href="/dashboard/coach"
-          className="flex-1 bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.15em] uppercase py-4 text-center hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg">
-          Contacter<br/>Samuel
-        </Link>
-      </div>
-
-      {/* ── Questionnaire de précision d'objectif ── */}
-      {showObjForm && (
-        <div className="fixed inset-0 bg-black/75 z-50 flex items-center justify-center px-4" onClick={() => setShowObjForm(false)}>
-          <div className="bg-[#0a0a0a] border border-white/10 rounded-lg w-full max-w-md max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <div className="p-6 flex flex-col gap-5">
-              <div>
-                <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1">Précise ton objectif</p>
-                <p className="text-xs text-white/30">Pour que Samuel te construise un plan vraiment adapté</p>
-              </div>
-
-              <div>
-                <label className="text-[0.6rem] tracking-[0.15em] uppercase text-white/40 block mb-1.5">Ton objectif, en détail</label>
-                <textarea className="w-full bg-[#060606] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={4}
-                  placeholder="Ex : perdre 5 kg de graisse tout en gardant ma masse musculaire, pour être à l'aise cet été..."
-                  value={objForm.objectifs} onChange={e => setObjForm(f => ({ ...f, objectifs: e.target.value }))}/>
-              </div>
-
-              <div>
-                <label className="text-[0.6rem] tracking-[0.15em] uppercase text-white/40 block mb-1.5">Dans combien de temps ?</label>
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {ECHEANCES.map(e => (
-                    <button key={e} type="button" onClick={() => setObjForm(f => ({ ...f, echeance: e, echeanceDate: "" }))}
-                      className={`text-[0.65rem] tracking-wider px-3 py-2 rounded-lg border transition-colors ${objForm.echeance === e ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-white/15 text-white/40 hover:border-white/30"}`}>
-                      {e}
-                    </button>
-                  ))}
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[0.58rem] text-white/25 uppercase tracking-wider shrink-0">ou une date précise</span>
-                  <input type="date" value={objForm.echeanceDate}
-                    onChange={e => {
-                      const val = e.target.value;
-                      const label = val ? new Date(val + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }) : "";
-                      setObjForm(f => ({ ...f, echeanceDate: val, echeance: val ? label : f.echeance }));
-                    }}
-                    className="bg-[#060606] border border-white/10 rounded-lg text-white text-xs px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"/>
-                </div>
-              </div>
-
-              <div>
-                <label className="text-[0.6rem] tracking-[0.15em] uppercase text-white/40 block mb-1.5">Où veux-tu t'entraîner ? (plusieurs choix possibles)</label>
-                <div className="flex flex-wrap gap-2">
-                  {LIEUX.map(l => {
-                    const checked = objForm.lieux.includes(l);
-                    return (
-                      <button key={l} type="button"
-                        onClick={() => setObjForm(f => ({ ...f, lieux: checked ? f.lieux.filter(x => x !== l) : [...f.lieux, l] }))}
-                        className={`flex items-center gap-1.5 text-[0.65rem] tracking-wider px-3 py-2 rounded-lg border transition-colors ${checked ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-white/15 text-white/40 hover:border-white/30"}`}>
-                        <span className={`w-3 h-3 rounded-sm border flex items-center justify-center shrink-0 ${checked ? "border-black" : "border-white/25"}`}>
-                          {checked && <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
-                        </span>
-                        {l}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div>
-                <label className="text-[0.6rem] tracking-[0.15em] uppercase text-white/40 block mb-1.5">Séances / semaine que tu peux y consacrer</label>
-                <div className="flex flex-wrap gap-2">
-                  {["2", "3", "4", "5", "6"].map(n => (
-                    <button key={n} type="button" onClick={() => setObjForm(f => ({ ...f, seances: n }))}
-                      className={`w-10 h-10 border rounded-lg text-sm font-bold transition-all ${objForm.seances === n ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-white/15 text-white/40 hover:border-white/30"}`}>
-                      {n}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <button onClick={submitObjForm} disabled={objSaving || !objForm.objectifs.trim()}
-                className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.18em] uppercase py-3 hover:bg-[#e2c97e] transition-colors disabled:opacity-40 rounded-lg">
-                {objSaving ? "Envoi…" : "Envoyer à Samuel →"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
     </div>
   );
