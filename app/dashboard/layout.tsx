@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { startStateSync, SYNC_STATUS_EVENT } from "@/lib/syncStorage";
-import { isCoachUser, getMyCoachEmail } from "@/lib/coach";
+import { isCoachUser } from "@/lib/coach";
 
 function NavIcon({ name, size = 17 }: { name: string; size?: number }) {
   const p = {
@@ -48,13 +48,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const [ready,        setReady]        = useState(false);
   const [isCoach,      setIsCoach]      = useState(false);
   const [currentEmail, setCurrentEmail] = useState("");
-  const [coachEmail,   setCoachEmail]   = useState<string | null>(null);
   const [unread,       setUnread]       = useState(false);
-  const [fbOpen,       setFbOpen]       = useState(false);
-  const [fbType,       setFbType]       = useState<"bug"|"suggestion"|"idee">("suggestion");
-  const [fbMsg,        setFbMsg]        = useState("");
-  const [fbSending,    setFbSending]    = useState(false);
-  const [fbDone,       setFbDone]       = useState(false);
   const isOnboarding = pathname === "/dashboard/onboarding";
   const [isPreview, setIsPreview] = useState(false);
   const [syncIssue, setSyncIssue] = useState(false);
@@ -72,7 +66,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       const coach = await isCoachUser(data.user.id);
       setIsCoach(coach);
       setCurrentEmail(email);
-      if (!coach) getMyCoachEmail(data.user.id).then(setCoachEmail);
 
       // Coach → CRM (sauf aperçu client explicite)
       // Le mode aperçu est persistant pour la session : il survit aux clics
@@ -136,17 +129,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     </div>
   );
 
-  const sendFeedback = async () => {
-    if (!fbMsg.trim() || fbSending) return;
-    setFbSending(true);
-    const content = `[FEEDBACK:${fbType}]\n${fbMsg.trim()}`;
-    if (coachEmail) await supabase.from("messages").insert({ from_email: currentEmail, to_email: coachEmail, content });
-    setFbSending(false); setFbDone(true); setFbMsg("");
-    setTimeout(() => { setFbOpen(false); setFbDone(false); }, 1800);
-  };
-
-  const FB_LABELS: Record<string, string> = { bug: "🐛 Bug", suggestion: "💡 Suggestion", idee: "✨ Idée" };
-
   if (isOnboarding) return <>{children}</>;
 
   return (
@@ -201,62 +183,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <span className="w-1.5 h-1.5 rounded-full bg-[#e07070] shrink-0"/>
           Synchro interrompue — données sauvegardées localement
         </div>
-      )}
-
-      {/* Feedback button — clients + preview mode */}
-      {(!isCoach || isPreview) && (
-        <>
-          <button onClick={() => setFbOpen(true)}
-            className="fixed top-4 right-4 z-40 flex items-center gap-1.5 px-3 py-1.5 border transition-all text-[0.45rem] tracking-[0.15em] uppercase print:hidden rounded-full"
-            style={{ backgroundColor: "#c9a84c15", borderColor: "#c9a84c50", color: "#c9a84c", boxShadow: "0 0 12px #c9a84c25" }}>
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            Feedback
-          </button>
-
-          {fbOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
-              onClick={() => setFbOpen(false)}>
-              <div className="bg-[#0f0f0f] rounded-lg border border-white/10 w-full max-w-sm p-6" onClick={e => e.stopPropagation()}>
-                <h3 style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-white tracking-wide mb-1">Feedback</h3>
-                <p className="text-[0.45rem] text-white/30 tracking-wider mb-5">Remonte un bug ou une suggestion sur l'app</p>
-
-                {/* Type selector */}
-                <div className="flex gap-2 mb-4">
-                  {(["bug", "suggestion", "idee"] as const).map(t => (
-                    <button key={t} onClick={() => setFbType(t)}
-                      className={`flex-1 py-2 text-[0.45rem] tracking-[0.12em] uppercase border rounded-lg transition-all ${
-                        fbType === t ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/5" : "border-white/10 text-white/30 hover:border-white/20"
-                      }`}>
-                      {FB_LABELS[t]}
-                    </button>
-                  ))}
-                </div>
-
-                <textarea value={fbMsg} onChange={e => setFbMsg(e.target.value)}
-                  placeholder="Décris le problème ou ton idée…"
-                  rows={4}
-                  className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg text-white/70 placeholder-white/20 text-xs px-4 py-3 resize-none focus:outline-none focus:border-[#c9a84c]/40 transition-colors mb-4"/>
-
-                {fbDone ? (
-                  <div className="text-center py-2 text-[#7eb8a0] text-xs tracking-wider">Merci, c'est envoyé ✓</div>
-                ) : (
-                  <div className="flex gap-2">
-                    <button onClick={() => setFbOpen(false)}
-                      className="flex-1 py-2.5 border border-white/10 rounded-lg text-white/30 text-[0.48rem] tracking-wider uppercase hover:border-white/20 transition-colors">
-                      Annuler
-                    </button>
-                    <button onClick={sendFeedback} disabled={!fbMsg.trim() || fbSending}
-                      className="flex-1 py-2.5 bg-[#c9a84c] text-black text-[0.48rem] font-bold tracking-[0.15em] uppercase hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed">
-                      {fbSending ? "Envoi…" : "Envoyer"}
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </>
       )}
 
       {/* Bottom nav — mobile only, flottante style verre */}
