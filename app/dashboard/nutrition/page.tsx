@@ -286,6 +286,7 @@ export default function NutritionPage() {
   const [goalDraft, setGoalDraft] = useState<Goals>(defaultGoals);
   const [rawGoal,   setRawGoal]   = useState({ calories: "2200", proteines: "150", glucides: "220", lipides: "70" });
   const [water,     setWater]     = useState(0);
+  const [showMacros, setShowMacros] = useState(false);
   const [savedMeals, setSavedMeals] = useState<SavedMeal[]>([]);
   const [pastHistory, setPastHistory] = useState<DayHistory[]>([]);
   const [calRef,      setCalRef]      = useState<"objectif" | "tdee">("objectif");
@@ -900,9 +901,20 @@ export default function NutritionPage() {
         ))}
       </div>
 
-      <div className="border border-white/10 bg-[#111] rounded-lg p-6 mb-6 flex flex-col gap-5">
-        <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1">Macronutriments</p>
-        {macroConfig.map(m => <MacroBar key={m.key} label={m.label} consumed={totals[m.key]} goal={goals[m.key]} color={m.color}/>)}
+      <div className="border border-white/10 bg-[#111] rounded-lg mb-6 overflow-hidden">
+        <button onClick={() => setShowMacros(s => !s)}
+          className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-white/[0.03] transition-colors">
+          <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Macronutriments</p>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+            className={`text-white/25 shrink-0 transition-transform ${showMacros ? "rotate-180" : ""}`}>
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+        {showMacros && (
+          <div className="px-6 pb-6 pt-1 border-t border-white/5 flex flex-col gap-5">
+            {macroConfig.map(m => <MacroBar key={m.key} label={m.label} consumed={totals[m.key]} goal={goals[m.key]} color={m.color}/>)}
+          </div>
+        )}
       </div>
 
       <WaterTracker water={water} goal={WATER_GOAL}
