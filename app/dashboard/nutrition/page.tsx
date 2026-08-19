@@ -161,37 +161,47 @@ function adjustMacro(draft: Goals, key: MacroKey, grams: number): Goals {
   return out;
 }
 
-function CalorieRing({ consumed, goal, label = "Objectif", goalDefined = true }: { consumed: number; goal: number; label?: string; goalDefined?: boolean }) {
+// Consommées à gauche, cercle "restantes" au centre, dépense (TDEE) à droite —
+// même lecture que sur l'accueil, sans surcharge de couleurs.
+function CalorieRow({ consumed, target, expended, goalDefined }: { consumed: number; target: number; expended: number; goalDefined: boolean }) {
   const r = 90, circ = 2 * Math.PI * r;
-  const pct     = goal > 0 ? Math.min(consumed / goal, 1.3) : 0;
-  const over    = consumed > goal;
-  const balance = consumed - goal;
-  const color   = !goalDefined ? "rgba(255,255,255,0.15)" : over ? "#e07070" : "#c9a84c";
+  const remaining = target - consumed;
+  const over    = consumed > target;
+  const maint   = Math.abs(remaining) <= 100;
+  const color   = !goalDefined ? "rgba(255,255,255,0.15)" : over ? "#e07070" : maint ? "#c9a84c" : "#7eb8a0";
+  const pct     = target > 0 ? Math.min(consumed / target, 1.3) : 0;
   const dash    = goalDefined ? circ * Math.min(pct, 1) : 0;
 
   return (
-    <div className="relative flex items-center justify-center w-[230px] h-[230px] sm:w-[260px] sm:h-[260px] mx-auto">
-      <svg viewBox="0 0 220 220" className="-rotate-90 w-full h-full">
-        <circle cx="110" cy="110" r={r} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="10"/>
-        <circle cx="110" cy="110" r={r} fill="none" stroke={color} strokeWidth="10"
-          strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
-          style={{ transition: "stroke-dasharray 0.6s ease" }}/>
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-        <p style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-white tracking-wide leading-none">{consumed.toLocaleString("fr-FR")}</p>
-        <p className="text-[0.6rem] tracking-[0.2em] uppercase text-white/30 mt-1">kcal consommés</p>
-        <div className="w-8 h-px bg-white/10 my-2"/>
-        {goalDefined ? (
-          <p style={{ fontFamily: "var(--font-bebas)", color }} className="text-lg tracking-wide leading-none">{goal.toLocaleString("fr-FR")}</p>
-        ) : (
-          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-lg tracking-wide leading-none text-white/25">À définir</p>
-        )}
-        <p className="text-[0.6rem] tracking-[0.18em] uppercase mt-0.5" style={{ color: "rgba(255,255,255,0.25)" }}>{label}</p>
-        {goalDefined && consumed > 0 && (
-          <p className="text-[0.62rem] font-bold tracking-wider mt-1.5" style={{ color }}>
-            {over ? "+" : ""}{balance.toLocaleString("fr-FR")} kcal
+    <div className="flex items-center justify-center gap-2 sm:gap-6">
+      <div className="flex flex-col items-center text-center w-16 sm:w-20 shrink-0">
+        <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl sm:text-3xl text-white tracking-wide leading-none">{consumed.toLocaleString("fr-FR")}</p>
+        <p className="text-[0.55rem] sm:text-[0.6rem] tracking-[0.15em] uppercase text-white/30 mt-1.5">Consommées</p>
+      </div>
+
+      <div className="relative shrink-0 w-[160px] h-[160px] sm:w-[190px] sm:h-[190px]">
+        <svg viewBox="0 0 220 220" className="-rotate-90 w-full h-full">
+          <circle cx="110" cy="110" r={r} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="10"/>
+          <circle cx="110" cy="110" r={r} fill="none" stroke={color} strokeWidth="10"
+            strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
+            style={{ transition: "stroke-dasharray 0.6s ease" }}/>
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl sm:text-4xl text-white tracking-wide leading-none">
+            {goalDefined ? Math.abs(remaining).toLocaleString("fr-FR") : "—"}
           </p>
-        )}
+          <p className="text-[0.55rem] sm:text-[0.6rem] tracking-[0.2em] uppercase text-white/30 mt-1.5">
+            kcal {goalDefined ? (over ? "en surplus" : "restantes") : "à définir"}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex flex-col items-center text-center w-16 sm:w-20 shrink-0">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-white/25 mb-1">
+          <path d="M12 2c-3.5 4-5.5 7-5.5 10.5a5.5 5.5 0 0011 0c0-1.3-.4-2.6-1.3-3.6.2 1.7-.9 2.6-1.9 2.6-1.3 0-2-1.2-1.2-2.7C13.9 7 14 4.5 12 2z"/>
+        </svg>
+        <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl sm:text-3xl text-white tracking-wide leading-none">{Math.round(expended).toLocaleString("fr-FR")}</p>
+        <p className="text-[0.55rem] sm:text-[0.6rem] tracking-[0.15em] uppercase text-white/30 mt-1.5">TDEE</p>
       </div>
     </div>
   );
@@ -889,27 +899,15 @@ export default function NutritionPage() {
         disabled={useTdee}
         title={useTdee ? undefined : "Cliquer pour définir ton objectif"}
         className="mx-auto block disabled:cursor-default">
-        <CalorieRing consumed={totals.calories} goal={calTarget} label={useTdee ? "TDEE" : "Objectif"} goalDefined={useTdee || goalsSet}/>
+        <CalorieRow consumed={totals.calories} target={calTarget} expended={tdee} goalDefined={useTdee || goalsSet}/>
       </button>
 
       {useTdee && (
-        <p className="text-center text-[0.65rem] tracking-[0.12em] uppercase text-white/25 mt-4">
+        <p className="text-center text-[0.65rem] tracking-[0.12em] uppercase text-white/25 mt-4 mb-8">
           Métabolisme {bmrVal} · Activité {tdeeParts.neat} · Sport {tdeeParts.eat} kcal
         </p>
       )}
-
-      <div className="flex justify-center gap-8 mt-6 mb-8">
-        {[
-          { label: useTdee ? "TDEE" : "Objectif", val: useTdee || goalsSet ? String(calTarget) : "À définir" },
-          { label:"Consommé", val: String(totals.calories) },
-          { label:"Restant",  val: useTdee || goalsSet ? String(Math.max(calTarget-totals.calories,0)) : "—" },
-        ].map(s => (
-          <div key={s.label} className="text-center">
-            <p style={{ fontFamily:"var(--font-bebas)" }} className={`text-2xl tracking-wide leading-none ${s.val === "À définir" || s.val === "—" ? "text-white/25" : "text-white"}`}>{s.val}</p>
-            <p className="text-[0.65rem] tracking-[0.15em] uppercase text-white/25 mt-1">{s.label}</p>
-          </div>
-        ))}
-      </div>
+      {!useTdee && <div className="mb-8"/>}
 
       <div className="border border-white/10 bg-[#111] rounded-lg mb-6 overflow-hidden">
         <button onClick={() => setShowMacros(s => !s)}

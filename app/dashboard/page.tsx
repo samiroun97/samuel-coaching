@@ -28,38 +28,47 @@ function bmr(p: Profile, bodyFatPct: number | null): number {
   return Math.round(p.sexe === "Femme" ? base - 161 : base + 5);
 }
 
-function CalRing({ consumed, tdee, label = "TDEE", goalDefined = true }: { consumed: number; tdee: number; label?: string; goalDefined?: boolean }) {
+// Consommées à gauche, cercle "restantes" au centre, dépense (TDEE) à droite —
+// une seule ligne, sans surcharge de couleurs.
+function CalorieRow({ consumed, target, expended, goalDefined }: { consumed: number; target: number; expended: number; goalDefined: boolean }) {
   const r = 90, circ = 2 * Math.PI * r;
-  const pct     = tdee > 0 ? Math.min(consumed / tdee, 1.3) : 0;
-  const over    = consumed > tdee;
-  const balance = consumed - tdee;
-  const maint   = Math.abs(balance) <= 100;
+  const remaining = target - consumed;
+  const over    = consumed > target;
+  const maint   = Math.abs(remaining) <= 100;
   const color   = !goalDefined ? "rgba(255,255,255,0.15)" : over ? "#e07070" : maint ? "#c9a84c" : "#7eb8a0";
+  const pct     = target > 0 ? Math.min(consumed / target, 1.3) : 0;
   const dash    = goalDefined ? circ * Math.min(pct, 1) : 0;
 
   return (
-    <div className="relative flex items-center justify-center w-[230px] h-[230px] sm:w-[260px] sm:h-[260px]">
-      <svg viewBox="0 0 220 220" className="-rotate-90 w-full h-full">
-        <circle cx="110" cy="110" r={r} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="10"/>
-        <circle cx="110" cy="110" r={r} fill="none" stroke={color} strokeWidth="10"
-          strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
-          style={{ transition: "stroke-dasharray 0.6s ease" }}/>
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-        <p style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-white tracking-wide leading-none">{consumed.toLocaleString("fr-FR")}</p>
-        <p className="text-[0.6rem] tracking-[0.2em] uppercase text-white/30 mt-1">kcal consommés</p>
-        <div className="w-8 h-px bg-white/10 my-2"/>
-        {goalDefined ? (
-          <p style={{ fontFamily: "var(--font-bebas)", color }} className="text-lg tracking-wide leading-none">{tdee.toLocaleString("fr-FR")}</p>
-        ) : (
-          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-lg tracking-wide leading-none text-white/25">À définir</p>
-        )}
-        <p className="text-[0.6rem] tracking-[0.18em] uppercase mt-0.5" style={{ color: "rgba(255,255,255,0.25)" }}>{label}</p>
-        {goalDefined && consumed > 0 && (
-          <p className="text-[0.62rem] font-bold tracking-wider mt-1.5" style={{ color }}>
-            {over ? "+" : ""}{balance.toLocaleString("fr-FR")} kcal
+    <div className="flex items-center justify-center gap-2 sm:gap-6">
+      <div className="flex flex-col items-center text-center w-16 sm:w-20 shrink-0">
+        <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl sm:text-3xl text-white tracking-wide leading-none">{consumed.toLocaleString("fr-FR")}</p>
+        <p className="text-[0.55rem] sm:text-[0.6rem] tracking-[0.15em] uppercase text-white/30 mt-1.5">Consommées</p>
+      </div>
+
+      <div className="relative shrink-0 w-[160px] h-[160px] sm:w-[190px] sm:h-[190px]">
+        <svg viewBox="0 0 220 220" className="-rotate-90 w-full h-full">
+          <circle cx="110" cy="110" r={r} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="10"/>
+          <circle cx="110" cy="110" r={r} fill="none" stroke={color} strokeWidth="10"
+            strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
+            style={{ transition: "stroke-dasharray 0.6s ease" }}/>
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl sm:text-4xl text-white tracking-wide leading-none">
+            {goalDefined ? Math.abs(remaining).toLocaleString("fr-FR") : "—"}
           </p>
-        )}
+          <p className="text-[0.55rem] sm:text-[0.6rem] tracking-[0.2em] uppercase text-white/30 mt-1.5">
+            kcal {goalDefined ? (over ? "en surplus" : "restantes") : "à définir"}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex flex-col items-center text-center w-16 sm:w-20 shrink-0">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-white/25 mb-1">
+          <path d="M12 2c-3.5 4-5.5 7-5.5 10.5a5.5 5.5 0 0011 0c0-1.3-.4-2.6-1.3-3.6.2 1.7-.9 2.6-1.9 2.6-1.3 0-2-1.2-1.2-2.7C13.9 7 14 4.5 12 2z"/>
+        </svg>
+        <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl sm:text-3xl text-white tracking-wide leading-none">{Math.round(expended).toLocaleString("fr-FR")}</p>
+        <p className="text-[0.55rem] sm:text-[0.6rem] tracking-[0.15em] uppercase text-white/30 mt-1.5">TDEE</p>
       </div>
     </div>
   );
@@ -333,106 +342,16 @@ export default function AccueilPage() {
             {selectedDate === today() ? "Bilan calorique du jour" : `Bilan calorique · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
           </Link>
         </div>
-        <div className="flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-8">
+        <CalorieRow consumed={consumed.calories} target={refCal} expended={tdee} goalDefined={calView === "tdee" || goalsSet}/>
 
-          {/* Ring */}
-          <div className="shrink-0 flex justify-center">
-            <CalRing consumed={consumed.calories} tdee={refCal} label={calView === "goal" ? "Objectif" : "TDEE"} goalDefined={calView === "tdee" || goalsSet}/>
-          </div>
-
-          {/* Right panel */}
-          <div className="flex-1 min-w-0 w-full sm:w-auto">
-
-            {/* Toggle vue */}
-            <div className="flex gap-1.5 mb-4">
-              {([["tdee", "TDEE"], ["goal", "Objectif"]] as const).map(([key, label]) => (
-                <button key={key} onClick={() => setCalView(key)}
-                  className={`px-3 py-1.5 text-[0.65rem] tracking-[0.12em] uppercase border transition-all ${calView === key ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10" : "border-white/10 text-white/30 hover:border-white/20 hover:text-white/50"}`}>
-                  {label}
-                </button>
-              ))}
-            </div>
-
-            {calView === "tdee" ? (
-              /* ── Vue TDEE ── */
-              <div className="mb-5">
-                <Link href="/dashboard/programme" className="text-[0.65rem] tracking-[0.18em] uppercase text-white/20 hover:text-white/40 transition-colors mb-3 block">Dépense totale (TDEE)</Link>
-                <div className="flex flex-col gap-2">
-                  {[
-                    { label: "BMR",  val: bmrVal, desc: "Métabolisme de base",   color: "#c9a84c" },
-                    { label: "NEAT", val: neat,   desc: "Activité quotidienne",  color: "#7eb8a0" },
-                    { label: "EAT",  val: eat,    desc: "Entraînement",          color: "#d9954f" },
-                  ].map(row => (
-                    <div key={row.label} className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-1 h-5" style={{ backgroundColor: row.color }}/>
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-sm tracking-[0.12em] uppercase font-bold" style={{ color: row.color }}>{row.label}</span>
-                          <span className="text-[0.65rem] text-white/30">{row.desc}</span>
-                        </div>
-                      </div>
-                      <span style={{ fontFamily: "var(--font-bebas)" }} className="text-xl text-white/70 tracking-wide">{row.val.toLocaleString("fr-FR")}</span>
-                    </div>
-                  ))}
-                  <div className="border-t border-white/5 pt-2 flex items-center justify-between mt-1">
-                    <span className="text-[0.65rem] tracking-[0.15em] uppercase text-white/40">Total TDEE</span>
-                    <span style={{ fontFamily: "var(--font-bebas)" }} className="text-xl text-white tracking-wide">{tdee.toLocaleString("fr-FR")} <span className="text-sm text-white/30">kcal</span></span>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              /* ── Vue Objectif ── */
-              <div className="mb-5">
-                <p className="text-[0.65rem] tracking-[0.18em] uppercase text-white/20 mb-3">Calories · objectif vs consommé</p>
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-1 h-5 bg-[#c9a84c]"/>
-                      <span className="text-[0.65rem] text-white/30">Objectif journalier</span>
-                    </div>
-                    {goalsSet ? (
-                      <span style={{ fontFamily: "var(--font-bebas)" }} className="text-xl text-white/70 tracking-wide">{goals.calories.toLocaleString("fr-FR")}</span>
-                    ) : (
-                      <Link href="/dashboard/nutrition" style={{ fontFamily: "var(--font-bebas)" }} className="text-xl text-white/25 tracking-wide hover:text-[#c9a84c] transition-colors">À définir</Link>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-1 h-5" style={{ backgroundColor: consumed.calories > goals.calories ? "#e07070" : "#7eb8a0" }}/>
-                      <span className="text-[0.65rem] text-white/30">Consommés aujourd&apos;hui</span>
-                    </div>
-                    <span style={{ fontFamily: "var(--font-bebas)" }} className="text-xl text-white/70 tracking-wide">{consumed.calories.toLocaleString("fr-FR")}</span>
-                  </div>
-                  <div className="mt-1 h-1 bg-white/5 rounded-full overflow-hidden">
-                    <div className="h-full rounded-full transition-all duration-500"
-                      style={{
-                        width: `${goalsSet ? Math.min(goals.calories > 0 ? (consumed.calories / goals.calories) * 100 : 0, 100) : 0}%`,
-                        backgroundColor: consumed.calories > goals.calories ? "#e07070" : "#7eb8a0",
-                      }}/>
-                  </div>
-                  <div className="border-t border-white/5 pt-2 flex items-center justify-between mt-1">
-                    <span className="text-[0.65rem] tracking-[0.15em] uppercase text-white/40">
-                      {consumed.calories > goals.calories ? "Surplus" : "Restant"}
-                    </span>
-                    {goalsSet ? (
-                      <span style={{ fontFamily: "var(--font-bebas)" }} className={`text-xl tracking-wide ${consumed.calories > goals.calories ? "text-[#e07070]" : "text-[#7eb8a0]"}`}>
-                        {Math.abs(goals.calories - consumed.calories).toLocaleString("fr-FR")} <span className="text-sm text-white/30">kcal</span>
-                      </span>
-                    ) : (
-                      <span style={{ fontFamily: "var(--font-bebas)" }} className="text-xl tracking-wide text-white/20">—</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Macros */}
-            <div className="flex flex-col gap-2.5">
-              <MiniBar label="Protéines" consumed={consumed.proteines} goal={goals.proteines} color="#F3F4F6"/>
-              <MiniBar label="Glucides"  consumed={consumed.glucides}  goal={goals.glucides}  color="#e0834a"/>
-              <MiniBar label="Lipides"   consumed={consumed.lipides}   goal={goals.lipides}   color="#9c8563"/>
-            </div>
-          </div>
+        {/* Toggle référence du cercle */}
+        <div className="flex justify-center gap-1.5 mt-6">
+          {([["tdee", "TDEE"], ["goal", "Objectif"]] as const).map(([key, label]) => (
+            <button key={key} onClick={() => setCalView(key)}
+              className={`px-3 py-1.5 text-[0.65rem] tracking-[0.12em] uppercase border transition-all ${calView === key ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10" : "border-white/10 text-white/30 hover:border-white/20 hover:text-white/50"}`}>
+              {label}
+            </button>
+          ))}
         </div>
 
         {/* Balance banner */}
@@ -446,8 +365,32 @@ export default function AccueilPage() {
           </div>
         )}
 
+        {/* Dépense totale — fluide, monochrome */}
+        <div className="mt-6 pt-5 border-t border-white/5">
+          <p className="text-[0.6rem] tracking-[0.18em] uppercase text-white/20 mb-3 text-center">Dépense totale</p>
+          <div className="flex items-center justify-between">
+            {[
+              { label: "BMR",  val: bmrVal },
+              { label: "NEAT", val: neat },
+              { label: "EAT",  val: eat },
+            ].map((row, i) => (
+              <div key={row.label} className={`flex-1 text-center ${i > 0 ? "border-l border-white/5" : ""}`}>
+                <p style={{ fontFamily: "var(--font-bebas)" }} className="text-xl text-white/80 tracking-wide">{row.val.toLocaleString("fr-FR")}</p>
+                <p className="text-[0.58rem] tracking-[0.15em] uppercase text-white/25 mt-1">{row.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Macros */}
+        <div className="mt-6 pt-5 border-t border-white/5 flex flex-col gap-2.5">
+          <MiniBar label="Protéines" consumed={consumed.proteines} goal={goals.proteines} color="#F3F4F6"/>
+          <MiniBar label="Glucides"  consumed={consumed.glucides}  goal={goals.glucides}  color="#e0834a"/>
+          <MiniBar label="Lipides"   consumed={consumed.lipides}   goal={goals.lipides}   color="#9c8563"/>
+        </div>
+
         <Link href="/dashboard/nutrition"
-          className="mt-4 flex items-center justify-center gap-2 w-full border border-[#c9a84c]/20 text-[#c9a84c] text-[0.7rem] tracking-[0.15em] uppercase py-3 hover:bg-[#c9a84c]/5 transition-colors">
+          className="mt-6 flex items-center justify-center gap-2 w-full border border-[#c9a84c]/20 text-[#c9a84c] text-[0.7rem] tracking-[0.15em] uppercase py-3 hover:bg-[#c9a84c]/5 transition-colors">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Ajouter un repas / modifier mes objectifs
         </Link>
