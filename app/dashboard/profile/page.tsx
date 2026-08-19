@@ -9,12 +9,21 @@ type Profile = {
   objectifs: string | null; objectif_echeance: string | null; objectif_pending: boolean;
   seances_par_semaine: number | null; lieu_entrainement: string | null;
   blessures: string | null; alimentation: string | null; sommeil_stress: string | null;
+  niveau_activite: string | null; experience: string | null; duree_seance: string | null;
 };
 
 const FB_LABELS: Record<string, string> = { bug: "🐛 Bug", suggestion: "💡 Suggestion", idee: "✨ Idée" };
 const ECHEANCES = ["1 mois", "3 mois", "6 mois", "1 an", "Pas d'échéance précise"];
 const LIEUX = ["Salle de musculation", "Extérieur", "Maison"];
 const STRESS_OPTIONS = ["Faible (je dors bien, peu de stress)", "Modéré", "Élevé (peu de sommeil, stress chronique)"];
+const NIVEAU_OPTIONS = [
+  { label: "Sédentaire", desc: "0 séance/semaine, travail assis, peu de marche au quotidien" },
+  { label: "Légèrement actif", desc: "1 à 2 séances/semaine, ou un métier debout léger" },
+  { label: "Modérément actif", desc: "3 à 4 séances/semaine, actif dans la journée" },
+  { label: "Très actif", desc: "5 à 6 séances/semaine, ou entraînement + job physique" },
+];
+const EXPERIENCE_OPTIONS = ["Débutant", "Intermédiaire", "Avancé"];
+const DUREE_OPTIONS = ["30 min", "45 min", "1h", "1h30+"];
 
 function GearIcon() {
   return (
@@ -42,6 +51,7 @@ export default function ProfilePage() {
   const [objForm,     setObjForm]     = useState({
     objectifs: "", echeance: "", echeanceDate: "", seances: "", lieux: [] as string[],
     blessures: "", alimentation: "", sommeilStress: "",
+    niveauActivite: "", experience: "", dureeSeance: "",
   });
   const [objSaving,   setObjSaving]   = useState(false);
 
@@ -55,7 +65,7 @@ export default function ProfilePage() {
       setIsCoach(coach);
       if (!coach) getMyCoachEmail(user.id).then(setCoachEmail);
       const { data } = await supabase.from("profiles")
-        .select("prenom,nom,age,poids,taille,sexe,objectifs,objectif_echeance,objectif_pending,seances_par_semaine,lieu_entrainement,blessures,alimentation,sommeil_stress")
+        .select("prenom,nom,age,poids,taille,sexe,objectifs,objectif_echeance,objectif_pending,seances_par_semaine,lieu_entrainement,blessures,alimentation,sommeil_stress,niveau_activite,experience,duree_seance")
         .eq("id", user.id).single();
       if (data) setProfile(data as Profile);
     })();
@@ -77,6 +87,7 @@ export default function ProfilePage() {
       objectifs: profile.objectifs || "", echeance: profile.objectif_echeance || "", echeanceDate: "",
       seances: String(profile.seances_par_semaine || ""), lieux: knownLieux,
       blessures: profile.blessures || "", alimentation: profile.alimentation || "", sommeilStress: profile.sommeil_stress || "",
+      niveauActivite: profile.niveau_activite || "", experience: profile.experience || "", dureeSeance: profile.duree_seance || "",
     });
     setShowObjForm(true);
   };
@@ -92,6 +103,9 @@ export default function ProfilePage() {
       blessures: objForm.blessures.trim() || null,
       alimentation: objForm.alimentation.trim() || null,
       sommeil_stress: objForm.sommeilStress || null,
+      niveau_activite: objForm.niveauActivite || profile?.niveau_activite,
+      experience: objForm.experience || profile?.experience,
+      duree_seance: objForm.dureeSeance || profile?.duree_seance,
       objectif_pending: false,
     };
     await supabase.from("profiles").update(fields).eq("id", userId);
@@ -162,7 +176,7 @@ export default function ProfilePage() {
           {profile?.objectif_echeance && <p className="text-[0.62rem] text-white/25 tracking-wider uppercase">Échéance : {profile.objectif_echeance}</p>}
         </div>
         <p className="text-sm text-white/55 leading-relaxed">{profile?.objectifs || "Aucun objectif renseigné"}</p>
-        <p className="text-[0.6rem] text-white/20 tracking-wider mt-3">Blessures · Alimentation · Sommeil/stress · Lieu · Séances/sem.</p>
+        <p className="text-[0.6rem] text-white/20 tracking-wider mt-3">Entraînement · Blessures · Alimentation · Sommeil/stress</p>
       </button>
 
       <Link href="/dashboard/profile/preferences"
@@ -257,6 +271,43 @@ export default function ProfilePage() {
                       setObjForm(f => ({ ...f, echeanceDate: val, echeance: val ? label : f.echeance }));
                     }}
                     className="bg-[#060606] border border-white/10 rounded-lg text-white text-xs px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"/>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[0.6rem] tracking-[0.15em] uppercase text-white/40 block mb-1.5">Niveau d'activité</label>
+                <div className="flex flex-col gap-2">
+                  {NIVEAU_OPTIONS.map(o => (
+                    <button key={o.label} type="button" onClick={() => setObjForm(f => ({ ...f, niveauActivite: o.label }))}
+                      className={`px-4 py-3 text-left border rounded-lg transition-all ${objForm.niveauActivite === o.label ? "border-[#c9a84c] bg-[#c9a84c]/10" : "border-white/10 hover:border-white/30"}`}>
+                      <p className={`text-xs tracking-[0.1em] uppercase font-bold ${objForm.niveauActivite === o.label ? "text-[#c9a84c]" : "text-white/60"}`}>{o.label}</p>
+                      <p className="text-[0.62rem] text-white/25 mt-0.5">{o.desc}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[0.6rem] tracking-[0.15em] uppercase text-white/40 block mb-1.5">Expérience</label>
+                <div className="flex flex-wrap gap-2">
+                  {EXPERIENCE_OPTIONS.map(o => (
+                    <button key={o} type="button" onClick={() => setObjForm(f => ({ ...f, experience: o }))}
+                      className={`text-[0.65rem] tracking-wider px-3 py-2 rounded-lg border transition-colors ${objForm.experience === o ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-white/15 text-white/40 hover:border-white/30"}`}>
+                      {o}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[0.6rem] tracking-[0.15em] uppercase text-white/40 block mb-1.5">Durée de séance</label>
+                <div className="flex flex-wrap gap-2">
+                  {DUREE_OPTIONS.map(o => (
+                    <button key={o} type="button" onClick={() => setObjForm(f => ({ ...f, dureeSeance: o }))}
+                      className={`text-[0.65rem] tracking-wider px-3 py-2 rounded-lg border transition-colors ${objForm.dureeSeance === o ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-white/15 text-white/40 hover:border-white/30"}`}>
+                      {o}
+                    </button>
+                  ))}
                 </div>
               </div>
 

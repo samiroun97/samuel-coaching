@@ -491,27 +491,6 @@ export default function AccueilPage() {
         })()}
       </div>
 
-      {/* ── Profil entraînement ── */}
-      <div className="mb-4">
-        <div className="border border-white/10 bg-[#111] rounded-lg p-6">
-          <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Entraînement</p>
-          <div className="flex flex-col gap-3">
-            {[
-              { label: "Niveau",       val: profile.niveau_activite },
-              { label: "Expérience",   val: profile.experience },
-              { label: "Séances/sem.", val: `${profile.seances_par_semaine}×` },
-              { label: "Durée",        val: profile.duree_seance },
-              { label: "Lieu",         val: profile.lieu_entrainement },
-            ].map(r => (
-              <div key={r.label} className="flex justify-between items-start border-b border-white/5 pb-2.5 last:border-0 last:pb-0">
-                <span className="text-[0.7rem] tracking-wider uppercase text-white/25 shrink-0">{r.label}</span>
-                <span className="text-xs text-white/60 text-right ml-4">{r.val}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
     </div>
   );
 }
