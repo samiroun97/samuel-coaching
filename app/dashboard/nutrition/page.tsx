@@ -164,7 +164,7 @@ function adjustMacro(draft: Goals, key: MacroKey, grams: number): Goals {
 function CalorieRing({ consumed, goal, goalDefined = true }: { consumed: number; goal: number; goalDefined?: boolean }) {
   const r = 82, circ = 2*Math.PI*r, pct = Math.min(consumed/(goal||1), 1), over = consumed > goal;
   return (
-    <div className="relative flex items-center justify-center w-52 h-52 mx-auto">
+    <div className="relative flex items-center justify-center w-56 h-56 mx-auto">
       <svg width="208" height="208" viewBox="0 0 208 208" className="absolute inset-0">
         <circle cx="104" cy="104" r={r} fill="none" stroke="#ffffff07" strokeWidth="14"/>
         <circle cx="104" cy="104" r={r} fill="none" stroke={!goalDefined ? "rgba(255,255,255,0.1)" : over?"#e07070":"#c9a84c"} strokeWidth="14"

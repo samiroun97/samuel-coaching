@@ -38,7 +38,7 @@ function CalRing({ consumed, tdee, label = "TDEE", goalDefined = true }: { consu
   const dash    = goalDefined ? circ * Math.min(pct, 1) : 0;
 
   return (
-    <div className="relative flex items-center justify-center w-[210px] h-[210px] sm:w-[240px] sm:h-[240px]">
+    <div className="relative flex items-center justify-center w-[230px] h-[230px] sm:w-[260px] sm:h-[260px]">
       <svg viewBox="0 0 220 220" className="-rotate-90 w-full h-full">
         <circle cx="110" cy="110" r={r} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="10"/>
         <circle cx="110" cy="110" r={r} fill="none" stroke={color} strokeWidth="10"

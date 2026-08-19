@@ -202,7 +202,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <NavIcon name={icon} size={active ? 21 : 18}/>
                 {showBadge && <span className="absolute -top-0.5 -right-1.5 w-2 h-2 rounded-full bg-[#e07070] ring-2 ring-[#0a0a0a]"/>}
               </div>
-              <span className={`relative w-full text-center truncate px-0.5 text-[0.52rem] tracking-[0.02em] uppercase transition-all duration-300 ${
+              <span className={`relative w-full text-center truncate px-0.5 text-[0.4rem] tracking-[0.02em] uppercase transition-all duration-300 ${
                 active ? "text-[#c9a84c] font-bold" : "text-white/30"
               }`}>
                 {label}
