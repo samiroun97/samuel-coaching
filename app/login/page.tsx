@@ -78,6 +78,18 @@ export default function LoginPage() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Lien d'invitation coach (?invite=CODE&mode=register) : on mémorise le
+  // code pour le consommer une fois connecté (voir dashboard/layout.tsx),
+  // et on bascule directement sur "Créer un compte".
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const invite = params.get("invite");
+    if (invite) {
+      try { localStorage.setItem("pending_invite_code", invite.trim().toUpperCase()); } catch { /* ignore */ }
+      if (params.get("mode") === "register") setMode("register");
+    }
+  }, []);
+
   const translateError = (message: string) => {
     const m = message.toLowerCase();
     if (m.includes("already registered") || m.includes("already exists")) return "Un compte existe déjà avec cet email. Essaie de te connecter.";

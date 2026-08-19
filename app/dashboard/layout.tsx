@@ -6,6 +6,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { startStateSync, SYNC_STATUS_EVENT } from "@/lib/syncStorage";
 import { isCoachUser } from "@/lib/coach";
+import { apiPost } from "@/lib/apiClient";
 
 function NavIcon({ name, size = 17 }: { name: string; size?: number }) {
   const p = {
@@ -82,6 +83,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         const { data: profile } = await supabase
           .from("profiles").select("prenom").eq("id", data.user.id).single();
         if (!profile?.prenom) { router.push("/dashboard/onboarding"); return; }
+      }
+
+      // Code d'invitation coach déposé sur /login (?invite=CODE) : le consommer
+      // une seule fois — remplace le rattachement provisoire par le vrai coach.
+      if (!coach) {
+        const pending = localStorage.getItem("pending_invite_code");
+        if (pending) {
+          localStorage.removeItem("pending_invite_code");
+          try { await apiPost("/api/coach/join", { code: pending }); } catch { /* ignore */ }
+        }
       }
 
       // Sync multi-appareils : rapatrier l'état du compte avant d'afficher les pages

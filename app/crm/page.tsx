@@ -29,11 +29,17 @@ export default function CRMDashboard() {
   const [loading,  setLoading]  = useState(true);
   const [treated,  setTreated]  = useState<Set<string>>(new Set());
   const [myEmail,  setMyEmail]  = useState("");
+  const [inviteCode, setInviteCode] = useState("");
+  const [copied,     setCopied]     = useState<"code" | "link" | null>(null);
 
   useEffect(() => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setMyEmail(user?.email ?? "");
+      if (user) {
+        const { data: coach } = await supabase.from("coaches").select("code").eq("profile_id", user.id).single();
+        if (coach?.code) setInviteCode(coach.code);
+      }
       const [{ data: c }, { data: m }, { data: ck }] = await Promise.all([
         supabase.from("profiles").select("id,email,prenom,nom,status,subscription_end,pipeline_stage,updated_at").order("updated_at", { ascending: false }),
         supabase.from("messages").select("from_email,to_email,content,created_at").order("created_at", { ascending: true }),
@@ -125,6 +131,13 @@ export default function CRMDashboard() {
       return { ...m, name: p ? `${p.prenom} ${p.nom}` : m.from_email };
     });
 
+  const inviteLink = inviteCode ? `${typeof window !== "undefined" ? window.location.origin : ""}/login?mode=register&invite=${inviteCode}` : "";
+  const copy = (text: string, what: "code" | "link") => {
+    navigator.clipboard.writeText(text);
+    setCopied(what);
+    setTimeout(() => setCopied(null), 1800);
+  };
+
   if (loading) return (
     <div className="flex items-center justify-center h-full min-h-screen">
       <div className="w-5 h-5 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>
@@ -141,6 +154,26 @@ export default function CRMDashboard() {
           {new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
         </p>
       </div>
+
+      {/* Inviter un client */}
+      {inviteCode && (
+        <div className="border border-[#c9a84c]/20 bg-[#c9a84c]/5 rounded-lg p-4 md:p-5 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <p className="text-[0.65rem] tracking-[0.22em] uppercase text-[#c9a84c] mb-1">Inviter un client</p>
+            <p className="text-xs text-white/40">Code coach : <span style={{ fontFamily: "var(--font-bebas)" }} className="text-white tracking-[0.2em] text-sm">{inviteCode}</span></p>
+          </div>
+          <div className="flex gap-2 shrink-0">
+            <button onClick={() => copy(inviteCode, "code")}
+              className="px-3 py-2 border border-white/10 text-white/50 text-[0.6rem] tracking-[0.1em] uppercase hover:border-white/25 hover:text-white/80 transition-colors rounded-lg">
+              {copied === "code" ? "Copié ✓" : "Copier le code"}
+            </button>
+            <button onClick={() => copy(inviteLink, "link")}
+              className="px-3 py-2 bg-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.1em] uppercase hover:bg-[#e2c97e] transition-colors rounded-lg">
+              {copied === "link" ? "Copié ✓" : "Copier le lien"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* KPIs */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 md:gap-3 mb-6 md:mb-8">

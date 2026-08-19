@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { isCoachUser, getMyCoachEmail } from "@/lib/coach";
+import { apiPost } from "@/lib/apiClient";
 
 type Profile = {
   prenom: string; nom: string; age: number | null; poids: number | null; taille: number | null; sexe: string | null;
@@ -54,6 +55,11 @@ export default function ProfilePage() {
     niveauActivite: "", experience: "", dureeSeance: "",
   });
   const [objSaving,   setObjSaving]   = useState(false);
+
+  const [joinOpen,    setJoinOpen]    = useState(false);
+  const [joinCode,    setJoinCode]    = useState("");
+  const [joining,     setJoining]     = useState(false);
+  const [joinMsg,     setJoinMsg]     = useState<{ ok: boolean; text: string } | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -111,6 +117,24 @@ export default function ProfilePage() {
     await supabase.from("profiles").update(fields).eq("id", userId);
     setProfile(p => p ? { ...p, ...fields, objectif_pending: false } as Profile : p);
     setObjSaving(false); setShowObjForm(false);
+  };
+
+  const joinCoach = async () => {
+    if (!joinCode.trim() || joining) return;
+    setJoining(true); setJoinMsg(null);
+    try {
+      const res = await apiPost("/api/coach/join", { code: joinCode.trim() });
+      const data = await res.json();
+      if (!res.ok) { setJoinMsg({ ok: false, text: data.error ?? "Code invalide" }); }
+      else {
+        setJoinMsg({ ok: true, text: "Coach rejoint ✓" });
+        setJoinCode("");
+        if (userId) getMyCoachEmail(userId).then(setCoachEmail);
+      }
+    } catch {
+      setJoinMsg({ ok: false, text: "Erreur réseau" });
+    }
+    setJoining(false);
   };
 
   const initials = `${profile?.prenom?.[0] ?? ""}${profile?.nom?.[0] ?? ""}`.toUpperCase();
@@ -189,6 +213,45 @@ export default function ProfilePage() {
           <polyline points="9 18 15 12 9 6"/>
         </svg>
       </Link>
+
+      {!isCoach && (
+        <div className="border border-white/10 bg-[#111] rounded-lg overflow-hidden mb-4">
+          <button onClick={() => setJoinOpen(o => !o)}
+            className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-white/[0.03] transition-colors">
+            <div className="flex items-center gap-3">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-white/40">
+                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+              </svg>
+              <p className="text-sm text-white/70">Coach</p>
+            </div>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+              className={`text-white/25 shrink-0 transition-transform ${joinOpen ? "rotate-90" : ""}`}>
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+
+          {joinOpen && (
+            <div className="px-5 pb-5 border-t border-white/5 pt-5 flex flex-col gap-3">
+              <p className="text-[0.62rem] text-white/25 tracking-wider">
+                {coachEmail ? `Actuellement lié à ${coachEmail}` : "Tu n'es lié à aucun coach pour l'instant."}
+              </p>
+              <div className="flex gap-2">
+                <input value={joinCode} onChange={e => setJoinCode(e.target.value.toUpperCase())}
+                  onKeyDown={e => { if (e.key === "Enter") joinCoach(); }}
+                  placeholder="Code du coach"
+                  className="flex-1 min-w-0 bg-[#0a0a0a] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm tracking-[0.15em] uppercase px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"/>
+                <button onClick={joinCoach} disabled={!joinCode.trim() || joining}
+                  className="shrink-0 px-4 bg-[#c9a84c] text-black text-[0.65rem] font-bold tracking-[0.15em] uppercase rounded-lg hover:bg-[#e2c97e] transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                  {joining ? "…" : "Rejoindre"}
+                </button>
+              </div>
+              {joinMsg && (
+                <p className={`text-xs ${joinMsg.ok ? "text-[#7eb8a0]" : "text-[#e07070]"}`}>{joinMsg.text}</p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="border border-white/10 bg-[#111] rounded-lg overflow-hidden">
         <button onClick={() => setFbOpen(o => !o)}
