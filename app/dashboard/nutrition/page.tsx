@@ -161,26 +161,36 @@ function adjustMacro(draft: Goals, key: MacroKey, grams: number): Goals {
   return out;
 }
 
-function CalorieRing({ consumed, goal, goalDefined = true }: { consumed: number; goal: number; goalDefined?: boolean }) {
-  const r = 82, circ = 2*Math.PI*r, pct = Math.min(consumed/(goal||1), 1), over = consumed > goal;
+function CalorieRing({ consumed, goal, label = "Objectif", goalDefined = true }: { consumed: number; goal: number; label?: string; goalDefined?: boolean }) {
+  const r = 90, circ = 2 * Math.PI * r;
+  const pct     = goal > 0 ? Math.min(consumed / goal, 1.3) : 0;
+  const over    = consumed > goal;
+  const balance = consumed - goal;
+  const color   = !goalDefined ? "rgba(255,255,255,0.15)" : over ? "#e07070" : "#c9a84c";
+  const dash    = goalDefined ? circ * Math.min(pct, 1) : 0;
+
   return (
-    <div className="relative flex items-center justify-center w-56 h-56 mx-auto">
-      <svg width="208" height="208" viewBox="0 0 208 208" className="absolute inset-0">
-        <circle cx="104" cy="104" r={r} fill="none" stroke="#ffffff07" strokeWidth="14"/>
-        <circle cx="104" cy="104" r={r} fill="none" stroke={!goalDefined ? "rgba(255,255,255,0.1)" : over?"#e07070":"#c9a84c"} strokeWidth="14"
-          strokeDasharray={`${goalDefined ? pct*circ : 0} ${circ}`} strokeLinecap="round" transform="rotate(-90 104 104)"
-          style={{ transition:"stroke-dasharray 0.9s ease" }}/>
+    <div className="relative flex items-center justify-center w-[230px] h-[230px] sm:w-[260px] sm:h-[260px] mx-auto">
+      <svg viewBox="0 0 220 220" className="-rotate-90 w-full h-full">
+        <circle cx="110" cy="110" r={r} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="10"/>
+        <circle cx="110" cy="110" r={r} fill="none" stroke={color} strokeWidth="10"
+          strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
+          style={{ transition: "stroke-dasharray 0.6s ease" }}/>
       </svg>
-      <div className="flex flex-col items-center z-10">
-        <span style={{ fontFamily:"var(--font-bebas)" }} className="text-5xl text-white tracking-wide leading-none">{consumed}</span>
-        <span className="text-[0.65rem] tracking-[0.2em] uppercase text-white/30 mt-1">kcal consommés</span>
-        <div className="mt-3 h-px w-10 bg-white/10"/>
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+        <p style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-white tracking-wide leading-none">{consumed.toLocaleString("fr-FR")}</p>
+        <p className="text-[0.6rem] tracking-[0.2em] uppercase text-white/30 mt-1">kcal consommés</p>
+        <div className="w-8 h-px bg-white/10 my-2"/>
         {goalDefined ? (
-          <span className={`text-xs mt-3 ${over?"text-[#e07070]":"text-[#c9a84c]"}`}>
-            {over ? `+${consumed-goal} excédent` : `${Math.max(goal-consumed,0)} restants`}
-          </span>
+          <p style={{ fontFamily: "var(--font-bebas)", color }} className="text-lg tracking-wide leading-none">{goal.toLocaleString("fr-FR")}</p>
         ) : (
-          <span className="text-xs mt-3 text-white/25">Objectif à définir</span>
+          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-lg tracking-wide leading-none text-white/25">À définir</p>
+        )}
+        <p className="text-[0.6rem] tracking-[0.18em] uppercase mt-0.5" style={{ color: "rgba(255,255,255,0.25)" }}>{label}</p>
+        {goalDefined && consumed > 0 && (
+          <p className="text-[0.62rem] font-bold tracking-wider mt-1.5" style={{ color }}>
+            {over ? "+" : ""}{balance.toLocaleString("fr-FR")} kcal
+          </p>
         )}
       </div>
     </div>
@@ -879,7 +889,7 @@ export default function NutritionPage() {
         disabled={useTdee}
         title={useTdee ? undefined : "Cliquer pour définir ton objectif"}
         className="mx-auto block disabled:cursor-default">
-        <CalorieRing consumed={totals.calories} goal={calTarget} goalDefined={useTdee || goalsSet}/>
+        <CalorieRing consumed={totals.calories} goal={calTarget} label={useTdee ? "TDEE" : "Objectif"} goalDefined={useTdee || goalsSet}/>
       </button>
 
       {useTdee && (
