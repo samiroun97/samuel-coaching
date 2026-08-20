@@ -18,11 +18,11 @@ export function DateNav({ date, onChange }: { date: string; onChange: (d: string
       </button>
       <div className="flex-1 relative flex items-center justify-center">
         <button type="button" onClick={() => setOpen(o => !o)}
-          className="flex items-center justify-center gap-1.5 cursor-pointer group">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--t-text-30)] group-hover:text-[var(--t-text-50)] transition-colors shrink-0">
+          className="flex items-center gap-2 px-4 py-2 rounded-full border border-[var(--t-border)] bg-[var(--t-surface)] hover:border-[#c9a84c]/40 transition-colors group">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--t-text-40)] group-hover:text-[#c9a84c] transition-colors shrink-0">
             <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
           </svg>
-          <p className="text-[0.7rem] tracking-[0.15em] uppercase text-[var(--t-text-50)] group-hover:text-[var(--t-text-70)] transition-colors capitalize select-none">{label}</p>
+          <p className="text-[0.7rem] tracking-[0.15em] uppercase text-[var(--t-text-60)] group-hover:text-[var(--t-text-80)] transition-colors capitalize select-none">{label}</p>
         </button>
         {open && (
           <CalendarPicker value={date} max={todayD} onChange={onChange} onClose={() => setOpen(false)}
