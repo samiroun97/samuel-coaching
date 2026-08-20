@@ -159,7 +159,7 @@ export default function ExerciceEditor({ items, onChange, library = [] }: { item
           </div>
           {i > 0 && !isGrouped && (
             <button type="button" onClick={() => linkWithPrevious(i)}
-              className="text-[0.5rem] tracking-[0.1em] uppercase text-[var(--t-text-25)] border border-[var(--t-border)] px-2 py-2 hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors">
+              className="text-[0.5rem] tracking-[0.1em] uppercase text-[var(--t-text-25)] rounded-lg border border-[var(--t-border)] px-2 py-2 hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors">
               Lier au précédent
             </button>
           )}

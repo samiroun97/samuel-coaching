@@ -206,11 +206,11 @@ export default function ProgrammesPage() {
           <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl md:text-4xl text-[var(--t-text)] tracking-wide mb-3">PROGRAMMES</h1>
           <div className="flex gap-2">
             <button onClick={() => setFilter("sans")}
-              className={`flex-1 py-2 text-[0.5rem] tracking-[0.12em] uppercase border transition-all ${filter === "sans" ? "border-[#e09070] text-[#e09070] bg-[#e09070]/5" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[var(--t-text-20)]"}`}>
+              className={`flex-1 py-2 rounded-lg text-[0.5rem] tracking-[0.12em] uppercase border transition-all ${filter === "sans" ? "border-[#e09070] text-[#e09070] bg-[#e09070]/5" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[var(--t-text-20)]"}`}>
               Sans programme ({sans.length})
             </button>
             <button onClick={() => setFilter("avec")}
-              className={`flex-1 py-2 text-[0.5rem] tracking-[0.12em] uppercase border transition-all ${filter === "avec" ? "border-[#7eb8a0] text-[#7eb8a0] bg-[#7eb8a0]/5" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[var(--t-text-20)]"}`}>
+              className={`flex-1 py-2 rounded-lg text-[0.5rem] tracking-[0.12em] uppercase border transition-all ${filter === "avec" ? "border-[#7eb8a0] text-[#7eb8a0] bg-[#7eb8a0]/5" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[var(--t-text-20)]"}`}>
               Avec ({avec.length})
             </button>
           </div>
@@ -228,10 +228,10 @@ export default function ProgrammesPage() {
             const count = seanceCount.get(c.email) ?? 0;
             return (
               <button key={c.id} onClick={() => selectClient(c)}
-                className={`w-full text-left px-4 py-3 mb-1 border transition-all ${isSel ? "border-[#c9a84c]/30 bg-[#c9a84c]/5" : "border-[var(--t-border-soft)] hover:border-[var(--t-border)] hover:bg-[var(--t-glass-bg)]"}`}>
+                className={`w-full text-left px-4 py-3 mb-1 rounded-lg border transition-all ${isSel ? "border-[#c9a84c]/30 bg-[#c9a84c]/5" : "border-[var(--t-border-soft)] hover:border-[var(--t-border)] hover:bg-[var(--t-glass-bg)]"}`}>
                 <div className="flex items-start justify-between mb-1 gap-2">
                   <p className={`text-sm font-medium ${isSel ? "text-[var(--t-text)]" : "text-[var(--t-text-70)]"}`}>{c.prenom} {c.nom}</p>
-                  <span className="text-[0.42rem] tracking-wider uppercase px-1.5 py-0.5 border shrink-0"
+                  <span className="text-[0.42rem] tracking-wider uppercase px-1.5 py-0.5 rounded-full border shrink-0"
                     style={{ color: stage.color, borderColor: `${stage.color}35`, backgroundColor: `${stage.color}10` }}>
                     {stage.label}
                   </span>
@@ -300,8 +300,8 @@ export default function ProgrammesPage() {
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
                               {s.completed_at && <span className="text-[0.7rem] text-[#7eb8a0] shrink-0">✓</span>}
-                              {s.type_seance && <span className="text-[0.62rem] tracking-wider uppercase text-[#c9a84c] border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">{s.type_seance}</span>}
-                              {s.semaine && <span className="text-[0.62rem] tracking-wider uppercase text-[var(--t-text-30)] border border-[var(--t-border)] px-1.5 py-0.5 shrink-0">Sem. {s.semaine}</span>}
+                              {s.type_seance && <span className="text-[0.62rem] tracking-wider uppercase text-[#c9a84c] rounded-full border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">{s.type_seance}</span>}
+                              {s.semaine && <span className="text-[0.62rem] tracking-wider uppercase text-[var(--t-text-30)] rounded-full border border-[var(--t-border)] px-1.5 py-0.5 shrink-0">Sem. {s.semaine}</span>}
                               <p className="text-xs text-[var(--t-text-70)] truncate">{s.titre}</p>
                             </div>
                             {s.date_prevue && <p className="text-[0.65rem] text-[var(--t-text-25)] mt-0.5">{new Date(s.date_prevue + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</p>}
@@ -327,7 +327,7 @@ export default function ProgrammesPage() {
                     {library.length > 0 && (
                       <div className="flex flex-col gap-1 max-h-40 overflow-y-auto">
                         {library.map(l => (
-                          <div key={l.id} className="flex items-center justify-between gap-2 border border-[var(--t-border-soft)] px-2.5 py-1.5">
+                          <div key={l.id} className="flex items-center justify-between gap-2 rounded-lg border border-[var(--t-border-soft)] px-2.5 py-1.5">
                             <span className="text-[0.62rem] text-[var(--t-text-50)] truncate">{l.nom}{l.type ? <span className="text-[var(--t-text-25)]"> · {l.type}</span> : null}</span>
                             <button onClick={() => removeLibItem(l.id)} className="shrink-0 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
                               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -403,7 +403,7 @@ export default function ProgrammesPage() {
                 </div>
               )}
 
-              {genError && <p className="text-xs text-[#e07070] border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2">{genError}</p>}
+              {genError && <p className="text-xs text-[#e07070] rounded-lg border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2">{genError}</p>}
 
               {/* Séances éditables */}
               {drafts.length > 0 && (

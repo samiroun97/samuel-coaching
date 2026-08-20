@@ -583,7 +583,7 @@ export default function SuiviPage() {
                 <div>
                   <label className="text-[0.7rem] tracking-[0.15em] uppercase text-[var(--t-text-40)] block mb-1.5">Poids (kg)</label>
                   <input type="number" inputMode="decimal" step="0.1" value={ckWeight} onChange={e => setCkWeight(e.target.value)}
-                    className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] text-[var(--t-text)] text-base px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40" placeholder="78.0"/>
+                    className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] text-base px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40" placeholder="78.0"/>
                 </div>
               </div>
               <div>
@@ -591,7 +591,7 @@ export default function SuiviPage() {
                 <div className="flex gap-2">
                   {[1,2,3,4,5].map(n => (
                     <button key={n} onClick={() => setCkEnergy(n)}
-                      className={`flex-1 h-10 border text-sm font-bold transition-all ${ckEnergy >= n ? "bg-[#7eb8a0] border-[#7eb8a0] text-black" : "border-[var(--t-border-15)] text-[var(--t-text-25)]"}`}>{n}</button>
+                      className={`flex-1 h-10 rounded-lg border text-sm font-bold transition-all ${ckEnergy >= n ? "bg-[#7eb8a0] border-[#7eb8a0] text-black" : "border-[var(--t-border-15)] text-[var(--t-text-25)]"}`}>{n}</button>
                   ))}
                 </div>
               </div>
@@ -600,7 +600,7 @@ export default function SuiviPage() {
                 <div className="flex gap-2">
                   {[1,2,3,4,5].map(n => (
                     <button key={n} onClick={() => setCkComp(n)}
-                      className={`flex-1 h-10 border text-sm font-bold transition-all ${ckComp >= n ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-[var(--t-border-15)] text-[var(--t-text-25)]"}`}>{n}</button>
+                      className={`flex-1 h-10 rounded-lg border text-sm font-bold transition-all ${ckComp >= n ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-[var(--t-border-15)] text-[var(--t-text-25)]"}`}>{n}</button>
                   ))}
                 </div>
               </div>
@@ -608,7 +608,7 @@ export default function SuiviPage() {
                 <label className="text-[0.7rem] tracking-[0.15em] uppercase text-[var(--t-text-40)] block mb-1.5">Un mot pour Samuel</label>
                 <textarea rows={3} value={ckNotes} onChange={e => setCkNotes(e.target.value)}
                   placeholder="Comment s'est passée ta semaine ? Difficultés, victoires, douleurs…"
-                  className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] text-[var(--t-text-80)] text-sm px-3 py-2.5 resize-none focus:outline-none focus:border-[#c9a84c]/40"/>
+                  className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg text-[var(--t-text-80)] text-sm px-3 py-2.5 resize-none focus:outline-none focus:border-[#c9a84c]/40"/>
               </div>
               {ckDone ? (
                 <div className="text-center py-2 text-[#7eb8a0] text-sm tracking-wider">Check-in envoyé ✓</div>
@@ -658,13 +658,13 @@ export default function SuiviPage() {
           </button>
           {reportWeekMonday !== weekMonday && (
             <button onClick={() => setReportWeekMonday(weekMonday)}
-              className="text-[0.62rem] tracking-[0.12em] uppercase text-[#c9a84c] border border-[#c9a84c]/30 px-2 py-1 hover:bg-[#c9a84c]/10 transition-colors shrink-0">
+              className="text-[0.62rem] tracking-[0.12em] uppercase text-[#c9a84c] rounded-lg border border-[#c9a84c]/30 px-2 py-1 hover:bg-[#c9a84c]/10 transition-colors shrink-0">
               Actuelle
             </button>
           )}
         </div>
       </div>
-      {reportError && <p className="text-xs text-[#e07070] border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2 mb-4">{reportError}</p>}
+      {reportError && <p className="text-xs text-[#e07070] rounded-lg border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2 mb-4">{reportError}</p>}
 
       <DateNav date={selectedDate} onChange={setSelectedDate} />
 
@@ -684,7 +684,7 @@ export default function SuiviPage() {
           <input type="number" min="20" max="300" step="0.1" value={weightInput}
             onChange={e => setWeightInput(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter") saveWeight(); }}
-            className="w-28 bg-[var(--t-bg)] border border-[var(--t-border)] text-[var(--t-text)] text-xl font-light px-4 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors text-center"
+            className="w-28 bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] text-xl font-light px-4 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors text-center"
             placeholder="70.0"/>
           <span className="text-[var(--t-text-30)] text-sm">kg</span>
           <button onClick={saveWeight} disabled={weightSaving || !weightInput}
@@ -771,7 +771,7 @@ export default function SuiviPage() {
           <div className="flex flex-col gap-1 shrink-0">
             <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--t-text-25)]">Body fat %</p>
             <input type="number" min="1" max="60" step="0.1" placeholder="18.5" autoFocus
-              className="w-24 bg-[var(--t-bg)] border border-[var(--t-border)] text-[var(--t-text)] text-sm px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 placeholder-[var(--t-text-15)]"
+              className="w-24 bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] text-sm px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 placeholder-[var(--t-text-15)]"
               value={manualVal} onChange={e => setManualVal(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter") saveManualBF(); if (e.key === "Escape") setShowManual(false); }}
             />
@@ -779,7 +779,7 @@ export default function SuiviPage() {
           <div className="flex flex-col gap-1 flex-1 relative">
             <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--t-text-25)]">Date</p>
             <button type="button" onClick={() => setShowManualDatePicker(o => !o)}
-              className="w-full text-left bg-[var(--t-bg)] border border-[var(--t-border)] text-[var(--t-text-60)] text-sm px-3 py-2 hover:border-[#c9a84c]/40 transition-colors">
+              className="w-full text-left bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg text-[var(--t-text-60)] text-sm px-3 py-2 hover:border-[#c9a84c]/40 transition-colors">
               {new Date((manualDate || selectedDate) + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
             </button>
             {showManualDatePicker && (
@@ -808,7 +808,7 @@ export default function SuiviPage() {
             {SLOTS.map(slot => (
               <div key={slot.key} className="flex flex-col items-center gap-1.5">
                 <button onClick={() => fileRefs.current[slot.key]?.click()}
-                  className={`w-full aspect-[3/4] border flex items-center justify-center relative overflow-hidden transition-colors ${photos[slot.key] ? "border-[#7eb8a0]/40" : "border-[var(--t-border)] hover:border-[var(--t-text-25)]"}`}>
+                  className={`w-full aspect-[3/4] rounded-lg border flex items-center justify-center relative overflow-hidden transition-colors ${photos[slot.key] ? "border-[#7eb8a0]/40" : "border-[var(--t-border)] hover:border-[var(--t-text-25)]"}`}>
                   {photos[slot.key] ? (
                     <>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -830,7 +830,7 @@ export default function SuiviPage() {
             ))}
           </div>
 
-          {error && <p className="text-xs text-[#e07070] border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2 mb-4">{error}</p>}
+          {error && <p className="text-xs text-[#e07070] rounded-lg border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2 mb-4">{error}</p>}
 
           {result ? (
             <div className="flex flex-col gap-3">
@@ -966,7 +966,7 @@ export default function SuiviPage() {
                     {editingBFDate === entry.id ? (
                       <>
                         <button type="button"
-                          className="bg-[var(--t-bg)] border border-[#c9a84c]/40 text-[#c9a84c] text-[0.7rem] px-2 py-1 mb-0.5">
+                          className="bg-[var(--t-bg)] border border-[#c9a84c]/40 rounded-lg text-[#c9a84c] text-[0.7rem] px-2 py-1 mb-0.5">
                           {new Date(entry.date.split("T")[0] + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
                         </button>
                         <CalendarPicker value={entry.date.split("T")[0]} max={today()}
@@ -998,7 +998,7 @@ export default function SuiviPage() {
                     <div className="text-right">
                       {editingBFId === entry.id ? (
                         <input type="number" min="1" max="60" step="0.1" autoFocus
-                          className="w-16 bg-[var(--t-bg)] border border-[#c9a84c]/40 text-[#c9a84c] text-center text-sm py-0.5 focus:outline-none"
+                          className="w-16 bg-[var(--t-bg)] border border-[#c9a84c]/40 rounded-lg text-[#c9a84c] text-center text-sm py-0.5 focus:outline-none"
                           value={editingBFVal} onChange={e => setEditingBFVal(e.target.value)}
                           onBlur={() => saveBFEdit(entry.id)}
                           onKeyDown={e => { if (e.key === "Enter") saveBFEdit(entry.id); if (e.key === "Escape") setEditingBFId(null); }}
@@ -1035,7 +1035,7 @@ export default function SuiviPage() {
 
                 {/* Feedback IA sauvegardé */}
                 {hasFeedback && (
-                  <div className="mx-5 mb-3 border border-[var(--t-border-soft)] bg-[var(--t-bg)] divide-y divide-[var(--t-border-soft)]">
+                  <div className="mx-5 mb-3 rounded-lg overflow-hidden border border-[var(--t-border-soft)] bg-[var(--t-bg)] divide-y divide-[var(--t-border-soft)]">
                     {entry.points_forts   && <FeedbackRow color="#7eb8a0" label="Points forts" text={entry.points_forts}/>}
                     {entry.points_faibles && <FeedbackRow color="#e07070" label="À travailler" text={entry.points_faibles}/>}
                     {entry.conseils       && <FeedbackRow color="#c9a84c" label="Conseils"      text={entry.conseils}/>}

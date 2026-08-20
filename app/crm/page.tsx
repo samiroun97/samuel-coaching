@@ -192,7 +192,7 @@ export default function CRMDashboard() {
           <div className="flex flex-col gap-2">
             {alerts.slice(0, 8).map((a, i) => (
               <Link key={i} href={a.href}
-                className="flex items-center justify-between gap-2 border px-3 md:px-4 py-3 hover:bg-[var(--t-glass-bg)] transition-colors"
+                className="flex items-center justify-between gap-2 rounded-lg border px-3 md:px-4 py-3 hover:bg-[var(--t-glass-bg)] transition-colors"
                 style={{ borderColor: `${a.color}25`, backgroundColor: `${a.color}07` }}>
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-1 h-5 shrink-0" style={{ backgroundColor: a.color }}/>
@@ -256,7 +256,7 @@ export default function CRMDashboard() {
               {recentMsgs.map((m, i) => (
                 <Link key={i} href={`/crm/inbox?client=${encodeURIComponent(m.from_email)}`}
                   className="flex items-start gap-3 py-2 border-b border-[var(--t-border-soft)] last:border-0 hover:opacity-80 transition-opacity">
-                  <div className="w-6 h-6 border border-[#e07070]/30 bg-[#e07070]/5 flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-6 h-6 rounded-full border border-[#e07070]/30 bg-[#e07070]/5 flex items-center justify-center shrink-0 mt-0.5">
                     <span className="text-[0.65rem] text-[#e07070] font-bold">{m.name.charAt(0)}</span>
                   </div>
                   <div className="min-w-0">
@@ -284,7 +284,7 @@ export default function CRMDashboard() {
           {Object.entries(STAGE_LABEL).map(([key, label]) => {
             const count = clients.filter(c => (c.pipeline_stage ?? "actif") === key).length;
             return (
-              <div key={key} className="flex items-center gap-2 border px-3 py-2"
+              <div key={key} className="flex items-center gap-2 rounded-full border px-3 py-2"
                 style={{ borderColor: `${STAGE_COLOR[key]}30` }}>
                 <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: STAGE_COLOR[key] }}/>
                 <p className="text-[0.65rem] tracking-wider uppercase" style={{ color: STAGE_COLOR[key] }}>{label}</p>

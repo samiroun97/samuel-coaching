@@ -125,7 +125,7 @@ export default function OnboardingPage() {
   const inputClass = "w-full bg-[var(--t-bg)] border border-[var(--t-border)] text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/50 transition-colors";
   const labelClass = "text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] block mb-2";
   const chipClass = (active: boolean) =>
-    `px-4 py-2.5 text-xs tracking-[0.1em] uppercase border cursor-pointer transition-all duration-200 ${
+    `px-4 py-2.5 rounded-lg text-xs tracking-[0.1em] uppercase border cursor-pointer transition-all duration-200 ${
       active ? "border-[#c9a84c] bg-[#c9a84c]/10 text-[#c9a84c]" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[var(--t-text-30)] hover:text-[var(--t-text-60)]"
     }`;
 

@@ -201,12 +201,12 @@ export default function ClientsPage() {
           <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-[var(--t-text)] tracking-wide mb-3">CLIENTS</h1>
           <input className={`${inp} mb-3`} placeholder="Rechercher un client…" value={search} onChange={e => setSearch(e.target.value)}/>
           <div className="flex gap-2 flex-wrap">
-            <select className="bg-[var(--t-surface-2)] border border-[var(--t-border)] text-[var(--t-text-50)] text-[0.5rem] px-2 py-1.5 focus:outline-none cursor-pointer"
+            <select className="bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text-50)] text-[0.5rem] px-2 py-1.5 focus:outline-none cursor-pointer"
               value={filterStage} onChange={e => setFilterStage(e.target.value)}>
               <option value="all">Tous stages</option>
               {Object.entries(STAGE_CFG).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
             </select>
-            <select className="bg-[var(--t-surface-2)] border border-[var(--t-border)] text-[var(--t-text-50)] text-[0.5rem] px-2 py-1.5 focus:outline-none cursor-pointer"
+            <select className="bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text-50)] text-[0.5rem] px-2 py-1.5 focus:outline-none cursor-pointer"
               value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
               <option value="all">Tous statuts</option>
               {Object.entries(STATUS_CFG).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
@@ -229,7 +229,7 @@ export default function ClientsPage() {
                   </div>
                   <div className="flex items-start gap-2 shrink-0">
                     <div className="flex flex-col items-end gap-0.5">
-                      <span className={`text-[0.4rem] tracking-wider uppercase px-1.5 py-0.5 border whitespace-nowrap ${p.email_confirmed_at ? "text-[#7eb8a0] border-[#7eb8a0]/30" : "text-[#e09070] border-[#e09070]/30"}`}>
+                      <span className={`text-[0.4rem] tracking-wider uppercase px-1.5 py-0.5 rounded-full border whitespace-nowrap ${p.email_confirmed_at ? "text-[#7eb8a0] border-[#7eb8a0]/30" : "text-[#e09070] border-[#e09070]/30"}`}>
                         {p.email_confirmed_at ? "Email confirmé" : "Confirmation en attente"}
                       </span>
                       <span className="text-[0.42rem] text-[var(--t-text-20)]">{new Date(p.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}</span>
@@ -254,10 +254,10 @@ export default function ClientsPage() {
             const isSelected = selected?.id === c.id;
             return (
               <button key={c.id} onClick={() => selectClient(c)}
-                className={`w-full text-left px-4 py-3 mb-1 border transition-all ${isSelected ? "border-[#c9a84c]/30 bg-[#c9a84c]/5" : "border-[var(--t-border-soft)] hover:border-[var(--t-border)] hover:bg-[var(--t-glass-bg)]"}`}>
+                className={`w-full text-left px-4 py-3 mb-1 rounded-lg border transition-all ${isSelected ? "border-[#c9a84c]/30 bg-[#c9a84c]/5" : "border-[var(--t-border-soft)] hover:border-[var(--t-border)] hover:bg-[var(--t-glass-bg)]"}`}>
                 <div className="flex items-start justify-between mb-0.5">
                   <p className={`text-sm font-medium ${isSelected ? "text-[var(--t-text)]" : "text-[var(--t-text-70)]"}`}>{c.prenom} {c.nom}</p>
-                  <span className="text-[0.42rem] tracking-wider uppercase px-1.5 py-0.5 border shrink-0 ml-2"
+                  <span className="text-[0.42rem] tracking-wider uppercase px-1.5 py-0.5 rounded-full border shrink-0 ml-2"
                     style={{ color: stageCfg.color, borderColor: `${stageCfg.color}35`, backgroundColor: `${stageCfg.color}10` }}>
                     {stageCfg.label}
                   </span>
@@ -289,12 +289,12 @@ export default function ClientsPage() {
               </div>
               <div className="flex items-center gap-3 shrink-0">
                 <Link href={`/crm/inbox?client=${encodeURIComponent(selected.email)}`}
-                  className="flex items-center gap-1.5 px-3 py-1.5 border border-[var(--t-border)] text-[var(--t-text-30)] hover:text-[var(--t-text-70)] hover:border-[var(--t-text-25)] transition-all text-[0.45rem] tracking-[0.15em] uppercase">
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--t-border)] text-[var(--t-text-30)] hover:text-[var(--t-text-70)] hover:border-[var(--t-text-25)] transition-all text-[0.45rem] tracking-[0.15em] uppercase">
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
                   Inbox
                 </Link>
                 <button onClick={deleteClient} disabled={deleting}
-                  className="flex items-center gap-1.5 px-3 py-1.5 border border-[#e07070]/20 text-[#e07070]/50 hover:text-[#e07070] hover:border-[#e07070]/40 transition-all text-[0.45rem] tracking-[0.15em] uppercase disabled:opacity-40">
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#e07070]/20 text-[#e07070]/50 hover:text-[#e07070] hover:border-[#e07070]/40 transition-all text-[0.45rem] tracking-[0.15em] uppercase disabled:opacity-40">
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
                   {deleting ? "Suppression…" : "Supprimer"}
                 </button>
@@ -309,7 +309,7 @@ export default function ClientsPage() {
               {/* Stage */}
               <select disabled={statusSaving} value={selected.pipeline_stage ?? "actif"}
                 onChange={e => updateField({ pipeline_stage: e.target.value })}
-                className="bg-transparent border border-[var(--t-border-15)] text-[var(--t-text-50)] text-[0.5rem] tracking-wider uppercase px-2 py-1.5 focus:outline-none cursor-pointer">
+                className="bg-transparent border border-[var(--t-border-15)] rounded-lg text-[var(--t-text-50)] text-[0.5rem] tracking-wider uppercase px-2 py-1.5 focus:outline-none cursor-pointer">
                 {Object.entries(STAGE_CFG).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
               </select>
               {/* Status pills */}
@@ -318,7 +318,7 @@ export default function ClientsPage() {
                 const active = (selected.status ?? "actif") === s;
                 return (
                   <button key={s} disabled={statusSaving} onClick={() => updateField({ status: s })}
-                    className="text-[0.48rem] tracking-wider uppercase px-2 py-1 border transition-all"
+                    className="text-[0.48rem] tracking-wider uppercase px-2 py-1 rounded-full border transition-all"
                     style={{ color: active ? "#0a0a0a" : cfg.color, borderColor: cfg.color, backgroundColor: active ? cfg.color : "transparent" }}>
                     {cfg.label}
                   </button>
@@ -463,7 +463,7 @@ export default function ClientsPage() {
                     <div className="flex gap-2 mt-1">
                       {[1,2,3,4,5].map(n => (
                         <button key={n} onClick={() => setCkForm(f => ({ ...f, compliance: n }))}
-                          className={`w-9 h-9 border text-sm font-bold transition-all ${ckForm.compliance >= n ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-[var(--t-border-15)] text-[var(--t-text-25)]"}`}>{n}</button>
+                          className={`w-9 h-9 rounded-lg border text-sm font-bold transition-all ${ckForm.compliance >= n ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-[var(--t-border-15)] text-[var(--t-text-25)]"}`}>{n}</button>
                       ))}
                     </div>
                   </div>
@@ -480,7 +480,7 @@ export default function ClientsPage() {
                           <span className="text-[0.65rem] tracking-wider text-[var(--t-text-35)]">
                             {new Date(ck.week_date + "T00:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
                           </span>
-                          {ck.compliance && <div className="flex gap-0.5">{[1,2,3,4,5].map(n => <div key={n} className="w-2.5 h-2.5 border" style={{ backgroundColor: n <= ck.compliance! ? "#c9a84c" : "transparent", borderColor: n <= ck.compliance! ? "#c9a84c" : "var(--t-border)" }}/>)}</div>}
+                          {ck.compliance && <div className="flex gap-0.5">{[1,2,3,4,5].map(n => <div key={n} className="w-2.5 h-2.5 rounded-sm border" style={{ backgroundColor: n <= ck.compliance! ? "#c9a84c" : "transparent", borderColor: n <= ck.compliance! ? "#c9a84c" : "var(--t-border)" }}/>)}</div>}
                         </div>
                         <div className="flex gap-5 mb-1 items-center flex-wrap">
                           {ck.weight && <span className="text-sm text-[var(--t-text-70)] font-medium">{ck.weight} kg</span>}

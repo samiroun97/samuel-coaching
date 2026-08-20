@@ -21,7 +21,7 @@ export function ExerciceCard({ ex }: { ex: ExerciceItem }) {
     <div className="border border-[var(--t-text-8)] bg-[var(--t-glass-bg)] rounded-lg px-3 py-2.5">
       <div className="flex items-center gap-2 flex-wrap">
         <p className="text-xs text-[var(--t-text-70)] font-medium leading-snug">{ex.nom}</p>
-        {ex.type && <span className="text-[0.55rem] tracking-wider uppercase text-[var(--t-text-30)] border border-[var(--t-border)] px-1.5 py-0.5 shrink-0">{ex.type}</span>}
+        {ex.type && <span className="text-[0.55rem] tracking-wider uppercase text-[var(--t-text-30)] rounded-full border border-[var(--t-border)] px-1.5 py-0.5 shrink-0">{ex.type}</span>}
         {ex.videoUrl && (
           <a href={ex.videoUrl} target="_blank" rel="noopener noreferrer" className="text-[0.55rem] tracking-wider uppercase text-[#c9a84c]/70 hover:text-[#c9a84c] transition-colors shrink-0">▶ Vidéo</a>
         )}

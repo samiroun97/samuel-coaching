@@ -286,8 +286,8 @@ export default function ProgrammePage() {
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       {done && <span className="text-[0.7rem] text-[#7eb8a0] shrink-0">✓</span>}
-                      {s.type_seance && <span className="text-[0.68rem] tracking-wider uppercase text-[#c9a84c] border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">{s.type_seance}</span>}
-                      {s.semaine && <span className="text-[0.68rem] tracking-wider uppercase text-[var(--t-text-30)] border border-[var(--t-border)] px-1.5 py-0.5 shrink-0">Sem. {s.semaine}</span>}
+                      {s.type_seance && <span className="text-[0.68rem] tracking-wider uppercase text-[#c9a84c] rounded-full border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">{s.type_seance}</span>}
+                      {s.semaine && <span className="text-[0.68rem] tracking-wider uppercase text-[var(--t-text-30)] rounded-full border border-[var(--t-border)] px-1.5 py-0.5 shrink-0">Sem. {s.semaine}</span>}
                       <p className={`text-xs truncate ${done ? "text-[var(--t-text-35)] line-through" : "text-[var(--t-text-70)]"}`}>{s.titre}</p>
                     </div>
                     {s.date_prevue && <p className="text-[0.7rem] text-[var(--t-text-25)] mt-0.5">{new Date(s.date_prevue + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</p>}
@@ -400,14 +400,14 @@ export default function ProgrammePage() {
               className="w-7 h-7 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-lg hover:text-[var(--t-text-70)] hover:border-[var(--t-text-20)] transition-colors disabled:opacity-20 flex items-center justify-center text-sm">−</button>
             <input
               type="number" min="0"
-              className="w-20 bg-[var(--t-bg)] border border-[var(--t-border)] text-[var(--t-text)] text-center text-sm py-1 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
+              className="w-20 bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] text-center text-sm py-1 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
               value={stepsInput}
               onChange={e => setStepsInput(e.target.value)}
               onBlur={() => saveSteps(parseInt(stepsInput) || 0)}
               onKeyDown={e => { if (e.key === "Enter") saveSteps(parseInt(stepsInput) || 0); }}
             />
             <button onClick={() => saveSteps(steps + 500)}
-              className="w-7 h-7 border border-[#7eb8a0]/40 text-[#7eb8a0] hover:bg-[#7eb8a0]/10 transition-colors flex items-center justify-center text-sm">+</button>
+              className="w-7 h-7 rounded-full border border-[#7eb8a0]/40 text-[#7eb8a0] hover:bg-[#7eb8a0]/10 transition-colors flex items-center justify-center text-sm">+</button>
           </div>
         </div>
 
@@ -426,7 +426,7 @@ export default function ProgrammePage() {
             {editingGoal ? (
               <input
                 type="number" autoFocus
-                className="w-16 bg-[var(--t-bg)] border border-[#c9a84c]/40 text-[#c9a84c] text-center text-[0.62rem] py-0.5 focus:outline-none"
+                className="w-16 bg-[var(--t-bg)] border border-[#c9a84c]/40 rounded-lg text-[#c9a84c] text-center text-[0.62rem] py-0.5 focus:outline-none"
                 value={goalInput}
                 onChange={e => setGoalInput(e.target.value)}
                 onBlur={() => saveGoal(parseInt(goalInput) || 10000)}
@@ -461,7 +461,7 @@ export default function ProgrammePage() {
           <input className={inputCls} placeholder="Ex : musculation, boxe, natation, vélo…"
             value={activity} onChange={e => { setActivity(e.target.value); setCalResult(null); }}/>
           {lastPerf && (
-            <div className="mt-1.5 flex items-center justify-between bg-[var(--t-bg)] border border-[var(--t-border-soft)] px-3 py-2">
+            <div className="mt-1.5 flex items-center justify-between rounded-lg bg-[var(--t-bg)] border border-[var(--t-border-soft)] px-3 py-2">
               <span className="text-[0.65rem] tracking-wider text-[var(--t-text-25)] uppercase">Dernière fois</span>
               <div className="flex items-center gap-3">
                 <span className="text-[0.65rem] text-[var(--t-text-35)]">{lastPerf.duration} min</span>
@@ -502,12 +502,12 @@ export default function ProgrammePage() {
           </label>
           <div className="relative">
             <textarea
-              className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none pr-12"
+              className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none pr-12"
               rows={2} placeholder="Ex : séance intense, supersets, bonne récupération…"
               value={description} onChange={e => { setDescription(e.target.value); setCalResult(null); }}
             />
             <button onClick={listening ? stopVoice : startVoice}
-              className={`absolute right-3 top-3 p-1.5 border transition-colors ${listening ? "border-[#e07070] text-[#e07070] animate-pulse" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:text-[var(--t-text-60)] hover:border-[var(--t-text-20)]"}`}>
+              className={`absolute right-3 top-3 p-1.5 rounded-full border transition-colors ${listening ? "border-[#e07070] text-[#e07070] animate-pulse" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:text-[var(--t-text-60)] hover:border-[var(--t-text-20)]"}`}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
                 <path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/>
@@ -516,7 +516,7 @@ export default function ProgrammePage() {
           </div>
         </div>
 
-        {calError && <p className="text-xs text-[#e07070] border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2">{calError}</p>}
+        {calError && <p className="text-xs text-[#e07070] rounded-lg border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2">{calError}</p>}
 
         {calResult ? (
           <div className="flex flex-col gap-3">
@@ -525,7 +525,7 @@ export default function ProgrammePage() {
                 <div className="flex items-center gap-2 mb-1">
                   <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]">Estimation IA</p>
                   {intensity !== "haute" && (
-                    <span className="text-[0.6rem] tracking-[0.1em] uppercase border border-[var(--t-border-15)] text-[var(--t-text-30)] px-1.5 py-0.5">
+                    <span className="text-[0.6rem] tracking-[0.1em] uppercase rounded-full border border-[var(--t-border-15)] text-[var(--t-text-30)] px-1.5 py-0.5">
                       intensité {intensity} · ×{intensityMult}
                     </span>
                   )}

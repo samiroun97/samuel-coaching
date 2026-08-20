@@ -156,7 +156,7 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
 
       {/* Synchro multi-appareils interrompue — reste discret, les données sont conservées en local */}
       {syncIssue && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1.5 px-3 py-1.5 border border-[#e07070]/30 bg-[var(--t-bg)]/90 text-[#e07070] text-[0.45rem] tracking-[0.12em] uppercase">
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#e07070]/30 bg-[var(--t-bg)]/90 text-[#e07070] text-[0.45rem] tracking-[0.12em] uppercase">
           <span className="w-1.5 h-1.5 rounded-full bg-[#e07070] shrink-0"/>
           Synchro interrompue — données sauvegardées localement
         </div>

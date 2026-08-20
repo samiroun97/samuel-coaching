@@ -272,7 +272,7 @@ export default function AccueilPage() {
             value={weightInput}
             onChange={e => setWeightInput(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter") saveWeight(); }}
-            className="w-20 bg-[var(--t-bg)] border border-[var(--t-border)] text-[var(--t-text)] text-sm px-3 py-1.5 text-center focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
+            className="w-20 bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] text-sm px-3 py-1.5 text-center focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
             placeholder="70.0"
           />
           <span className="text-[var(--t-text-25)] text-xs">kg</span>
@@ -299,7 +299,7 @@ export default function AccueilPage() {
         <div className="flex justify-center gap-1.5 mt-6">
           {([["tdee", "TDEE"], ["goal", "Objectif"]] as const).map(([key, label]) => (
             <button key={key} onClick={() => setCalView(key)}
-              className={`px-3 py-1.5 text-[0.65rem] tracking-[0.12em] uppercase border transition-all ${calView === key ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[var(--t-border-15)] hover:text-[var(--t-text-50)]"}`}>
+              className={`px-3 py-1.5 rounded-lg text-[0.65rem] tracking-[0.12em] uppercase border transition-all ${calView === key ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[var(--t-border-15)] hover:text-[var(--t-text-50)]"}`}>
               {label}
             </button>
           ))}
@@ -307,7 +307,7 @@ export default function AccueilPage() {
 
         {/* Balance banner */}
         {refCal > 0 && (calView === "tdee" || goalsSet) && (
-          <div className="mt-5 px-4 py-2.5 border flex items-center justify-between"
+          <div className="mt-5 px-4 py-2.5 rounded-lg border flex items-center justify-between"
             style={{ borderColor: `${bannerColor}25`, backgroundColor: `${bannerColor}08` }}>
             <span className="text-[0.7rem] tracking-[0.15em] uppercase" style={{ color: bannerColor }}>{bannerLabel}</span>
             <span style={{ fontFamily: "var(--font-bebas)", color: bannerColor }} className="text-xl tracking-wide">
@@ -341,7 +341,7 @@ export default function AccueilPage() {
         </div>
 
         <Link href="/dashboard/nutrition"
-          className="mt-6 flex items-center justify-center gap-2 w-full border border-[#c9a84c]/20 text-[#c9a84c] text-[0.7rem] tracking-[0.15em] uppercase py-3 hover:bg-[#c9a84c]/5 transition-colors">
+          className="mt-6 flex items-center justify-center gap-2 w-full rounded-lg border border-[#c9a84c]/20 text-[#c9a84c] text-[0.7rem] tracking-[0.15em] uppercase py-3 hover:bg-[#c9a84c]/5 transition-colors">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Ajouter un repas / modifier mes objectifs
         </Link>
