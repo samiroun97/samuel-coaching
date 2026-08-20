@@ -192,7 +192,7 @@ function CalorieRow({ consumed, target, expended, goalDefined }: { consumed: num
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
           <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl sm:text-4xl text-[var(--t-text)] tracking-wide leading-none">{consumed.toLocaleString("fr-FR")}</p>
-          <p className="text-[0.55rem] sm:text-[0.6rem] tracking-[0.2em] uppercase text-[var(--t-text-30)] mt-1.5">Kcal consommées</p>
+          <p className="text-[0.55rem] sm:text-[0.6rem] tracking-[0.2em] uppercase text-[var(--t-text-30)] mt-1.5">Kcal<br/>consommées</p>
         </div>
       </div>
 
