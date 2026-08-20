@@ -1164,14 +1164,12 @@ export default function NutritionPage() {
             const groupCal = items.reduce((s, f) => s + f.calories, 0);
             return (
               <div key={type} className="border-b border-[var(--t-border-soft)] last:border-0">
-                <div className="flex items-center justify-between px-5 pt-3 pb-1.5">
-                  <div className="flex items-center">
-                    <MealTypeBadge type={type}/>
-                    <div className="h-8 -ml-5 pl-8 pr-4 rounded-full flex items-center" style={{ backgroundColor: `${MEAL_BADGE_COLOR}18` }}>
-                      <p className="text-[0.65rem] tracking-[0.15em] uppercase whitespace-nowrap" style={{ color: MEAL_BADGE_COLOR }}>{type}</p>
-                    </div>
+                <div className="flex items-center px-5 pt-3 pb-1.5">
+                  <MealTypeBadge type={type}/>
+                  <div className="flex-1 h-8 -ml-5 pl-8 pr-4 rounded-full flex items-center justify-between" style={{ backgroundColor: `${MEAL_BADGE_COLOR}18` }}>
+                    <p className="text-[0.65rem] tracking-[0.15em] uppercase whitespace-nowrap" style={{ color: MEAL_BADGE_COLOR }}>{type}</p>
+                    <p className="text-[0.62rem] text-[var(--t-text-20)]">{groupCal} kcal</p>
                   </div>
-                  <p className="text-[0.62rem] text-[var(--t-text-20)]">{groupCal} kcal</p>
                 </div>
                 {items.map(f => {
                   const isFav = savedMeals.some(s => s.name === f.name);
