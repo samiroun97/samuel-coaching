@@ -34,6 +34,29 @@ type IntensityKey = "faible" | "moderee" | "haute";
 const neatFromSteps = (steps: number, poids: number) =>
   Math.round(steps * 0.04 * (poids / 70));
 
+function WorkoutCard({ w, onRemove }: { w: LoggedWorkout; onRemove: () => void }) {
+  return (
+    <div className="flex items-center gap-3 rounded-lg border border-[var(--t-border-soft)] bg-[var(--t-bg)] px-4 py-3 group">
+      <div className="w-9 h-9 rounded-full bg-[#c9a84c]/10 text-[#c9a84c] flex items-center justify-center shrink-0">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="3 12 8 12 10 6 14 18 16 12 21 12"/>
+        </svg>
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-xs text-[var(--t-text-70)] truncate">{w.activity}</p>
+        <p className="text-[0.65rem] text-[var(--t-text-25)] mt-0.5">{w.duration_minutes} min{w.description ? ` · ${w.description}` : ""}</p>
+      </div>
+      <span className="text-xs text-[var(--t-text-50)] shrink-0">{w.calories_burned} kcal</span>
+      <button onClick={onRemove}
+        className="text-[var(--t-text-20)] hover:text-[#e07070] transition-colors shrink-0 opacity-70 group-hover:opacity-100">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  );
+}
+
 export default function ProgrammePage() {
   const [profile,      setProfile]      = useState<Profile | null>(null);
   const [userId,       setUserId]       = useState<string | null>(null);
@@ -379,24 +402,8 @@ export default function ProgrammePage() {
             </div>
           </button>
           {seancesJourOpen && (
-            <div className="border-t border-[var(--t-border-soft)]">
-              {todayWorkouts.map(w => (
-                <div key={w.id} className="flex items-center justify-between px-5 py-3 border-b border-[var(--t-border-soft)] last:border-0">
-                  <div>
-                    <p className="text-xs text-[var(--t-text-70)]">{w.activity}</p>
-                    <p className="text-[0.65rem] text-[var(--t-text-25)] mt-0.5">{w.duration_minutes} min{w.description ? ` · ${w.description}` : ""}</p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs text-[var(--t-text-50)]">{w.calories_burned} kcal</span>
-                    <button onClick={() => removeWorkout(w.id)}
-                      className="text-[var(--t-text-20)] hover:text-[#e07070] transition-colors">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              ))}
+            <div className="border-t border-[var(--t-border-soft)] p-3 flex flex-col gap-2">
+              {todayWorkouts.map(w => <WorkoutCard key={w.id} w={w} onRemove={() => removeWorkout(w.id)}/>)}
             </div>
           )}
         </div>
@@ -681,24 +688,8 @@ export default function ProgrammePage() {
                   </div>
                 </button>
                 {isOpen && (
-                  <div className="border-t border-[var(--t-border-soft)]">
-                    {dayWorkouts.map(w => (
-                      <div key={w.id} className="flex items-center justify-between px-5 py-2.5 border-b border-[var(--t-border-soft)] last:border-0">
-                        <div>
-                          <p className="text-xs text-[var(--t-text-60)]">{w.activity}</p>
-                          <p className="text-[0.65rem] text-[var(--t-text-20)] mt-0.5">{w.duration_minutes} min</p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <span className="text-xs text-[var(--t-text-40)]">{w.calories_burned} kcal</span>
-                          <button onClick={() => removeWorkout(w.id)}
-                            className="text-[var(--t-text-20)] hover:text-[#e07070] transition-colors">
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                            </svg>
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="border-t border-[var(--t-border-soft)] p-3 flex flex-col gap-2">
+                    {dayWorkouts.map(w => <WorkoutCard key={w.id} w={w} onRemove={() => removeWorkout(w.id)}/>)}
                   </div>
                 )}
               </div>
