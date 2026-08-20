@@ -135,7 +135,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [pathname, currentEmail]);
 
   if (!ready) return (
-    <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+    <div className="min-h-screen bg-[var(--t-bg)] flex items-center justify-center">
       <div className="w-6 h-6 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin" />
     </div>
   );
@@ -143,11 +143,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (isOnboarding) return <>{children}</>;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex w-full overflow-x-hidden">
-      <aside className="w-52 border-r border-white/5 hidden md:flex flex-col fixed h-full z-10 bg-[#0a0a0a] print:hidden">
-        <div className="px-5 py-5 border-b border-white/5">
+    <div className="min-h-screen bg-[var(--t-bg)] flex w-full overflow-x-hidden">
+      <aside className="w-52 border-r border-[var(--t-border-soft)] hidden md:flex flex-col fixed h-full z-10 bg-[var(--t-bg)] print:hidden">
+        <div className="px-5 py-5 border-b border-[var(--t-border-soft)]">
           <Link href="/" style={{ fontFamily: "var(--font-bebas)" }}
-            className="text-[1.05rem] tracking-[0.2em] text-white hover:text-white/80 transition-colors">
+            className="text-[1.05rem] tracking-[0.2em] text-[var(--t-text)] hover:text-[var(--t-text-80)] transition-colors">
             SAMUEL<span className="text-[#c9a84c]">.</span><span className="text-[#c9a84c]">COACHING</span>
           </Link>
         </div>
@@ -162,7 +162,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 className={`flex items-center gap-3 px-3 py-2.5 text-[0.6rem] tracking-[0.12em] uppercase transition-all duration-150 border-l-2 ${
                   active
                     ? "text-[#c9a84c] bg-[#c9a84c]/5 border-[#c9a84c]"
-                    : "text-white/30 hover:text-white/60 hover:bg-white/[0.03] border-transparent"
+                    : "text-[var(--t-text-30)] hover:text-[var(--t-text-60)] hover:bg-[var(--t-glass-bg)] border-transparent"
                 }`}>
                 <NavIcon name={icon}/>
                 {label}
@@ -172,10 +172,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           })}
         </nav>
 
-        <div className="px-2 py-3 border-t border-white/5 flex flex-col gap-0.5">
+        <div className="px-2 py-3 border-t border-[var(--t-border-soft)] flex flex-col gap-0.5">
           <button
             onClick={async () => { await supabase.auth.signOut(); router.push("/login"); }}
-            className="flex items-center gap-3 px-3 py-2.5 text-[0.6rem] tracking-[0.12em] uppercase text-white/20 hover:text-white/40 transition-colors w-full border-l-2 border-transparent">
+            className="flex items-center gap-3 px-3 py-2.5 text-[0.6rem] tracking-[0.12em] uppercase text-[var(--t-text-20)] hover:text-[var(--t-text-40)] transition-colors w-full border-l-2 border-transparent">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
             </svg>
@@ -190,14 +190,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Synchro multi-appareils interrompue — reste discret, les données sont conservées en local */}
       {syncIssue && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1.5 px-3 py-1.5 border border-[#e07070]/30 bg-[#0a0a0a]/90 rounded-full text-[#e07070] text-[0.45rem] tracking-[0.12em] uppercase print:hidden">
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1.5 px-3 py-1.5 border border-[#e07070]/30 bg-[var(--t-bg)]/90 rounded-full text-[#e07070] text-[0.45rem] tracking-[0.12em] uppercase print:hidden">
           <span className="w-1.5 h-1.5 rounded-full bg-[#e07070] shrink-0"/>
           Synchro interrompue — données sauvegardées localement
         </div>
       )}
 
       {/* Bottom nav — mobile only, flottante style verre */}
-      <nav className="md:hidden print:hidden fixed left-3 right-3 z-10 flex rounded-[1.75rem] bg-white/[0.06] backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
+      <nav className="md:hidden print:hidden fixed left-3 right-3 z-10 flex rounded-[1.75rem] bg-[var(--t-glass-bg)] backdrop-blur-xl border border-[var(--t-glass-border)] shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
         style={{ bottom: "calc(0.9rem + env(safe-area-inset-bottom))" }}>
         {navItems.map(({ label, href, icon }) => {
           const active = pathname === href;
@@ -209,12 +209,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {active && (
                 <span className="absolute inset-x-1 top-1 bottom-1 rounded-2xl bg-gradient-to-b from-[#c9a84c]/25 to-[#c9a84c]/[0.05] border border-[#c9a84c]/30 shadow-[0_0_16px_-2px_rgba(201,168,76,0.5)]"/>
               )}
-              <div className={`relative transition-all duration-300 ${active ? "text-[#c9a84c] scale-110" : "text-white/30"}`}>
+              <div className={`relative transition-all duration-300 ${active ? "text-[#c9a84c] scale-110" : "text-[var(--t-text-30)]"}`}>
                 <NavIcon name={icon} size={active ? 21 : 18}/>
-                {showBadge && <span className="absolute -top-0.5 -right-1.5 w-2 h-2 rounded-full bg-[#e07070] ring-2 ring-[#0a0a0a]"/>}
+                {showBadge && <span className="absolute -top-0.5 -right-1.5 w-2 h-2 rounded-full bg-[#e07070] ring-2 ring-[var(--t-bg)]"/>}
               </div>
               <span className={`relative w-full text-center truncate px-0.5 text-[0.4rem] tracking-[0.02em] uppercase transition-all duration-300 ${
-                active ? "text-[#c9a84c] font-bold" : "text-white/30"
+                active ? "text-[#c9a84c] font-bold" : "text-[var(--t-text-30)]"
               }`}>
                 {label}
               </span>

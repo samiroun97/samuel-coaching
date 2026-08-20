@@ -6,6 +6,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { startStateSync, SYNC_STATUS_EVENT } from "@/lib/syncStorage";
 import { isCoachUser } from "@/lib/coach";
+import ThemeToggle from "@/components/ThemeToggle";
 
 // Mêmes préfixes que app/crm/ia/page.tsx — juste pour compter les signalements en attente.
 const AI_FEEDBACK_RE = /^\[(?:NUTRITION|PROGRAMME|ACTIVITE)_FEEDBACK:/;
@@ -110,17 +111,17 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
   ];
 
   if (!ready) return (
-    <div className="min-h-screen bg-[#060606] flex items-center justify-center">
+    <div className="min-h-screen bg-[var(--t-bg2)] flex items-center justify-center">
       <div className="w-5 h-5 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-[#060606] flex w-full overflow-x-hidden">
-      <aside className="w-56 bg-[#0a0a0a] border-r border-white/5 hidden md:flex flex-col fixed h-full z-10">
-        <div className="px-5 pt-6 pb-5 border-b border-white/5">
+    <div className="min-h-screen bg-[var(--t-bg2)] flex w-full overflow-x-hidden">
+      <aside className="w-56 bg-[var(--t-bg)] border-r border-[var(--t-border-soft)] hidden md:flex flex-col fixed h-full z-10">
+        <div className="px-5 pt-6 pb-5 border-b border-[var(--t-border-soft)]">
           <p style={{ fontFamily: "var(--font-bebas)" }} className="text-[0.85rem] tracking-[0.22em] text-[#c9a84c] leading-none">SAMUEL.COACHING</p>
-          <p className="text-[0.42rem] tracking-[0.3em] text-white/20 uppercase mt-1.5">Espace Coach — CRM</p>
+          <p className="text-[0.42rem] tracking-[0.3em] text-[var(--t-text-20)] uppercase mt-1.5">Espace Coach — CRM</p>
         </div>
 
         <nav className="flex-1 px-2 py-4 flex flex-col gap-0.5">
@@ -129,7 +130,7 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
             return (
               <Link key={href} href={href}
                 className={`flex items-center justify-between px-3 py-2.5 text-[0.6rem] tracking-[0.1em] uppercase transition-all border-l-2 ${
-                  active ? "text-[#c9a84c] bg-[#c9a84c]/5 border-[#c9a84c]" : "text-white/30 hover:text-white/60 hover:bg-white/[0.02] border-transparent"
+                  active ? "text-[#c9a84c] bg-[#c9a84c]/5 border-[#c9a84c]" : "text-[var(--t-text-30)] hover:text-[var(--t-text-60)] hover:bg-[var(--t-glass-bg)] border-transparent"
                 }`}>
                 <div className="flex items-center gap-2.5"><Icon name={icon}/>{label}</div>
                 {badge > 0 && <span className="bg-[#e07070] text-white text-[0.4rem] font-bold px-1.5 py-0.5 rounded-full min-w-[1.1rem] text-center">{badge}</span>}
@@ -138,21 +139,24 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
           })}
         </nav>
 
-        <div className="px-2 py-3 border-t border-white/5 flex flex-col gap-0.5">
+        <div className="px-2 py-3 border-t border-[var(--t-border-soft)] flex flex-col gap-2">
           <Link href="/dashboard?preview=1"
-            className="flex items-center gap-2.5 px-3 py-2.5 text-[0.6rem] tracking-[0.1em] uppercase text-white/20 hover:text-white/50 border-l-2 border-transparent hover:border-white/10 transition-all">
+            className="flex items-center gap-2.5 px-3 py-2.5 text-[0.6rem] tracking-[0.1em] uppercase text-[var(--t-text-20)] hover:text-[var(--t-text-50)] border-l-2 border-transparent hover:border-[var(--t-border)] transition-all">
             <Icon name="eye"/>Mon espace perso
           </Link>
           <button onClick={async () => { await supabase.auth.signOut(); router.push("/login"); }}
-            className="flex items-center gap-2.5 px-3 py-2.5 text-[0.6rem] tracking-[0.1em] uppercase text-white/20 hover:text-white/50 border-l-2 border-transparent transition-all w-full">
+            className="flex items-center gap-2.5 px-3 py-2.5 text-[0.6rem] tracking-[0.1em] uppercase text-[var(--t-text-20)] hover:text-[var(--t-text-50)] border-l-2 border-transparent transition-all w-full">
             <Icon name="logout"/>Déconnexion
           </button>
+          <div className="px-3 pt-1">
+            <ThemeToggle/>
+          </div>
         </div>
       </aside>
 
       {/* Synchro multi-appareils interrompue — reste discret, les données sont conservées en local */}
       {syncIssue && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1.5 px-3 py-1.5 border border-[#e07070]/30 bg-[#0a0a0a]/90 text-[#e07070] text-[0.45rem] tracking-[0.12em] uppercase">
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1.5 px-3 py-1.5 border border-[#e07070]/30 bg-[var(--t-bg)]/90 text-[#e07070] text-[0.45rem] tracking-[0.12em] uppercase">
           <span className="w-1.5 h-1.5 rounded-full bg-[#e07070] shrink-0"/>
           Synchro interrompue — données sauvegardées localement
         </div>
@@ -161,13 +165,13 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
       <main className="ml-0 md:ml-56 flex-1 min-w-0 min-h-screen pb-16 md:pb-0">{children}</main>
 
       {/* Bottom nav — mobile only */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0a0a0a] border-t border-white/5 flex z-10 pb-[env(safe-area-inset-bottom)]">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[var(--t-bg)] border-t border-[var(--t-border-soft)] flex z-10 pb-[env(safe-area-inset-bottom)]">
         {nav.map(({ href, label, icon, badge }) => {
           const active = pathname === href || (href !== "/crm" && pathname.startsWith(href));
           return (
             <Link key={href} href={href}
               className={`flex-1 flex flex-col items-center gap-1 py-2.5 text-[0.45rem] tracking-[0.08em] uppercase transition-all ${
-                active ? "text-[#c9a84c]" : "text-white/25"
+                active ? "text-[#c9a84c]" : "text-[var(--t-text-25)]"
               }`}>
               <div className="relative">
                 <Icon name={icon}/>
@@ -178,7 +182,7 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
           );
         })}
         <Link href="/dashboard?preview=1"
-          className="flex-1 flex flex-col items-center gap-1 py-2.5 text-[0.45rem] tracking-[0.08em] uppercase text-white/25 transition-all">
+          className="flex-1 flex flex-col items-center gap-1 py-2.5 text-[0.45rem] tracking-[0.08em] uppercase text-[var(--t-text-25)] transition-all">
           <Icon name="eye"/>
           Aperçu
         </Link>

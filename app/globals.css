@@ -18,6 +18,62 @@
   --color-bg3: var(--bg3);
 }
 
+/* ── Design tokens (app dashboard/CRM) ──────────────────────────
+   Thème sombre par défaut, overridé par [data-theme="light"] posé
+   sur <html> (voir lib/theme.ts). Le reste du site (pages publiques)
+   n'utilise pas ces tokens et n'est pas concerné par le switch. */
+:root {
+  --t-bg: #0a0a0a;
+  --t-bg2: #060606;
+  --t-surface: #111111;
+  --t-surface-2: #0f0f0f;
+  --t-border: rgba(255, 255, 255, 0.1);
+  --t-border-15: rgba(255, 255, 255, 0.15);
+  --t-border-soft: rgba(255, 255, 255, 0.05);
+  --t-glass-bg: rgba(255, 255, 255, 0.06);
+  --t-glass-border: rgba(255, 255, 255, 0.1);
+  --t-track: rgba(255, 255, 255, 0.04);
+  --t-text: #ffffff;
+  --t-text-80: rgba(255, 255, 255, 0.8);
+  --t-text-70: rgba(255, 255, 255, 0.7);
+  --t-text-60: rgba(255, 255, 255, 0.6);
+  --t-text-55: rgba(255, 255, 255, 0.55);
+  --t-text-50: rgba(255, 255, 255, 0.5);
+  --t-text-40: rgba(255, 255, 255, 0.4);
+  --t-text-35: rgba(255, 255, 255, 0.35);
+  --t-text-30: rgba(255, 255, 255, 0.3);
+  --t-text-25: rgba(255, 255, 255, 0.25);
+  --t-text-20: rgba(255, 255, 255, 0.2);
+  --t-text-15: rgba(255, 255, 255, 0.15);
+  --t-text-10: rgba(255, 255, 255, 0.1);
+}
+
+:root[data-theme="light"] {
+  --t-bg: #f7f5f0;
+  --t-bg2: #efece3;
+  --t-surface: #ffffff;
+  --t-surface-2: #f7f5f0;
+  --t-border: rgba(23, 21, 18, 0.12);
+  --t-border-15: rgba(23, 21, 18, 0.16);
+  --t-border-soft: rgba(23, 21, 18, 0.06);
+  --t-glass-bg: rgba(23, 21, 18, 0.04);
+  --t-glass-border: rgba(23, 21, 18, 0.1);
+  --t-track: rgba(23, 21, 18, 0.06);
+  --t-text: #171512;
+  --t-text-80: rgba(23, 21, 18, 0.8);
+  --t-text-70: rgba(23, 21, 18, 0.7);
+  --t-text-60: rgba(23, 21, 18, 0.6);
+  --t-text-55: rgba(23, 21, 18, 0.55);
+  --t-text-50: rgba(23, 21, 18, 0.5);
+  --t-text-40: rgba(23, 21, 18, 0.4);
+  --t-text-35: rgba(23, 21, 18, 0.38);
+  --t-text-30: rgba(23, 21, 18, 0.35);
+  --t-text-25: rgba(23, 21, 18, 0.3);
+  --t-text-20: rgba(23, 21, 18, 0.25);
+  --t-text-15: rgba(23, 21, 18, 0.18);
+  --t-text-10: rgba(23, 21, 18, 0.1);
+}
+
 html {
   /* Toutes les tailles de texte de l'app sont en rem : augmenter la taille
      de base ici agrandit la police partout, proportionnellement. */
