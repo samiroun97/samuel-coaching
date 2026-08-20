@@ -670,26 +670,44 @@ export default function SuiviPage() {
 
       {/* ── Pesée ── */}
       <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg p-5 mb-4">
-        <div className="flex items-center justify-between mb-4">
-          <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">
-            {selectedDate === today() ? "Pesée du jour" : `Pesée · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
-          </p>
-          {lastWeight && (
-            <span className="text-[0.62rem] text-[var(--t-text-25)] tracking-wider">
-              Dernière · {new Date(lastWeight.date + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })} · {lastWeight.weight} kg
-            </span>
-          )}
+        <div className="flex items-center gap-3 mb-4">
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${alreadySelected ? "bg-[var(--t-glass-bg)] text-[var(--t-text-40)]" : "bg-[#c9a84c]/15 text-[#c9a84c]"}`}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="3"/><rect x="8" y="7" width="8" height="5" rx="1"/><line x1="12" y1="15" x2="12" y2="17.5"/>
+            </svg>
+          </div>
+          <div className="flex-1 min-w-0 flex items-center justify-between gap-2 flex-wrap">
+            <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">
+              {selectedDate === today() ? "Pesée du jour" : `Pesée · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
+            </p>
+            {lastWeight && (
+              <span className="text-[0.62rem] text-[var(--t-text-25)] tracking-wider">
+                Dernière · {new Date(lastWeight.date + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })} · {lastWeight.weight} kg
+              </span>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-3">
-          <input type="number" min="20" max="300" step="0.1" value={weightInput}
-            onChange={e => setWeightInput(e.target.value)}
-            onKeyDown={e => { if (e.key === "Enter") saveWeight(); }}
-            className="w-28 bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] text-xl font-light px-4 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors text-center"
-            placeholder="70.0"/>
-          <span className="text-[var(--t-text-30)] text-sm">kg</span>
+          <div className="flex items-center gap-1.5 bg-[var(--t-bg)] border border-[var(--t-border)] rounded-full pl-4 pr-3 py-2 focus-within:border-[#c9a84c]/40 transition-colors">
+            <input type="number" min="20" max="300" step="0.1" value={weightInput}
+              onChange={e => setWeightInput(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter") saveWeight(); }}
+              className="w-16 bg-transparent text-[var(--t-text)] text-xl font-light text-center focus:outline-none"
+              placeholder="70.0"/>
+            <span className="text-[var(--t-text-30)] text-sm">kg</span>
+          </div>
           <button onClick={saveWeight} disabled={weightSaving || !weightInput}
-            className="ml-auto bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.15em] uppercase px-5 py-2.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg disabled:opacity-30">
-            {weightSaved ? "Enregistré ✓" : alreadySelected ? "Mettre à jour" : "Enregistrer →"}
+            aria-label={alreadySelected ? "Mettre à jour la pesée" : "Enregistrer la pesée"}
+            className={`ml-auto w-11 h-11 rounded-full flex items-center justify-center transition-colors shrink-0 disabled:opacity-30 ${
+              weightSaved ? "bg-[#7eb8a0] text-black" : "bg-[#c9a84c] text-black hover:bg-[#e2c97e]"
+            }`}>
+            {weightSaved ? (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            ) : alreadySelected ? (
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            )}
           </button>
         </div>
         {alreadySelected && (
