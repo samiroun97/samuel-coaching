@@ -54,13 +54,15 @@ function MealTypeIcon({ type, className, size = 48 }: { type: string; className?
   return <img src={src} alt="" width={size} height={size} className={`shrink-0 ${className ?? ""}`}/>;
 }
 
+// Thème unique (couleur de marque) pour le badge capsule des catégories.
+const MEAL_BADGE_COLOR = "#c9a84c";
+
 // Rond plein (badge circulaire) — les 4 icônes fournies sont déjà des badges ronds ;
 // "Autres" n'ayant pas d'icône dédiée, on lui donne un fond rond assorti pour rester cohérent.
-function MealTypeBadge({ type, size = 34 }: { type: string; size?: number }) {
-  const color = MEAL_TYPE_COLOR[type] ?? "#8a8a8a";
+function MealTypeBadge({ type, size = 42 }: { type: string; size?: number }) {
   if (!MEAL_TYPE_ICON_SRC[type]) {
     return (
-      <div className="relative z-10 rounded-full flex items-center justify-center shrink-0" style={{ width: size, height: size, backgroundColor: `${color}22`, color }}>
+      <div className="relative z-10 rounded-full flex items-center justify-center shrink-0" style={{ width: size, height: size, backgroundColor: `${MEAL_BADGE_COLOR}22`, color: MEAL_BADGE_COLOR }}>
         <MealTypeIcon type={type} size={size * 0.4}/>
       </div>
     );
@@ -1165,8 +1167,8 @@ export default function NutritionPage() {
                 <div className="flex items-center justify-between px-5 pt-3 pb-1.5">
                   <div className="flex items-center">
                     <MealTypeBadge type={type}/>
-                    <div className="h-[26px] -ml-4 pl-6 pr-3.5 rounded-full flex items-center" style={{ backgroundColor: `${MEAL_TYPE_COLOR[type] ?? "#8a8a8a"}18` }}>
-                      <p className="text-[0.62rem] tracking-[0.15em] uppercase whitespace-nowrap" style={{ color: MEAL_TYPE_COLOR[type] ?? "#8a8a8a" }}>{type}</p>
+                    <div className="h-8 -ml-5 pl-8 pr-4 rounded-full flex items-center" style={{ backgroundColor: `${MEAL_BADGE_COLOR}18` }}>
+                      <p className="text-[0.65rem] tracking-[0.15em] uppercase whitespace-nowrap" style={{ color: MEAL_BADGE_COLOR }}>{type}</p>
                     </div>
                   </div>
                   <p className="text-[0.62rem] text-[var(--t-text-20)]">{groupCal} kcal</p>
