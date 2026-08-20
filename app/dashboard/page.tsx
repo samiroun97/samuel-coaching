@@ -312,7 +312,7 @@ export default function AccueilPage() {
 
 
 {/* ── CICO Hero ── */}
-      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg p-6 mb-4">
+      <div className="mb-6">
         <div className="flex items-center justify-between mb-6">
           <Link href="/dashboard/nutrition" className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] hover:text-[#e2c97e] transition-colors">
             {selectedDate === today() ? "Bilan calorique du jour" : `Bilan calorique · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
