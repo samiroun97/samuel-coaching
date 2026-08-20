@@ -89,7 +89,7 @@
 html {
   /* Toutes les tailles de texte de l'app sont en rem : augmenter la taille
      de base ici agrandit la police partout, proportionnellement. */
-  font-size: 112.5%;
+  font-size: 104%;
   scroll-behavior: smooth;
   overflow-x: hidden;
 }
