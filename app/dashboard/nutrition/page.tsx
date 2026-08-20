@@ -53,6 +53,20 @@ function MealTypeIcon({ type, className, size = 48 }: { type: string; className?
   }
   return <img src={src} alt="" width={size} height={size} className={`shrink-0 ${className ?? ""}`}/>;
 }
+
+// Rond plein (badge circulaire) — les 4 icônes fournies sont déjà des badges ronds ;
+// "Autres" n'ayant pas d'icône dédiée, on lui donne un fond rond assorti pour rester cohérent.
+function MealTypeBadge({ type, size = 34 }: { type: string; size?: number }) {
+  const color = MEAL_TYPE_COLOR[type] ?? "#8a8a8a";
+  if (!MEAL_TYPE_ICON_SRC[type]) {
+    return (
+      <div className="relative z-10 rounded-full flex items-center justify-center shrink-0" style={{ width: size, height: size, backgroundColor: `${color}22`, color }}>
+        <MealTypeIcon type={type} size={size * 0.4}/>
+      </div>
+    );
+  }
+  return <MealTypeIcon type={type} size={size} className="relative z-10 rounded-full"/>;
+}
 type OFFProduct = { product_name: string; brands?: string; nutriments: { "energy-kcal_100g"?: number; proteins_100g?: number; carbohydrates_100g?: number; fat_100g?: number; fiber_100g?: number } };
 // base_qty/unit : produit dont les macros valent pour une quantité de base (ex. 100 ml) — la quantité est choisie à l'ajout.
 // Sans base_qty : repas à portion fixe (comportement historique).
@@ -1149,9 +1163,11 @@ export default function NutritionPage() {
             return (
               <div key={type} className="border-b border-[var(--t-border-soft)] last:border-0">
                 <div className="flex items-center justify-between px-5 pt-3 pb-1.5">
-                  <div className="flex items-center gap-1.5" style={{ color: MEAL_TYPE_COLOR[type] ?? "#c9a84c" }}>
-                    <MealTypeIcon type={type}/>
-                    <p className="text-[0.65rem] tracking-[0.15em] uppercase">{type}</p>
+                  <div className="flex items-center">
+                    <MealTypeBadge type={type}/>
+                    <div className="h-[26px] -ml-4 pl-6 pr-3.5 rounded-full flex items-center" style={{ backgroundColor: `${MEAL_TYPE_COLOR[type] ?? "#8a8a8a"}18` }}>
+                      <p className="text-[0.62rem] tracking-[0.15em] uppercase whitespace-nowrap" style={{ color: MEAL_TYPE_COLOR[type] ?? "#8a8a8a" }}>{type}</p>
+                    </div>
                   </div>
                   <p className="text-[0.62rem] text-[var(--t-text-20)]">{groupCal} kcal</p>
                 </div>
