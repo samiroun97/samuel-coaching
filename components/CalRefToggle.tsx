@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 
 type Mode = "objectif" | "tdee";
 
@@ -26,9 +26,17 @@ function ObjectifIcon() {
 }
 
 function TdeeIcon() {
+  const gradId = useId();
   return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+    <svg width="13" height="13" viewBox="0 0 24 24">
+      <defs>
+        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#ffd873"/>
+          <stop offset="55%" stopColor="#f4a637"/>
+          <stop offset="100%" stopColor="#e0672f"/>
+        </linearGradient>
+      </defs>
+      <path fill={`url(#${gradId})`} d="M12.5 0.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C4.34 6.9 3 9.28 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9C21 6.53 17.83 2.42 12.5 0.67z"/>
     </svg>
   );
 }
