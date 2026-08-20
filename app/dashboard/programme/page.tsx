@@ -281,7 +281,7 @@ export default function ProgrammePage() {
   const adjustedCal   = calResult ? Math.round(calResult.calories_brulees * intensityMult) : 0;
 
   const chip = (active: boolean) =>
-    `px-3 py-2 text-[0.7rem] tracking-[0.1em] uppercase border cursor-pointer transition-all ${active ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[var(--t-text-30)] hover:text-[var(--t-text-60)]"}`;
+    `px-3.5 py-2 rounded-full text-[0.7rem] tracking-[0.1em] uppercase border cursor-pointer transition-all ${active ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10 shadow-[0_2px_10px_-4px_rgba(201,168,76,0.4)]" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[var(--t-text-30)] hover:text-[var(--t-text-60)]"}`;
   const inputCls = "w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
 
   const pastDates = [...new Set(
