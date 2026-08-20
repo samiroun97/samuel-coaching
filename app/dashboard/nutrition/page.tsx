@@ -1170,12 +1170,11 @@ export default function NutritionPage() {
             const items = foods.filter(f => (f.repas ?? "Autres") === type);
             if (!items.length) return null;
             const groupCal = items.reduce((s, f) => s + f.calories, 0);
-            const color = MEAL_TYPE_COLOR[type] ?? MEAL_BADGE_COLOR;
             return (
               <div key={type} className="rounded-lg border border-[var(--t-border)] bg-[var(--t-surface)] mb-3 last:mb-0 overflow-hidden">
-                <div className="flex items-center gap-2.5 px-4 py-2.5 border-b border-[var(--t-border-soft)]" style={{ backgroundColor: `${color}0d` }}>
+                <div className="flex items-center gap-2.5 px-4 py-2.5 border-b border-[var(--t-border-soft)]">
                   <MealTypeBadge type={type} size={26}/>
-                  <p className="flex-1 text-[0.65rem] tracking-[0.15em] uppercase" style={{ color }}>{type}</p>
+                  <p className="flex-1 text-[0.65rem] tracking-[0.15em] uppercase text-[var(--t-text-50)]">{type}</p>
                   <p className="text-[0.62rem] text-[var(--t-text-30)]">{groupCal} kcal</p>
                 </div>
                 <div className="divide-y divide-[var(--t-border-soft)]">
