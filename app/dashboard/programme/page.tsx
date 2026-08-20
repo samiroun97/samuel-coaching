@@ -309,181 +309,48 @@ export default function ProgrammePage() {
         <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl sm:text-5xl text-[var(--t-text)] tracking-wide">ACTIVITÉ</h1>
       </div>
 
-      {/* ── Mon programme (séances envoyées par Samuel) ── */}
-      {coachSeances.length > 0 && (
-        <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-lg mb-6">
-          <div className="px-5 py-3 border-b border-[#c9a84c]/10 flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[#c9a84c]">Mon programme</p>
-              <span className="text-[0.62rem] text-[var(--t-text-25)] uppercase tracking-wider">{coachSeances.length} séance{coachSeances.length > 1 ? "s" : ""} · par Samuel</span>
-            </div>
-            <button onClick={downloadPdf} disabled={exportingPdf}
-              className="shrink-0 flex items-center gap-1.5 border border-[#c9a84c]/30 text-[#c9a84c] rounded-lg text-[0.6rem] font-bold tracking-[0.12em] uppercase px-2.5 py-2 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-40">
-              {exportingPdf ? (
-                <div className="w-3 h-3 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>
-              ) : (
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              )}
-              <span className="hidden sm:inline">PDF</span>
-            </button>
-          </div>
-          {coachSeances.map(s => {
-            const open = openSeance === s.id;
-            const done = !!s.completed_at;
-            return (
-              <div key={s.id} className="border-b border-[var(--t-border-soft)] last:border-0">
-                <button onClick={() => setOpenSeance(open ? null : s.id)}
-                  className="w-full text-left px-5 py-3 flex items-center justify-between gap-2 hover:bg-[var(--t-glass-bg)] transition-colors">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      {done && <span className="text-[0.7rem] text-[#7eb8a0] shrink-0">✓</span>}
-                      {s.type_seance && <span className="text-[0.68rem] tracking-wider uppercase text-[#c9a84c] rounded-full border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">{s.type_seance}</span>}
-                      {s.semaine && <span className="text-[0.68rem] tracking-wider uppercase text-[var(--t-text-30)] rounded-full border border-[var(--t-border)] px-1.5 py-0.5 shrink-0">Sem. {s.semaine}</span>}
-                      <p className={`text-xs truncate ${done ? "text-[var(--t-text-35)] line-through" : "text-[var(--t-text-70)]"}`}>{s.titre}</p>
-                    </div>
-                    {s.date_prevue && <p className="text-[0.7rem] text-[var(--t-text-25)] mt-0.5">{new Date(s.date_prevue + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</p>}
-                  </div>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-                    className={`text-[var(--t-text-25)] shrink-0 transition-transform ${open ? "rotate-180" : ""}`}>
-                    <polyline points="6 9 12 15 18 9"/>
-                  </svg>
-                </button>
-                {open && (
-                  <div className="px-5 pb-4">
-                    <SeanceBody s={s} />
-                    <button onClick={() => toggleSeanceDone(s)}
-                      className={`w-full py-2.5 text-[0.7rem] font-bold tracking-[0.15em] uppercase transition-colors ${
-                        done ? "border border-[#7eb8a0]/40 text-[#7eb8a0] bg-[#7eb8a0]/5 hover:bg-[#7eb8a0]/10"
-                             : "bg-[#c9a84c] text-black hover:bg-[#e2c97e]"}`}>
-                      {done ? "✓ Séance terminée — annuler" : "Marquer comme terminée"}
-                    </button>
-
-                    {/* Signalement d'un problème sur cette séance (exercice inadapté, charge
-                        irréaliste...) — envoyé à Samuel pour ajuster les prochains programmes. */}
-                    {seanceReportSentIds.has(s.id) ? (
-                      <p className="text-[0.6rem] text-[#7eb8a0] text-center mt-2">Signalement envoyé, merci ! 🙏</p>
-                    ) : reportingSeanceId === s.id ? (
-                      <div className="border border-[var(--t-border)] bg-[var(--t-bg)] rounded-lg p-3 mt-2 flex flex-col gap-2">
-                        <textarea className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={2}
-                          placeholder="Ex : la charge suggérée est trop lourde pour cet exercice à mon niveau..."
-                          value={seanceReportComment} onChange={e => setSeanceReportComment(e.target.value)}/>
-                        <div className="flex gap-2">
-                          <button onClick={() => { setReportingSeanceId(null); setSeanceReportComment(""); }}
-                            className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-lg text-[0.6rem] tracking-[0.1em] uppercase py-2 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors">
-                            Annuler
-                          </button>
-                          <button onClick={() => submitSeanceReport(s)} disabled={seanceReportSending || !seanceReportComment.trim()}
-                            className="flex-1 bg-[#e07070] text-black text-[0.6rem] font-bold tracking-[0.1em] uppercase py-2 hover:bg-[#e58888] transition-colors disabled:opacity-40 rounded-lg">
-                            {seanceReportSending ? "Envoi…" : "Envoyer →"}
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <button onClick={() => setReportingSeanceId(s.id)}
-                        className="text-[0.55rem] tracking-wider uppercase text-[var(--t-text-20)] hover:text-[#e07070]/70 transition-colors text-center py-1 mt-2 w-full">
-                        Un souci avec cette séance ? Signale-la à Samuel →
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
-
       <DateNav date={selectedDate} onChange={setSelectedDate} />
 
-      {/* ── Séances du jour ── */}
-      {todayWorkouts.length > 0 && (
-        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg mb-6">
-          <button onClick={() => setSeancesJourOpen(v => !v)}
-            className="w-full text-left flex items-center justify-between px-5 py-3 hover:bg-[var(--t-glass-bg)] transition-colors">
-            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[var(--t-text)]">
-              {selectedDate === todayStr() ? "Séances du jour" : `Séances · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
-            </p>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5">
-                <span style={{ fontFamily: "var(--font-bebas)" }} className="text-lg text-[#c9a84c] tracking-wide">{eatCal}</span>
-                <span className="text-[0.62rem] text-[var(--t-text-25)] uppercase tracking-wider">kcal</span>
-              </div>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-                className={`text-[var(--t-text-25)] shrink-0 transition-transform ${seancesJourOpen ? "rotate-180" : ""}`}>
-                <polyline points="6 9 12 15 18 9"/>
-              </svg>
-            </div>
-          </button>
-          {seancesJourOpen && (
-            <div className="border-t border-[var(--t-border-soft)] p-3 flex flex-col gap-2">
-              {todayWorkouts.map(w => <WorkoutCard key={w.id} w={w} onRemove={() => removeWorkout(w.id)}/>)}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── Pas ── */}
+      {/* ── EAT / NEAT / TOTAL ── */}
       <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg p-5 mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-<p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">
-                  {selectedDate === todayStr() ? "Pas aujourd'hui" : `Pas · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
-                </p>
+        <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Dépense du jour</p>
+        <div className="grid grid-cols-3 gap-3 mb-4">
+          {/* EAT */}
+          <div className="border border-[var(--t-border-soft)] bg-[var(--t-bg)] rounded-lg py-4 px-3 text-center">
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[#c9a84c] tracking-wide leading-none">{eatCal}</p>
+            <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mt-1.5">EAT</p>
+            <p className="text-[0.62rem] text-[var(--t-text-15)] mt-0.5">Exercice intentionnel</p>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[0.7rem] text-[var(--t-text-30)]">{stepsKm} km</span>
-            <button onClick={() => saveSteps(steps - 500)} disabled={steps === 0}
-              className="w-7 h-7 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-lg hover:text-[var(--t-text-70)] hover:border-[var(--t-text-20)] transition-colors disabled:opacity-20 flex items-center justify-center text-sm">−</button>
-            <input
-              type="number" min="0"
-              className="w-20 bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] text-center text-sm py-1 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
-              value={stepsInput}
-              onChange={e => setStepsInput(e.target.value)}
-              onBlur={() => saveSteps(parseInt(stepsInput) || 0)}
-              onKeyDown={e => { if (e.key === "Enter") saveSteps(parseInt(stepsInput) || 0); }}
-            />
-            <button onClick={() => saveSteps(steps + 500)}
-              className="w-7 h-7 rounded-full border border-[#7eb8a0]/40 text-[#7eb8a0] hover:bg-[#7eb8a0]/10 transition-colors flex items-center justify-center text-sm">+</button>
+          {/* NEAT */}
+          <div className="border border-[var(--t-border-soft)] bg-[var(--t-bg)] rounded-lg py-4 px-3 text-center">
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[#7eb8a0] tracking-wide leading-none">{neatCal}</p>
+            <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mt-1.5">NEAT</p>
+            <p className="text-[0.62rem] text-[var(--t-text-15)] mt-0.5">Activité quotidienne</p>
+          </div>
+          {/* Total */}
+          <div className="border border-[#c9a84c]/15 bg-[#c9a84c]/5 rounded-lg py-4 px-3 text-center">
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[var(--t-text)] tracking-wide leading-none">{totalCal}</p>
+            <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mt-1.5">Total</p>
+            <p className="text-[0.62rem] text-[var(--t-text-15)] mt-0.5">kcal brûlées</p>
           </div>
         </div>
 
-        <div className="h-1.5 bg-[var(--t-track)] mb-2">
-          <div className="h-full transition-all duration-500 rounded-full" style={{ width: `${stepsPct}%`, backgroundColor: steps >= stepGoal ? "#c9a84c" : "#7eb8a0" }}/>
-        </div>
+        {/* Barre EAT / NEAT */}
+        {totalCal > 0 && (
+          <div className="mb-3">
+            <div className="flex h-1.5 w-full overflow-hidden">
+              <div className="h-full transition-all duration-700" style={{ width: `${totalCal > 0 ? (eatCal / totalCal) * 100 : 0}%`, backgroundColor: "#c9a84c" }}/>
+              <div className="h-full transition-all duration-700" style={{ width: `${totalCal > 0 ? (neatCal / totalCal) * 100 : 0}%`, backgroundColor: "#7eb8a0" }}/>
+            </div>
+          </div>
+        )}
 
         <div className="flex items-center justify-between text-[0.62rem] text-[var(--t-text-20)] tracking-wider">
-          <span>{steps.toLocaleString("fr-FR")} pas</span>
-          <span className={steps >= stepGoal ? "text-[#c9a84c]" : ""}>
-            {steps >= stepGoal ? "Objectif atteint ✓" : `${(stepGoal - steps).toLocaleString("fr-FR")} restants`}
-          </span>
-          {/* Objectif modifiable */}
-          <div className="flex items-center gap-1">
-            <span>Objectif :</span>
-            {editingGoal ? (
-              <input
-                type="number" autoFocus
-                className="w-16 bg-[var(--t-bg)] border border-[#c9a84c]/40 rounded-lg text-[#c9a84c] text-center text-[0.62rem] py-0.5 focus:outline-none"
-                value={goalInput}
-                onChange={e => setGoalInput(e.target.value)}
-                onBlur={() => saveGoal(parseInt(goalInput) || 10000)}
-                onKeyDown={e => { if (e.key === "Enter") saveGoal(parseInt(goalInput) || 10000); if (e.key === "Escape") setEditingGoal(false); }}
-              />
-            ) : (
-              <button onClick={() => { setEditingGoal(true); setGoalInput(stepGoal.toString()); }}
-                className="text-[var(--t-text-30)] hover:text-[#c9a84c] transition-colors underline decoration-dotted">
-                {stepGoal.toLocaleString("fr-FR")}
-              </button>
-            )}
-            <span>pas</span>
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1"><span className="w-2 h-2 inline-block" style={{ backgroundColor: "#c9a84c" }}/>EAT : exercice</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 inline-block" style={{ backgroundColor: "#7eb8a0" }}/>NEAT : {steps.toLocaleString("fr-FR")} pas</span>
           </div>
-        </div>
-      </div>
-
-      {/* ── Explication pas ── */}
-      <div className="border-t border-[var(--t-border-soft)] px-5 py-4 bg-[var(--t-bg)]/60 mb-6">
-        <p className="text-[0.68rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mb-3">Pourquoi suivre tes pas est aussi important que tes séances</p>
-        <div className="flex flex-col gap-2.5">
-          <p className="text-[0.65rem] text-[var(--t-text-35)] leading-relaxed">On pense souvent que seule la séance de sport compte pour brûler des calories. Mais ce que tu fais en dehors de l&apos;entraînement, marcher, monter des escaliers, bouger dans la journée peut représenter une dépense calorique encore plus grande que ta séance elle-même.</p>
-          <p className="text-[0.65rem] text-[var(--t-text-35)] leading-relaxed">Une journée où tu marches peu, même si ton entraînement était intense, peut au final brûler moins de calories qu&apos;une journée où tu t&apos;es beaucoup déplacé, même sans sport. C&apos;est pour ça que suivre tes pas n&apos;est pas un détail : c&apos;est une vraie pièce du puzzle qui influence directement tes résultats, au même titre que tes séances.</p>
+          {!profile && <span className="text-[var(--t-text-15)]">Complète ton profil pour personnaliser</span>}
         </div>
       </div>
 
@@ -629,48 +496,98 @@ export default function ProgrammePage() {
         )}
       </div>
 
-      {/* ── EAT / NEAT / TOTAL ── */}
-      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg p-5 mb-8">
-        <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Dépense du jour</p>
-        <div className="grid grid-cols-3 gap-3 mb-4">
-          {/* EAT */}
-          <div className="border border-[var(--t-border-soft)] bg-[var(--t-bg)] rounded-lg py-4 px-3 text-center">
-            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[#c9a84c] tracking-wide leading-none">{eatCal}</p>
-            <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mt-1.5">EAT</p>
-            <p className="text-[0.62rem] text-[var(--t-text-15)] mt-0.5">Exercice intentionnel</p>
+      {/* ── Pas ── */}
+      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg p-5 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+<p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">
+                  {selectedDate === todayStr() ? "Pas aujourd'hui" : `Pas · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
+                </p>
           </div>
-          {/* NEAT */}
-          <div className="border border-[var(--t-border-soft)] bg-[var(--t-bg)] rounded-lg py-4 px-3 text-center">
-            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[#7eb8a0] tracking-wide leading-none">{neatCal}</p>
-            <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mt-1.5">NEAT</p>
-            <p className="text-[0.62rem] text-[var(--t-text-15)] mt-0.5">Activité quotidienne</p>
-          </div>
-          {/* Total */}
-          <div className="border border-[#c9a84c]/15 bg-[#c9a84c]/5 rounded-lg py-4 px-3 text-center">
-            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[var(--t-text)] tracking-wide leading-none">{totalCal}</p>
-            <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mt-1.5">Total</p>
-            <p className="text-[0.62rem] text-[var(--t-text-15)] mt-0.5">kcal brûlées</p>
+          <div className="flex items-center gap-2">
+            <span className="text-[0.7rem] text-[var(--t-text-30)]">{stepsKm} km</span>
+            <button onClick={() => saveSteps(steps - 500)} disabled={steps === 0}
+              className="w-7 h-7 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-lg hover:text-[var(--t-text-70)] hover:border-[var(--t-text-20)] transition-colors disabled:opacity-20 flex items-center justify-center text-sm">−</button>
+            <input
+              type="number" min="0"
+              className="w-20 bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] text-center text-sm py-1 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
+              value={stepsInput}
+              onChange={e => setStepsInput(e.target.value)}
+              onBlur={() => saveSteps(parseInt(stepsInput) || 0)}
+              onKeyDown={e => { if (e.key === "Enter") saveSteps(parseInt(stepsInput) || 0); }}
+            />
+            <button onClick={() => saveSteps(steps + 500)}
+              className="w-7 h-7 rounded-full border border-[#7eb8a0]/40 text-[#7eb8a0] hover:bg-[#7eb8a0]/10 transition-colors flex items-center justify-center text-sm">+</button>
           </div>
         </div>
 
-        {/* Barre EAT / NEAT */}
-        {totalCal > 0 && (
-          <div className="mb-3">
-            <div className="flex h-1.5 w-full overflow-hidden">
-              <div className="h-full transition-all duration-700" style={{ width: `${totalCal > 0 ? (eatCal / totalCal) * 100 : 0}%`, backgroundColor: "#c9a84c" }}/>
-              <div className="h-full transition-all duration-700" style={{ width: `${totalCal > 0 ? (neatCal / totalCal) * 100 : 0}%`, backgroundColor: "#7eb8a0" }}/>
-            </div>
-          </div>
-        )}
+        <div className="h-1.5 bg-[var(--t-track)] mb-2">
+          <div className="h-full transition-all duration-500 rounded-full" style={{ width: `${stepsPct}%`, backgroundColor: steps >= stepGoal ? "#c9a84c" : "#7eb8a0" }}/>
+        </div>
 
         <div className="flex items-center justify-between text-[0.62rem] text-[var(--t-text-20)] tracking-wider">
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1"><span className="w-2 h-2 inline-block" style={{ backgroundColor: "#c9a84c" }}/>EAT : exercice</span>
-            <span className="flex items-center gap-1"><span className="w-2 h-2 inline-block" style={{ backgroundColor: "#7eb8a0" }}/>NEAT : {steps.toLocaleString("fr-FR")} pas</span>
+          <span>{steps.toLocaleString("fr-FR")} pas</span>
+          <span className={steps >= stepGoal ? "text-[#c9a84c]" : ""}>
+            {steps >= stepGoal ? "Objectif atteint ✓" : `${(stepGoal - steps).toLocaleString("fr-FR")} restants`}
+          </span>
+          {/* Objectif modifiable */}
+          <div className="flex items-center gap-1">
+            <span>Objectif :</span>
+            {editingGoal ? (
+              <input
+                type="number" autoFocus
+                className="w-16 bg-[var(--t-bg)] border border-[#c9a84c]/40 rounded-lg text-[#c9a84c] text-center text-[0.62rem] py-0.5 focus:outline-none"
+                value={goalInput}
+                onChange={e => setGoalInput(e.target.value)}
+                onBlur={() => saveGoal(parseInt(goalInput) || 10000)}
+                onKeyDown={e => { if (e.key === "Enter") saveGoal(parseInt(goalInput) || 10000); if (e.key === "Escape") setEditingGoal(false); }}
+              />
+            ) : (
+              <button onClick={() => { setEditingGoal(true); setGoalInput(stepGoal.toString()); }}
+                className="text-[var(--t-text-30)] hover:text-[#c9a84c] transition-colors underline decoration-dotted">
+                {stepGoal.toLocaleString("fr-FR")}
+              </button>
+            )}
+            <span>pas</span>
           </div>
-          {!profile && <span className="text-[var(--t-text-15)]">Complète ton profil pour personnaliser</span>}
         </div>
       </div>
+
+      {/* ── Explication pas ── */}
+      <div className="border-t border-[var(--t-border-soft)] px-5 py-4 bg-[var(--t-bg)]/60 mb-6">
+        <p className="text-[0.68rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mb-3">Pourquoi suivre tes pas est aussi important que tes séances</p>
+        <div className="flex flex-col gap-2.5">
+          <p className="text-[0.65rem] text-[var(--t-text-35)] leading-relaxed">On pense souvent que seule la séance de sport compte pour brûler des calories. Mais ce que tu fais en dehors de l&apos;entraînement, marcher, monter des escaliers, bouger dans la journée peut représenter une dépense calorique encore plus grande que ta séance elle-même.</p>
+          <p className="text-[0.65rem] text-[var(--t-text-35)] leading-relaxed">Une journée où tu marches peu, même si ton entraînement était intense, peut au final brûler moins de calories qu&apos;une journée où tu t&apos;es beaucoup déplacé, même sans sport. C&apos;est pour ça que suivre tes pas n&apos;est pas un détail : c&apos;est une vraie pièce du puzzle qui influence directement tes résultats, au même titre que tes séances.</p>
+        </div>
+      </div>
+
+      {/* ── Séances du jour ── */}
+      {todayWorkouts.length > 0 && (
+        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg mb-6">
+          <button onClick={() => setSeancesJourOpen(v => !v)}
+            className="w-full text-left flex items-center justify-between px-5 py-3 hover:bg-[var(--t-glass-bg)] transition-colors">
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[var(--t-text)]">
+              {selectedDate === todayStr() ? "Séances du jour" : `Séances · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
+            </p>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
+                <span style={{ fontFamily: "var(--font-bebas)" }} className="text-lg text-[#c9a84c] tracking-wide">{eatCal}</span>
+                <span className="text-[0.62rem] text-[var(--t-text-25)] uppercase tracking-wider">kcal</span>
+              </div>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+                className={`text-[var(--t-text-25)] shrink-0 transition-transform ${seancesJourOpen ? "rotate-180" : ""}`}>
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+          </button>
+          {seancesJourOpen && (
+            <div className="border-t border-[var(--t-border-soft)] p-3 flex flex-col gap-2">
+              {todayWorkouts.map(w => <WorkoutCard key={w.id} w={w} onRemove={() => removeWorkout(w.id)}/>)}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ── Historique ── */}
       {pastDates.length > 0 && (
@@ -709,6 +626,89 @@ export default function ProgrammePage() {
                 {isOpen && (
                   <div className="border-t border-[var(--t-border-soft)] p-3 flex flex-col gap-2">
                     {dayWorkouts.map(w => <WorkoutCard key={w.id} w={w} onRemove={() => removeWorkout(w.id)}/>)}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ── Mon programme (séances envoyées par Samuel) ── */}
+      {coachSeances.length > 0 && (
+        <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-lg mb-6 mt-6">
+          <div className="px-5 py-3 border-b border-[#c9a84c]/10 flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[#c9a84c]">Mon programme</p>
+              <span className="text-[0.62rem] text-[var(--t-text-25)] uppercase tracking-wider">{coachSeances.length} séance{coachSeances.length > 1 ? "s" : ""} · par Samuel</span>
+            </div>
+            <button onClick={downloadPdf} disabled={exportingPdf}
+              className="shrink-0 flex items-center gap-1.5 border border-[#c9a84c]/30 text-[#c9a84c] rounded-lg text-[0.6rem] font-bold tracking-[0.12em] uppercase px-2.5 py-2 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-40">
+              {exportingPdf ? (
+                <div className="w-3 h-3 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>
+              ) : (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              )}
+              <span className="hidden sm:inline">PDF</span>
+            </button>
+          </div>
+          {coachSeances.map(s => {
+            const open = openSeance === s.id;
+            const done = !!s.completed_at;
+            return (
+              <div key={s.id} className="border-b border-[var(--t-border-soft)] last:border-0">
+                <button onClick={() => setOpenSeance(open ? null : s.id)}
+                  className="w-full text-left px-5 py-3 flex items-center justify-between gap-2 hover:bg-[var(--t-glass-bg)] transition-colors">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      {done && <span className="text-[0.7rem] text-[#7eb8a0] shrink-0">✓</span>}
+                      {s.type_seance && <span className="text-[0.68rem] tracking-wider uppercase text-[#c9a84c] rounded-full border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">{s.type_seance}</span>}
+                      {s.semaine && <span className="text-[0.68rem] tracking-wider uppercase text-[var(--t-text-30)] rounded-full border border-[var(--t-border)] px-1.5 py-0.5 shrink-0">Sem. {s.semaine}</span>}
+                      <p className={`text-xs truncate ${done ? "text-[var(--t-text-35)] line-through" : "text-[var(--t-text-70)]"}`}>{s.titre}</p>
+                    </div>
+                    {s.date_prevue && <p className="text-[0.7rem] text-[var(--t-text-25)] mt-0.5">{new Date(s.date_prevue + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</p>}
+                  </div>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+                    className={`text-[var(--t-text-25)] shrink-0 transition-transform ${open ? "rotate-180" : ""}`}>
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </button>
+                {open && (
+                  <div className="px-5 pb-4">
+                    <SeanceBody s={s} />
+                    <button onClick={() => toggleSeanceDone(s)}
+                      className={`w-full py-2.5 text-[0.7rem] font-bold tracking-[0.15em] uppercase transition-colors ${
+                        done ? "border border-[#7eb8a0]/40 text-[#7eb8a0] bg-[#7eb8a0]/5 hover:bg-[#7eb8a0]/10"
+                             : "bg-[#c9a84c] text-black hover:bg-[#e2c97e]"}`}>
+                      {done ? "✓ Séance terminée — annuler" : "Marquer comme terminée"}
+                    </button>
+
+                    {/* Signalement d'un problème sur cette séance (exercice inadapté, charge
+                        irréaliste...) — envoyé à Samuel pour ajuster les prochains programmes. */}
+                    {seanceReportSentIds.has(s.id) ? (
+                      <p className="text-[0.6rem] text-[#7eb8a0] text-center mt-2">Signalement envoyé, merci ! 🙏</p>
+                    ) : reportingSeanceId === s.id ? (
+                      <div className="border border-[var(--t-border)] bg-[var(--t-bg)] rounded-lg p-3 mt-2 flex flex-col gap-2">
+                        <textarea className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={2}
+                          placeholder="Ex : la charge suggérée est trop lourde pour cet exercice à mon niveau..."
+                          value={seanceReportComment} onChange={e => setSeanceReportComment(e.target.value)}/>
+                        <div className="flex gap-2">
+                          <button onClick={() => { setReportingSeanceId(null); setSeanceReportComment(""); }}
+                            className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-lg text-[0.6rem] tracking-[0.1em] uppercase py-2 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors">
+                            Annuler
+                          </button>
+                          <button onClick={() => submitSeanceReport(s)} disabled={seanceReportSending || !seanceReportComment.trim()}
+                            className="flex-1 bg-[#e07070] text-black text-[0.6rem] font-bold tracking-[0.1em] uppercase py-2 hover:bg-[#e58888] transition-colors disabled:opacity-40 rounded-lg">
+                            {seanceReportSending ? "Envoi…" : "Envoyer →"}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button onClick={() => setReportingSeanceId(s.id)}
+                        className="text-[0.55rem] tracking-wider uppercase text-[var(--t-text-20)] hover:text-[#e07070]/70 transition-colors text-center py-1 mt-2 w-full">
+                        Un souci avec cette séance ? Signale-la à Samuel →
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
