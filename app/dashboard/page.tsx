@@ -12,8 +12,8 @@ type Profile = {
   objectif_echeance: string | null; objectif_pending: boolean;
 };
 
-type Goals = { calories: number; proteines: number; glucides: number; lipides: number };
-type Food  = { calories: number; proteines: number; glucides: number; lipides: number };
+type Goals = { calories: number; proteines: number; glucides: number; lipides: number; fibres: number };
+type Food  = { calories: number; proteines: number; glucides: number; lipides: number; fibres?: number };
 type Log   = { date: string; calories_burned: number };
 
 const today = () => new Date().toISOString().split("T")[0];
@@ -103,8 +103,8 @@ type BFEntry     = { id: string; date: string; body_fat: number };
 export default function AccueilPage() {
   const [profile,      setProfile]      = useState<Profile | null>(null);
   const [userId,       setUserId]       = useState<string | null>(null);
-  const [consumed,     setConsumed]     = useState({ calories: 0, proteines: 0, glucides: 0, lipides: 0 });
-  const [goals,        setGoals]        = useState<Goals>({ calories: 2200, proteines: 150, glucides: 220, lipides: 70 });
+  const [consumed,     setConsumed]     = useState({ calories: 0, proteines: 0, glucides: 0, lipides: 0, fibres: 0 });
+  const [goals,        setGoals]        = useState<Goals>({ calories: 2200, proteines: 150, glucides: 220, lipides: 70, fibres: 27 });
   const [goalsSet,     setGoalsSet]     = useState(false);
   const [neat,         setNeat]         = useState(0);
   const [eat,          setEat]          = useState(0);
@@ -158,7 +158,12 @@ export default function AccueilPage() {
     // Goals (static)
     try {
       const g = localStorage.getItem("nutrition_goals");
-      if (g) { setGoals(JSON.parse(g)); setGoalsSet(true); }
+      if (g) {
+        const parsed = JSON.parse(g);
+        // Anciens objectifs sauvegardés avant l'ajout des fibres : on complète avec 27g par défaut.
+        setGoals({ ...parsed, fibres: parsed.fibres ?? 27 });
+        setGoalsSet(true);
+      }
     } catch { /* ignore */ }
 
     // Restore saved selected date
@@ -177,14 +182,15 @@ export default function AccueilPage() {
       const f = localStorage.getItem(`nutrition_${selectedDate}`);
       if (f) {
         const foods: Food[] = JSON.parse(f);
-        setConsumed(foods.reduce((acc, x) => ({
+        setConsumed(foods.reduce<{ calories: number; proteines: number; glucides: number; lipides: number; fibres: number }>((acc, x) => ({
           calories: acc.calories + x.calories,
           proteines: acc.proteines + x.proteines,
           glucides: acc.glucides + x.glucides,
           lipides: acc.lipides + x.lipides,
-        }), { calories: 0, proteines: 0, glucides: 0, lipides: 0 }));
+          fibres: acc.fibres + (x.fibres || 0),
+        }), { calories: 0, proteines: 0, glucides: 0, lipides: 0, fibres: 0 }));
       } else {
-        setConsumed({ calories: 0, proteines: 0, glucides: 0, lipides: 0 });
+        setConsumed({ calories: 0, proteines: 0, glucides: 0, lipides: 0, fibres: 0 });
       }
     } catch { /* ignore */ }
 
@@ -354,6 +360,7 @@ export default function AccueilPage() {
           <MacroRing label="Protéines" consumed={consumed.proteines} goal={goals.proteines} color="#F3F4F6"/>
           <MacroRing label="Glucides"  consumed={consumed.glucides}  goal={goals.glucides}  color="#e0834a"/>
           <MacroRing label="Lipides"   consumed={consumed.lipides}   goal={goals.lipides}   color="#9c8563"/>
+          <MacroRing label="Fibres"    consumed={consumed.fibres}    goal={goals.fibres}    color="#a08ec9"/>
         </div>
 
         <Link href="/dashboard/nutrition"

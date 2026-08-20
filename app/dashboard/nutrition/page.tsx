@@ -19,16 +19,16 @@ const BARCODE_HINTS = new Map<DecodeHintType, unknown>([
   [DecodeHintType.TRY_HARDER, true],
 ]);
 
-type Food  = { id: string; name: string; calories: number; proteines: number; glucides: number; lipides: number; repas?: string };
-type Goals = { calories: number; proteines: number; glucides: number; lipides: number };
+type Food  = { id: string; name: string; calories: number; proteines: number; glucides: number; lipides: number; fibres?: number; repas?: string };
+type Goals = { calories: number; proteines: number; glucides: number; lipides: number; fibres: number };
 type MacroKey = "proteines" | "glucides" | "lipides";
-type AIResult = { name: string; calories: number; proteines: number; glucides: number; lipides: number };
-type IdeaResult = { name: string; description: string; calories: number; proteines: number; glucides: number; lipides: number };
+type AIResult = { name: string; calories: number; proteines: number; glucides: number; lipides: number; fibres?: number };
+type IdeaResult = { name: string; description: string; calories: number; proteines: number; glucides: number; lipides: number; fibres?: number };
 const MEAL_TYPES = ["Petit-déjeuner", "Déjeuner", "Dîner", "Collation"] as const;
-type OFFProduct = { product_name: string; brands?: string; nutriments: { "energy-kcal_100g"?: number; proteins_100g?: number; carbohydrates_100g?: number; fat_100g?: number } };
+type OFFProduct = { product_name: string; brands?: string; nutriments: { "energy-kcal_100g"?: number; proteins_100g?: number; carbohydrates_100g?: number; fat_100g?: number; fiber_100g?: number } };
 // base_qty/unit : produit dont les macros valent pour une quantité de base (ex. 100 ml) — la quantité est choisie à l'ajout.
 // Sans base_qty : repas à portion fixe (comportement historique).
-type SavedMeal = { id: string; name: string; calories: number; proteines: number; glucides: number; lipides: number; base_qty?: number; unit?: string };
+type SavedMeal = { id: string; name: string; calories: number; proteines: number; glucides: number; lipides: number; fibres?: number; base_qty?: number; unit?: string };
 type DayHistory = { date: string; label: string; calories: number };
 type MealPlanItem = { id: string; meal_type: string; name: string; calories: number; proteines: number; glucides: number; lipides: number };
 type MealPlan = { id: string; name: string; notes: string | null; items: MealPlanItem[] };
@@ -118,7 +118,7 @@ function bmr(p: MiniProfile, bodyFatPct: number | null): number {
 }
 
 const CAL: Record<MacroKey, number> = { proteines: 4, glucides: 4, lipides: 9 };
-const defaultGoals: Goals = { calories: 2200, proteines: 150, glucides: 220, lipides: 70 };
+const defaultGoals: Goals = { calories: 2200, proteines: 150, glucides: 220, lipides: 70, fibres: 27 };
 const macroConfig: { key: MacroKey; label: string; color: string }[] = [
   { key: "proteines", label: "Protéines", color: "#F3F4F6" },
   { key: "glucides",  label: "Glucides",  color: "#e0834a" },
@@ -311,7 +311,7 @@ export default function NutritionPage() {
   const [showAdd,   setShowAdd]   = useState(false);
   const [showGoals, setShowGoals] = useState(false);
   const [goalDraft, setGoalDraft] = useState<Goals>(defaultGoals);
-  const [rawGoal,   setRawGoal]   = useState({ calories: "2200", proteines: "150", glucides: "220", lipides: "70" });
+  const [rawGoal,   setRawGoal]   = useState({ calories: "2200", proteines: "150", glucides: "220", lipides: "70", fibres: "27" });
   const [water,     setWater]     = useState(0);
   const [savedMeals, setSavedMeals] = useState<SavedMeal[]>([]);
   const [pastHistory, setPastHistory] = useState<DayHistory[]>([]);
@@ -367,7 +367,7 @@ export default function NutritionPage() {
   const [selectedSaved, setSelectedSaved] = useState<SavedMeal|null>(null);
   const [savedQty,      setSavedQty]      = useState("100");
   const [showNewProd,   setShowNewProd]   = useState(false);
-  const emptyProd = { name: "", base: "100", unit: "g", calories: "", proteines: "", glucides: "", lipides: "" };
+  const emptyProd = { name: "", base: "100", unit: "g", calories: "", proteines: "", glucides: "", lipides: "", fibres: "" };
   const [newProd,       setNewProd]       = useState(emptyProd);
 
   const WATER_GOAL = 8;
@@ -448,7 +448,12 @@ export default function NutritionPage() {
     const g = localStorage.getItem("nutrition_goals");
     const s = localStorage.getItem("nutrition_saved_meals");
     const r = localStorage.getItem("nutrition_cal_ref");
-    if (g) { setGoals(JSON.parse(g)); setGoalsSet(true); }
+    if (g) {
+      const parsed = JSON.parse(g);
+      // Anciens objectifs sauvegardés avant l'ajout des fibres : on complète avec la valeur par défaut.
+      setGoals({ ...parsed, fibres: parsed.fibres ?? defaultGoals.fibres });
+      setGoalsSet(true);
+    }
     if (s) setSavedMeals(JSON.parse(s));
     if (r === "tdee" || r === "objectif") setCalRef(r);
     const hist: DayHistory[] = [];
@@ -499,10 +504,11 @@ export default function NutritionPage() {
       const t = foods.reduce((acc, f) => ({
         calories: acc.calories + f.calories, proteines: acc.proteines + f.proteines,
         glucides: acc.glucides + f.glucides, lipides: acc.lipides + f.lipides,
-      }), { calories: 0, proteines: 0, glucides: 0, lipides: 0 });
+        fibres: acc.fibres + (f.fibres || 0),
+      }), { calories: 0, proteines: 0, glucides: 0, lipides: 0, fibres: 0 });
       await supabase.from("daily_summaries").upsert({
         user_id: userIdRef.current, date, ...t,
-        foods: foods.map(f => ({ name: f.name, calories: f.calories, proteines: f.proteines, glucides: f.glucides, lipides: f.lipides, repas: f.repas ?? null })),
+        foods: foods.map(f => ({ name: f.name, calories: f.calories, proteines: f.proteines, glucides: f.glucides, lipides: f.lipides, fibres: f.fibres ?? 0, repas: f.repas ?? null })),
         updated_at: new Date().toISOString(),
       }, { onConflict: "user_id,date" });
     }, 3000));
@@ -522,11 +528,13 @@ export default function NutritionPage() {
   const consumed = foods.reduce((acc, f) => ({
     calories: acc.calories + f.calories, proteines: acc.proteines + f.proteines,
     glucides: acc.glucides + f.glucides, lipides: acc.lipides + f.lipides,
-  }), { calories: 0, proteines: 0, glucides: 0, lipides: 0 });
+    fibres: acc.fibres + (f.fibres || 0),
+  }), { calories: 0, proteines: 0, glucides: 0, lipides: 0, fibres: 0 });
   const remaining = {
     calories:  Math.max(0, calTarget - consumed.calories),
     proteines: Math.max(0, Math.round(goals.proteines * macroScale) - consumed.proteines),
     glucides:  Math.max(0, Math.round(goals.glucides  * macroScale) - consumed.glucides),
+    fibres:    Math.max(0, Math.round(goals.fibres    * macroScale) - consumed.fibres),
     lipides:   Math.max(0, Math.round(goals.lipides   * macroScale) - consumed.lipides),
   };
 
@@ -560,6 +568,7 @@ export default function NutritionPage() {
       proteines: Math.max(0, Math.round(r.proteines * scale)),
       glucides:  Math.max(0, Math.round(r.glucides  * scale)),
       lipides:   Math.max(0, Math.round(r.lipides   * scale)),
+      fibres:    r.fibres !== undefined ? Math.max(0, Math.round(r.fibres * scale)) : undefined,
     };
   });
 
@@ -572,7 +581,8 @@ export default function NutritionPage() {
     proteines: acc.proteines + f.proteines,
     glucides:  acc.glucides  + f.glucides,
     lipides:   acc.lipides   + f.lipides,
-  }), { calories:0, proteines:0, glucides:0, lipides:0 });
+    fibres:    acc.fibres    + (f.fibres || 0),
+  }), { calories:0, proteines:0, glucides:0, lipides:0, fibres:0 });
 
   const todayCalForChart = selectedDate === realToday
     ? totals.calories
@@ -604,7 +614,7 @@ export default function NutritionPage() {
     setReportSending(true);
     const payload = JSON.stringify({
       calories: aiResult.calories, proteines: aiResult.proteines,
-      glucides: aiResult.glucides, lipides: aiResult.lipides,
+      glucides: aiResult.glucides, lipides: aiResult.lipides, fibres: aiResult.fibres,
       name: aiResult.name, description: description.trim(),
       photo: photoPreview, comment: reportComment.trim(),
     });
@@ -797,9 +807,10 @@ export default function NutritionPage() {
     proteines: Math.round((selected.nutriments.proteins_100g??0)*factor),
     glucides:  Math.round((selected.nutriments.carbohydrates_100g??0)*factor),
     lipides:   Math.round((selected.nutriments.fat_100g??0)*factor),
+    fibres:    Math.round((selected.nutriments.fiber_100g??0)*factor),
   } : null;
 
-  const saveMeal = (meal: { name: string; calories: number; proteines: number; glucides: number; lipides: number; base_qty?: number; unit?: string }) => {
+  const saveMeal = (meal: { name: string; calories: number; proteines: number; glucides: number; lipides: number; fibres?: number; base_qty?: number; unit?: string }) => {
     setSavedMeals(s => [...s, { id: Date.now().toString(), ...meal }]);
   };
 
@@ -812,6 +823,7 @@ export default function NutritionPage() {
       proteines: parseFloat(newProd.proteines.replace(",", ".")) || 0,
       glucides:  parseFloat(newProd.glucides.replace(",", "."))  || 0,
       lipides:   parseFloat(newProd.lipides.replace(",", "."))   || 0,
+      fibres:    parseFloat(newProd.fibres.replace(",", "."))    || 0,
       base_qty: base, unit: newProd.unit,
     });
     setShowNewProd(false); setNewProd(emptyProd);
@@ -823,6 +835,7 @@ export default function NutritionPage() {
     calories:  Math.round(selectedSaved.calories  * savedFactor),
     proteines: Math.round(selectedSaved.proteines * savedFactor),
     glucides:  Math.round(selectedSaved.glucides  * savedFactor),
+    fibres:    Math.round((selectedSaved.fibres ?? 0) * savedFactor),
     lipides:   Math.round(selectedSaved.lipides   * savedFactor),
   } : null;
 
@@ -851,12 +864,22 @@ export default function NutritionPage() {
     proteines: g.proteines.toString(),
     glucides:  g.glucides.toString(),
     lipides:   g.lipides.toString(),
+    fibres:    g.fibres.toString(),
   });
 
   const commitCalories = () => {
     const val = parseInt(rawGoal.calories);
     if (isNaN(val) || val <= 0) { syncRaw(goalDraft); return; }
     const next = adjustCalories(goalDraft, val);
+    setGoalDraft(next); syncRaw(next);
+  };
+
+  // Les fibres ne font pas partie du calcul calorique (P/G/L) : objectif independant,
+  // sans rééquilibrage des autres macros.
+  const commitFibres = () => {
+    const val = parseInt(rawGoal.fibres);
+    if (isNaN(val) || val < 0) { syncRaw(goalDraft); return; }
+    const next = { ...goalDraft, fibres: val };
     setGoalDraft(next); syncRaw(next);
   };
 
@@ -919,6 +942,7 @@ export default function NutritionPage() {
         <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Macronutriments</p>
         <div className="flex items-start justify-around">
           {macroConfig.map(m => <MacroBar key={m.key} label={m.label} consumed={totals[m.key]} goal={goals[m.key]} color={m.color}/>)}
+          <MacroBar label="Fibres" consumed={totals.fibres} goal={goals.fibres} color="#a08ec9"/>
         </div>
       </div>
 
@@ -993,7 +1017,7 @@ export default function NutritionPage() {
             {respectBudget ? (
               remaining.calories > 0 ? (
                 <p className="text-[0.65rem] tracking-wider text-[var(--t-text-25)]">
-                  Budget · {remaining.calories} kcal · P {remaining.proteines}g · G {remaining.glucides}g · L {remaining.lipides}g
+                  Budget · {remaining.calories} kcal · P {remaining.proteines}g · G {remaining.glucides}g · L {remaining.lipides}g · F {remaining.fibres}g
                 </p>
               ) : (
                 <p className="text-[0.65rem] tracking-wider text-[#7eb8a0]/60">Objectif calorique atteint</p>
@@ -1053,6 +1077,7 @@ export default function NutritionPage() {
                     <span className="text-[0.65rem] text-[#c9a84c]/70">P {idea.proteines}g</span>
                     <span className="text-[0.65rem] text-[#7eb8a0]/70">G {idea.glucides}g</span>
                     <span className="text-[0.65rem] text-[#e07070]/70">L {idea.lipides}g</span>
+                    <span className="text-[0.65rem] text-[#a08ec9]/70">F {idea.fibres ?? 0}g</span>
                   </div>
                 </div>
                 <button onClick={() => addFoodDirect(idea, ideaMealType)}
@@ -1091,7 +1116,7 @@ export default function NutritionPage() {
                   <div key={f.id} className="flex items-center justify-between px-5 py-3 border-t border-[var(--t-border-soft)] first:border-0 group">
                     <div>
                       <p className="text-xs text-[var(--t-text-70)]">{f.name}</p>
-                      <p className="text-[0.7rem] text-[var(--t-text-25)] mt-0.5">P {f.proteines}g · G {f.glucides}g · L {f.lipides}g</p>
+                      <p className="text-[0.7rem] text-[var(--t-text-25)] mt-0.5">P {f.proteines}g · G {f.glucides}g · L {f.lipides}g · F {f.fibres ?? 0}g</p>
                     </div>
                     <div className="flex items-center gap-3.5">
                       <span className="text-xs text-[var(--t-text-50)]">{f.calories} kcal</span>
@@ -1275,12 +1300,13 @@ export default function NutritionPage() {
                           <button onClick={() => setAiResult(null)} className="text-[0.65rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">Réestimer</button>
                         </div>
                         <p className="text-xs text-[var(--t-text-70)] mb-3">{aiResult.name}</p>
-                        <div className="grid grid-cols-4 gap-2">
+                        <div className="grid grid-cols-3 gap-2">
                           {[
-                            { label:"Calories",  val:aiResult.calories,  unit:"kcal", color:"text-[var(--t-text-60)]" },
-                            { label:"Protéines", val:aiResult.proteines, unit:"g",    color:"text-[#c9a84c]" },
-                            { label:"Glucides",  val:aiResult.glucides,  unit:"g",    color:"text-[#7eb8a0]" },
-                            { label:"Lipides",   val:aiResult.lipides,   unit:"g",    color:"text-[#e07070]" },
+                            { label:"Calories",  val:aiResult.calories,      unit:"kcal", color:"text-[var(--t-text-60)]" },
+                            { label:"Protéines", val:aiResult.proteines,     unit:"g",    color:"text-[#c9a84c]" },
+                            { label:"Glucides",  val:aiResult.glucides,      unit:"g",    color:"text-[#7eb8a0]" },
+                            { label:"Lipides",   val:aiResult.lipides,       unit:"g",    color:"text-[#e07070]" },
+                            { label:"Fibres",    val:aiResult.fibres ?? 0,   unit:"g",    color:"text-[#a08ec9]" },
                           ].map(s => (
                             <div key={s.label} className="text-center rounded-lg bg-[var(--t-bg)] border border-[var(--t-border)] py-3">
                               <p style={{ fontFamily:"var(--font-bebas)" }} className={`text-xl tracking-wide ${s.color}`}>{s.val}</p>
@@ -1294,11 +1320,12 @@ export default function NutritionPage() {
                         <p className="text-[0.65rem] tracking-wider uppercase text-[var(--t-text-20)] mb-2">Ajuster si nécessaire <span className="normal-case tracking-normal text-[var(--t-text-15)]">(les macros suivent les calories)</span></p>
                         <div className="flex flex-col gap-2">
                           <div><label className={labelCls}>Nom</label><input className={inputCls} value={aiResult.name} onChange={e => setAiResult(r => r ? {...r, name:e.target.value} : r)}/></div>
-                          <div className="grid grid-cols-4 gap-2">
+                          <div className="grid grid-cols-3 gap-2">
                             <div><label className={labelCls}>Cal</label><input className={inputCls} type="number" value={aiResult.calories} onChange={e => adjustAiCalories(+e.target.value)}/></div>
                             <div><label className={labelCls} style={{ color:"#c9a84c" }}>Prot</label><input className={inputCls} type="number" value={aiResult.proteines} onChange={e => setAiResult(r => r ? {...r, proteines:+e.target.value} : r)}/></div>
                             <div><label className={labelCls} style={{ color:"#7eb8a0" }}>Gluc</label><input className={inputCls} type="number" value={aiResult.glucides} onChange={e => setAiResult(r => r ? {...r, glucides:+e.target.value} : r)}/></div>
                             <div><label className={labelCls} style={{ color:"#e07070" }}>Lip</label><input className={inputCls} type="number" value={aiResult.lipides} onChange={e => setAiResult(r => r ? {...r, lipides:+e.target.value} : r)}/></div>
+                            <div><label className={labelCls} style={{ color:"#a08ec9" }}>Fib</label><input className={inputCls} type="number" value={aiResult.fibres ?? 0} onChange={e => setAiResult(r => r ? {...r, fibres:+e.target.value} : r)}/></div>
                           </div>
                         </div>
                       </div>
@@ -1408,12 +1435,13 @@ export default function NutritionPage() {
                         <button onClick={() => { setSelected(null); setQuery(""); }} className="text-[0.7rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">Changer</button>
                       </div>
                       <div><label className={labelCls}>Quantité (g)</label><input className={inputCls} type="number" value={quantity} onChange={e => setQuantity(e.target.value)}/></div>
-                      <div className="grid grid-cols-4 gap-2">
+                      <div className="grid grid-cols-3 gap-2">
                         {[
                           { label:"Calories",  val:computed.calories,  color:"text-[var(--t-text-60)]" },
                           { label:"Protéines", val:computed.proteines, color:"text-[#c9a84c]" },
                           { label:"Glucides",  val:computed.glucides,  color:"text-[#7eb8a0]" },
                           { label:"Lipides",   val:computed.lipides,   color:"text-[#e07070]" },
+                          { label:"Fibres",    val:computed.fibres,    color:"text-[#a08ec9]" },
                         ].map(s => (
                           <div key={s.label} className="text-center rounded-lg bg-[var(--t-bg)] border border-[var(--t-border)] py-3">
                             <p style={{ fontFamily:"var(--font-bebas)" }} className={`text-xl tracking-wide ${s.color}`}>{s.val}</p>
@@ -1428,6 +1456,7 @@ export default function NutritionPage() {
                             proteines: selected.nutriments.proteins_100g ?? 0,
                             glucides:  selected.nutriments.carbohydrates_100g ?? 0,
                             lipides:   selected.nutriments.fat_100g ?? 0,
+                            fibres:    selected.nutriments.fiber_100g ?? 0,
                             base_qty: 100, unit: "g",
                           })} disabled={savedMeals.some(s => s.name === selected.product_name)}
                           className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-lg text-[0.7rem] tracking-[0.15em] uppercase py-2.5 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
@@ -1476,12 +1505,13 @@ export default function NutritionPage() {
                         </div>
                       </div>
                       <p className="text-[0.65rem] text-[var(--t-text-25)]">Macros pour {newProd.base || "?"} {newProd.unit} :</p>
-                      <div className="grid grid-cols-4 gap-2">
+                      <div className="grid grid-cols-3 gap-2">
                         {([
                           { key: "calories",  label: "Kcal", color: "text-[var(--t-text-40)]" },
                           { key: "proteines", label: "Prot", color: "text-[#c9a84c]" },
                           { key: "glucides",  label: "Gluc", color: "text-[#7eb8a0]" },
                           { key: "lipides",   label: "Lip",  color: "text-[#e07070]" },
+                          { key: "fibres",    label: "Fib",  color: "text-[#a08ec9]" },
                         ] as const).map(({ key, label, color }) => (
                           <div key={key}>
                             <label className={`text-[0.62rem] tracking-wider uppercase block mb-1 ${color}`}>{label}</label>
@@ -1509,7 +1539,7 @@ export default function NutritionPage() {
                           <div>
                             <p className="text-xs text-[var(--t-text-70)]">{meal.name}</p>
                             <p className="text-[0.65rem] text-[var(--t-text-25)] mt-0.5">
-                              {meal.base_qty ? `Pour ${meal.base_qty} ${meal.unit ?? "g"} · ` : ""}P {Math.round(meal.proteines)}g · G {Math.round(meal.glucides)}g · L {Math.round(meal.lipides)}g
+                              {meal.base_qty ? `Pour ${meal.base_qty} ${meal.unit ?? "g"} · ` : ""}P {Math.round(meal.proteines)}g · G {Math.round(meal.glucides)}g · L {Math.round(meal.lipides)}g · F {Math.round(meal.fibres ?? 0)}g
                             </p>
                           </div>
                           <div className="flex items-center gap-3">
@@ -1530,12 +1560,13 @@ export default function NutritionPage() {
                       <div><label className={labelCls}>Quantité ({selectedSaved.unit ?? "g"})</label>
                         <input className={inputCls} type="number" inputMode="decimal" value={savedQty} onChange={e => setSavedQty(e.target.value)}/>
                       </div>
-                      <div className="grid grid-cols-4 gap-2">
+                      <div className="grid grid-cols-3 gap-2">
                         {[
                           { label:"Calories",  val:savedComputed.calories,  color:"text-[var(--t-text-60)]" },
                           { label:"Protéines", val:savedComputed.proteines, color:"text-[#c9a84c]" },
                           { label:"Glucides",  val:savedComputed.glucides,  color:"text-[#7eb8a0]" },
                           { label:"Lipides",   val:savedComputed.lipides,   color:"text-[#e07070]" },
+                          { label:"Fibres",    val:savedComputed.fibres,    color:"text-[#a08ec9]" },
                         ].map(s => (
                           <div key={s.label} className="text-center rounded-lg bg-[var(--t-bg)] border border-[var(--t-border)] py-3">
                             <p style={{ fontFamily:"var(--font-bebas)" }} className={`text-xl tracking-wide ${s.color}`}>{s.val}</p>
@@ -1591,6 +1622,14 @@ export default function NutritionPage() {
                   <p className="text-[0.65rem] text-[var(--t-text-15)] mt-1">Les autres macros s&apos;ajustent pour rester à {goalDraft.calories} kcal</p>
                 </div>
               ))}
+              <div>
+                <label className="text-[0.7rem] tracking-[0.2em] uppercase block mb-1.5 text-[var(--t-text-40)]">Fibres (g)</label>
+                <input className={inputCls} type="number" value={rawGoal.fibres}
+                  onChange={e => setRawGoal(r => ({ ...r, fibres: e.target.value }))}
+                  onBlur={commitFibres}
+                  onKeyDown={e => { if (e.key === "Enter") commitFibres(); }}/>
+                <p className="text-[0.65rem] text-[var(--t-text-15)] mt-1">Objectif indépendant, non lié aux calories</p>
+              </div>
             </div>
             <button onClick={() => { setGoals(goalDraft); setGoalsSet(true); setShowGoals(false); }}
               className="w-full bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg">

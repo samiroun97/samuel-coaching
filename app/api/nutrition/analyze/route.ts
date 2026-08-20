@@ -9,7 +9,7 @@ Procède ingrédient par ingrédient, en écrivant ton raisonnement avant de con
 
 Garde ce raisonnement bref et strictement textuel : une ligne par ingrédient au format "ingrédient — poids estimé — calcul kcal/P/G/L", sans titres, sans tableau, sans markdown, sans mise en gras, sans phrase de conclusion.
 
-Une fois ce calcul écrit, termine ta réponse — et seulement à la toute fin — par l'objet JSON final sur sa propre ligne, sans markdown ni balises code, au format exact {"name": string, "calories": integer, "proteines": integer, "glucides": integer, "lipides": integer}, où calories est bien la somme que tu viens de calculer. Toutes les valeurs sont des entiers. Estime des portions raisonnables si non précisées.
+Une fois ce calcul écrit, termine ta réponse — et seulement à la toute fin — par l'objet JSON final sur sa propre ligne, sans markdown ni balises code, au format exact {"name": string, "calories": integer, "proteines": integer, "glucides": integer, "lipides": integer, "fibres": integer}, où calories est bien la somme que tu viens de calculer et fibres ton estimation des fibres alimentaires (g) à partir des ingrédients identifiés (ex : légumes, légumineuses, céréales complètes, fruits). Toutes les valeurs sont des entiers. Estime des portions raisonnables si non précisées.
 
 Si la photo montre un tableau/étiquette de valeurs nutritionnelles (emballage produit), c'est ta source prioritaire et la plus fiable : lis les chiffres exacts imprimés dessus plutôt que d'estimer à partir de l'apparence du produit ou de son nom. Ces tableaux sont généralement donnés "pour 100g" — vérifie l'unité de référence indiquée, puis calcule pour la quantité réellement consommée (poids/portion précisé par l'utilisateur, ou la portion de référence de l'étiquette si rien n'est précisé). N'ignore jamais un tableau de valeurs nutritionnelles visible au profit d'une estimation générique.
 
@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
 
     const parsed = JSON.parse(lastObject);
     if (portionMultiplier !== 1) {
-      for (const key of ["calories", "proteines", "glucides", "lipides"] as const) {
+      for (const key of ["calories", "proteines", "glucides", "lipides", "fibres"] as const) {
         if (typeof parsed[key] === "number") parsed[key] = Math.round(parsed[key] * portionMultiplier);
       }
     }
