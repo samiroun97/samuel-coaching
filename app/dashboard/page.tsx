@@ -41,8 +41,8 @@ function CalorieRow({ consumed, target, expended, goalDefined }: { consumed: num
   const dash    = goalDefined ? circ * Math.min(pct, 1) : 0;
 
   return (
-    <div className="flex items-start justify-center gap-1 sm:gap-4">
-      <div className="flex flex-col items-center text-center w-16 sm:w-20 shrink-0 pt-6 sm:pt-8">
+    <div className="flex items-start justify-center gap-0.5 sm:gap-2">
+      <div className="flex flex-col items-center text-center w-16 sm:w-20 shrink-0 pt-1 sm:pt-2">
         <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl sm:text-3xl text-[var(--t-text)] tracking-wide leading-none">
           {goalDefined ? Math.abs(remaining).toLocaleString("fr-FR") : "—"}
         </p>
@@ -64,7 +64,7 @@ function CalorieRow({ consumed, target, expended, goalDefined }: { consumed: num
         </div>
       </div>
 
-      <div className="flex flex-col items-center text-center w-16 sm:w-20 shrink-0 pt-6 sm:pt-8">
+      <div className="flex flex-col items-center text-center w-16 sm:w-20 shrink-0 pt-1 sm:pt-2">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--t-text-25)] mb-1">
           <path d="M12 2c-3.5 4-5.5 7-5.5 10.5a5.5 5.5 0 0011 0c0-1.3-.4-2.6-1.3-3.6.2 1.7-.9 2.6-1.9 2.6-1.3 0-2-1.2-1.2-2.7C13.9 7 14 4.5 12 2z"/>
         </svg>
