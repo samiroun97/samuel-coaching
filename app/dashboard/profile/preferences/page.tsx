@@ -5,8 +5,9 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { isPushSupported, subscribeToPush, unsubscribeFromPush } from "@/lib/push";
 import { isCoachUser } from "@/lib/coach";
+import { apiPost } from "@/lib/apiClient";
 
-type SectionKey = "profil" | "notifications" | "password";
+type SectionKey = "profil" | "notifications" | "steps" | "password";
 
 // Ligne cliquable style "liste de préférences" : label + chevron, qui déroule
 // son contenu (children) juste en dessous quand ouverte.
@@ -67,6 +68,11 @@ export default function PreferencesPage() {
   const [pushLoading,   setPushLoading]   = useState(false);
   const [pushError,     setPushError]     = useState("");
 
+  const [stepsToken,   setStepsToken]   = useState<string | null>(null);
+  const [stepsLoading, setStepsLoading] = useState(false);
+  const [stepsError,   setStepsError]   = useState("");
+  const [copiedField,  setCopiedField]  = useState<"url" | "token" | null>(null);
+
   const [newPassword,     setNewPassword]     = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [pwdSaving, setPwdSaving] = useState(false);
@@ -102,6 +108,26 @@ export default function PreferencesPage() {
       setPushError(e instanceof Error ? e.message : "Erreur");
     }
     setPushLoading(false);
+  };
+
+  const loadStepsToken = async (regenerate = false) => {
+    setStepsError(""); setStepsLoading(true);
+    try {
+      const res = await apiPost("/api/programme/steps-token", { regenerate });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || `Erreur ${res.status}`);
+      setStepsToken(json.token);
+    } catch (e: unknown) {
+      setStepsError(e instanceof Error ? e.message : "Erreur");
+    }
+    setStepsLoading(false);
+  };
+
+  const copyField = (field: "url" | "token", value: string) => {
+    navigator.clipboard.writeText(value).then(() => {
+      setCopiedField(field);
+      setTimeout(() => setCopiedField(null), 1500);
+    });
   };
 
   const save = async () => {
@@ -242,6 +268,58 @@ export default function PreferencesPage() {
             </div>
           )}
           {pushError && <p className="text-xs text-[#e07070] rounded-lg border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2 mt-3">{pushError}</p>}
+        </Row>
+
+        <Row label="Pas (iPhone)" sublabel="Synchro automatique via Raccourcis" open={openSection === "steps"}
+          onClick={() => { toggle("steps"); if (openSection !== "steps" && !stepsToken) loadStepsToken(); }}>
+          {stepsLoading && !stepsToken ? (
+            <div className="flex items-center gap-2 text-xs text-[var(--t-text-30)]">
+              <div className="w-3 h-3 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>Génération du lien…
+            </div>
+          ) : stepsToken ? (
+            <div className="flex flex-col gap-4">
+              <p className="text-xs text-[var(--t-text-35)] leading-relaxed">
+                Configure un Raccourci Apple qui envoie automatiquement tes pas du jour, sans rien installer :
+              </p>
+              <div>
+                <label className={lbl}>URL du webhook</label>
+                <div className="flex gap-2">
+                  <input readOnly className={`${inp} font-mono text-xs`} value={typeof window !== "undefined" ? `${window.location.origin}/api/programme/steps-webhook` : ""}/>
+                  <button onClick={() => copyField("url", `${window.location.origin}/api/programme/steps-webhook`)}
+                    className="shrink-0 px-3 rounded-lg border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-70)] hover:border-[var(--t-text-25)] transition-colors text-xs">
+                    {copiedField === "url" ? "Copié ✓" : "Copier"}
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className={lbl}>Jeton personnel</label>
+                <div className="flex gap-2">
+                  <input readOnly className={`${inp} font-mono text-xs`} value={stepsToken}/>
+                  <button onClick={() => copyField("token", stepsToken)}
+                    className="shrink-0 px-3 rounded-lg border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-70)] hover:border-[var(--t-text-25)] transition-colors text-xs">
+                    {copiedField === "token" ? "Copié ✓" : "Copier"}
+                  </button>
+                </div>
+              </div>
+
+              <div className="border border-[var(--t-border-soft)] rounded-lg p-4 flex flex-col gap-2">
+                <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--t-text-40)] mb-1">Configuration (une fois)</p>
+                <ol className="text-[0.72rem] text-[var(--t-text-40)] leading-relaxed list-decimal list-inside flex flex-col gap-1.5">
+                  <li>Ouvre l&apos;app <strong className="text-[var(--t-text-60)]">Raccourcis</strong> sur ton iPhone, crée un nouveau Raccourci.</li>
+                  <li>Ajoute <strong className="text-[var(--t-text-60)]">Obtenir les échantillons de santé</strong> (Type : Pas, Le : Aujourd&apos;hui), puis <strong className="text-[var(--t-text-60)]">Additionner les nombres</strong> pour obtenir le total du jour.</li>
+                  <li>Ajoute <strong className="text-[var(--t-text-60)]">Formater la date</strong> sur &laquo; Date actuelle &raquo;, format personnalisé <span className="font-mono">AAAA-MM-jj</span>.</li>
+                  <li>Ajoute <strong className="text-[var(--t-text-60)]">Obtenir le contenu de l&apos;URL</strong> : colle l&apos;URL ci-dessus, méthode <span className="font-mono">POST</span>, en-tête <span className="font-mono">Authorization: Bearer &lt;ton jeton&gt;</span>, corps JSON <span className="font-mono">{"{ \"date\": …, \"steps\": … }"}</span> avec les variables des étapes précédentes.</li>
+                  <li>Dans l&apos;onglet <strong className="text-[var(--t-text-60)]">Automatisation</strong>, crée une automatisation quotidienne (ex. 23h) qui lance ce Raccourci sans demander de confirmation.</li>
+                </ol>
+              </div>
+
+              <button onClick={() => loadStepsToken(true)} disabled={stepsLoading}
+                className="text-[0.65rem] tracking-[0.15em] uppercase text-[#e07070]/70 hover:text-[#e07070] transition-colors self-start disabled:opacity-50">
+                Régénérer le jeton (invalide l&apos;ancien)
+              </button>
+            </div>
+          ) : null}
+          {stepsError && <p className="text-xs text-[#e07070] rounded-lg border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2 mt-3">{stepsError}</p>}
         </Row>
 
         <Row label="Mot de passe" sublabel="Changer ton mot de passe" open={openSection === "password"} onClick={() => toggle("password")}>

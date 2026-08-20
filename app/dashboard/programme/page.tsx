@@ -6,6 +6,7 @@ import { getMyCoachEmail } from "@/lib/coach";
 import { SeanceBody } from "@/components/SeancePreview";
 import { DateNav } from "@/components/DateNav";
 import { useSelectedDate, todayStr } from "@/lib/useSelectedDate";
+import { syncSteps } from "@/lib/steps";
 
 type Profile = { prenom: string; poids: number; taille: number; age: number; sexe: string };
 type LoggedWorkout = {
@@ -35,6 +36,7 @@ const neatFromSteps = (steps: number, poids: number) =>
 
 export default function ProgrammePage() {
   const [profile,      setProfile]      = useState<Profile | null>(null);
+  const [userId,       setUserId]       = useState<string | null>(null);
   const [workouts,     setWorkouts]     = useState<LoggedWorkout[]>([]);
   const [selectedDate, setSelectedDate] = useSelectedDate();
   const [steps,        setSteps]        = useState(0);
@@ -98,6 +100,7 @@ export default function ProgrammePage() {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+      setUserId(user.id);
       userEmailRef.current = user.email ?? "";
       getMyCoachEmail(user.id).then(email => { coachEmailRef.current = email; });
       const { data: p } = await supabase.from("profiles").select("prenom,poids,taille,age,sexe").eq("id", user.id).single();
@@ -120,13 +123,30 @@ export default function ProgrammePage() {
     const savedS = localStorage.getItem(`steps_${selectedDate}`);
     if (savedS) { const n = parseInt(savedS); setSteps(n); setStepsInput(n.toString()); }
     else { setSteps(0); setStepsInput("0"); }
-  }, [selectedDate]);
+
+    // Les pas peuvent aussi arriver via le Raccourci iPhone (écriture serveur, jamais
+    // dans le localStorage de cet appareil) — on les récupère en tâche de fond et on
+    // met à jour l'affichage si Supabase a une valeur plus récente.
+    if (!userId) return;
+    let cancelled = false;
+    syncSteps(userId, [selectedDate]).then(() => {
+      if (cancelled) return;
+      const s = localStorage.getItem(`steps_${selectedDate}`);
+      if (s) { const n = parseInt(s); setSteps(n); setStepsInput(n.toString()); }
+    });
+    return () => { cancelled = true; };
+  }, [selectedDate, userId]);
 
   const saveSteps = (n: number) => {
     const clamped = Math.max(0, n);
     setSteps(clamped);
     setStepsInput(clamped.toString());
     localStorage.setItem(`steps_${selectedDate}`, clamped.toString());
+    if (userId) {
+      supabase.from("steps_log").upsert({
+        user_id: userId, date: selectedDate, steps: clamped, source: "manuel", updated_at: new Date().toISOString(),
+      }, { onConflict: "user_id,date" });
+    }
   };
 
   const saveGoal = (g: number) => {

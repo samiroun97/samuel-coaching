@@ -6,6 +6,7 @@ import { getMyCoachEmail } from "@/lib/coach";
 import { DateNav } from "@/components/DateNav";
 import { CalRefToggle } from "@/components/CalRefToggle";
 import { useSelectedDate, todayStr } from "@/lib/useSelectedDate";
+import { syncSteps } from "@/lib/steps";
 import { BrowserMultiFormatReader } from "@zxing/browser";
 import type { IScannerControls } from "@zxing/browser";
 import { BarcodeFormat, DecodeHintType } from "@zxing/library";
@@ -532,13 +533,19 @@ export default function NutritionPage() {
 
   // NEAT (pas) + EAT (entraînements) du jour sélectionné, comme sur l'accueil
   useEffect(() => {
-    try {
-      const steps = parseInt(localStorage.getItem(`steps_${selectedDate}`) ?? "0") || 0;
-      const neat  = Math.round(steps * 0.04 * ((miniProfile?.poids ?? 70) / 70));
-      const logs: { date: string; calories_burned: number }[] = JSON.parse(localStorage.getItem("programme_logs") ?? "[]");
-      const eat   = logs.filter(l => l.date.startsWith(selectedDate)).reduce((s, l) => s + l.calories_burned, 0);
-      setTdeeParts({ neat, eat });
-    } catch { setTdeeParts({ neat: 0, eat: 0 }); }
+    const compute = () => {
+      try {
+        const steps = parseInt(localStorage.getItem(`steps_${selectedDate}`) ?? "0") || 0;
+        const neat  = Math.round(steps * 0.04 * ((miniProfile?.poids ?? 70) / 70));
+        const logs: { date: string; calories_burned: number }[] = JSON.parse(localStorage.getItem("programme_logs") ?? "[]");
+        const eat   = logs.filter(l => l.date.startsWith(selectedDate)).reduce((s, l) => s + l.calories_burned, 0);
+        setTdeeParts({ neat, eat });
+      } catch { setTdeeParts({ neat: 0, eat: 0 }); }
+    };
+    compute();
+    // Rattrape les pas reçus via le Raccourci iPhone (écriture serveur, jamais dans le
+    // localStorage de cet appareil) et recalcule le NEAT si une valeur plus récente existe.
+    if (userIdRef.current) syncSteps(userIdRef.current, [selectedDate]).then(compute);
   }, [selectedDate, miniProfile]);
   useEffect(() => {
     // Capturé ici (et non lu dans le setTimeout) : la ref peut déjà pointer sur un autre

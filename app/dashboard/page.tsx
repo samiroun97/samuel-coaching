@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { DateNav } from "@/components/DateNav";
 import { CalRefToggle } from "@/components/CalRefToggle";
 import { useSelectedDate } from "@/lib/useSelectedDate";
+import { syncSteps } from "@/lib/steps";
 
 type Profile = {
   prenom: string; nom: string; age: number; poids: number; taille: number; sexe: string;
@@ -202,12 +203,21 @@ export default function AccueilPage() {
       setNeat(Math.round(steps * 0.04 * ((profile?.poids ?? 70) / 70)));
     } catch { /* ignore */ }
 
+    // Rattrape les pas reçus via le Raccourci iPhone (écrits côté serveur, jamais dans
+    // le localStorage de cet appareil) et réajuste le NEAT si une valeur plus récente existe.
+    if (userId) {
+      syncSteps(userId, [selectedDate]).then(() => {
+        const steps = parseInt(localStorage.getItem(`steps_${selectedDate}`) ?? "0") || 0;
+        setNeat(Math.round(steps * 0.04 * ((profile?.poids ?? 70) / 70)));
+      });
+    }
+
     // EAT (workouts for selected day)
     try {
       const logs: Log[] = JSON.parse(localStorage.getItem("programme_logs") ?? "[]");
       setEat(logs.filter(l => l.date.startsWith(selectedDate)).reduce((s, l) => s + l.calories_burned, 0));
     } catch { /* ignore */ }
-  }, [selectedDate, profile]);
+  }, [selectedDate, profile, userId]);
 
   const lastWeight   = weightHist[0]?.weight ?? profile?.poids ?? null;
   const needsBF      = daysSinceBF === null || daysSinceBF >= 14;

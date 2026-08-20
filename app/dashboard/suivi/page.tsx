@@ -9,6 +9,7 @@ import { FeedbackRow } from "@/components/FeedbackRow";
 import { CalendarPicker } from "@/components/CalendarPicker";
 import { isCoachUser, getMyCoachEmail } from "@/lib/coach";
 import { useSelectedDate } from "@/lib/useSelectedDate";
+import { syncSteps } from "@/lib/steps";
 
 type Profile      = { prenom?: string; sexe?: string; poids?: number; taille?: number; age?: number; objectifs?: string; seances_par_semaine?: number; experience?: string; niveau_activite?: string };
 type WeightEntry  = { id: string; date: string; weight: number };
@@ -253,6 +254,10 @@ export default function SuiviPage() {
       const todayStr = new Date().toISOString().split("T")[0];
       const effectiveDates = dates.filter(dt => dt <= todayStr);
       const dayCount = effectiveDates.length || 1;
+
+      // Rattrape les pas reçus via le Raccourci iPhone pour toute la semaine (écriture
+      // serveur, jamais dans le localStorage de cet appareil) avant de calculer le bilan.
+      await syncSteps(userId, effectiveDates);
 
       // Lu depuis le stockage local (même source que "Aliments du jour"), pas depuis la
       // synchro Supabase : celle-ci est différée/best-effort et peut prendre du retard sur
