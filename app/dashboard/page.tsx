@@ -75,18 +75,24 @@ function CalorieRow({ consumed, target, expended, goalDefined }: { consumed: num
   );
 }
 
-function MiniBar({ label, consumed, goal, color }: { label: string; consumed: number; goal: number; color: string }) {
+function MacroRing({ label, consumed, goal, color }: { label: string; consumed: number; goal: number; color: string }) {
+  const r = 26, circ = 2 * Math.PI * r;
   const pct = goal > 0 ? Math.min(consumed / goal, 1) : 0;
   return (
-    <div>
-      <div className="flex justify-between text-[0.62rem] tracking-wider mb-1.5">
-        <span className="uppercase text-[var(--t-text-30)]">{label}</span>
-        <span style={{ color }}>{consumed}g <span className="text-[var(--t-text-20)]">/ {goal}g</span></span>
+    <div className="flex flex-col items-center gap-2">
+      <div className="relative w-16 h-16 sm:w-[70px] sm:h-[70px] shrink-0">
+        <svg viewBox="0 0 64 64" className="-rotate-90 w-full h-full">
+          <circle cx="32" cy="32" r={r} fill="none" stroke="var(--t-track)" strokeWidth="5"/>
+          <circle cx="32" cy="32" r={r} fill="none" stroke={color} strokeWidth="5"
+            strokeDasharray={`${circ * pct} ${circ}`} strokeLinecap="round"
+            style={{ transition: "stroke-dasharray 0.6s ease" }}/>
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+          <span className="text-xs sm:text-sm font-bold text-[var(--t-text)] leading-none">{consumed}</span>
+          <span className="text-[0.5rem] text-[var(--t-text-25)] mt-0.5">/{goal}g</span>
+        </div>
       </div>
-      <div className="h-1 bg-[var(--t-border-soft)] rounded-full">
-        <div className="h-full rounded-full transition-all duration-500"
-          style={{ width: `${pct * 100}%`, backgroundColor: color, boxShadow: `0 0 8px ${color}80` }}/>
-      </div>
+      <span className="text-[0.58rem] tracking-[0.12em] uppercase text-[var(--t-text-30)]">{label}</span>
     </div>
   );
 }
@@ -353,10 +359,10 @@ export default function AccueilPage() {
         </div>
 
         {/* Macros */}
-        <div className="mt-6 pt-5 border-t border-[var(--t-border-soft)] flex flex-col gap-2.5">
-          <MiniBar label="Protéines" consumed={consumed.proteines} goal={goals.proteines} color="#F3F4F6"/>
-          <MiniBar label="Glucides"  consumed={consumed.glucides}  goal={goals.glucides}  color="#e0834a"/>
-          <MiniBar label="Lipides"   consumed={consumed.lipides}   goal={goals.lipides}   color="#9c8563"/>
+        <div className="mt-6 pt-5 border-t border-[var(--t-border-soft)] flex items-start justify-around">
+          <MacroRing label="Protéines" consumed={consumed.proteines} goal={goals.proteines} color="#F3F4F6"/>
+          <MacroRing label="Glucides"  consumed={consumed.glucides}  goal={goals.glucides}  color="#e0834a"/>
+          <MacroRing label="Lipides"   consumed={consumed.lipides}   goal={goals.lipides}   color="#9c8563"/>
         </div>
 
         <Link href="/dashboard/nutrition"

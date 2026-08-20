@@ -208,16 +208,23 @@ function CalorieRow({ consumed, target, expended, goalDefined }: { consumed: num
 }
 
 function MacroBar({ label, consumed, goal, color }: { label: string; consumed: number; goal: number; color: string }) {
-  const pct = Math.min((consumed/(goal||1))*100, 100);
+  const r = 28, circ = 2 * Math.PI * r;
+  const pct = goal > 0 ? Math.min(consumed / goal, 1) : 0;
   return (
-    <div>
-      <div className="flex justify-between items-center mb-1.5">
-        <span className="text-[0.7rem] tracking-[0.15em] uppercase text-[var(--t-text-40)]">{label}</span>
-        <span className="text-xs text-[var(--t-text-60)]">{consumed}<span className="text-[var(--t-text-25)]"> / {goal}g</span></span>
+    <div className="flex flex-col items-center gap-2">
+      <div className="relative w-[70px] h-[70px] shrink-0">
+        <svg viewBox="0 0 68 68" className="-rotate-90 w-full h-full">
+          <circle cx="34" cy="34" r={r} fill="none" stroke="var(--t-track)" strokeWidth="5"/>
+          <circle cx="34" cy="34" r={r} fill="none" stroke={color} strokeWidth="5"
+            strokeDasharray={`${circ * pct} ${circ}`} strokeLinecap="round"
+            style={{ transition: "stroke-dasharray 0.7s ease" }}/>
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+          <span className="text-sm font-bold text-[var(--t-text)] leading-none">{consumed}</span>
+          <span className="text-[0.55rem] text-[var(--t-text-25)] mt-0.5">/{goal}g</span>
+        </div>
       </div>
-      <div className="h-1.5 bg-[var(--t-track)] w-full rounded-full">
-        <div className="h-full transition-all duration-700 rounded-full" style={{ width:`${pct}%`, backgroundColor:color, boxShadow:`0 0 8px ${color}80` }}/>
-      </div>
+      <span className="text-[0.62rem] tracking-[0.15em] uppercase text-[var(--t-text-40)]">{label}</span>
     </div>
   );
 }
@@ -919,7 +926,7 @@ export default function NutritionPage() {
           </svg>
         </button>
         {showMacros && (
-          <div className="px-6 pb-6 pt-1 border-t border-[var(--t-border-soft)] flex flex-col gap-5">
+          <div className="px-6 pb-6 pt-3 border-t border-[var(--t-border-soft)] flex items-start justify-around">
             {macroConfig.map(m => <MacroBar key={m.key} label={m.label} consumed={totals[m.key]} goal={goals[m.key]} color={m.color}/>)}
           </div>
         )}
