@@ -35,54 +35,23 @@ const MEAL_TYPE_COLOR: Record<string, string> = {
   "Autres":         "#8a8a8a",
 };
 
+const MEAL_TYPE_ICON_SRC: Record<string, string> = {
+  "Petit-déjeuner": "/icons/meal-types/petit-dejeuner.svg",
+  "Déjeuner":       "/icons/meal-types/dejeuner.svg",
+  "Dîner":          "/icons/meal-types/diner.svg",
+  "Collation":      "/icons/meal-types/collation.svg",
+};
+
 function MealTypeIcon({ type, className }: { type: string; className?: string }) {
-  const common = { width: 12, height: 12, viewBox: "0 0 24 24", className };
-  switch (type) {
-    case "Petit-déjeuner": // lever de soleil (horizon)
-      return (
-        <svg {...common} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="13" r="4"/>
-          <line x1="12" y1="4" x2="12" y2="6"/>
-          <line x1="5" y1="13" x2="3" y2="13"/>
-          <line x1="21" y1="13" x2="19" y2="13"/>
-          <line x1="6.5" y1="7.5" x2="5" y2="6"/>
-          <line x1="19" y1="6" x2="17.5" y2="7.5"/>
-          <line x1="3" y1="20" x2="21" y2="20"/>
-        </svg>
-      );
-    case "Déjeuner": // soleil au zénith
-      return (
-        <svg {...common} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="4"/>
-          <line x1="12" y1="3" x2="12" y2="5"/>
-          <line x1="12" y1="19" x2="12" y2="21"/>
-          <line x1="3" y1="12" x2="5" y2="12"/>
-          <line x1="19" y1="12" x2="21" y2="12"/>
-          <line x1="5.6" y1="5.6" x2="7" y2="7"/>
-          <line x1="17" y1="17" x2="18.4" y2="18.4"/>
-          <line x1="5.6" y1="18.4" x2="7" y2="17"/>
-          <line x1="17" y1="7" x2="18.4" y2="5.6"/>
-        </svg>
-      );
-    case "Dîner": // lune
-      return (
-        <svg {...common} fill="currentColor" stroke="none">
-          <path d="M20 14.5A8.5 8.5 0 119.5 4a7 7 0 1010.5 10.5z"/>
-        </svg>
-      );
-    case "Collation": // étincelle
-      return (
-        <svg {...common} fill="currentColor" stroke="none">
-          <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z"/>
-        </svg>
-      );
-    default: // Autres — points
-      return (
-        <svg {...common} fill="currentColor" stroke="none">
-          <circle cx="6" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18" cy="12" r="1.6"/>
-        </svg>
-      );
+  const src = MEAL_TYPE_ICON_SRC[type];
+  if (!src) { // Autres — points
+    return (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none" className={className}>
+        <circle cx="6" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18" cy="12" r="1.6"/>
+      </svg>
+    );
   }
+  return <img src={src} alt="" width={16} height={16} className={className}/>;
 }
 type OFFProduct = { product_name: string; brands?: string; nutriments: { "energy-kcal_100g"?: number; proteins_100g?: number; carbohydrates_100g?: number; fat_100g?: number; fiber_100g?: number } };
 // base_qty/unit : produit dont les macros valent pour une quantité de base (ex. 100 ml) — la quantité est choisie à l'ajout.
@@ -1101,7 +1070,7 @@ export default function NutritionPage() {
               style={ideaMealType === t
                 ? { borderColor: MEAL_TYPE_COLOR[t], color: MEAL_TYPE_COLOR[t], backgroundColor: `${MEAL_TYPE_COLOR[t]}18` }
                 : undefined}>
-              <MealTypeIcon type={t} className={ideaMealType === t ? "" : "text-[var(--t-text-30)]"}/>
+              <MealTypeIcon type={t} className={`transition-opacity ${ideaMealType === t ? "opacity-100" : "opacity-45"}`}/>
               {t}
             </button>
           ))}
@@ -1287,7 +1256,7 @@ export default function NutritionPage() {
                       style={addMealType === t
                         ? { borderColor: MEAL_TYPE_COLOR[t], color: MEAL_TYPE_COLOR[t], backgroundColor: `${MEAL_TYPE_COLOR[t]}18` }
                         : undefined}>
-                      <MealTypeIcon type={t} className={addMealType === t ? "" : "text-[var(--t-text-30)]"}/>
+                      <MealTypeIcon type={t} className={`transition-opacity ${addMealType === t ? "opacity-100" : "opacity-45"}`}/>
                       {t}
                     </button>
                   ))}
