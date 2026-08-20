@@ -175,8 +175,12 @@ function CalorieRow({ consumed, target, expended, goalDefined }: { consumed: num
   return (
     <div className="flex items-center justify-center gap-2 sm:gap-6">
       <div className="flex flex-col items-center text-center w-16 sm:w-20 shrink-0">
-        <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl sm:text-3xl text-[var(--t-text)] tracking-wide leading-none">{consumed.toLocaleString("fr-FR")}</p>
-        <p className="text-[0.55rem] sm:text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mt-1.5">Consommées</p>
+        <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl sm:text-3xl text-[var(--t-text)] tracking-wide leading-none">
+          {goalDefined ? Math.abs(remaining).toLocaleString("fr-FR") : "—"}
+        </p>
+        <p className="text-[0.55rem] sm:text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mt-1.5">
+          kcal {goalDefined ? (over ? "en surplus" : "restantes") : "à définir"}
+        </p>
       </div>
 
       <div className="relative shrink-0 w-[160px] h-[160px] sm:w-[190px] sm:h-[190px]">
@@ -187,12 +191,8 @@ function CalorieRow({ consumed, target, expended, goalDefined }: { consumed: num
             style={{ transition: "stroke-dasharray 0.6s ease" }}/>
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl sm:text-4xl text-[var(--t-text)] tracking-wide leading-none">
-            {goalDefined ? Math.abs(remaining).toLocaleString("fr-FR") : "—"}
-          </p>
-          <p className="text-[0.55rem] sm:text-[0.6rem] tracking-[0.2em] uppercase text-[var(--t-text-30)] mt-1.5">
-            kcal {goalDefined ? (over ? "en surplus" : "restantes") : "à définir"}
-          </p>
+          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl sm:text-4xl text-[var(--t-text)] tracking-wide leading-none">{consumed.toLocaleString("fr-FR")}</p>
+          <p className="text-[0.55rem] sm:text-[0.6rem] tracking-[0.2em] uppercase text-[var(--t-text-30)] mt-1.5">Consommées</p>
         </div>
       </div>
 
