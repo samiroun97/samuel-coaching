@@ -1,7 +1,8 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { DateNav } from "@/components/DateNav";
 
 type Profile = {
   prenom: string; nom: string; age: number; poids: number; taille: number; sexe: string;
@@ -92,56 +93,6 @@ function MiniBar({ label, consumed, goal, color }: { label: string; consumed: nu
 
 type WeightEntry = { id: string; date: string; weight: number };
 type BFEntry     = { id: string; date: string; body_fat: number };
-
-function DateNav({ date, onChange }: { date: string; onChange: (d: string) => void }) {
-  const todayD  = new Date().toISOString().split("T")[0];
-  const isToday = date === todayD;
-  const dateInputRef = useRef<HTMLInputElement>(null);
-  const go = (n: number) => {
-    const d = new Date(date + "T12:00:00");
-    d.setDate(d.getDate() + n);
-    onChange(d.toISOString().split("T")[0]);
-  };
-  const openPicker = () => {
-    const input = dateInputRef.current;
-    if (!input) return;
-    if (typeof input.showPicker === "function") {
-      try { input.showPicker(); } catch { input.focus(); input.click(); }
-    } else {
-      input.focus();
-      input.click();
-    }
-  };
-  return (
-    <div className="flex items-center justify-between mb-5">
-      <button onClick={() => go(-1)} className="text-[var(--t-text-30)] hover:text-[var(--t-text-60)] transition-colors w-8 h-8 flex items-center justify-center text-lg">‹</button>
-      <div className="flex items-center gap-3">
-        <label className="relative cursor-pointer group flex items-center gap-1.5" onClick={openPicker}>
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--t-text-30)] group-hover:text-[var(--t-text-50)] transition-colors shrink-0">
-            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-          </svg>
-          <span className="text-[0.7rem] tracking-[0.15em] uppercase text-[var(--t-text-50)] select-none group-hover:text-[var(--t-text-70)] transition-colors">
-            {isToday ? "Aujourd'hui" : new Date(date + "T12:00:00").toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" })}
-          </span>
-          <input
-            ref={dateInputRef}
-            type="date" value={date} max={todayD}
-            onChange={e => { if (e.target.value) onChange(e.target.value); }}
-            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-          />
-        </label>
-        {!isToday && (
-          <button onClick={() => onChange(todayD)}
-            className="text-[0.45rem] tracking-wider uppercase text-[#c9a84c]/60 hover:text-[#c9a84c] transition-colors border border-[#c9a84c]/20 hover:border-[#c9a84c]/40 px-2 py-0.5">
-            Aujourd'hui
-          </button>
-        )}
-      </div>
-      <button onClick={() => go(1)} disabled={isToday}
-        className="text-[var(--t-text-30)] hover:text-[var(--t-text-60)] disabled:opacity-20 transition-colors w-8 h-8 flex items-center justify-center text-lg">›</button>
-    </div>
-  );
-}
 
 export default function AccueilPage() {
   const [profile,      setProfile]      = useState<Profile | null>(null);

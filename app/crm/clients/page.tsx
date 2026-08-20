@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
+import { CalendarPicker } from "@/components/CalendarPicker";
 
 const STATUS_CFG = {
   actif:   { label: "Actif",   color: "#7eb8a0" },
@@ -65,6 +66,8 @@ export default function ClientsPage() {
   const [itemForm,     setItemForm]     = useState({ meal_type: "Petit-déjeuner", name: "", calories: "", proteines: "", glucides: "", lipides: "" });
   const [statusSaving, setStatusSaving] = useState(false);
   const [deleting,     setDeleting]     = useState(false);
+  const [showSubEndPicker, setShowSubEndPicker] = useState(false);
+  const [showCkDatePicker, setShowCkDatePicker] = useState(false);
   const [deletingPendingId, setDeletingPendingId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -322,11 +325,21 @@ export default function ClientsPage() {
                 );
               })}
               {/* Fin abonnement */}
-              <div className="flex items-center gap-1.5">
+              <div className="relative flex items-center gap-1.5">
                 <span className="text-[0.42rem] text-[var(--t-text-25)] uppercase tracking-wider">Fin abo.</span>
-                <input type="date" value={selected.subscription_end ?? ""}
-                  onChange={e => updateField({ subscription_end: e.target.value || null })}
-                  className="bg-transparent border border-[var(--t-border)] text-[var(--t-text-40)] rounded-lg text-[0.48rem] px-2 py-1 focus:outline-none focus:border-[#c9a84c]/40"/>
+                <button type="button" onClick={() => setShowSubEndPicker(o => !o)}
+                  className="bg-transparent border border-[var(--t-border)] text-[var(--t-text-40)] rounded-lg text-[0.48rem] px-2 py-1 hover:border-[#c9a84c]/40 transition-colors">
+                  {selected.subscription_end
+                    ? new Date(selected.subscription_end + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })
+                    : "—"}
+                </button>
+                {showSubEndPicker && (
+                  <div className="absolute top-full right-0 mt-2">
+                    <CalendarPicker value={selected.subscription_end ?? null}
+                      onChange={val => updateField({ subscription_end: val })}
+                      onClose={() => setShowSubEndPicker(false)}/>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -431,7 +444,19 @@ export default function ClientsPage() {
                 <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-lg p-5">
                   <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Check-in hebdomadaire</p>
                   <div className="grid grid-cols-3 gap-3 mb-3">
-                    <div><label className={lbl}>Date</label><input type="date" className={inp} value={ckForm.week_date} onChange={e => setCkForm(f => ({ ...f, week_date: e.target.value }))}/></div>
+                    <div className="relative">
+                      <label className={lbl}>Date</label>
+                      <button type="button" onClick={() => setShowCkDatePicker(o => !o)} className={`${inp} text-left`}>
+                        {new Date(ckForm.week_date + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
+                      </button>
+                      {showCkDatePicker && (
+                        <div className="absolute top-full left-0 mt-2">
+                          <CalendarPicker value={ckForm.week_date}
+                            onChange={val => setCkForm(f => ({ ...f, week_date: val }))}
+                            onClose={() => setShowCkDatePicker(false)}/>
+                        </div>
+                      )}
+                    </div>
                     <div><label className={lbl}>Poids (kg)</label><input type="number" step="0.1" className={inp} placeholder="78.5" value={ckForm.weight} onChange={e => setCkForm(f => ({ ...f, weight: e.target.value }))}/></div>
                     <div><label className={lbl}>Body fat (%)</label><input type="number" step="0.1" className={inp} placeholder="18.0" value={ckForm.body_fat} onChange={e => setCkForm(f => ({ ...f, body_fat: e.target.value }))}/></div>
                   </div>

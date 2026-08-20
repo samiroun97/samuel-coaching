@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { isCoachUser, getMyCoachEmail } from "@/lib/coach";
 import { apiPost } from "@/lib/apiClient";
 import ThemeToggle from "@/components/ThemeToggle";
+import { CalendarPicker } from "@/components/CalendarPicker";
 
 type Profile = {
   prenom: string; nom: string; age: number | null; poids: number | null; taille: number | null; sexe: string | null;
@@ -61,6 +62,8 @@ export default function ProfilePage() {
   const [joinCode,    setJoinCode]    = useState("");
   const [joining,     setJoining]     = useState(false);
   const [joinMsg,     setJoinMsg]     = useState<{ ok: boolean; text: string } | null>(null);
+
+  const [showEcheancePicker, setShowEcheancePicker] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -334,15 +337,24 @@ export default function ProfilePage() {
                     </button>
                   ))}
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="relative flex items-center gap-2">
                   <span className="text-[0.58rem] text-[var(--t-text-25)] uppercase tracking-wider shrink-0">ou une date précise</span>
-                  <input type="date" value={objForm.echeanceDate}
-                    onChange={e => {
-                      const val = e.target.value;
-                      const label = val ? new Date(val + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }) : "";
-                      setObjForm(f => ({ ...f, echeanceDate: val, echeance: val ? label : f.echeance }));
-                    }}
-                    className="bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] text-xs px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"/>
+                  <button type="button" onClick={() => setShowEcheancePicker(o => !o)}
+                    className="bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] text-xs px-3 py-2 hover:border-[#c9a84c]/40 transition-colors">
+                    {objForm.echeanceDate
+                      ? new Date(objForm.echeanceDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })
+                      : "Choisir une date"}
+                  </button>
+                  {showEcheancePicker && (
+                    <div className="absolute top-full left-0 mt-2">
+                      <CalendarPicker value={objForm.echeanceDate || null}
+                        onChange={val => {
+                          const label = new Date(val + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+                          setObjForm(f => ({ ...f, echeanceDate: val, echeance: label }));
+                        }}
+                        onClose={() => setShowEcheancePicker(false)}/>
+                    </div>
+                  )}
                 </div>
               </div>
 

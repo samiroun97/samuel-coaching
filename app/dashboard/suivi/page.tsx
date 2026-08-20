@@ -6,6 +6,7 @@ import { apiPost } from "@/lib/apiClient";
 import { DateNav } from "@/components/DateNav";
 import { LineChart } from "@/components/LineChart";
 import { FeedbackRow } from "@/components/FeedbackRow";
+import { CalendarPicker } from "@/components/CalendarPicker";
 import { isCoachUser, getMyCoachEmail } from "@/lib/coach";
 
 type Profile      = { prenom?: string; sexe?: string; poids?: number; taille?: number; age?: number; objectifs?: string; seances_par_semaine?: number; experience?: string; niveau_activite?: string };
@@ -152,6 +153,8 @@ export default function SuiviPage() {
   const [editingBFId,    setEditingBFId]    = useState<string | null>(null);
   const [editingBFVal,   setEditingBFVal]   = useState("");
   const [editingBFDate,  setEditingBFDate]  = useState<string | null>(null);
+  const [showManualDatePicker, setShowManualDatePicker] = useState(false);
+  const [showEstimateDatePicker, setShowEstimateDatePicker] = useState(false);
   const [bfPhotos,       setBfPhotos]       = useState<Record<string, string[]>>({});
   const [viewingPhoto,   setViewingPhoto]   = useState<string | null>(null);
   const [estimateDate,   setEstimateDate]   = useState(today());
@@ -773,12 +776,18 @@ export default function SuiviPage() {
               onKeyDown={e => { if (e.key === "Enter") saveManualBF(); if (e.key === "Escape") setShowManual(false); }}
             />
           </div>
-          <div className="flex flex-col gap-1 flex-1">
+          <div className="flex flex-col gap-1 flex-1 relative">
             <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--t-text-25)]">Date</p>
-            <input type="date" max={today()}
-              className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] text-[var(--t-text-60)] text-sm px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40"
-              value={manualDate || selectedDate} onChange={e => setManualDate(e.target.value)}
-            />
+            <button type="button" onClick={() => setShowManualDatePicker(o => !o)}
+              className="w-full text-left bg-[var(--t-bg)] border border-[var(--t-border)] text-[var(--t-text-60)] text-sm px-3 py-2 hover:border-[#c9a84c]/40 transition-colors">
+              {new Date((manualDate || selectedDate) + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
+            </button>
+            {showManualDatePicker && (
+              <div className="absolute top-full left-0 mt-2">
+                <CalendarPicker value={manualDate || selectedDate} max={today()}
+                  onChange={setManualDate} onClose={() => setShowManualDatePicker(false)}/>
+              </div>
+            )}
           </div>
           <button onClick={saveManualBF}
             className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.15em] uppercase px-5 py-2.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg shrink-0 self-end">
@@ -849,10 +858,18 @@ export default function SuiviPage() {
 
               {/* Date du check-in : par défaut aujourd'hui, modifiable si les photos ont été
                   prises un autre jour (ex : upload différé). */}
-              <div className="border border-[var(--t-text-8)] bg-[var(--t-surface-2)] rounded-lg px-4 py-3 flex items-center justify-between">
+              <div className="relative border border-[var(--t-text-8)] bg-[var(--t-surface-2)] rounded-lg px-4 py-3 flex items-center justify-between">
                 <p className="text-[0.7rem] tracking-[0.1em] uppercase text-[var(--t-text-50)]">Date du check-in</p>
-                <input type="date" max={today()} value={estimateDate} onChange={e => setEstimateDate(e.target.value)}
-                  className="bg-[var(--t-bg)] border border-[var(--t-border)] text-[var(--t-text-70)] text-[0.7rem] px-2.5 py-1.5 rounded focus:outline-none focus:border-[#c9a84c]/40"/>
+                <button type="button" onClick={() => setShowEstimateDatePicker(o => !o)}
+                  className="bg-[var(--t-bg)] border border-[var(--t-border)] text-[var(--t-text-70)] text-[0.7rem] px-2.5 py-1.5 rounded hover:border-[#c9a84c]/40 transition-colors">
+                  {new Date(estimateDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
+                </button>
+                {showEstimateDatePicker && (
+                  <div className="absolute top-full right-0 mt-2">
+                    <CalendarPicker value={estimateDate} max={today()}
+                      onChange={setEstimateDate} onClose={() => setShowEstimateDatePicker(false)}/>
+                  </div>
+                )}
               </div>
 
               {/* Toggle partage coach */}
@@ -947,14 +964,19 @@ export default function SuiviPage() {
             return (
               <div key={entry.id} className="border-b border-[var(--t-border-soft)] last:border-0">
                 <div className="flex items-center justify-between px-5 py-3.5">
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 relative">
                     {editingBFDate === entry.id ? (
-                      <input type="date" autoFocus max={today()}
-                        className="bg-[var(--t-bg)] border border-[#c9a84c]/40 text-[#c9a84c] text-[0.7rem] px-2 py-1 focus:outline-none mb-0.5"
-                        defaultValue={entry.date.split("T")[0]}
-                        onBlur={e => saveBFEditDate(entry.id, e.target.value)}
-                        onKeyDown={e => { if (e.key === "Enter") saveBFEditDate(entry.id, (e.target as HTMLInputElement).value); if (e.key === "Escape") setEditingBFDate(null); }}
-                      />
+                      <>
+                        <button type="button"
+                          className="bg-[var(--t-bg)] border border-[#c9a84c]/40 text-[#c9a84c] text-[0.7rem] px-2 py-1 mb-0.5">
+                          {new Date(entry.date.split("T")[0] + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
+                        </button>
+                        <div className="absolute top-full left-0 mt-1">
+                          <CalendarPicker value={entry.date.split("T")[0]} max={today()}
+                            onChange={val => saveBFEditDate(entry.id, val)}
+                            onClose={() => setEditingBFDate(null)}/>
+                        </div>
+                      </>
                     ) : (
                       <p className="text-[0.65rem] tracking-wider text-[var(--t-text-40)] capitalize cursor-pointer hover:text-[var(--t-text-60)] transition-colors"
                         onClick={() => setEditingBFDate(entry.id)}>
