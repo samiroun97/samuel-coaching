@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
 import { getMyCoachEmail } from "@/lib/coach";
 import { DateNav } from "@/components/DateNav";
+import { CalRefToggle } from "@/components/CalRefToggle";
 import { BrowserMultiFormatReader } from "@zxing/browser";
 import type { IScannerControls } from "@zxing/browser";
 import { BarcodeFormat, DecodeHintType } from "@zxing/library";
@@ -912,17 +913,7 @@ export default function NutritionPage() {
 
       {/* Référence du compteur : objectif fixe ou dépense réelle (TDEE) */}
       <div className="flex justify-center mb-5">
-        <div className="flex border border-[var(--t-border)] rounded-lg overflow-hidden">
-          <button onClick={() => setCalRef("objectif")}
-            className={`px-4 py-1.5 text-[0.68rem] tracking-[0.15em] uppercase transition-colors ${!useTdee ? "bg-[#c9a84c]/10 text-[#c9a84c]" : "text-[var(--t-text-30)] hover:text-[var(--t-text-50)]"}`}>
-            Objectif
-          </button>
-          <button onClick={() => setCalRef("tdee")} disabled={tdee <= 0}
-            title={tdee <= 0 ? "Profil incomplet" : "Dépense totale du jour : métabolisme + activité + sport"}
-            className={`px-4 py-1.5 text-[0.68rem] tracking-[0.15em] uppercase border-l border-[var(--t-border)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${useTdee ? "bg-[#7eb8a0]/10 text-[#7eb8a0]" : "text-[var(--t-text-30)] hover:text-[var(--t-text-50)]"}`}>
-            TDEE
-          </button>
-        </div>
+        <CalRefToggle value={calRef} onChange={setCalRef} tdeeDisabled={tdee <= 0}/>
       </div>
 
       <button onClick={() => { if (!useTdee) { setGoalDraft(goals); syncRaw(goals); setShowGoals(true); } }}

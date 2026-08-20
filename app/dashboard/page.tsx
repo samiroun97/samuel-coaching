@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { DateNav } from "@/components/DateNav";
+import { CalRefToggle } from "@/components/CalRefToggle";
 
 type Profile = {
   prenom: string; nom: string; age: number; poids: number; taille: number; sexe: string;
@@ -326,13 +327,8 @@ export default function AccueilPage() {
         <CalorieRow consumed={consumed.calories} target={refCal} expended={tdee} goalDefined={calView === "tdee" || goalsSet}/>
 
         {/* Toggle référence du cercle */}
-        <div className="flex justify-center gap-1.5 mt-6">
-          {([["tdee", "TDEE"], ["objectif", "Objectif"]] as const).map(([key, label]) => (
-            <button key={key} onClick={() => setCalView(key)}
-              className={`px-3 py-1.5 rounded-lg text-[0.65rem] tracking-[0.12em] uppercase border transition-all ${calView === key ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[var(--t-border-15)] hover:text-[var(--t-text-50)]"}`}>
-              {label}
-            </button>
-          ))}
+        <div className="flex justify-center mt-6">
+          <CalRefToggle value={calView} onChange={setCalView} tdeeDisabled={tdee <= 0}/>
         </div>
 
         {/* Balance banner */}
