@@ -30,6 +30,18 @@ const INTENSITIES = [
   { label: "Haute",   key: "haute",   mult: 1.1  },
 ] as const;
 type IntensityKey = "faible" | "moderee" | "haute";
+const INTENSITY_COLOR: Record<IntensityKey, string> = { faible: "#7eb8a0", moderee: "#c9a84c", haute: "#e0834a" };
+
+function IntensityBars({ level, color }: { level: 1 | 2 | 3; color: string }) {
+  const heights = [5, 8, 11];
+  return (
+    <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
+      {heights.map((h, i) => (
+        <rect key={i} x={i * 5} y={12 - h} width="3" height={h} rx="1" fill={i < level ? color : "var(--t-border)"}/>
+      ))}
+    </svg>
+  );
+}
 
 const neatFromSteps = (steps: number, poids: number) =>
   Math.round(steps * 0.04 * (poids / 70));
@@ -281,7 +293,7 @@ export default function ProgrammePage() {
   const adjustedCal   = calResult ? Math.round(calResult.calories_brulees * intensityMult) : 0;
 
   const chip = (active: boolean) =>
-    `px-3.5 py-2 rounded-full text-[0.7rem] tracking-[0.1em] uppercase border cursor-pointer transition-all ${active ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10 shadow-[0_2px_10px_-4px_rgba(201,168,76,0.4)]" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[var(--t-text-30)] hover:text-[var(--t-text-60)]"}`;
+    `px-3.5 py-2 rounded-full text-[0.7rem] tracking-[0.1em] uppercase border transition-all duration-200 ${active ? "border-[#c9a84c] text-black bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] shadow-[0_3px_12px_-4px_rgba(201,168,76,0.6)] -translate-y-px" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[var(--t-text-30)] hover:text-[var(--t-text-60)]"}`;
   const inputCls = "w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
 
   const pastDates = [...new Set(
@@ -511,11 +523,18 @@ export default function ProgrammePage() {
         <div>
           <label className="text-[0.7rem] tracking-[0.2em] uppercase text-[var(--t-text-40)] block mb-2">Intensité</label>
           <div className="flex gap-2">
-            {INTENSITIES.map(i => (
-              <button key={i.key} onClick={() => setIntensity(i.key)} className={chip(intensity === i.key)}>
-                {i.label}
-              </button>
-            ))}
+            {INTENSITIES.map((i, idx) => {
+              const active = intensity === i.key;
+              const color  = INTENSITY_COLOR[i.key];
+              return (
+                <button key={i.key} onClick={() => setIntensity(i.key)}
+                  className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-full text-[0.7rem] tracking-[0.1em] uppercase border transition-all duration-200 ${active ? "-translate-y-px" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[var(--t-text-30)] hover:text-[var(--t-text-60)]"}`}
+                  style={active ? { borderColor: color, color, backgroundColor: `${color}14`, boxShadow: `0 3px 12px -4px ${color}99` } : undefined}>
+                  <IntensityBars level={(idx + 1) as 1 | 2 | 3} color={active ? color : "var(--t-text-30)"}/>
+                  {i.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
