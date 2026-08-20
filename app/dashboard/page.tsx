@@ -364,9 +364,9 @@ export default function AccueilPage() {
         </div>
 
         <Link href="/dashboard/nutrition"
-          className="mt-6 flex items-center justify-center gap-2 w-full rounded-lg border border-[#c9a84c]/20 text-[#c9a84c] text-[0.7rem] tracking-[0.15em] uppercase py-3 hover:bg-[#c9a84c]/5 transition-colors">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Ajouter un repas / modifier mes objectifs
+          className="mt-6 flex items-center justify-center gap-2 w-full rounded-lg bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Ajouter un repas
         </Link>
       </div>
 
