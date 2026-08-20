@@ -331,6 +331,7 @@ export default function NutritionPage() {
   const [respectBudget, setRespectBudget] = useState(true);
   const [mealPlan,    setMealPlan]    = useState<MealPlan | null>(null);
   const [description, setDescription] = useState("");
+  const [showFoods,   setShowFoods]   = useState(true);
   const userIdRef       = useRef("");
   const userEmailRef    = useRef("");
   const coachEmailRef   = useRef<string | null>(null);
@@ -1102,12 +1103,21 @@ export default function NutritionPage() {
 
       {/* ── Aliments du jour ── */}
       <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg mb-6">
-        <div className="flex items-center justify-between px-5 py-3 border-b border-[var(--t-border-soft)]">
+        <button onClick={() => setShowFoods(v => !v)}
+          className="w-full text-left flex items-center justify-between px-5 py-3 hover:bg-[var(--t-glass-bg)] transition-colors rounded-lg">
           <span style={{ fontFamily:"var(--font-bebas)" }} className="text-sm tracking-wider text-[var(--t-text)]">
             {selectedDate === realToday ? "Aliments du jour" : `Aliments · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
           </span>
-          <span className="text-[0.7rem] tracking-wider text-[var(--t-text-30)]">{totals.calories} kcal</span>
-        </div>
+          <div className="flex items-center gap-3">
+            <span className="text-[0.7rem] tracking-wider text-[var(--t-text-30)]">{totals.calories} kcal</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+              className={`text-[var(--t-text-25)] shrink-0 transition-transform duration-300 ${showFoods ? "rotate-180" : ""}`}>
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </div>
+        </button>
+        <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${showFoods ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
+          <div className="overflow-hidden border-t border-[var(--t-border-soft)]">
         {foods.length === 0
           ? <p className="px-5 py-4 text-[0.7rem] tracking-wider text-[var(--t-text-20)] uppercase">Aucun aliment ajouté</p>
           : [...MEAL_TYPES, "Autres"].map(type => {
@@ -1160,6 +1170,8 @@ export default function NutritionPage() {
             );
           })
         }
+          </div>
+        </div>
       </div>
 
       {/* ── Week history ── */}
