@@ -263,15 +263,6 @@ export default function AccueilPage() {
 
       {/* ── Pesée ── */}
       <div className={`rounded-lg border p-4 mb-4 flex items-center gap-4 ${entryForDate ? "border-[var(--t-border-soft)] bg-[var(--t-surface-2)]" : "border-[#c9a84c]/25 bg-[#c9a84c]/5"}`}>
-        <div className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 ${entryForDate ? "bg-[var(--t-glass-bg)] text-[var(--t-text-40)]" : "bg-[#c9a84c]/15 text-[#c9a84c]"}`}>
-          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="9" width="18" height="12" rx="3"/>
-            <path d="M8 9a4 4 0 018 0"/>
-            <path d="M9 6.6l.5.9"/><path d="M15 6.6l-.5.9"/><path d="M12 5.3v1.1"/>
-            <path d="M12 9l1.7-1.3"/>
-          </svg>
-        </div>
-
         <div className="flex-1 min-w-0">
           <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-0.5">
             Pesée {selectedDate === today() ? "du jour" : `· ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
