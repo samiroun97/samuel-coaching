@@ -931,14 +931,24 @@ export default function NutritionPage() {
         <CalorieRow consumed={totals.calories} target={calTarget} expended={tdee} goalDefined={useTdee || goalsSet}/>
       </button>
 
-      {useTdee && (
-        <p className="text-center text-[0.65rem] tracking-[0.12em] uppercase text-[var(--t-text-25)] mt-4 mb-8">
-          Métabolisme {bmrVal} · Activité {tdeeParts.neat} · Sport {tdeeParts.eat} kcal
-        </p>
-      )}
-      {!useTdee && <div className="mb-8"/>}
+      {/* Dépense totale — fluide, monochrome */}
+      <div className="mt-6 pt-5 border-t border-[var(--t-border-soft)]">
+        <p className="text-[0.6rem] tracking-[0.18em] uppercase text-[var(--t-text-20)] mb-3 text-center">Dépense totale</p>
+        <div className="flex items-center justify-between">
+          {[
+            { label: "BMR",  val: bmrVal },
+            { label: "NEAT", val: tdeeParts.neat },
+            { label: "EAT",  val: tdeeParts.eat },
+          ].map((row, i) => (
+            <div key={row.label} className={`flex-1 text-center ${i > 0 ? "border-l border-[var(--t-border-soft)]" : ""}`}>
+              <p style={{ fontFamily: "var(--font-bebas)" }} className="text-xl text-[var(--t-text-80)] tracking-wide">{row.val.toLocaleString("fr-FR")}</p>
+              <p className="text-[0.58rem] tracking-[0.15em] uppercase text-[var(--t-text-25)] mt-1">{row.label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
 
-      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg p-6 mb-6">
+      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg p-6 mb-6 mt-6">
         <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Macronutriments</p>
         <div className="flex items-start justify-around">
           {macroConfig.map(m => <MacroBar key={m.key} label={m.label} consumed={totals[m.key]} goal={goals[m.key]} color={m.color}/>)}
