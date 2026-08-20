@@ -1179,16 +1179,16 @@ export default function NutritionPage() {
         <div className="flex items-center justify-between mb-4">
           <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Cette semaine</p>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1"><div className="w-2 h-2 bg-[#c9a84c]"/><span className="text-[0.62rem] text-[var(--t-text-25)]">Objectif</span></div>
+            <div className="flex items-center gap-1"><div className="w-2 h-2 bg-[#c9a84c]"/><span className="text-[0.62rem] text-[var(--t-text-25)]">{useTdee ? "TDEE" : "Objectif"}</span></div>
             <div className="flex items-center gap-1"><div className="w-2 h-2 bg-[#e07070]"/><span className="text-[0.62rem] text-[var(--t-text-25)]">Excédent</span></div>
           </div>
         </div>
-        <WeekChart history={fullHistory} goal={goals.calories}/>
+        <WeekChart history={fullHistory} goal={calTarget}/>
         <div className="mt-4 pt-4 border-t border-[var(--t-border-soft)] grid grid-cols-3 gap-4 text-center">
           {[
             { label:"Moyenne / jour", val: avgCal ? `${avgCal} kcal` : "—" },
             { label:"Jours suivis",   val: daysWithData.length },
-            { label:"Objectif",       val: `${goals.calories} kcal` },
+            { label: useTdee ? "TDEE" : "Objectif", val: `${calTarget} kcal` },
           ].map(s => (
             <div key={s.label}>
               <p style={{ fontFamily:"var(--font-bebas)" }} className="text-lg text-[var(--t-text)] tracking-wide">{s.val}</p>

@@ -114,7 +114,7 @@ export default function AccueilPage() {
   const [weightSaving, setWeightSaving] = useState(false);
   const [weightSaved,  setWeightSaved]  = useState(false);
   const [daysSinceBF,  setDaysSinceBF]  = useState<number | null>(null);
-  const [calView,      setCalView]      = useState<"tdee" | "goal">("tdee");
+  const [calView,      setCalView]      = useState<"tdee" | "objectif">("tdee");
   const [selectedDate, setSelectedDate] = useState(today());
 
   // Static data — loads once on mount
@@ -171,7 +171,15 @@ export default function AccueilPage() {
       const saved = localStorage.getItem("selected_date");
       if (saved) setSelectedDate(saved);
     } catch { /* ignore */ }
+
+    // Référence calorique (Objectif / TDEE) — partagée avec la page Nutrition
+    try {
+      const r = localStorage.getItem("nutrition_cal_ref");
+      if (r === "tdee" || r === "objectif") setCalView(r);
+    } catch { /* ignore */ }
   }, []);
+
+  useEffect(() => { try { localStorage.setItem("nutrition_cal_ref", calView); } catch { /* ignore */ } }, [calView]);
 
   // Date-specific data — reloads when selected date or profile changes
   useEffect(() => {
@@ -243,7 +251,7 @@ export default function AccueilPage() {
 
   const bmrVal     = bmr(profile, bodyFat);
   const tdee       = bmrVal + neat + eat;
-  const refCal     = calView === "goal" ? goals.calories : tdee;
+  const refCal     = calView === "objectif" ? goals.calories : tdee;
   const balance    = consumed.calories - refCal;
   const surplus    = balance > 0;
   const isMaint    = Math.abs(balance) <= 100;
@@ -319,7 +327,7 @@ export default function AccueilPage() {
 
         {/* Toggle référence du cercle */}
         <div className="flex justify-center gap-1.5 mt-6">
-          {([["tdee", "TDEE"], ["goal", "Objectif"]] as const).map(([key, label]) => (
+          {([["tdee", "TDEE"], ["objectif", "Objectif"]] as const).map(([key, label]) => (
             <button key={key} onClick={() => setCalView(key)}
               className={`px-3 py-1.5 rounded-lg text-[0.65rem] tracking-[0.12em] uppercase border transition-all ${calView === key ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[var(--t-border-15)] hover:text-[var(--t-text-50)]"}`}>
               {label}
