@@ -8,6 +8,7 @@ import { LineChart } from "@/components/LineChart";
 import { FeedbackRow } from "@/components/FeedbackRow";
 import { CalendarPicker } from "@/components/CalendarPicker";
 import { isCoachUser, getMyCoachEmail } from "@/lib/coach";
+import { useSelectedDate } from "@/lib/useSelectedDate";
 
 type Profile      = { prenom?: string; sexe?: string; poids?: number; taille?: number; age?: number; objectifs?: string; seances_par_semaine?: number; experience?: string; niveau_activite?: string };
 type WeightEntry  = { id: string; date: string; weight: number };
@@ -127,9 +128,7 @@ export default function SuiviPage() {
   const [userEmail,      setUserEmail]      = useState<string>("");
   const [isCoach,        setIsCoach]        = useState(false);
   const [coachEmail,     setCoachEmail]     = useState<string | null>(null);
-  const [selectedDate,   setSelectedDate]   = useState(() => {
-    try { return localStorage.getItem("selected_date") || today(); } catch { return today(); }
-  });
+  const [selectedDate,   setSelectedDate]   = useSelectedDate();
   const [weightHist,     setWeightHist]     = useState<WeightEntry[]>([]);
   const [bfHist,         setBfHist]         = useState<BodyFatEntry[]>([]);
   const [photos,         setPhotos]         = useState<Record<string, string>>({});
@@ -215,10 +214,6 @@ export default function SuiviPage() {
       if (ck?.[0]) setLastCkDate(ck[0].week_date);
     })();
   }, []);
-
-  useEffect(() => {
-    try { localStorage.setItem("selected_date", selectedDate); } catch { /* ignore */ }
-  }, [selectedDate]);
 
   const sendCheckin = async () => {
     if (!userId || ckSaving) return;

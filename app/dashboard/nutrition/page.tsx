@@ -5,6 +5,7 @@ import { apiPost } from "@/lib/apiClient";
 import { getMyCoachEmail } from "@/lib/coach";
 import { DateNav } from "@/components/DateNav";
 import { CalRefToggle } from "@/components/CalRefToggle";
+import { useSelectedDate, todayStr } from "@/lib/useSelectedDate";
 import { BrowserMultiFormatReader } from "@zxing/browser";
 import type { IScannerControls } from "@zxing/browser";
 import { BarcodeFormat, DecodeHintType } from "@zxing/library";
@@ -353,10 +354,8 @@ function WeekChart({ history, goal }: { history: DayHistory[]; goal: number }) {
 }
 
 export default function NutritionPage() {
-  const realToday = new Date().toISOString().split("T")[0];
-  const [selectedDate, setSelectedDate] = useState(() => {
-    try { return localStorage.getItem("selected_date") || realToday; } catch { return realToday; }
-  });
+  const realToday = todayStr();
+  const [selectedDate, setSelectedDate] = useSelectedDate();
   const [goals,     setGoals]     = useState<Goals>(defaultGoals);
   const [goalsSet,  setGoalsSet]  = useState(false);
   const [foods,     setFoods]     = useState<Food[]>([]);
@@ -522,7 +521,6 @@ export default function NutritionPage() {
 
   useEffect(() => {
     selectedDateRef.current = selectedDate;
-    try { localStorage.setItem("selected_date", selectedDate); } catch { /* ignore */ }
     const f = localStorage.getItem(`nutrition_${selectedDate}`);
     const w = localStorage.getItem(`hydration_${selectedDate}`);
     setFoods(f ? JSON.parse(f) : []);

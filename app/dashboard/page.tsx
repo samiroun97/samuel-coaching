@@ -4,6 +4,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { DateNav } from "@/components/DateNav";
 import { CalRefToggle } from "@/components/CalRefToggle";
+import { useSelectedDate } from "@/lib/useSelectedDate";
 
 type Profile = {
   prenom: string; nom: string; age: number; poids: number; taille: number; sexe: string;
@@ -116,7 +117,7 @@ export default function AccueilPage() {
   const [weightSaved,  setWeightSaved]  = useState(false);
   const [daysSinceBF,  setDaysSinceBF]  = useState<number | null>(null);
   const [calView,      setCalView]      = useState<"tdee" | "objectif">("tdee");
-  const [selectedDate, setSelectedDate] = useState(today());
+  const [selectedDate, setSelectedDate] = useSelectedDate();
 
   // Static data — loads once on mount
   useEffect(() => {
@@ -167,12 +168,6 @@ export default function AccueilPage() {
       }
     } catch { /* ignore */ }
 
-    // Restore saved selected date
-    try {
-      const saved = localStorage.getItem("selected_date");
-      if (saved) setSelectedDate(saved);
-    } catch { /* ignore */ }
-
     // Référence calorique (Objectif / TDEE) — partagée avec la page Nutrition
     try {
       const r = localStorage.getItem("nutrition_cal_ref");
@@ -184,8 +179,6 @@ export default function AccueilPage() {
 
   // Date-specific data — reloads when selected date or profile changes
   useEffect(() => {
-    try { localStorage.setItem("selected_date", selectedDate); } catch { /* ignore */ }
-
     // Nutrition consumed
     try {
       const f = localStorage.getItem(`nutrition_${selectedDate}`);

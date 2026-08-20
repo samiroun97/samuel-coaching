@@ -5,6 +5,7 @@ import { apiPost } from "@/lib/apiClient";
 import { getMyCoachEmail } from "@/lib/coach";
 import { SeanceBody } from "@/components/SeancePreview";
 import { DateNav } from "@/components/DateNav";
+import { useSelectedDate, todayStr } from "@/lib/useSelectedDate";
 
 type Profile = { prenom: string; poids: number; taille: number; age: number; sexe: string };
 type LoggedWorkout = {
@@ -29,17 +30,13 @@ const INTENSITIES = [
 ] as const;
 type IntensityKey = "faible" | "moderee" | "haute";
 
-const todayStr = () => new Date().toISOString().split("T")[0];
-
 const neatFromSteps = (steps: number, poids: number) =>
   Math.round(steps * 0.04 * (poids / 70));
 
 export default function ProgrammePage() {
   const [profile,      setProfile]      = useState<Profile | null>(null);
   const [workouts,     setWorkouts]     = useState<LoggedWorkout[]>([]);
-  const [selectedDate, setSelectedDate] = useState(() => {
-    try { return localStorage.getItem("selected_date") || todayStr(); } catch { return todayStr(); }
-  });
+  const [selectedDate, setSelectedDate] = useSelectedDate();
   const [steps,        setSteps]        = useState(0);
   const [stepsInput,   setStepsInput]   = useState("0");
   const [stepGoal,     setStepGoal]     = useState(10000);
@@ -120,7 +117,6 @@ export default function ProgrammePage() {
   }, []);
 
   useEffect(() => {
-    try { localStorage.setItem("selected_date", selectedDate); } catch { /* ignore */ }
     const savedS = localStorage.getItem(`steps_${selectedDate}`);
     if (savedS) { const n = parseInt(savedS); setSteps(n); setStepsInput(n.toString()); }
     else { setSteps(0); setStepsInput("0"); }
