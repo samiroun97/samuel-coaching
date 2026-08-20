@@ -40,8 +40,8 @@ export function CalRefToggle({ value, onChange, tdeeDisabled }: { value: Mode; o
     <div className="flex flex-col items-center w-full">
       <div className="flex items-center gap-2">
         <div className="relative flex border border-[var(--t-border)] rounded-full p-1 bg-[var(--t-surface)] w-[248px]">
-          <div className="absolute top-1.5 bottom-1.5 rounded-full transition-[left] duration-300 ease-out"
-            style={{ backgroundColor: `${EXPLANATIONS[value].color}18`, left: value === "tdee" ? "127px" : "7px", width: "114px" }}/>
+          <div className="absolute top-1.5 bottom-1.5 rounded-full transition-[left,width] duration-300 ease-out"
+            style={{ backgroundColor: `${EXPLANATIONS[value].color}18`, left: value === "tdee" ? "127px" : "7px", width: value === "tdee" ? "108px" : "114px" }}/>
           {(["objectif", "tdee"] as const).map(key => (
             <button key={key} onClick={() => onChange(key)} disabled={key === "tdee" && tdeeDisabled}
               title={key === "tdee" && tdeeDisabled ? "Profil incomplet" : undefined}
