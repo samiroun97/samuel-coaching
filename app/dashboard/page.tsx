@@ -259,7 +259,7 @@ export default function AccueilPage() {
       <div className={`rounded-lg border p-4 mb-4 flex items-center gap-4 ${entryForDate ? "border-[var(--t-border-soft)] bg-[var(--t-surface-2)]" : "border-[#c9a84c]/25 bg-[#c9a84c]/5"}`}>
         <div className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 ${entryForDate ? "bg-[var(--t-glass-bg)] text-[var(--t-text-40)]" : "bg-[#c9a84c]/15 text-[#c9a84c]"}`}>
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 8a4.5 4.5 0 00-4.5 4.5"/><path d="M12 12.5l3.2-2.2"/>
+            <rect x="3" y="3" width="18" height="18" rx="3"/><rect x="8" y="7" width="8" height="5" rx="1"/><line x1="12" y1="15" x2="12" y2="17.5"/>
           </svg>
         </div>
 
