@@ -346,14 +346,13 @@ export default function ProfilePage() {
                       : "Choisir une date"}
                   </button>
                   {showEcheancePicker && (
-                    <div className="absolute top-full left-0 mt-2">
-                      <CalendarPicker value={objForm.echeanceDate || null}
-                        onChange={val => {
-                          const label = new Date(val + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
-                          setObjForm(f => ({ ...f, echeanceDate: val, echeance: label }));
-                        }}
-                        onClose={() => setShowEcheancePicker(false)}/>
-                    </div>
+                    <CalendarPicker value={objForm.echeanceDate || null}
+                      onChange={val => {
+                        const label = new Date(val + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+                        setObjForm(f => ({ ...f, echeanceDate: val, echeance: label }));
+                      }}
+                      onClose={() => setShowEcheancePicker(false)}
+                      className="top-full left-0 mt-2"/>
                   )}
                 </div>
               </div>

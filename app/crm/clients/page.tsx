@@ -334,11 +334,10 @@ export default function ClientsPage() {
                     : "—"}
                 </button>
                 {showSubEndPicker && (
-                  <div className="absolute top-full right-0 mt-2">
-                    <CalendarPicker value={selected.subscription_end ?? null}
-                      onChange={val => updateField({ subscription_end: val })}
-                      onClose={() => setShowSubEndPicker(false)}/>
-                  </div>
+                  <CalendarPicker value={selected.subscription_end ?? null}
+                    onChange={val => updateField({ subscription_end: val })}
+                    onClose={() => setShowSubEndPicker(false)}
+                    className="top-full right-0 mt-2"/>
                 )}
               </div>
             </div>
@@ -450,11 +449,10 @@ export default function ClientsPage() {
                         {new Date(ckForm.week_date + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
                       </button>
                       {showCkDatePicker && (
-                        <div className="absolute top-full left-0 mt-2">
-                          <CalendarPicker value={ckForm.week_date}
-                            onChange={val => setCkForm(f => ({ ...f, week_date: val }))}
-                            onClose={() => setShowCkDatePicker(false)}/>
-                        </div>
+                        <CalendarPicker value={ckForm.week_date}
+                          onChange={val => setCkForm(f => ({ ...f, week_date: val }))}
+                          onClose={() => setShowCkDatePicker(false)}
+                          className="top-full left-0 mt-2"/>
                       )}
                     </div>
                     <div><label className={lbl}>Poids (kg)</label><input type="number" step="0.1" className={inp} placeholder="78.5" value={ckForm.weight} onChange={e => setCkForm(f => ({ ...f, weight: e.target.value }))}/></div>

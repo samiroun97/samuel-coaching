@@ -16,13 +16,14 @@ function parseISO(s: string) {
 // (non stylisable) pour les sélecteurs de date. À placer dans un conteneur
 // `relative`, se ferme au clic extérieur / Échap / sélection.
 export function CalendarPicker({
-  value, onChange, onClose, min, max,
+  value, onChange, onClose, min, max, className = "",
 }: {
   value?: string | null;
   onChange: (iso: string) => void;
   onClose: () => void;
   min?: string;
   max?: string;
+  className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const initial = value ? parseISO(value) : new Date();
@@ -59,7 +60,9 @@ export function CalendarPicker({
   };
 
   return (
-    <div ref={ref} className="z-50 border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg shadow-[0_12px_32px_-8px_rgba(0,0,0,0.5)] p-4 w-[280px]">
+    <div ref={ref}
+      style={{ backgroundColor: "var(--t-surface)" }}
+      className={`absolute z-[100] border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg shadow-[0_16px_40px_-8px_rgba(0,0,0,0.6)] p-4 w-[280px] ${className}`}>
       <div className="flex items-center justify-between mb-3">
         <button type="button" onClick={() => go(-1)} className="w-7 h-7 flex items-center justify-center text-[var(--t-text-40)] hover:text-[#c9a84c] transition-colors">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>

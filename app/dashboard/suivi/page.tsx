@@ -783,10 +783,9 @@ export default function SuiviPage() {
               {new Date((manualDate || selectedDate) + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
             </button>
             {showManualDatePicker && (
-              <div className="absolute top-full left-0 mt-2">
-                <CalendarPicker value={manualDate || selectedDate} max={today()}
-                  onChange={setManualDate} onClose={() => setShowManualDatePicker(false)}/>
-              </div>
+              <CalendarPicker value={manualDate || selectedDate} max={today()}
+                onChange={setManualDate} onClose={() => setShowManualDatePicker(false)}
+                className="top-full left-0 mt-2"/>
             )}
           </div>
           <button onClick={saveManualBF}
@@ -865,10 +864,9 @@ export default function SuiviPage() {
                   {new Date(estimateDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
                 </button>
                 {showEstimateDatePicker && (
-                  <div className="absolute top-full right-0 mt-2">
-                    <CalendarPicker value={estimateDate} max={today()}
-                      onChange={setEstimateDate} onClose={() => setShowEstimateDatePicker(false)}/>
-                  </div>
+                  <CalendarPicker value={estimateDate} max={today()}
+                    onChange={setEstimateDate} onClose={() => setShowEstimateDatePicker(false)}
+                    className="top-full right-0 mt-2"/>
                 )}
               </div>
 
@@ -971,11 +969,10 @@ export default function SuiviPage() {
                           className="bg-[var(--t-bg)] border border-[#c9a84c]/40 text-[#c9a84c] text-[0.7rem] px-2 py-1 mb-0.5">
                           {new Date(entry.date.split("T")[0] + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
                         </button>
-                        <div className="absolute top-full left-0 mt-1">
-                          <CalendarPicker value={entry.date.split("T")[0]} max={today()}
-                            onChange={val => saveBFEditDate(entry.id, val)}
-                            onClose={() => setEditingBFDate(null)}/>
-                        </div>
+                        <CalendarPicker value={entry.date.split("T")[0]} max={today()}
+                          onChange={val => saveBFEditDate(entry.id, val)}
+                          onClose={() => setEditingBFDate(null)}
+                          className="top-full left-0 mt-1"/>
                       </>
                     ) : (
                       <p className="text-[0.65rem] tracking-wider text-[var(--t-text-40)] capitalize cursor-pointer hover:text-[var(--t-text-60)] transition-colors"

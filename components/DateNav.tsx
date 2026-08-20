@@ -25,9 +25,8 @@ export function DateNav({ date, onChange }: { date: string; onChange: (d: string
           <p className="text-[0.7rem] tracking-[0.15em] uppercase text-[var(--t-text-50)] group-hover:text-[var(--t-text-70)] transition-colors capitalize select-none">{label}</p>
         </button>
         {open && (
-          <div className="absolute top-full left-1/2 -translate-x-1/2">
-            <CalendarPicker value={date} max={todayD} onChange={onChange} onClose={() => setOpen(false)}/>
-          </div>
+          <CalendarPicker value={date} max={todayD} onChange={onChange} onClose={() => setOpen(false)}
+            className="top-full left-1/2 -translate-x-1/2 mt-2"/>
         )}
       </div>
       <button onClick={() => move(1)} disabled={isToday} className="w-7 h-7 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-lg hover:text-[var(--t-text-60)] hover:border-[var(--t-text-20)] transition-colors flex items-center justify-center shrink-0 disabled:opacity-20 disabled:cursor-not-allowed">
