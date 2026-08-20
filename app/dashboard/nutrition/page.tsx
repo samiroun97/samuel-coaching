@@ -26,6 +26,64 @@ type MacroKey = "proteines" | "glucides" | "lipides";
 type AIResult = { name: string; calories: number; proteines: number; glucides: number; lipides: number; fibres?: number };
 type IdeaResult = { name: string; description: string; calories: number; proteines: number; glucides: number; lipides: number; fibres?: number };
 const MEAL_TYPES = ["Petit-déjeuner", "Déjeuner", "Dîner", "Collation"] as const;
+
+const MEAL_TYPE_COLOR: Record<string, string> = {
+  "Petit-déjeuner": "#e6b45c",
+  "Déjeuner":       "#6fa3c4",
+  "Dîner":          "#8a7fc4",
+  "Collation":      "#d98f6c",
+  "Autres":         "#8a8a8a",
+};
+
+function MealTypeIcon({ type, className }: { type: string; className?: string }) {
+  const common = { width: 12, height: 12, viewBox: "0 0 24 24", className };
+  switch (type) {
+    case "Petit-déjeuner": // lever de soleil (horizon)
+      return (
+        <svg {...common} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="13" r="4"/>
+          <line x1="12" y1="4" x2="12" y2="6"/>
+          <line x1="5" y1="13" x2="3" y2="13"/>
+          <line x1="21" y1="13" x2="19" y2="13"/>
+          <line x1="6.5" y1="7.5" x2="5" y2="6"/>
+          <line x1="19" y1="6" x2="17.5" y2="7.5"/>
+          <line x1="3" y1="20" x2="21" y2="20"/>
+        </svg>
+      );
+    case "Déjeuner": // soleil au zénith
+      return (
+        <svg {...common} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="4"/>
+          <line x1="12" y1="3" x2="12" y2="5"/>
+          <line x1="12" y1="19" x2="12" y2="21"/>
+          <line x1="3" y1="12" x2="5" y2="12"/>
+          <line x1="19" y1="12" x2="21" y2="12"/>
+          <line x1="5.6" y1="5.6" x2="7" y2="7"/>
+          <line x1="17" y1="17" x2="18.4" y2="18.4"/>
+          <line x1="5.6" y1="18.4" x2="7" y2="17"/>
+          <line x1="17" y1="7" x2="18.4" y2="5.6"/>
+        </svg>
+      );
+    case "Dîner": // lune
+      return (
+        <svg {...common} fill="currentColor" stroke="none">
+          <path d="M20 14.5A8.5 8.5 0 119.5 4a7 7 0 1010.5 10.5z"/>
+        </svg>
+      );
+    case "Collation": // étincelle
+      return (
+        <svg {...common} fill="currentColor" stroke="none">
+          <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z"/>
+        </svg>
+      );
+    default: // Autres — points
+      return (
+        <svg {...common} fill="currentColor" stroke="none">
+          <circle cx="6" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18" cy="12" r="1.6"/>
+        </svg>
+      );
+  }
+}
 type OFFProduct = { product_name: string; brands?: string; nutriments: { "energy-kcal_100g"?: number; proteins_100g?: number; carbohydrates_100g?: number; fat_100g?: number; fiber_100g?: number } };
 // base_qty/unit : produit dont les macros valent pour une quantité de base (ex. 100 ml) — la quantité est choisie à l'ajout.
 // Sans base_qty : repas à portion fixe (comportement historique).
@@ -1039,7 +1097,11 @@ export default function NutritionPage() {
         <div className="flex gap-1.5 px-5 pt-3 pb-1">
           {MEAL_TYPES.map(t => (
             <button key={t} onClick={() => setIdeaMealType(t)}
-              className={`flex-1 py-1.5 rounded-lg text-[0.5rem] tracking-[0.06em] uppercase border transition-colors ${ideaMealType === t ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)]"}`}>
+              className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[0.5rem] tracking-[0.06em] uppercase border transition-colors ${ideaMealType === t ? "" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)]"}`}
+              style={ideaMealType === t
+                ? { borderColor: MEAL_TYPE_COLOR[t], color: MEAL_TYPE_COLOR[t], backgroundColor: `${MEAL_TYPE_COLOR[t]}18` }
+                : undefined}>
+              <MealTypeIcon type={t} className={ideaMealType === t ? "" : "text-[var(--t-text-30)]"}/>
               {t}
             </button>
           ))}
@@ -1118,7 +1180,10 @@ export default function NutritionPage() {
             return (
               <div key={type} className="border-b border-[var(--t-border-soft)] last:border-0">
                 <div className="flex items-center justify-between px-5 pt-3 pb-1.5">
-                  <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/60">{type}</p>
+                  <div className="flex items-center gap-1.5" style={{ color: MEAL_TYPE_COLOR[type] ?? "#c9a84c" }}>
+                    <MealTypeIcon type={type}/>
+                    <p className="text-[0.65rem] tracking-[0.15em] uppercase">{type}</p>
+                  </div>
                   <p className="text-[0.62rem] text-[var(--t-text-20)]">{groupCal} kcal</p>
                 </div>
                 {items.map(f => {
@@ -1218,7 +1283,11 @@ export default function NutritionPage() {
                 <div className="flex gap-1.5">
                   {MEAL_TYPES.map(t => (
                     <button key={t} onClick={() => setAddMealType(t)}
-                      className={`flex-1 py-1.5 rounded-lg text-[0.5rem] tracking-[0.06em] uppercase border transition-colors ${addMealType === t ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)]"}`}>
+                      className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[0.5rem] tracking-[0.06em] uppercase border transition-colors ${addMealType === t ? "" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)]"}`}
+                      style={addMealType === t
+                        ? { borderColor: MEAL_TYPE_COLOR[t], color: MEAL_TYPE_COLOR[t], backgroundColor: `${MEAL_TYPE_COLOR[t]}18` }
+                        : undefined}>
+                      <MealTypeIcon type={t} className={addMealType === t ? "" : "text-[var(--t-text-30)]"}/>
                       {t}
                     </button>
                   ))}
