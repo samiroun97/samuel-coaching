@@ -256,31 +256,47 @@ export default function AccueilPage() {
       <DateNav date={selectedDate} onChange={setSelectedDate} />
 
       {/* ── Pesée ── */}
-      <div className={`border rounded-lg p-4 mb-4 flex flex-wrap items-center gap-3 sm:gap-4 ${entryForDate ? "border-[var(--t-border-soft)] bg-[var(--t-surface-2)]" : "border-[#c9a84c]/20 bg-[#c9a84c]/5"}`}>
-        <div className="flex-1 min-w-[130px]">
+      <div className={`rounded-lg border p-4 mb-4 flex items-center gap-4 ${entryForDate ? "border-[var(--t-border-soft)] bg-[var(--t-surface-2)]" : "border-[#c9a84c]/25 bg-[#c9a84c]/5"}`}>
+        <div className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 ${entryForDate ? "bg-[var(--t-glass-bg)] text-[var(--t-text-40)]" : "bg-[#c9a84c]/15 text-[#c9a84c]"}`}>
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 8a4.5 4.5 0 00-4.5 4.5"/><path d="M12 12.5l3.2-2.2"/>
+          </svg>
+        </div>
+
+        <div className="flex-1 min-w-0">
           <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-0.5">
             Pesée {selectedDate === today() ? "du jour" : `· ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
           </p>
           {entryForDate
-            ? <p className="text-[0.65rem] text-[var(--t-text-30)] tracking-wider">✓ Enregistrée — {entryForDate.weight} kg</p>
+            ? <p className="text-[0.65rem] text-[var(--t-text-30)] tracking-wider">Enregistrée — {entryForDate.weight} kg</p>
             : <p className="text-[0.65rem] text-[var(--t-text-30)] tracking-wider">Dernière : {lastWeight ? `${lastWeight} kg` : "—"}</p>
           }
         </div>
-        <div className="flex items-center gap-2 shrink-0 flex-wrap">
-          <input
-            type="number" min="20" max="300" step="0.1"
-            value={weightInput}
-            onChange={e => setWeightInput(e.target.value)}
-            onKeyDown={e => { if (e.key === "Enter") saveWeight(); }}
-            className="w-20 bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] text-sm px-3 py-1.5 text-center focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
-            placeholder="70.0"
-          />
-          <span className="text-[var(--t-text-25)] text-xs">kg</span>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1 bg-[var(--t-bg)] border border-[var(--t-border)] rounded-full pl-3 pr-2.5 py-1.5 focus-within:border-[#c9a84c]/40 transition-colors">
+            <input
+              type="number" min="20" max="300" step="0.1"
+              value={weightInput}
+              onChange={e => setWeightInput(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter") saveWeight(); }}
+              className="w-12 bg-transparent text-[var(--t-text)] text-sm text-center focus:outline-none"
+              placeholder="70.0"
+            />
+            <span className="text-[var(--t-text-25)] text-[0.62rem]">kg</span>
+          </div>
           <button onClick={saveWeight} disabled={weightSaving || !weightInput}
-            className={`text-[0.68rem] font-bold tracking-[0.12em] uppercase px-4 py-1.5 transition-colors disabled:opacity-30 ${
+            aria-label={entryForDate ? "Modifier la pesée" : "Enregistrer la pesée"}
+            className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors shrink-0 disabled:opacity-30 ${
               weightSaved ? "bg-[#7eb8a0] text-black" : "bg-[#c9a84c] text-black hover:bg-[#e2c97e]"
             }`}>
-            {weightSaved ? "✓" : entryForDate ? "Modifier" : "Enregistrer"}
+            {weightSaved ? (
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            ) : entryForDate ? (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            ) : (
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            )}
           </button>
         </div>
       </div>
