@@ -64,14 +64,14 @@ export function CalendarPicker({
       style={{ backgroundColor: "var(--t-surface)" }}
       className={`absolute z-[100] border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg shadow-[0_16px_40px_-8px_rgba(0,0,0,0.6)] p-4 w-[280px] ${className}`}>
       <div className="flex items-center justify-between mb-3">
-        <button type="button" onClick={() => go(-1)} className="w-7 h-7 flex items-center justify-center text-[var(--t-text-40)] hover:text-[#c9a84c] transition-colors">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        <button type="button" onClick={() => go(-1)} className="w-8 h-8 rounded-full border border-[var(--t-border)] flex items-center justify-center text-[var(--t-text-50)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-[0.15em] uppercase text-[var(--t-text)]">
           {MONTHS[viewMonth]} {viewYear}
         </p>
-        <button type="button" onClick={() => go(1)} className="w-7 h-7 flex items-center justify-center text-[var(--t-text-40)] hover:text-[#c9a84c] transition-colors">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        <button type="button" onClick={() => go(1)} className="w-8 h-8 rounded-full border border-[var(--t-border)] flex items-center justify-center text-[var(--t-text-50)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
       </div>
 
