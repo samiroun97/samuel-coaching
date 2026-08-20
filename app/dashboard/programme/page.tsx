@@ -54,7 +54,7 @@ function DateNav({ date, onChange }: { date: string; onChange: (d: string) => vo
   };
   return (
     <div className="flex items-center gap-2 mb-6">
-      <button onClick={() => move(-1)} className="w-7 h-7 border border-white/10 text-white/40 rounded-lg hover:text-white/60 hover:border-white/20 transition-colors flex items-center justify-center shrink-0">
+      <button onClick={() => move(-1)} className="w-7 h-7 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-lg hover:text-[var(--t-text-60)] hover:border-[var(--t-text-20)] transition-colors flex items-center justify-center shrink-0">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
       <div className="flex-1 relative flex items-center justify-center gap-1.5 cursor-pointer group" onClick={openPicker}>
@@ -64,12 +64,12 @@ function DateNav({ date, onChange }: { date: string; onChange: (d: string) => vo
           onChange={e => { if (e.target.value) onChange(e.target.value); }}
           className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
         />
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-white/30 group-hover:text-white/50 transition-colors shrink-0">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--t-text-30)] group-hover:text-[var(--t-text-50)] transition-colors shrink-0">
           <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
         </svg>
-        <p className="text-[0.7rem] tracking-[0.15em] uppercase text-white/50 group-hover:text-white/70 transition-colors capitalize select-none">{label}</p>
+        <p className="text-[0.7rem] tracking-[0.15em] uppercase text-[var(--t-text-50)] group-hover:text-[var(--t-text-70)] transition-colors capitalize select-none">{label}</p>
       </div>
-      <button onClick={() => move(1)} disabled={isToday} className="w-7 h-7 border border-white/10 text-white/40 rounded-lg hover:text-white/60 hover:border-white/20 transition-colors flex items-center justify-center shrink-0 disabled:opacity-20 disabled:cursor-not-allowed">
+      <button onClick={() => move(1)} disabled={isToday} className="w-7 h-7 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-lg hover:text-[var(--t-text-60)] hover:border-[var(--t-text-20)] transition-colors flex items-center justify-center shrink-0 disabled:opacity-20 disabled:cursor-not-allowed">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
       {!isToday && (
@@ -289,8 +289,8 @@ export default function ProgrammePage() {
   const adjustedCal   = calResult ? Math.round(calResult.calories_brulees * intensityMult) : 0;
 
   const chip = (active: boolean) =>
-    `px-3 py-2 text-[0.7rem] tracking-[0.1em] uppercase border cursor-pointer transition-all ${active ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10" : "border-white/10 text-white/40 hover:border-white/30 hover:text-white/60"}`;
-  const inputCls = "w-full bg-[#0a0a0a] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
+    `px-3 py-2 text-[0.7rem] tracking-[0.1em] uppercase border cursor-pointer transition-all ${active ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[var(--t-text-30)] hover:text-[var(--t-text-60)]"}`;
+  const inputCls = "w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
 
   const pastDates = [...new Set(
     workouts.filter(w => !w.date.startsWith(selectedDate)).map(w => w.date.split("T")[0])
@@ -302,16 +302,16 @@ export default function ProgrammePage() {
       {/* Header */}
       <div className="mb-6">
         <p className="text-[0.7rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-2">Rubrique</p>
-        <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl sm:text-5xl text-white tracking-wide">ACTIVITÉ</h1>
+        <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl sm:text-5xl text-[var(--t-text)] tracking-wide">ACTIVITÉ</h1>
       </div>
 
       {/* ── Mon programme (séances envoyées par Samuel) ── */}
       {coachSeances.length > 0 && (
-        <div className="border border-[#c9a84c]/20 bg-[#0f0d07] rounded-lg mb-6">
+        <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-lg mb-6">
           <div className="px-5 py-3 border-b border-[#c9a84c]/10 flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[#c9a84c]">Mon programme</p>
-              <span className="text-[0.62rem] text-white/25 uppercase tracking-wider">{coachSeances.length} séance{coachSeances.length > 1 ? "s" : ""} · par Samuel</span>
+              <span className="text-[0.62rem] text-[var(--t-text-25)] uppercase tracking-wider">{coachSeances.length} séance{coachSeances.length > 1 ? "s" : ""} · par Samuel</span>
             </div>
             <button onClick={downloadPdf} disabled={exportingPdf}
               className="shrink-0 flex items-center gap-1.5 border border-[#c9a84c]/30 text-[#c9a84c] rounded-lg text-[0.6rem] font-bold tracking-[0.12em] uppercase px-2.5 py-2 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-40">
@@ -327,20 +327,20 @@ export default function ProgrammePage() {
             const open = openSeance === s.id;
             const done = !!s.completed_at;
             return (
-              <div key={s.id} className="border-b border-white/5 last:border-0">
+              <div key={s.id} className="border-b border-[var(--t-border-soft)] last:border-0">
                 <button onClick={() => setOpenSeance(open ? null : s.id)}
-                  className="w-full text-left px-5 py-3 flex items-center justify-between gap-2 hover:bg-white/[0.02] transition-colors">
+                  className="w-full text-left px-5 py-3 flex items-center justify-between gap-2 hover:bg-[var(--t-glass-bg)] transition-colors">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       {done && <span className="text-[0.7rem] text-[#7eb8a0] shrink-0">✓</span>}
                       {s.type_seance && <span className="text-[0.68rem] tracking-wider uppercase text-[#c9a84c] border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">{s.type_seance}</span>}
-                      {s.semaine && <span className="text-[0.68rem] tracking-wider uppercase text-white/30 border border-white/10 px-1.5 py-0.5 shrink-0">Sem. {s.semaine}</span>}
-                      <p className={`text-xs truncate ${done ? "text-white/35 line-through" : "text-white/70"}`}>{s.titre}</p>
+                      {s.semaine && <span className="text-[0.68rem] tracking-wider uppercase text-[var(--t-text-30)] border border-[var(--t-border)] px-1.5 py-0.5 shrink-0">Sem. {s.semaine}</span>}
+                      <p className={`text-xs truncate ${done ? "text-[var(--t-text-35)] line-through" : "text-[var(--t-text-70)]"}`}>{s.titre}</p>
                     </div>
-                    {s.date_prevue && <p className="text-[0.7rem] text-white/25 mt-0.5">{new Date(s.date_prevue + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</p>}
+                    {s.date_prevue && <p className="text-[0.7rem] text-[var(--t-text-25)] mt-0.5">{new Date(s.date_prevue + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</p>}
                   </div>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-                    className={`text-white/25 shrink-0 transition-transform ${open ? "rotate-180" : ""}`}>
+                    className={`text-[var(--t-text-25)] shrink-0 transition-transform ${open ? "rotate-180" : ""}`}>
                     <polyline points="6 9 12 15 18 9"/>
                   </svg>
                 </button>
@@ -359,13 +359,13 @@ export default function ProgrammePage() {
                     {seanceReportSentIds.has(s.id) ? (
                       <p className="text-[0.6rem] text-[#7eb8a0] text-center mt-2">Signalement envoyé, merci ! 🙏</p>
                     ) : reportingSeanceId === s.id ? (
-                      <div className="border border-white/10 bg-[#0a0a0a] rounded-lg p-3 mt-2 flex flex-col gap-2">
-                        <textarea className="w-full bg-[#060606] border border-white/10 rounded-lg text-white placeholder-white/20 text-xs px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={2}
+                      <div className="border border-[var(--t-border)] bg-[var(--t-bg)] rounded-lg p-3 mt-2 flex flex-col gap-2">
+                        <textarea className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={2}
                           placeholder="Ex : la charge suggérée est trop lourde pour cet exercice à mon niveau..."
                           value={seanceReportComment} onChange={e => setSeanceReportComment(e.target.value)}/>
                         <div className="flex gap-2">
                           <button onClick={() => { setReportingSeanceId(null); setSeanceReportComment(""); }}
-                            className="flex-1 border border-white/10 text-white/40 rounded-lg text-[0.6rem] tracking-[0.1em] uppercase py-2 hover:border-white/20 hover:text-white/60 transition-colors">
+                            className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-lg text-[0.6rem] tracking-[0.1em] uppercase py-2 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors">
                             Annuler
                           </button>
                           <button onClick={() => submitSeanceReport(s)} disabled={seanceReportSending || !seanceReportComment.trim()}
@@ -376,7 +376,7 @@ export default function ProgrammePage() {
                       </div>
                     ) : (
                       <button onClick={() => setReportingSeanceId(s.id)}
-                        className="text-[0.55rem] tracking-wider uppercase text-white/20 hover:text-[#e07070]/70 transition-colors text-center py-1 mt-2 w-full">
+                        className="text-[0.55rem] tracking-wider uppercase text-[var(--t-text-20)] hover:text-[#e07070]/70 transition-colors text-center py-1 mt-2 w-full">
                         Un souci avec cette séance ? Signale-la à Samuel →
                       </button>
                     )}
@@ -392,35 +392,35 @@ export default function ProgrammePage() {
 
       {/* ── Séances du jour ── */}
       {todayWorkouts.length > 0 && (
-        <div className="border border-white/10 bg-[#111] rounded-lg mb-6">
+        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg mb-6">
           <button onClick={() => setSeancesJourOpen(v => !v)}
-            className="w-full text-left flex items-center justify-between px-5 py-3 hover:bg-white/[0.02] transition-colors">
-            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-white">
+            className="w-full text-left flex items-center justify-between px-5 py-3 hover:bg-[var(--t-glass-bg)] transition-colors">
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[var(--t-text)]">
               {selectedDate === todayStr() ? "Séances du jour" : `Séances · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
             </p>
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1.5">
                 <span style={{ fontFamily: "var(--font-bebas)" }} className="text-lg text-[#c9a84c] tracking-wide">{eatCal}</span>
-                <span className="text-[0.62rem] text-white/25 uppercase tracking-wider">kcal</span>
+                <span className="text-[0.62rem] text-[var(--t-text-25)] uppercase tracking-wider">kcal</span>
               </div>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-                className={`text-white/25 shrink-0 transition-transform ${seancesJourOpen ? "rotate-180" : ""}`}>
+                className={`text-[var(--t-text-25)] shrink-0 transition-transform ${seancesJourOpen ? "rotate-180" : ""}`}>
                 <polyline points="6 9 12 15 18 9"/>
               </svg>
             </div>
           </button>
           {seancesJourOpen && (
-            <div className="border-t border-white/5">
+            <div className="border-t border-[var(--t-border-soft)]">
               {todayWorkouts.map(w => (
-                <div key={w.id} className="flex items-center justify-between px-5 py-3 border-b border-white/5 last:border-0">
+                <div key={w.id} className="flex items-center justify-between px-5 py-3 border-b border-[var(--t-border-soft)] last:border-0">
                   <div>
-                    <p className="text-xs text-white/70">{w.activity}</p>
-                    <p className="text-[0.65rem] text-white/25 mt-0.5">{w.duration_minutes} min{w.description ? ` · ${w.description}` : ""}</p>
+                    <p className="text-xs text-[var(--t-text-70)]">{w.activity}</p>
+                    <p className="text-[0.65rem] text-[var(--t-text-25)] mt-0.5">{w.duration_minutes} min{w.description ? ` · ${w.description}` : ""}</p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-xs text-white/50">{w.calories_burned} kcal</span>
+                    <span className="text-xs text-[var(--t-text-50)]">{w.calories_burned} kcal</span>
                     <button onClick={() => removeWorkout(w.id)}
-                      className="text-white/20 hover:text-[#e07070] transition-colors">
+                      className="text-[var(--t-text-20)] hover:text-[#e07070] transition-colors">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                         <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                       </svg>
@@ -434,7 +434,7 @@ export default function ProgrammePage() {
       )}
 
       {/* ── Pas ── */}
-      <div className="border border-white/10 bg-[#111] rounded-lg p-5 mb-6">
+      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg p-5 mb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
 <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">
@@ -442,12 +442,12 @@ export default function ProgrammePage() {
                 </p>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[0.7rem] text-white/30">{stepsKm} km</span>
+            <span className="text-[0.7rem] text-[var(--t-text-30)]">{stepsKm} km</span>
             <button onClick={() => saveSteps(steps - 500)} disabled={steps === 0}
-              className="w-7 h-7 border border-white/10 text-white/40 rounded-lg hover:text-white/70 hover:border-white/20 transition-colors disabled:opacity-20 flex items-center justify-center text-sm">−</button>
+              className="w-7 h-7 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-lg hover:text-[var(--t-text-70)] hover:border-[var(--t-text-20)] transition-colors disabled:opacity-20 flex items-center justify-center text-sm">−</button>
             <input
               type="number" min="0"
-              className="w-20 bg-[#0a0a0a] border border-white/10 text-white text-center text-sm py-1 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
+              className="w-20 bg-[var(--t-bg)] border border-[var(--t-border)] text-[var(--t-text)] text-center text-sm py-1 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
               value={stepsInput}
               onChange={e => setStepsInput(e.target.value)}
               onBlur={() => saveSteps(parseInt(stepsInput) || 0)}
@@ -458,11 +458,11 @@ export default function ProgrammePage() {
           </div>
         </div>
 
-        <div className="h-1.5 bg-white/5 mb-2">
+        <div className="h-1.5 bg-[var(--t-track)] mb-2">
           <div className="h-full transition-all duration-500 rounded-full" style={{ width: `${stepsPct}%`, backgroundColor: steps >= stepGoal ? "#c9a84c" : "#7eb8a0" }}/>
         </div>
 
-        <div className="flex items-center justify-between text-[0.62rem] text-white/20 tracking-wider">
+        <div className="flex items-center justify-between text-[0.62rem] text-[var(--t-text-20)] tracking-wider">
           <span>{steps.toLocaleString("fr-FR")} pas</span>
           <span className={steps >= stepGoal ? "text-[#c9a84c]" : ""}>
             {steps >= stepGoal ? "Objectif atteint ✓" : `${(stepGoal - steps).toLocaleString("fr-FR")} restants`}
@@ -473,7 +473,7 @@ export default function ProgrammePage() {
             {editingGoal ? (
               <input
                 type="number" autoFocus
-                className="w-16 bg-[#0a0a0a] border border-[#c9a84c]/40 text-[#c9a84c] text-center text-[0.62rem] py-0.5 focus:outline-none"
+                className="w-16 bg-[var(--t-bg)] border border-[#c9a84c]/40 text-[#c9a84c] text-center text-[0.62rem] py-0.5 focus:outline-none"
                 value={goalInput}
                 onChange={e => setGoalInput(e.target.value)}
                 onBlur={() => saveGoal(parseInt(goalInput) || 10000)}
@@ -481,7 +481,7 @@ export default function ProgrammePage() {
               />
             ) : (
               <button onClick={() => { setEditingGoal(true); setGoalInput(stepGoal.toString()); }}
-                className="text-white/30 hover:text-[#c9a84c] transition-colors underline decoration-dotted">
+                className="text-[var(--t-text-30)] hover:text-[#c9a84c] transition-colors underline decoration-dotted">
                 {stepGoal.toLocaleString("fr-FR")}
               </button>
             )}
@@ -491,29 +491,29 @@ export default function ProgrammePage() {
       </div>
 
       {/* ── Explication pas ── */}
-      <div className="border-t border-white/5 px-5 py-4 bg-[#0a0a0a]/60 mb-6">
-        <p className="text-[0.68rem] tracking-[0.15em] uppercase text-white/30 mb-3">Pourquoi suivre tes pas est aussi important que tes séances</p>
+      <div className="border-t border-[var(--t-border-soft)] px-5 py-4 bg-[var(--t-bg)]/60 mb-6">
+        <p className="text-[0.68rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mb-3">Pourquoi suivre tes pas est aussi important que tes séances</p>
         <div className="flex flex-col gap-2.5">
-          <p className="text-[0.65rem] text-white/35 leading-relaxed">On pense souvent que seule la séance de sport compte pour brûler des calories. Mais ce que tu fais en dehors de l&apos;entraînement, marcher, monter des escaliers, bouger dans la journée peut représenter une dépense calorique encore plus grande que ta séance elle-même.</p>
-          <p className="text-[0.65rem] text-white/35 leading-relaxed">Une journée où tu marches peu, même si ton entraînement était intense, peut au final brûler moins de calories qu&apos;une journée où tu t&apos;es beaucoup déplacé, même sans sport. C&apos;est pour ça que suivre tes pas n&apos;est pas un détail : c&apos;est une vraie pièce du puzzle qui influence directement tes résultats, au même titre que tes séances.</p>
+          <p className="text-[0.65rem] text-[var(--t-text-35)] leading-relaxed">On pense souvent que seule la séance de sport compte pour brûler des calories. Mais ce que tu fais en dehors de l&apos;entraînement, marcher, monter des escaliers, bouger dans la journée peut représenter une dépense calorique encore plus grande que ta séance elle-même.</p>
+          <p className="text-[0.65rem] text-[var(--t-text-35)] leading-relaxed">Une journée où tu marches peu, même si ton entraînement était intense, peut au final brûler moins de calories qu&apos;une journée où tu t&apos;es beaucoup déplacé, même sans sport. C&apos;est pour ça que suivre tes pas n&apos;est pas un détail : c&apos;est une vraie pièce du puzzle qui influence directement tes résultats, au même titre que tes séances.</p>
         </div>
       </div>
 
       {/* ── Formulaire séance ── */}
-      <div className="border border-white/10 bg-[#111] rounded-lg p-6 mb-6 flex flex-col gap-5">
+      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg p-6 mb-6 flex flex-col gap-5">
         <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Enregistrer une séance</p>
 
         <div>
-          <label className="text-[0.7rem] tracking-[0.2em] uppercase text-white/40 block mb-1.5">Activité</label>
+          <label className="text-[0.7rem] tracking-[0.2em] uppercase text-[var(--t-text-40)] block mb-1.5">Activité</label>
           <input className={inputCls} placeholder="Ex : musculation, boxe, natation, vélo…"
             value={activity} onChange={e => { setActivity(e.target.value); setCalResult(null); }}/>
           {lastPerf && (
-            <div className="mt-1.5 flex items-center justify-between bg-[#0a0a0a] border border-white/5 px-3 py-2">
-              <span className="text-[0.65rem] tracking-wider text-white/25 uppercase">Dernière fois</span>
+            <div className="mt-1.5 flex items-center justify-between bg-[var(--t-bg)] border border-[var(--t-border-soft)] px-3 py-2">
+              <span className="text-[0.65rem] tracking-wider text-[var(--t-text-25)] uppercase">Dernière fois</span>
               <div className="flex items-center gap-3">
-                <span className="text-[0.65rem] text-white/35">{lastPerf.duration} min</span>
+                <span className="text-[0.65rem] text-[var(--t-text-35)]">{lastPerf.duration} min</span>
                 <span className="text-[0.65rem] text-[#c9a84c]/70">{lastPerf.calories} kcal</span>
-                <span className="text-[0.62rem] text-white/20">
+                <span className="text-[0.62rem] text-[var(--t-text-20)]">
                   {new Date(lastPerf.date).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
                 </span>
               </div>
@@ -522,7 +522,7 @@ export default function ProgrammePage() {
         </div>
 
         <div>
-          <label className="text-[0.7rem] tracking-[0.2em] uppercase text-white/40 block mb-2">Durée</label>
+          <label className="text-[0.7rem] tracking-[0.2em] uppercase text-[var(--t-text-40)] block mb-2">Durée</label>
           <div className="flex flex-wrap gap-2">
             {DURATIONS.map(d => (
               <button key={d.min} onClick={() => { setDurationMin(d.min); setCalResult(null); }} className={chip(durationMin === d.min)}>
@@ -533,7 +533,7 @@ export default function ProgrammePage() {
         </div>
 
         <div>
-          <label className="text-[0.7rem] tracking-[0.2em] uppercase text-white/40 block mb-2">Intensité</label>
+          <label className="text-[0.7rem] tracking-[0.2em] uppercase text-[var(--t-text-40)] block mb-2">Intensité</label>
           <div className="flex gap-2">
             {INTENSITIES.map(i => (
               <button key={i.key} onClick={() => setIntensity(i.key)} className={chip(intensity === i.key)}>
@@ -544,17 +544,17 @@ export default function ProgrammePage() {
         </div>
 
         <div>
-          <label className="text-[0.7rem] tracking-[0.2em] uppercase text-white/40 block mb-1.5">
-            Décris ta séance <span className="text-white/20">(optionnel)</span>
+          <label className="text-[0.7rem] tracking-[0.2em] uppercase text-[var(--t-text-40)] block mb-1.5">
+            Décris ta séance <span className="text-[var(--t-text-20)]">(optionnel)</span>
           </label>
           <div className="relative">
             <textarea
-              className="w-full bg-[#0a0a0a] border border-white/10 text-white placeholder-white/20 text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none pr-12"
+              className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none pr-12"
               rows={2} placeholder="Ex : séance intense, supersets, bonne récupération…"
               value={description} onChange={e => { setDescription(e.target.value); setCalResult(null); }}
             />
             <button onClick={listening ? stopVoice : startVoice}
-              className={`absolute right-3 top-3 p-1.5 border transition-colors ${listening ? "border-[#e07070] text-[#e07070] animate-pulse" : "border-white/10 text-white/30 hover:text-white/60 hover:border-white/20"}`}>
+              className={`absolute right-3 top-3 p-1.5 border transition-colors ${listening ? "border-[#e07070] text-[#e07070] animate-pulse" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:text-[var(--t-text-60)] hover:border-[var(--t-text-20)]"}`}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
                 <path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/>
@@ -572,24 +572,24 @@ export default function ProgrammePage() {
                 <div className="flex items-center gap-2 mb-1">
                   <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]">Estimation IA</p>
                   {intensity !== "haute" && (
-                    <span className="text-[0.6rem] tracking-[0.1em] uppercase border border-white/15 text-white/30 px-1.5 py-0.5">
+                    <span className="text-[0.6rem] tracking-[0.1em] uppercase border border-[var(--t-border-15)] text-[var(--t-text-30)] px-1.5 py-0.5">
                       intensité {intensity} · ×{intensityMult}
                     </span>
                   )}
                 </div>
-                <p className="text-[0.7rem] text-white/40 italic">{calResult.note}</p>
+                <p className="text-[0.7rem] text-[var(--t-text-40)] italic">{calResult.note}</p>
                 {intensity !== "haute" && (
-                  <p className="text-[0.65rem] text-white/20 mt-1">Base haute intensité : {calResult.calories_brulees} kcal</p>
+                  <p className="text-[0.65rem] text-[var(--t-text-20)] mt-1">Base haute intensité : {calResult.calories_brulees} kcal</p>
                 )}
               </div>
               <div className="text-right shrink-0">
-                <p style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-white tracking-wide leading-none">{adjustedCal}</p>
-                <p className="text-[0.62rem] tracking-[0.15em] uppercase text-white/30">kcal</p>
+                <p style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-[var(--t-text)] tracking-wide leading-none">{adjustedCal}</p>
+                <p className="text-[0.62rem] tracking-[0.15em] uppercase text-[var(--t-text-30)]">kcal</p>
               </div>
             </div>
             <div className="flex gap-2">
               <button onClick={() => setCalResult(null)}
-                className="flex-1 border border-white/10 text-white/40 rounded-lg text-[0.7rem] tracking-[0.15em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors">
+                className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-lg text-[0.7rem] tracking-[0.15em] uppercase py-2.5 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors">
                 Ré-estimer
               </button>
               <button onClick={addWorkout}
@@ -602,13 +602,13 @@ export default function ProgrammePage() {
             {actReportSent ? (
               <p className="text-[0.62rem] text-[#7eb8a0] text-center py-1">Signalement envoyé, merci ! 🙏</p>
             ) : showActReportForm ? (
-              <div className="border border-white/10 bg-[#0a0a0a] rounded-lg p-4 flex flex-col gap-3">
-                <textarea className="w-full bg-[#060606] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={3}
+              <div className="border border-[var(--t-border)] bg-[var(--t-bg)] rounded-lg p-4 flex flex-col gap-3">
+                <textarea className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={3}
                   placeholder="Ex : pour cette durée et cette activité, ça me semble bien trop élevé..."
                   value={actReportComment} onChange={e => setActReportComment(e.target.value)}/>
                 <div className="flex gap-2">
                   <button onClick={() => { setShowActReportForm(false); setActReportComment(""); }}
-                    className="flex-1 border border-white/10 text-white/40 rounded-lg text-[0.65rem] tracking-[0.15em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors">
+                    className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-lg text-[0.65rem] tracking-[0.15em] uppercase py-2.5 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors">
                     Annuler
                   </button>
                   <button onClick={submitActReport} disabled={actReportSending || !actReportComment.trim()}
@@ -619,7 +619,7 @@ export default function ProgrammePage() {
               </div>
             ) : (
               <button onClick={() => setShowActReportForm(true)}
-                className="text-[0.6rem] tracking-wider uppercase text-white/20 hover:text-[#e07070]/70 transition-colors text-center py-1">
+                className="text-[0.6rem] tracking-wider uppercase text-[var(--t-text-20)] hover:text-[#e07070]/70 transition-colors text-center py-1">
                 Cette estimation te semble fausse ? Signale-la à Samuel →
               </button>
             )}
@@ -635,26 +635,26 @@ export default function ProgrammePage() {
       </div>
 
       {/* ── EAT / NEAT / TOTAL ── */}
-      <div className="border border-white/10 bg-[#111] rounded-lg p-5 mb-8">
+      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg p-5 mb-8">
         <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Dépense du jour</p>
         <div className="grid grid-cols-3 gap-3 mb-4">
           {/* EAT */}
-          <div className="border border-white/5 bg-[#0a0a0a] rounded-lg py-4 px-3 text-center">
+          <div className="border border-[var(--t-border-soft)] bg-[var(--t-bg)] rounded-lg py-4 px-3 text-center">
             <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[#c9a84c] tracking-wide leading-none">{eatCal}</p>
-            <p className="text-[0.65rem] tracking-[0.15em] uppercase text-white/30 mt-1.5">EAT</p>
-            <p className="text-[0.62rem] text-white/15 mt-0.5">Exercice intentionnel</p>
+            <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mt-1.5">EAT</p>
+            <p className="text-[0.62rem] text-[var(--t-text-15)] mt-0.5">Exercice intentionnel</p>
           </div>
           {/* NEAT */}
-          <div className="border border-white/5 bg-[#0a0a0a] rounded-lg py-4 px-3 text-center">
+          <div className="border border-[var(--t-border-soft)] bg-[var(--t-bg)] rounded-lg py-4 px-3 text-center">
             <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[#7eb8a0] tracking-wide leading-none">{neatCal}</p>
-            <p className="text-[0.65rem] tracking-[0.15em] uppercase text-white/30 mt-1.5">NEAT</p>
-            <p className="text-[0.62rem] text-white/15 mt-0.5">Activité quotidienne</p>
+            <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mt-1.5">NEAT</p>
+            <p className="text-[0.62rem] text-[var(--t-text-15)] mt-0.5">Activité quotidienne</p>
           </div>
           {/* Total */}
           <div className="border border-[#c9a84c]/15 bg-[#c9a84c]/5 rounded-lg py-4 px-3 text-center">
-            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-white tracking-wide leading-none">{totalCal}</p>
-            <p className="text-[0.65rem] tracking-[0.15em] uppercase text-white/30 mt-1.5">Total</p>
-            <p className="text-[0.62rem] text-white/15 mt-0.5">kcal brûlées</p>
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[var(--t-text)] tracking-wide leading-none">{totalCal}</p>
+            <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mt-1.5">Total</p>
+            <p className="text-[0.62rem] text-[var(--t-text-15)] mt-0.5">kcal brûlées</p>
           </div>
         </div>
 
@@ -668,12 +668,12 @@ export default function ProgrammePage() {
           </div>
         )}
 
-        <div className="flex items-center justify-between text-[0.62rem] text-white/20 tracking-wider">
+        <div className="flex items-center justify-between text-[0.62rem] text-[var(--t-text-20)] tracking-wider">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1"><span className="w-2 h-2 inline-block" style={{ backgroundColor: "#c9a84c" }}/>EAT : exercice</span>
             <span className="flex items-center gap-1"><span className="w-2 h-2 inline-block" style={{ backgroundColor: "#7eb8a0" }}/>NEAT : {steps.toLocaleString("fr-FR")} pas</span>
           </div>
-          {!profile && <span className="text-white/15">Complète ton profil pour personnaliser</span>}
+          {!profile && <span className="text-[var(--t-text-15)]">Complète ton profil pour personnaliser</span>}
         </div>
       </div>
 
@@ -699,30 +699,30 @@ export default function ProgrammePage() {
               return next;
             });
             return (
-              <div key={date} className="border border-white/10 bg-[#111] rounded-lg mb-3">
+              <div key={date} className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg mb-3">
                 <button onClick={toggle}
-                  className="w-full text-left flex items-center justify-between gap-2 px-5 py-3 hover:bg-white/[0.02] transition-colors">
-                  <span className="text-[0.7rem] tracking-wider text-white/40 capitalize">{label}</span>
+                  className="w-full text-left flex items-center justify-between gap-2 px-5 py-3 hover:bg-[var(--t-glass-bg)] transition-colors">
+                  <span className="text-[0.7rem] tracking-wider text-[var(--t-text-40)] capitalize">{label}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-[0.7rem] tracking-wider text-white/30">{dayCal} kcal</span>
+                    <span className="text-[0.7rem] tracking-wider text-[var(--t-text-30)]">{dayCal} kcal</span>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-                      className={`text-white/25 shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`}>
+                      className={`text-[var(--t-text-25)] shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`}>
                       <polyline points="6 9 12 15 18 9"/>
                     </svg>
                   </div>
                 </button>
                 {isOpen && (
-                  <div className="border-t border-white/5">
+                  <div className="border-t border-[var(--t-border-soft)]">
                     {dayWorkouts.map(w => (
-                      <div key={w.id} className="flex items-center justify-between px-5 py-2.5 border-b border-white/5 last:border-0">
+                      <div key={w.id} className="flex items-center justify-between px-5 py-2.5 border-b border-[var(--t-border-soft)] last:border-0">
                         <div>
-                          <p className="text-xs text-white/60">{w.activity}</p>
-                          <p className="text-[0.65rem] text-white/20 mt-0.5">{w.duration_minutes} min</p>
+                          <p className="text-xs text-[var(--t-text-60)]">{w.activity}</p>
+                          <p className="text-[0.65rem] text-[var(--t-text-20)] mt-0.5">{w.duration_minutes} min</p>
                         </div>
                         <div className="flex items-center gap-3">
-                          <span className="text-xs text-white/40">{w.calories_burned} kcal</span>
+                          <span className="text-xs text-[var(--t-text-40)]">{w.calories_burned} kcal</span>
                           <button onClick={() => removeWorkout(w.id)}
-                            className="text-white/20 hover:text-[#e07070] transition-colors">
+                            className="text-[var(--t-text-20)] hover:text-[#e07070] transition-colors">
                             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                             </svg>

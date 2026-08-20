@@ -190,33 +190,33 @@ export default function InboxPage() {
     <div className="flex h-[calc(100dvh-50px-env(safe-area-inset-bottom))] md:h-screen overflow-hidden">
 
       {/* ── Left: conversation list (plein écran sur mobile quand aucune conv ouverte) ── */}
-      <div className={`${activeConv ? "hidden md:flex" : "flex"} w-full md:w-72 shrink-0 border-r border-white/5 flex-col bg-[#0a0a0a]`}>
-        <div className="px-4 md:px-5 pt-5 md:pt-6 pb-4 border-b border-white/5">
+      <div className={`${activeConv ? "hidden md:flex" : "flex"} w-full md:w-72 shrink-0 border-r border-[var(--t-border-soft)] flex-col bg-[var(--t-bg)]`}>
+        <div className="px-4 md:px-5 pt-5 md:pt-6 pb-4 border-b border-[var(--t-border-soft)]">
           <p className="text-[0.65rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-1">CRM</p>
-          <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-white tracking-wide">INBOX</h1>
-          <p className="text-white/30 text-xs mt-1">
+          <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-[var(--t-text)] tracking-wide">INBOX</h1>
+          <p className="text-[var(--t-text-30)] text-xs mt-1">
             {convs.filter(c => c.unread).length} non répondu{convs.filter(c => c.unread).length !== 1 ? "s" : ""}
           </p>
         </div>
 
         <div className="flex-1 overflow-y-auto py-2 px-2">
           {convs.length === 0 ? (
-            <div className="p-8 text-center"><p className="text-white/20 text-xs">Aucune conversation</p></div>
+            <div className="p-8 text-center"><p className="text-[var(--t-text-20)] text-xs">Aucune conversation</p></div>
           ) : convs.map(conv => {
             const isActive = activeEmail === conv.email;
             return (
               <button key={conv.email} onClick={() => setActiveEmail(conv.email)}
-                className={`w-full text-left px-4 py-3.5 mb-1 border transition-all ${isActive ? "border-[#c9a84c]/30 bg-[#c9a84c]/5 rounded-lg" : conv.unread ? "border-[#e07070]/15 bg-[#e07070]/3 rounded-lg" : "border-white/5 hover:border-white/10 hover:bg-white/[0.02] rounded-lg"}`}>
+                className={`w-full text-left px-4 py-3.5 mb-1 border transition-all ${isActive ? "border-[#c9a84c]/30 bg-[#c9a84c]/5 rounded-lg" : conv.unread ? "border-[#e07070]/15 bg-[#e07070]/3 rounded-lg" : "border-[var(--t-border-soft)] hover:border-[var(--t-border)] hover:bg-[var(--t-glass-bg)] rounded-lg"}`}>
                 <div className="flex items-start justify-between gap-2 mb-1">
                   <div className="flex items-center gap-2 min-w-0">
                     {conv.unread && <span className="w-1.5 h-1.5 rounded-full bg-[#e07070] shrink-0"/>}
-                    <p className={`text-sm font-medium truncate ${conv.unread ? "text-white" : isActive ? "text-white" : "text-white/60"}`}>{conv.name}</p>
+                    <p className={`text-sm font-medium truncate ${conv.unread ? "text-[var(--t-text)]" : isActive ? "text-[var(--t-text)]" : "text-[var(--t-text-60)]"}`}>{conv.name}</p>
                   </div>
-                  <span className="text-[0.4rem] text-white/20 shrink-0">
+                  <span className="text-[0.4rem] text-[var(--t-text-20)] shrink-0">
                     {new Date(conv.lastMsg.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
                   </span>
                 </div>
-                <p className="text-[0.48rem] text-white/30 truncate">
+                <p className="text-[0.48rem] text-[var(--t-text-30)] truncate">
                   {conv.lastMsg.from_email === myEmail ? "Vous : " : ""}
                   {(() => {
                     const fb = parseFeedback(conv.lastMsg.content);
@@ -235,15 +235,15 @@ export default function InboxPage() {
         <div className="flex-1 flex flex-col overflow-hidden">
 
           {/* Conv header + client mini-profile */}
-          <div className="border-b border-white/5 px-4 md:px-8 pt-4 md:pt-5 pb-4 shrink-0">
+          <div className="border-b border-[var(--t-border-soft)] px-4 md:px-8 pt-4 md:pt-5 pb-4 shrink-0">
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-start gap-2 min-w-0">
-                <button onClick={() => setActiveEmail(null)} className="md:hidden text-white/40 hover:text-white/70 transition-colors mt-1 shrink-0">
+                <button onClick={() => setActiveEmail(null)} className="md:hidden text-[var(--t-text-40)] hover:text-[var(--t-text-70)] transition-colors mt-1 shrink-0">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
                 </button>
                 <div className="min-w-0">
-                  <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl md:text-3xl text-white tracking-wide truncate">{activeConv.name}</h2>
-                  <p className="text-[0.48rem] text-white/25 tracking-wider mt-0.5 truncate">{activeEmail}</p>
+                  <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl md:text-3xl text-[var(--t-text)] tracking-wide truncate">{activeConv.name}</h2>
+                  <p className="text-[0.48rem] text-[var(--t-text-25)] tracking-wider mt-0.5 truncate">{activeEmail}</p>
                 </div>
               </div>
               {activeEmail && (() => {
@@ -253,7 +253,7 @@ export default function InboxPage() {
                     className={`flex items-center gap-1.5 text-[0.5rem] tracking-[0.12em] uppercase px-3 py-1.5 border rounded-full transition-all ${
                       isTreated
                         ? "border-[#7eb8a0]/40 text-[#7eb8a0] bg-[#7eb8a0]/8 hover:opacity-70"
-                        : "border-white/10 text-white/30 hover:border-[#7eb8a0]/40 hover:text-[#7eb8a0]/70"
+                        : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[#7eb8a0]/40 hover:text-[#7eb8a0]/70"
                     }`}>
                     <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={isTreated ? 2.5 : 1.5} strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
                     {isTreated ? "Traité" : "Marquer traité"}
@@ -265,27 +265,27 @@ export default function InboxPage() {
                 <div className="hidden md:flex items-center gap-4 text-right">
                   {activeClient.poids && (
                     <div>
-                      <p className="text-[0.42rem] tracking-wider text-white/20 uppercase mb-0.5">Poids</p>
-                      <p className="text-sm text-white/60 font-medium">{activeClient.poids} kg</p>
+                      <p className="text-[0.42rem] tracking-wider text-[var(--t-text-20)] uppercase mb-0.5">Poids</p>
+                      <p className="text-sm text-[var(--t-text-60)] font-medium">{activeClient.poids} kg</p>
                     </div>
                   )}
                   {activeClient.pipeline_stage && (
                     <div>
-                      <p className="text-[0.42rem] tracking-wider text-white/20 uppercase mb-0.5">Stage</p>
+                      <p className="text-[0.42rem] tracking-wider text-[var(--t-text-20)] uppercase mb-0.5">Stage</p>
                       <span className="text-[0.45rem] tracking-wider uppercase px-1.5 py-0.5 border rounded-full" style={{ color: stage!.color, borderColor: `${stage!.color}35` }}>{stage!.label}</span>
                     </div>
                   )}
                   {activeClient.subscription_end && (
                     <div>
-                      <p className="text-[0.42rem] tracking-wider text-white/20 uppercase mb-0.5">Fin abo.</p>
-                      <p className="text-[0.65rem] text-white/40">{new Date(activeClient.subscription_end + "T00:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}</p>
+                      <p className="text-[0.42rem] tracking-wider text-[var(--t-text-20)] uppercase mb-0.5">Fin abo.</p>
+                      <p className="text-[0.65rem] text-[var(--t-text-40)]">{new Date(activeClient.subscription_end + "T00:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}</p>
                     </div>
                   )}
                 </div>
               )}
             </div>
             {activeClient?.objectifs && (
-              <p className="text-[0.48rem] text-white/20 mt-2 line-clamp-1">🎯 {activeClient.objectifs}</p>
+              <p className="text-[0.48rem] text-[var(--t-text-20)] mt-2 line-clamp-1">🎯 {activeClient.objectifs}</p>
             )}
           </div>
 
@@ -296,8 +296,8 @@ export default function InboxPage() {
               return (
                 <div key={m.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
                   {!isMe && (
-                    <div className="w-7 h-7 border border-white/10 rounded-full flex items-center justify-center mr-2.5 mt-0.5 shrink-0">
-                      <span className="text-[0.55rem] text-white/40 font-bold">{activeConv.name.charAt(0)}</span>
+                    <div className="w-7 h-7 border border-[var(--t-border)] rounded-full flex items-center justify-center mr-2.5 mt-0.5 shrink-0">
+                      <span className="text-[0.55rem] text-[var(--t-text-40)] font-bold">{activeConv.name.charAt(0)}</span>
                     </div>
                   )}
                   <div className="max-w-[85%] md:max-w-md">
@@ -314,16 +314,16 @@ export default function InboxPage() {
                                 <span className="text-[0.48rem] tracking-[0.2em] uppercase font-bold text-[#e07070]">Estimation signalée</span>
                               </div>
                               <div className="flex items-baseline gap-1">
-                                <span style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-white tracking-wide leading-none">{bff.estimated_bf}</span>
-                                <span className="text-[0.45rem] text-white/40">%</span>
+                                <span style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[var(--t-text)] tracking-wide leading-none">{bff.estimated_bf}</span>
+                                <span className="text-[0.45rem] text-[var(--t-text-40)]">%</span>
                               </div>
                             </div>
-                            <div className="px-4 py-3 bg-[#0d0d0d] flex flex-col gap-3">
-                              <p className="text-[0.65rem] text-white/55 leading-relaxed">{bff.comment}</p>
+                            <div className="px-4 py-3 bg-[var(--t-surface-2)] flex flex-col gap-3">
+                              <p className="text-[0.65rem] text-[var(--t-text-55)] leading-relaxed">{bff.comment}</p>
                               {bff.photos?.length > 0 && (
                                 <div className="flex flex-wrap gap-2">
                                   {bff.photos.map((p, i) => (
-                                    <a key={i} href={p} target="_blank" rel="noopener noreferrer" className="block w-16 h-20 border border-white/10 rounded-lg overflow-hidden hover:border-[#e07070]/40 transition-colors">
+                                    <a key={i} href={p} target="_blank" rel="noopener noreferrer" className="block w-16 h-20 border border-[var(--t-border)] rounded-lg overflow-hidden hover:border-[#e07070]/40 transition-colors">
                                       <img src={p} alt={`Photo ${i + 1}`} className="w-full h-full object-cover"/>
                                     </a>
                                   ))}
@@ -332,23 +332,23 @@ export default function InboxPage() {
 
                               {/* Correction coach -> réinjectée dans le prompt IA des prochaines estimations */}
                               {corrections.has(m.id) ? (
-                                <div className="border-t border-white/5 pt-3">
+                                <div className="border-t border-[var(--t-border-soft)] pt-3">
                                   <p className="text-[0.45rem] tracking-[0.15em] uppercase text-[#7eb8a0] mb-1">✓ Correction envoyée à l&apos;IA{corrections.get(m.id)!.corrected_estimate !== null ? ` · ${corrections.get(m.id)!.corrected_estimate}%` : ""}</p>
-                                  <p className="text-[0.62rem] text-white/40 leading-relaxed">{corrections.get(m.id)!.coach_comment}</p>
+                                  <p className="text-[0.62rem] text-[var(--t-text-40)] leading-relaxed">{corrections.get(m.id)!.coach_comment}</p>
                                 </div>
                               ) : correctingId === m.id ? (
-                                <div className="border-t border-white/5 pt-3 flex flex-col gap-2">
+                                <div className="border-t border-[var(--t-border-soft)] pt-3 flex flex-col gap-2">
                                   <div className="flex gap-2 items-center">
                                     <input type="number" step="0.1" placeholder="% correct (optionnel)" value={correctionValue}
                                       onChange={e => setCorrectionValue(e.target.value)}
-                                      className="w-32 bg-[#060606] border border-white/10 rounded-lg text-white placeholder-white/20 text-xs px-2.5 py-2 focus:outline-none focus:border-[#c9a84c]/40"/>
+                                      className="w-32 bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-2.5 py-2 focus:outline-none focus:border-[#c9a84c]/40"/>
                                   </div>
                                   <textarea rows={2} placeholder="Ce que l'IA a mal évalué et comment corriger (ex : sous-estime le gras abdominal chez les hommes avec cette morphologie...)"
                                     value={correctionComment} onChange={e => setCorrectionComment(e.target.value)}
-                                    className="w-full bg-[#060606] border border-white/10 rounded-lg text-white placeholder-white/20 text-xs px-2.5 py-2 focus:outline-none focus:border-[#c9a84c]/40 resize-none"/>
+                                    className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-2.5 py-2 focus:outline-none focus:border-[#c9a84c]/40 resize-none"/>
                                   <div className="flex gap-2">
                                     <button onClick={() => { setCorrectingId(null); setCorrectionComment(""); setCorrectionValue(""); }}
-                                      className="flex-1 border border-white/10 text-white/40 rounded-lg text-[0.55rem] tracking-wider uppercase py-2 hover:border-white/20 hover:text-white/60 transition-colors">
+                                      className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-lg text-[0.55rem] tracking-wider uppercase py-2 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors">
                                       Annuler
                                     </button>
                                     <button onClick={() => submitCorrection(m.id, bff.estimated_bf, bff.comment)} disabled={correctionSaving || !correctionComment.trim()}
@@ -359,7 +359,7 @@ export default function InboxPage() {
                                 </div>
                               ) : (
                                 <button onClick={() => setCorrectingId(m.id)}
-                                  className="text-[0.55rem] tracking-wider uppercase text-white/25 hover:text-[#c9a84c] transition-colors text-left border-t border-white/5 pt-3">
+                                  className="text-[0.55rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[#c9a84c] transition-colors text-left border-t border-[var(--t-border-soft)] pt-3">
                                   Corriger cette estimation →
                                 </button>
                               )}
@@ -379,15 +379,15 @@ export default function InboxPage() {
                                 <span className="text-[0.48rem] tracking-[0.2em] uppercase font-bold text-[#7eb8a0]">Bilan Body Fat</span>
                               </div>
                               <div className="flex items-baseline gap-1">
-                                <span style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-white tracking-wide leading-none">{bfc.bf}</span>
-                                <span className="text-[0.45rem] text-white/40">%</span>
+                                <span style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[var(--t-text)] tracking-wide leading-none">{bfc.bf}</span>
+                                <span className="text-[0.45rem] text-[var(--t-text-40)]">%</span>
                               </div>
                             </div>
-                            <div className="px-4 py-3 bg-[#0d0d0d] flex flex-col gap-2">
-                              {bfc.note && <p className="text-[0.65rem] text-white/40 italic">{bfc.note}</p>}
-                              {bfc.points_forts   && <div className="flex gap-2"><span className="text-[0.45rem] text-[#7eb8a0] uppercase tracking-wider shrink-0 w-16 pt-px">Points forts</span><p className="text-[0.65rem] text-white/50 leading-relaxed">{bfc.points_forts}</p></div>}
-                              {bfc.points_faibles && <div className="flex gap-2"><span className="text-[0.45rem] text-[#e07070] uppercase tracking-wider shrink-0 w-16 pt-px">À travailler</span><p className="text-[0.65rem] text-white/50 leading-relaxed">{bfc.points_faibles}</p></div>}
-                              {bfc.conseils       && <div className="flex gap-2"><span className="text-[0.45rem] text-[#c9a84c] uppercase tracking-wider shrink-0 w-16 pt-px">Conseils</span><p className="text-[0.65rem] text-white/50 leading-relaxed">{bfc.conseils}</p></div>}
+                            <div className="px-4 py-3 bg-[var(--t-surface-2)] flex flex-col gap-2">
+                              {bfc.note && <p className="text-[0.65rem] text-[var(--t-text-40)] italic">{bfc.note}</p>}
+                              {bfc.points_forts   && <div className="flex gap-2"><span className="text-[0.45rem] text-[#7eb8a0] uppercase tracking-wider shrink-0 w-16 pt-px">Points forts</span><p className="text-[0.65rem] text-[var(--t-text-50)] leading-relaxed">{bfc.points_forts}</p></div>}
+                              {bfc.points_faibles && <div className="flex gap-2"><span className="text-[0.45rem] text-[#e07070] uppercase tracking-wider shrink-0 w-16 pt-px">À travailler</span><p className="text-[0.65rem] text-[var(--t-text-50)] leading-relaxed">{bfc.points_faibles}</p></div>}
+                              {bfc.conseils       && <div className="flex gap-2"><span className="text-[0.45rem] text-[#c9a84c] uppercase tracking-wider shrink-0 w-16 pt-px">Conseils</span><p className="text-[0.65rem] text-[var(--t-text-50)] leading-relaxed">{bfc.conseils}</p></div>}
                             </div>
                           </div>
                         );
@@ -403,17 +403,17 @@ export default function InboxPage() {
                               <span className="text-sm">{cfg.emoji}</span>
                               <span className="text-[0.48rem] tracking-[0.2em] uppercase font-bold" style={{ color: cfg.color }}>{cfg.label}</span>
                             </div>
-                            <div className="px-4 py-3 text-xs leading-relaxed whitespace-pre-line text-white/75 bg-[#0d0d0d]">{fb.text}</div>
+                            <div className="px-4 py-3 text-xs leading-relaxed whitespace-pre-line text-[var(--t-text-75)] bg-[var(--t-surface-2)]">{fb.text}</div>
                           </div>
                         );
                       }
                       return (
-                        <div className={`px-4 py-3 text-xs leading-relaxed whitespace-pre-line ${isMe ? "bg-[#c9a84c] text-black rounded-lg" : "bg-[#111] border border-white/8 text-white/60 rounded-lg"}`}>
+                        <div className={`px-4 py-3 text-xs leading-relaxed whitespace-pre-line ${isMe ? "bg-[#c9a84c] text-black rounded-lg" : "bg-[var(--t-surface)] border border-[var(--t-text-8)] text-[var(--t-text-60)] rounded-lg"}`}>
                           {m.content}
                         </div>
                       );
                     })()}
-                    <p className={`text-[0.38rem] text-white/15 mt-1 tracking-wider ${isMe ? "text-right" : ""}`}>
+                    <p className={`text-[0.38rem] text-[var(--t-text-15)] mt-1 tracking-wider ${isMe ? "text-right" : ""}`}>
                       {new Date(m.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
                     </p>
                   </div>
@@ -424,7 +424,7 @@ export default function InboxPage() {
           </div>
 
           {/* Templates + Reply */}
-          <div className="border-t border-white/5 px-3 md:px-8 py-3 md:py-4 shrink-0">
+          <div className="border-t border-[var(--t-border-soft)] px-3 md:px-8 py-3 md:py-4 shrink-0">
             {showTpls && (
               <div className="mb-3 flex flex-wrap gap-2">
                 {TEMPLATES.map(t => (
@@ -437,13 +437,13 @@ export default function InboxPage() {
             )}
             <div className="flex gap-2 md:gap-3">
               <button onClick={() => setShowTpls(v => !v)}
-                className={`shrink-0 px-2.5 md:px-3 py-3 border rounded-lg text-[0.48rem] tracking-wider uppercase transition-colors ${showTpls ? "border-[#c9a84c]/40 text-[#c9a84c]/70 bg-[#c9a84c]/5" : "border-white/10 text-white/25 hover:border-white/20"}`}>
+                className={`shrink-0 px-2.5 md:px-3 py-3 border rounded-lg text-[0.48rem] tracking-wider uppercase transition-colors ${showTpls ? "border-[#c9a84c]/40 text-[#c9a84c]/70 bg-[#c9a84c]/5" : "border-[var(--t-border)] text-[var(--t-text-25)] hover:border-[var(--t-text-20)]"}`}>
                 Templates
               </button>
               <input value={input} onChange={e => setInput(e.target.value)}
                 onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
                 placeholder={`Répondre à ${activeConv.name}…`} disabled={sending}
-                className="flex-1 min-w-0 bg-[#111] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-3 md:px-4 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors disabled:opacity-50"/>
+                className="flex-1 min-w-0 bg-[var(--t-surface)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 md:px-4 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors disabled:opacity-50"/>
               <button onClick={send} disabled={!input.trim() || sending}
                 className="bg-[#c9a84c] text-black px-4 md:px-6 py-3 text-[0.58rem] font-bold tracking-[0.15em] uppercase hover:bg-[#e2c97e] transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
                 Envoyer
@@ -453,10 +453,10 @@ export default function InboxPage() {
         </div>
       ) : (
         <div className="flex-1 hidden md:flex flex-col items-center justify-center gap-3">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--t-border)" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
           </svg>
-          <p className="text-white/15 text-sm">Sélectionne une conversation</p>
+          <p className="text-[var(--t-text-15)] text-sm">Sélectionne une conversation</p>
         </div>
       )}
     </div>

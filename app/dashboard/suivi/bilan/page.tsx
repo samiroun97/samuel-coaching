@@ -29,7 +29,7 @@ export default function BilanPage() {
   if (data === null) {
     return (
       <div className="p-4 sm:p-8 max-w-2xl">
-        <p className="text-white/40 text-sm mb-4">
+        <p className="text-[var(--t-text-40)] text-sm mb-4">
           Aucun bilan à afficher — génère-le depuis la page Suivi.
         </p>
         <Link href="/dashboard/suivi" className="text-[#c9a84c] text-[0.7rem] tracking-[0.15em] uppercase hover:text-[#e2c97e] transition-colors">
@@ -42,7 +42,7 @@ export default function BilanPage() {
   return (
     <div>
       <div className="print:hidden flex items-center justify-between gap-4 flex-wrap px-4 sm:px-8 pt-6">
-        <Link href="/dashboard/suivi" className="text-white/40 hover:text-white/70 transition-colors text-[0.7rem] tracking-[0.15em] uppercase flex items-center gap-1.5">
+        <Link href="/dashboard/suivi" className="text-[var(--t-text-40)] hover:text-[var(--t-text-70)] transition-colors text-[0.7rem] tracking-[0.15em] uppercase flex items-center gap-1.5">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
           Retour
         </Link>
@@ -51,7 +51,7 @@ export default function BilanPage() {
           Enregistrer en PDF →
         </button>
       </div>
-      <p className="print:hidden text-[0.62rem] text-white/25 leading-relaxed px-4 sm:px-8 mt-2 max-w-md">
+      <p className="print:hidden text-[0.62rem] text-[var(--t-text-25)] leading-relaxed px-4 sm:px-8 mt-2 max-w-md">
         Astuce : dans la fenêtre d&apos;impression, sous &quot;Plus de paramètres&quot;, décoche
         &quot;En-têtes et pieds de page&quot; pour un PDF sans date ni URL ajoutées par le navigateur.
       </p>

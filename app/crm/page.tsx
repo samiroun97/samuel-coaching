@@ -13,10 +13,10 @@ type Ck     = { client_id: string; week_date: string; weight: number | null; com
 
 function KPI({ label, value, color, href }: { label: string; value: number | string; color?: string; href?: string }) {
   const inner = (
-    <div className={`border bg-[#0f0f0f] rounded-lg px-4 py-3 md:px-5 md:py-4 flex flex-col gap-1 ${href ? "hover:border-white/15 transition-colors cursor-pointer" : ""}`}
-      style={{ borderColor: color ? `${color}25` : "rgba(255,255,255,0.07)" }}>
-      <p style={{ fontFamily: "var(--font-bebas)", color: color ?? "white" }} className="text-3xl md:text-4xl tracking-wide leading-none">{value}</p>
-      <p className="text-[0.48rem] tracking-[0.2em] uppercase text-white/30">{label}</p>
+    <div className={`border bg-[var(--t-surface-2)] rounded-lg px-4 py-3 md:px-5 md:py-4 flex flex-col gap-1 ${href ? "hover:border-[var(--t-border-15)] transition-colors cursor-pointer" : ""}`}
+      style={{ borderColor: color ? `${color}25` : "var(--t-text-7)" }}>
+      <p style={{ fontFamily: "var(--font-bebas)", color: color ?? "var(--t-text)" }} className="text-3xl md:text-4xl tracking-wide leading-none">{value}</p>
+      <p className="text-[0.48rem] tracking-[0.2em] uppercase text-[var(--t-text-30)]">{label}</p>
     </div>
   );
   return href ? <Link href={href}>{inner}</Link> : inner;
@@ -149,8 +149,8 @@ export default function CRMDashboard() {
       {/* Header */}
       <div className="mb-6 md:mb-8">
         <p className="text-[0.65rem] tracking-[0.35em] text-[#c9a84c] uppercase mb-1">CRM — Vue globale</p>
-        <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl md:text-5xl text-white tracking-wide">DASHBOARD</h1>
-        <p className="text-white/30 text-xs mt-1 capitalize">
+        <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl md:text-5xl text-[var(--t-text)] tracking-wide">DASHBOARD</h1>
+        <p className="text-[var(--t-text-30)] text-xs mt-1 capitalize">
           {new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
         </p>
       </div>
@@ -160,11 +160,11 @@ export default function CRMDashboard() {
         <div className="border border-[#c9a84c]/20 bg-[#c9a84c]/5 rounded-lg p-4 md:p-5 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <p className="text-[0.65rem] tracking-[0.22em] uppercase text-[#c9a84c] mb-1">Inviter un client</p>
-            <p className="text-xs text-white/40">Code coach : <span style={{ fontFamily: "var(--font-bebas)" }} className="text-white tracking-[0.2em] text-sm">{inviteCode}</span></p>
+            <p className="text-xs text-[var(--t-text-40)]">Code coach : <span style={{ fontFamily: "var(--font-bebas)" }} className="text-[var(--t-text)] tracking-[0.2em] text-sm">{inviteCode}</span></p>
           </div>
           <div className="flex gap-2 shrink-0">
             <button onClick={() => copy(inviteCode, "code")}
-              className="px-3 py-2 border border-white/10 text-white/50 text-[0.6rem] tracking-[0.1em] uppercase hover:border-white/25 hover:text-white/80 transition-colors rounded-lg">
+              className="px-3 py-2 border border-[var(--t-border)] text-[var(--t-text-50)] text-[0.6rem] tracking-[0.1em] uppercase hover:border-[var(--t-text-25)] hover:text-[var(--t-text-80)] transition-colors rounded-lg">
               {copied === "code" ? "Copié ✓" : "Copier le code"}
             </button>
             <button onClick={() => copy(inviteLink, "link")}
@@ -188,17 +188,17 @@ export default function CRMDashboard() {
       {/* Alertes */}
       {alerts.length > 0 && (
         <div className="mb-8">
-          <p className="text-[0.65rem] tracking-[0.25em] uppercase text-white/25 mb-3">Alertes ({alerts.length})</p>
+          <p className="text-[0.65rem] tracking-[0.25em] uppercase text-[var(--t-text-25)] mb-3">Alertes ({alerts.length})</p>
           <div className="flex flex-col gap-2">
             {alerts.slice(0, 8).map((a, i) => (
               <Link key={i} href={a.href}
-                className="flex items-center justify-between gap-2 border px-3 md:px-4 py-3 hover:bg-white/[0.02] transition-colors"
+                className="flex items-center justify-between gap-2 border px-3 md:px-4 py-3 hover:bg-[var(--t-glass-bg)] transition-colors"
                 style={{ borderColor: `${a.color}25`, backgroundColor: `${a.color}07` }}>
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-1 h-5 shrink-0" style={{ backgroundColor: a.color }}/>
-                  <p className="text-xs text-white/70 truncate">{a.label}</p>
+                  <p className="text-xs text-[var(--t-text-70)] truncate">{a.label}</p>
                 </div>
-                <span className="text-[0.48rem] tracking-wider text-white/30 shrink-0">{a.sub}</span>
+                <span className="text-[0.48rem] tracking-wider text-[var(--t-text-30)] shrink-0">{a.sub}</span>
               </Link>
             ))}
           </div>
@@ -209,30 +209,30 @@ export default function CRMDashboard() {
       <div className="grid md:grid-cols-2 gap-6">
 
         {/* Recent check-ins */}
-        <div className="border border-white/7 bg-[#0f0f0f] rounded-lg p-4 md:p-5">
+        <div className="border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-lg p-4 md:p-5">
           <div className="flex items-center justify-between mb-4">
             <p className="text-[0.65rem] tracking-[0.22em] uppercase text-[#c9a84c]">Derniers check-ins</p>
-            <Link href="/crm/clients" className="text-[0.45rem] tracking-wider uppercase text-white/20 hover:text-white/50 transition-colors">Voir tout →</Link>
+            <Link href="/crm/clients" className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">Voir tout →</Link>
           </div>
           {recentCks.length === 0 ? (
-            <p className="text-white/20 text-xs">Aucun check-in</p>
+            <p className="text-[var(--t-text-20)] text-xs">Aucun check-in</p>
           ) : (
             <div className="flex flex-col gap-2">
               {recentCks.map((ck, i) => (
-                <div key={i} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
+                <div key={i} className="flex items-center justify-between py-2 border-b border-[var(--t-border-soft)] last:border-0">
                   <div>
-                    <p className="text-xs text-white/65">{ck.name}</p>
-                    <p className="text-[0.45rem] text-white/25">
+                    <p className="text-xs text-[var(--t-text-65)]">{ck.name}</p>
+                    <p className="text-[0.45rem] text-[var(--t-text-25)]">
                       {new Date(ck.week_date + "T00:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
                     </p>
                   </div>
                   <div className="flex items-center gap-3 text-right">
-                    {ck.weight && <span className="text-sm text-white/60 font-medium">{ck.weight} kg</span>}
+                    {ck.weight && <span className="text-sm text-[var(--t-text-60)] font-medium">{ck.weight} kg</span>}
                     {ck.compliance && (
                       <div className="flex gap-0.5">
                         {[1,2,3,4,5].map(n => (
                           <div key={n} className="w-2 h-2 rounded-sm"
-                            style={{ backgroundColor: n <= ck.compliance! ? "#c9a84c" : "rgba(255,255,255,0.07)" }}/>
+                            style={{ backgroundColor: n <= ck.compliance! ? "#c9a84c" : "var(--t-text-7)" }}/>
                         ))}
                       </div>
                     )}
@@ -244,26 +244,26 @@ export default function CRMDashboard() {
         </div>
 
         {/* Recent messages */}
-        <div className="border border-white/7 bg-[#0f0f0f] rounded-lg p-4 md:p-5">
+        <div className="border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-lg p-4 md:p-5">
           <div className="flex items-center justify-between mb-4">
             <p className="text-[0.65rem] tracking-[0.22em] uppercase text-[#c9a84c]">Messages en attente</p>
-            <Link href="/crm/inbox" className="text-[0.45rem] tracking-wider uppercase text-white/20 hover:text-white/50 transition-colors">Inbox →</Link>
+            <Link href="/crm/inbox" className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">Inbox →</Link>
           </div>
           {recentMsgs.length === 0 ? (
-            <p className="text-white/20 text-xs">Tout est répondu ✓</p>
+            <p className="text-[var(--t-text-20)] text-xs">Tout est répondu ✓</p>
           ) : (
             <div className="flex flex-col gap-2">
               {recentMsgs.map((m, i) => (
                 <Link key={i} href={`/crm/inbox?client=${encodeURIComponent(m.from_email)}`}
-                  className="flex items-start gap-3 py-2 border-b border-white/5 last:border-0 hover:opacity-80 transition-opacity">
+                  className="flex items-start gap-3 py-2 border-b border-[var(--t-border-soft)] last:border-0 hover:opacity-80 transition-opacity">
                   <div className="w-6 h-6 border border-[#e07070]/30 bg-[#e07070]/5 flex items-center justify-center shrink-0 mt-0.5">
                     <span className="text-[0.65rem] text-[#e07070] font-bold">{m.name.charAt(0)}</span>
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs text-white/70 truncate">{m.name}</p>
-                    <p className="text-[0.65rem] text-white/30 truncate mt-0.5">{m.content}</p>
+                    <p className="text-xs text-[var(--t-text-70)] truncate">{m.name}</p>
+                    <p className="text-[0.65rem] text-[var(--t-text-30)] truncate mt-0.5">{m.content}</p>
                   </div>
-                  <span className="text-[0.42rem] text-white/20 shrink-0 mt-0.5">
+                  <span className="text-[0.42rem] text-[var(--t-text-20)] shrink-0 mt-0.5">
                     {new Date(m.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
                   </span>
                 </Link>
@@ -275,10 +275,10 @@ export default function CRMDashboard() {
       </div>
 
       {/* Pipeline snapshot */}
-      <div className="mt-6 border border-white/7 bg-[#0f0f0f] rounded-lg p-4 md:p-5">
+      <div className="mt-6 border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-lg p-4 md:p-5">
         <div className="flex items-center justify-between mb-4">
           <p className="text-[0.65rem] tracking-[0.22em] uppercase text-[#c9a84c]">Répartition pipeline</p>
-          <Link href="/crm/pipeline" className="text-[0.45rem] tracking-wider uppercase text-white/20 hover:text-white/50 transition-colors">Vue complète →</Link>
+          <Link href="/crm/pipeline" className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">Vue complète →</Link>
         </div>
         <div className="flex gap-3 flex-wrap">
           {Object.entries(STAGE_LABEL).map(([key, label]) => {
@@ -288,7 +288,7 @@ export default function CRMDashboard() {
                 style={{ borderColor: `${STAGE_COLOR[key]}30` }}>
                 <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: STAGE_COLOR[key] }}/>
                 <p className="text-[0.65rem] tracking-wider uppercase" style={{ color: STAGE_COLOR[key] }}>{label}</p>
-                <p style={{ fontFamily: "var(--font-bebas)" }} className="text-lg text-white/70 tracking-wide leading-none">{count}</p>
+                <p style={{ fontFamily: "var(--font-bebas)" }} className="text-lg text-[var(--t-text-70)] tracking-wide leading-none">{count}</p>
               </div>
             );
           })}

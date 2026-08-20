@@ -168,40 +168,40 @@ function CalorieRow({ consumed, target, expended, goalDefined }: { consumed: num
   const remaining = target - consumed;
   const over    = consumed > target;
   const maint   = Math.abs(remaining) <= 100;
-  const color   = !goalDefined ? "rgba(255,255,255,0.15)" : over ? "#e07070" : maint ? "#c9a84c" : "#7eb8a0";
+  const color   = !goalDefined ? "var(--t-text-15)" : over ? "#e07070" : maint ? "#c9a84c" : "#7eb8a0";
   const pct     = target > 0 ? Math.min(consumed / target, 1.3) : 0;
   const dash    = goalDefined ? circ * Math.min(pct, 1) : 0;
 
   return (
     <div className="flex items-center justify-center gap-2 sm:gap-6">
       <div className="flex flex-col items-center text-center w-16 sm:w-20 shrink-0">
-        <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl sm:text-3xl text-white tracking-wide leading-none">{consumed.toLocaleString("fr-FR")}</p>
-        <p className="text-[0.55rem] sm:text-[0.6rem] tracking-[0.15em] uppercase text-white/30 mt-1.5">Consommées</p>
+        <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl sm:text-3xl text-[var(--t-text)] tracking-wide leading-none">{consumed.toLocaleString("fr-FR")}</p>
+        <p className="text-[0.55rem] sm:text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mt-1.5">Consommées</p>
       </div>
 
       <div className="relative shrink-0 w-[160px] h-[160px] sm:w-[190px] sm:h-[190px]">
         <svg viewBox="0 0 220 220" className="-rotate-90 w-full h-full">
-          <circle cx="110" cy="110" r={r} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="10"/>
+          <circle cx="110" cy="110" r={r} fill="none" stroke="var(--t-track)" strokeWidth="10"/>
           <circle cx="110" cy="110" r={r} fill="none" stroke={color} strokeWidth="10"
             strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
             style={{ transition: "stroke-dasharray 0.6s ease" }}/>
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl sm:text-4xl text-white tracking-wide leading-none">
+          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl sm:text-4xl text-[var(--t-text)] tracking-wide leading-none">
             {goalDefined ? Math.abs(remaining).toLocaleString("fr-FR") : "—"}
           </p>
-          <p className="text-[0.55rem] sm:text-[0.6rem] tracking-[0.2em] uppercase text-white/30 mt-1.5">
+          <p className="text-[0.55rem] sm:text-[0.6rem] tracking-[0.2em] uppercase text-[var(--t-text-30)] mt-1.5">
             kcal {goalDefined ? (over ? "en surplus" : "restantes") : "à définir"}
           </p>
         </div>
       </div>
 
       <div className="flex flex-col items-center text-center w-16 sm:w-20 shrink-0">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-white/25 mb-1">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--t-text-25)] mb-1">
           <path d="M12 2c-3.5 4-5.5 7-5.5 10.5a5.5 5.5 0 0011 0c0-1.3-.4-2.6-1.3-3.6.2 1.7-.9 2.6-1.9 2.6-1.3 0-2-1.2-1.2-2.7C13.9 7 14 4.5 12 2z"/>
         </svg>
-        <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl sm:text-3xl text-white tracking-wide leading-none">{Math.round(expended).toLocaleString("fr-FR")}</p>
-        <p className="text-[0.55rem] sm:text-[0.6rem] tracking-[0.15em] uppercase text-white/30 mt-1.5">TDEE</p>
+        <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl sm:text-3xl text-[var(--t-text)] tracking-wide leading-none">{Math.round(expended).toLocaleString("fr-FR")}</p>
+        <p className="text-[0.55rem] sm:text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mt-1.5">TDEE</p>
       </div>
     </div>
   );
@@ -212,10 +212,10 @@ function MacroBar({ label, consumed, goal, color }: { label: string; consumed: n
   return (
     <div>
       <div className="flex justify-between items-center mb-1.5">
-        <span className="text-[0.7rem] tracking-[0.15em] uppercase text-white/40">{label}</span>
-        <span className="text-xs text-white/60">{consumed}<span className="text-white/25"> / {goal}g</span></span>
+        <span className="text-[0.7rem] tracking-[0.15em] uppercase text-[var(--t-text-40)]">{label}</span>
+        <span className="text-xs text-[var(--t-text-60)]">{consumed}<span className="text-[var(--t-text-25)]"> / {goal}g</span></span>
       </div>
-      <div className="h-1.5 bg-white/5 w-full rounded-full">
+      <div className="h-1.5 bg-[var(--t-track)] w-full rounded-full">
         <div className="h-full transition-all duration-700 rounded-full" style={{ width:`${pct}%`, backgroundColor:color, boxShadow:`0 0 8px ${color}80` }}/>
       </div>
     </div>
@@ -226,7 +226,7 @@ function WaterTracker({ water, goal, onAdd, onRemove }: { water: number; goal: n
   const liters = (water * 0.25).toFixed(2).replace(/\.?0+$/, "");
   const goalLiters = (goal * 0.25).toFixed(1);
   return (
-    <div className="border border-white/10 bg-[#111] rounded-lg p-5 mb-6">
+    <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg p-5 mb-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6fa3c4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -235,10 +235,10 @@ function WaterTracker({ water, goal, onAdd, onRemove }: { water: number; goal: n
           <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Hydratation</p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-[0.7rem] text-white/40">{liters}L / {goalLiters}L</span>
+          <span className="text-[0.7rem] text-[var(--t-text-40)]">{liters}L / {goalLiters}L</span>
           <div className="flex gap-1">
             <button onClick={onRemove} disabled={water === 0}
-              className="w-6 h-6 border border-white/10 text-white/30 hover:text-white/60 hover:border-white/20 transition-colors disabled:opacity-20 flex items-center justify-center text-sm">−</button>
+              className="w-6 h-6 border border-[var(--t-border)] text-[var(--t-text-30)] hover:text-[var(--t-text-60)] hover:border-[var(--t-text-20)] transition-colors disabled:opacity-20 flex items-center justify-center text-sm">−</button>
             <button onClick={onAdd} disabled={water >= goal}
               className="w-6 h-6 border border-[#6fa3c4]/40 text-[#6fa3c4] hover:bg-[#6fa3c4]/10 transition-colors disabled:opacity-20 flex items-center justify-center text-sm">+</button>
           </div>
@@ -247,10 +247,10 @@ function WaterTracker({ water, goal, onAdd, onRemove }: { water: number; goal: n
       <div className="flex gap-1 mb-2">
         {Array.from({ length: goal }).map((_, i) => (
           <div key={i} onClick={() => i < water ? onRemove() : onAdd()}
-            className={`flex-1 h-3 border cursor-pointer transition-all ${i < water ? "border-[#6fa3c4] bg-[#6fa3c4]/25" : "border-white/10 hover:border-white/20"}`}/>
+            className={`flex-1 h-3 border cursor-pointer transition-all ${i < water ? "border-[#6fa3c4] bg-[#6fa3c4]/25" : "border-[var(--t-border)] hover:border-[var(--t-text-20)]"}`}/>
         ))}
       </div>
-      <p className="text-[0.62rem] tracking-wider text-white/20 text-right">
+      <p className="text-[0.62rem] tracking-wider text-[var(--t-text-20)] text-right">
         {water >= goal ? "Objectif atteint ✓" : `${((goal - water) * 0.25).toFixed(2).replace(/\.?0+$/, "")}L restants`}
       </p>
     </div>
@@ -269,13 +269,13 @@ function WeekChart({ history, goal }: { history: DayHistory[]; goal: number }) {
           const over = d.calories > goal && d.calories > 0;
           return (
             <div key={d.date} className="flex-1 flex flex-col items-center gap-0.5">
-              {d.calories > 0 && <span className="text-[0.6rem] text-white/25 leading-none">{d.calories}</span>}
+              {d.calories > 0 && <span className="text-[0.6rem] text-[var(--t-text-25)] leading-none">{d.calories}</span>}
               <div className="flex-1 flex items-end w-full">
                 <div className="w-full transition-all duration-700" style={{
                   height: `${barH}px`,
                   backgroundColor: isToday
                     ? (over ? "#e07070" : "#c9a84c")
-                    : d.calories > 0 ? (over ? "rgba(224,112,112,0.35)" : "rgba(255,255,255,0.13)") : "rgba(255,255,255,0.04)",
+                    : d.calories > 0 ? (over ? "rgba(224,112,112,0.35)" : "var(--t-text-15)") : "var(--t-track)",
                 }}/>
               </div>
             </div>
@@ -285,7 +285,7 @@ function WeekChart({ history, goal }: { history: DayHistory[]; goal: number }) {
       <div className="flex gap-1.5 mt-1.5">
         {history.map(d => (
           <div key={d.date} className="flex-1 text-center">
-            <span className={`text-[0.62rem] tracking-wider ${d.label === "Auj" ? "text-[#c9a84c]" : "text-white/20"}`}>{d.label}</span>
+            <span className={`text-[0.62rem] tracking-wider ${d.label === "Auj" ? "text-[#c9a84c]" : "text-[var(--t-text-20)]"}`}>{d.label}</span>
           </div>
         ))}
       </div>
@@ -861,10 +861,10 @@ export default function NutritionPage() {
     setGoalDraft(next); syncRaw(next);
   };
 
-  const inputCls = "w-full bg-[#0a0a0a] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
+  const inputCls = "w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
   const labelCls = "text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] block mb-1.5";
   const tabCls   = (active: boolean, border = true) =>
-    `flex-1 py-2 text-[0.7rem] tracking-[0.1em] uppercase transition-colors ${border ? "border-r border-white/10" : ""} ${active ? "bg-[#c9a84c]/10 text-[#c9a84c]" : "text-white/30 hover:text-white/50"}`;
+    `flex-1 py-2 text-[0.7rem] tracking-[0.1em] uppercase transition-colors ${border ? "border-r border-[var(--t-border)]" : ""} ${active ? "bg-[#c9a84c]/10 text-[#c9a84c]" : "text-[var(--t-text-30)] hover:text-[var(--t-text-50)]"}`;
 
   const daysWithData = fullHistory.filter(d => d.calories > 0);
   const avgCal = daysWithData.length ? Math.round(daysWithData.reduce((s,d) => s+d.calories,0)/daysWithData.length) : 0;
@@ -875,21 +875,21 @@ export default function NutritionPage() {
       {/* Header */}
       <div className="mb-6">
         <p className="text-[0.7rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-2">Rubrique</p>
-        <h1 style={{ fontFamily:"var(--font-bebas)" }} className="text-4xl sm:text-5xl text-white tracking-wide">NUTRITION</h1>
+        <h1 style={{ fontFamily:"var(--font-bebas)" }} className="text-4xl sm:text-5xl text-[var(--t-text)] tracking-wide">NUTRITION</h1>
       </div>
 
       <DateNav date={selectedDate} onChange={setSelectedDate} />
 
       {/* Référence du compteur : objectif fixe ou dépense réelle (TDEE) */}
       <div className="flex justify-center mb-5">
-        <div className="flex border border-white/10 rounded-lg overflow-hidden">
+        <div className="flex border border-[var(--t-border)] rounded-lg overflow-hidden">
           <button onClick={() => setCalRef("objectif")}
-            className={`px-4 py-1.5 text-[0.68rem] tracking-[0.15em] uppercase transition-colors ${!useTdee ? "bg-[#c9a84c]/10 text-[#c9a84c]" : "text-white/30 hover:text-white/50"}`}>
+            className={`px-4 py-1.5 text-[0.68rem] tracking-[0.15em] uppercase transition-colors ${!useTdee ? "bg-[#c9a84c]/10 text-[#c9a84c]" : "text-[var(--t-text-30)] hover:text-[var(--t-text-50)]"}`}>
             Objectif
           </button>
           <button onClick={() => setCalRef("tdee")} disabled={tdee <= 0}
             title={tdee <= 0 ? "Profil incomplet" : "Dépense totale du jour : métabolisme + activité + sport"}
-            className={`px-4 py-1.5 text-[0.68rem] tracking-[0.15em] uppercase border-l border-white/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${useTdee ? "bg-[#7eb8a0]/10 text-[#7eb8a0]" : "text-white/30 hover:text-white/50"}`}>
+            className={`px-4 py-1.5 text-[0.68rem] tracking-[0.15em] uppercase border-l border-[var(--t-border)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${useTdee ? "bg-[#7eb8a0]/10 text-[#7eb8a0]" : "text-[var(--t-text-30)] hover:text-[var(--t-text-50)]"}`}>
             TDEE
           </button>
         </div>
@@ -903,23 +903,23 @@ export default function NutritionPage() {
       </button>
 
       {useTdee && (
-        <p className="text-center text-[0.65rem] tracking-[0.12em] uppercase text-white/25 mt-4 mb-8">
+        <p className="text-center text-[0.65rem] tracking-[0.12em] uppercase text-[var(--t-text-25)] mt-4 mb-8">
           Métabolisme {bmrVal} · Activité {tdeeParts.neat} · Sport {tdeeParts.eat} kcal
         </p>
       )}
       {!useTdee && <div className="mb-8"/>}
 
-      <div className="border border-white/10 bg-[#111] rounded-lg mb-6 overflow-hidden">
+      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg mb-6 overflow-hidden">
         <button onClick={() => setShowMacros(s => !s)}
-          className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-white/[0.03] transition-colors">
+          className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-[var(--t-glass-bg)] transition-colors">
           <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Macronutriments</p>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-            className={`text-white/25 shrink-0 transition-transform ${showMacros ? "rotate-180" : ""}`}>
+            className={`text-[var(--t-text-25)] shrink-0 transition-transform ${showMacros ? "rotate-180" : ""}`}>
             <polyline points="6 9 12 15 18 9"/>
           </svg>
         </button>
         {showMacros && (
-          <div className="px-6 pb-6 pt-1 border-t border-white/5 flex flex-col gap-5">
+          <div className="px-6 pb-6 pt-1 border-t border-[var(--t-border-soft)] flex flex-col gap-5">
             {macroConfig.map(m => <MacroBar key={m.key} label={m.label} consumed={totals[m.key]} goal={goals[m.key]} color={m.color}/>)}
           </div>
         )}
@@ -931,7 +931,7 @@ export default function NutritionPage() {
 
       {/* ── Plan de Samuel ── */}
       {mealPlan && (
-        <div className="border border-[#c9a84c]/20 bg-[#0f0d07] rounded-lg mb-6">
+        <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-lg mb-6">
           <div className="flex items-center justify-between px-5 py-3 border-b border-[#c9a84c]/10">
             <div>
               <div className="flex items-center gap-2">
@@ -951,11 +951,11 @@ export default function NutritionPage() {
               <div key={type} className="border-b border-[#c9a84c]/5 last:border-0">
                 <p className="px-5 pt-3 pb-1 text-[0.65rem] tracking-wider uppercase text-[#c9a84c]/40">{type}</p>
                 {typeItems.map(item => (
-                  <div key={item.id} className="flex items-center justify-between px-5 py-2.5 border-b border-white/[0.03] last:border-0">
+                  <div key={item.id} className="flex items-center justify-between px-5 py-2.5 border-b border-[var(--t-border-soft)] last:border-0">
                     <div>
-                      <p className="text-xs text-white/65">{item.name}</p>
+                      <p className="text-xs text-[var(--t-text-65)]">{item.name}</p>
                       <div className="flex gap-2 mt-0.5">
-                        <span className="text-[0.62rem] text-white/30">{item.calories} kcal</span>
+                        <span className="text-[0.62rem] text-[var(--t-text-30)]">{item.calories} kcal</span>
                         <span className="text-[0.62rem] text-[#c9a84c]/50">P {item.proteines}g</span>
                         <span className="text-[0.62rem] text-[#7eb8a0]/50">G {item.glucides}g</span>
                         <span className="text-[0.62rem] text-[#e07070]/50">L {item.lipides}g</span>
@@ -983,26 +983,26 @@ export default function NutritionPage() {
       </button>
 
       {/* ── Idée repas ── */}
-      <div className="border border-white/10 bg-[#111] rounded-lg mb-6">
-        <div className="flex items-start justify-between px-5 py-4 border-b border-white/5">
+      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg mb-6">
+        <div className="flex items-start justify-between px-5 py-4 border-b border-[var(--t-border-soft)]">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 2a7 7 0 017 7c0 4-3 6-3 9H8c0-3-3-5-3-9a7 7 0 017-7z"/>
                 <line x1="8" y1="22" x2="16" y2="22"/><line x1="12" y1="18" x2="12" y2="22"/>
               </svg>
-              <span style={{ fontFamily:"var(--font-bebas)" }} className="text-sm tracking-wider text-white">Idée repas</span>
+              <span style={{ fontFamily:"var(--font-bebas)" }} className="text-sm tracking-wider text-[var(--t-text)]">Idée repas</span>
             </div>
             {respectBudget ? (
               remaining.calories > 0 ? (
-                <p className="text-[0.65rem] tracking-wider text-white/25">
+                <p className="text-[0.65rem] tracking-wider text-[var(--t-text-25)]">
                   Budget · {remaining.calories} kcal · P {remaining.proteines}g · G {remaining.glucides}g · L {remaining.lipides}g
                 </p>
               ) : (
                 <p className="text-[0.65rem] tracking-wider text-[#7eb8a0]/60">Objectif calorique atteint</p>
               )
             ) : (
-              <p className="text-[0.65rem] tracking-wider text-white/25">Idées libres, sans contrainte de budget</p>
+              <p className="text-[0.65rem] tracking-wider text-[var(--t-text-25)]">Idées libres, sans contrainte de budget</p>
             )}
           </div>
           <button onClick={generateIdeas} disabled={ideaLoading || !canGenerateIdeas}
@@ -1016,7 +1016,7 @@ export default function NutritionPage() {
         <div className="flex gap-1.5 px-5 pt-3 pb-1">
           {MEAL_TYPES.map(t => (
             <button key={t} onClick={() => setIdeaMealType(t)}
-              className={`flex-1 py-1.5 text-[0.5rem] tracking-[0.06em] uppercase border transition-colors ${ideaMealType === t ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10" : "border-white/10 text-white/30 hover:border-white/20 hover:text-white/50"}`}>
+              className={`flex-1 py-1.5 text-[0.5rem] tracking-[0.06em] uppercase border transition-colors ${ideaMealType === t ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)]"}`}>
               {t}
             </button>
           ))}
@@ -1025,7 +1025,7 @@ export default function NutritionPage() {
         <label className="flex items-center gap-2 px-5 pt-3 pb-1 cursor-pointer select-none">
           <input type="checkbox" checked={respectBudget} onChange={e => setRespectBudget(e.target.checked)}
             className="accent-[#c9a84c] w-3.5 h-3.5 cursor-pointer"/>
-          <span className="text-[0.62rem] tracking-wider text-white/40 uppercase">Respecter mon budget calorique restant</span>
+          <span className="text-[0.62rem] tracking-wider text-[var(--t-text-40)] uppercase">Respecter mon budget calorique restant</span>
         </label>
 
         {ideaError && (
@@ -1033,26 +1033,26 @@ export default function NutritionPage() {
         )}
 
         {respectBudget && remaining.calories <= 0 && (
-          <p className="px-5 py-3 text-[0.7rem] tracking-wider text-white/25">
+          <p className="px-5 py-3 text-[0.7rem] tracking-wider text-[var(--t-text-25)]">
             Plus de budget restant aujourd&apos;hui — décoche la case pour avoir quand même des idées.
           </p>
         )}
 
         {!ideaLoading && ideas.length === 0 && !ideaError && canGenerateIdeas && (
-          <p className="px-5 py-4 text-[0.7rem] tracking-wider text-white/20 uppercase">
+          <p className="px-5 py-4 text-[0.7rem] tracking-wider text-[var(--t-text-20)] uppercase">
             Clique sur &ldquo;Générer&rdquo; pour des idées {respectBudget ? "adaptées à ton budget" : "de repas"}
           </p>
         )}
 
         {ideas.length > 0 && (
-          <div className="divide-y divide-white/5">
+          <div className="divide-y divide-[var(--t-border-soft)]">
             {ideas.map((idea, i) => (
               <div key={i} className="flex items-start gap-3 px-5 py-4">
                 <div className="flex-1">
-                  <p className="text-xs text-white/70 mb-0.5">{idea.name}</p>
-                  <p className="text-[0.65rem] text-white/30 leading-relaxed mb-2">{idea.description}</p>
+                  <p className="text-xs text-[var(--t-text-70)] mb-0.5">{idea.name}</p>
+                  <p className="text-[0.65rem] text-[var(--t-text-30)] leading-relaxed mb-2">{idea.description}</p>
                   <div className="flex gap-3">
-                    <span className="text-[0.65rem] text-white/40">{idea.calories} kcal</span>
+                    <span className="text-[0.65rem] text-[var(--t-text-40)]">{idea.calories} kcal</span>
                     <span className="text-[0.65rem] text-[#c9a84c]/70">P {idea.proteines}g</span>
                     <span className="text-[0.65rem] text-[#7eb8a0]/70">G {idea.glucides}g</span>
                     <span className="text-[0.65rem] text-[#e07070]/70">L {idea.lipides}g</span>
@@ -1069,44 +1069,44 @@ export default function NutritionPage() {
       </div>
 
       {/* ── Aliments du jour ── */}
-      <div className="border border-white/10 bg-[#111] rounded-lg mb-6">
-        <div className="flex items-center justify-between px-5 py-3 border-b border-white/5">
-          <span style={{ fontFamily:"var(--font-bebas)" }} className="text-sm tracking-wider text-white">
+      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg mb-6">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-[var(--t-border-soft)]">
+          <span style={{ fontFamily:"var(--font-bebas)" }} className="text-sm tracking-wider text-[var(--t-text)]">
             {selectedDate === realToday ? "Aliments du jour" : `Aliments · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
           </span>
-          <span className="text-[0.7rem] tracking-wider text-white/30">{totals.calories} kcal</span>
+          <span className="text-[0.7rem] tracking-wider text-[var(--t-text-30)]">{totals.calories} kcal</span>
         </div>
         {foods.length === 0
-          ? <p className="px-5 py-4 text-[0.7rem] tracking-wider text-white/20 uppercase">Aucun aliment ajouté</p>
+          ? <p className="px-5 py-4 text-[0.7rem] tracking-wider text-[var(--t-text-20)] uppercase">Aucun aliment ajouté</p>
           : [...MEAL_TYPES, "Autres"].map(type => {
             const items = foods.filter(f => (f.repas ?? "Autres") === type);
             if (!items.length) return null;
             const groupCal = items.reduce((s, f) => s + f.calories, 0);
             return (
-              <div key={type} className="border-b border-white/5 last:border-0">
+              <div key={type} className="border-b border-[var(--t-border-soft)] last:border-0">
                 <div className="flex items-center justify-between px-5 pt-3 pb-1.5">
                   <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/60">{type}</p>
-                  <p className="text-[0.62rem] text-white/20">{groupCal} kcal</p>
+                  <p className="text-[0.62rem] text-[var(--t-text-20)]">{groupCal} kcal</p>
                 </div>
                 {items.map(f => {
                   const isFav = savedMeals.some(s => s.name === f.name);
                   return (
-                  <div key={f.id} className="flex items-center justify-between px-5 py-3 border-t border-white/[0.03] first:border-0 group">
+                  <div key={f.id} className="flex items-center justify-between px-5 py-3 border-t border-[var(--t-border-soft)] first:border-0 group">
                     <div>
-                      <p className="text-xs text-white/70">{f.name}</p>
-                      <p className="text-[0.7rem] text-white/25 mt-0.5">P {f.proteines}g · G {f.glucides}g · L {f.lipides}g</p>
+                      <p className="text-xs text-[var(--t-text-70)]">{f.name}</p>
+                      <p className="text-[0.7rem] text-[var(--t-text-25)] mt-0.5">P {f.proteines}g · G {f.glucides}g · L {f.lipides}g</p>
                     </div>
                     <div className="flex items-center gap-3.5">
-                      <span className="text-xs text-white/50">{f.calories} kcal</span>
+                      <span className="text-xs text-[var(--t-text-50)]">{f.calories} kcal</span>
                       <button onClick={() => setFoods(fs => [...fs, { ...f, id: Date.now().toString() }])}
                         title="Reprendre cet aliment aujourd'hui"
-                        className="text-white/35 hover:text-[#c9a84c] transition-colors opacity-70 group-hover:opacity-100">
+                        className="text-[var(--t-text-35)] hover:text-[#c9a84c] transition-colors opacity-70 group-hover:opacity-100">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
                       </button>
                       <button
                         onClick={() => isFav ? setSavedMeals(s => s.filter(m => m.name !== f.name)) : saveMeal({ ...f, base_qty: 100, unit: "g" })}
                         title={isFav ? "Retirer des favoris" : "Ajouter aux favoris"}
-                        className={`transition-colors ${isFav ? "text-[#c9a84c] opacity-100" : "text-white/35 hover:text-[#c9a84c] opacity-70 group-hover:opacity-100"}`}>
+                        className={`transition-colors ${isFav ? "text-[#c9a84c] opacity-100" : "text-[var(--t-text-35)] hover:text-[#c9a84c] opacity-70 group-hover:opacity-100"}`}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill={isFav ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                       </button>
                       <button
@@ -1131,24 +1131,24 @@ export default function NutritionPage() {
       </div>
 
       {/* ── Week history ── */}
-      <div className="border border-white/10 bg-[#111] rounded-lg p-5 mt-6">
+      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg p-5 mt-6">
         <div className="flex items-center justify-between mb-4">
           <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Cette semaine</p>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1"><div className="w-2 h-2 bg-[#c9a84c]"/><span className="text-[0.62rem] text-white/25">Objectif</span></div>
-            <div className="flex items-center gap-1"><div className="w-2 h-2 bg-[#e07070]"/><span className="text-[0.62rem] text-white/25">Excédent</span></div>
+            <div className="flex items-center gap-1"><div className="w-2 h-2 bg-[#c9a84c]"/><span className="text-[0.62rem] text-[var(--t-text-25)]">Objectif</span></div>
+            <div className="flex items-center gap-1"><div className="w-2 h-2 bg-[#e07070]"/><span className="text-[0.62rem] text-[var(--t-text-25)]">Excédent</span></div>
           </div>
         </div>
         <WeekChart history={fullHistory} goal={goals.calories}/>
-        <div className="mt-4 pt-4 border-t border-white/5 grid grid-cols-3 gap-4 text-center">
+        <div className="mt-4 pt-4 border-t border-[var(--t-border-soft)] grid grid-cols-3 gap-4 text-center">
           {[
             { label:"Moyenne / jour", val: avgCal ? `${avgCal} kcal` : "—" },
             { label:"Jours suivis",   val: daysWithData.length },
             { label:"Objectif",       val: `${goals.calories} kcal` },
           ].map(s => (
             <div key={s.label}>
-              <p style={{ fontFamily:"var(--font-bebas)" }} className="text-lg text-white tracking-wide">{s.val}</p>
-              <p className="text-[0.62rem] tracking-wider text-white/25 uppercase mt-0.5">{s.label}</p>
+              <p style={{ fontFamily:"var(--font-bebas)" }} className="text-lg text-[var(--t-text)] tracking-wide">{s.val}</p>
+              <p className="text-[0.62rem] tracking-wider text-[var(--t-text-25)] uppercase mt-0.5">{s.label}</p>
             </div>
           ))}
         </div>
@@ -1157,11 +1157,11 @@ export default function NutritionPage() {
       {/* ══ ADD FOOD MODAL ══ */}
       {showAdd && (
         <div className="fixed inset-0 bg-black/75 z-50 flex items-center justify-center px-4" onClick={resetModal}>
-          <div className="bg-[#0f0f0f] rounded-lg border border-white/10 w-full max-w-lg h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <div className="bg-[var(--t-surface-2)] rounded-lg border border-[var(--t-border)] w-full max-w-lg h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
 
-            <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-white/5">
-              <h3 style={{ fontFamily:"var(--font-bebas)" }} className="text-xl tracking-wider text-white">Ajouter un repas</h3>
-              <button onClick={resetModal} className="text-white/30 hover:text-white/60 transition-colors">
+            <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[var(--t-border-soft)]">
+              <h3 style={{ fontFamily:"var(--font-bebas)" }} className="text-xl tracking-wider text-[var(--t-text)]">Ajouter un repas</h3>
+              <button onClick={resetModal} className="text-[var(--t-text-30)] hover:text-[var(--t-text-60)] transition-colors">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
             </div>
@@ -1169,7 +1169,7 @@ export default function NutritionPage() {
             <div className="px-6 py-5 flex flex-col gap-5">
 
               {/* Mode tabs */}
-              <div className="flex border border-white/10">
+              <div className="flex border border-[var(--t-border)]">
                 <button onClick={() => { setModalMode("ai"); setSelectedSaved(null); }} className={tabCls(modalMode==="ai")}>Estimation IA</button>
                 <button onClick={() => { setModalMode("search"); setSelectedSaved(null); }} className={tabCls(modalMode==="search")}>Scan</button>
                 <button onClick={() => { setModalMode("saved"); setSelectedSaved(null); }} className={tabCls(modalMode==="saved", false)}>
@@ -1183,7 +1183,7 @@ export default function NutritionPage() {
                 <div className="flex gap-1.5">
                   {MEAL_TYPES.map(t => (
                     <button key={t} onClick={() => setAddMealType(t)}
-                      className={`flex-1 py-1.5 text-[0.5rem] tracking-[0.06em] uppercase border transition-colors ${addMealType === t ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10" : "border-white/10 text-white/30 hover:border-white/20 hover:text-white/50"}`}>
+                      className={`flex-1 py-1.5 text-[0.5rem] tracking-[0.06em] uppercase border transition-colors ${addMealType === t ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)]"}`}>
                       {t}
                     </button>
                   ))}
@@ -1195,14 +1195,14 @@ export default function NutritionPage() {
                 <div className="flex flex-col gap-4">
                   <div className="grid grid-cols-2 gap-2">
                     <button onClick={() => photoRef.current?.click()} disabled={analyzing}
-                      className="flex items-center justify-center gap-2 border border-white/10 text-white/40 rounded-lg text-[0.7rem] tracking-[0.1em] uppercase px-3 py-2.5 hover:border-white/20 hover:text-white/60 transition-colors disabled:opacity-40">
+                      className="flex items-center justify-center gap-2 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-lg text-[0.7rem] tracking-[0.1em] uppercase px-3 py-2.5 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors disabled:opacity-40">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
                         <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/>
                       </svg>
                       {photoPreview ? "Reprendre une photo" : "Prendre une photo"}
                     </button>
                     <button onClick={() => galleryRef.current?.click()} disabled={analyzing}
-                      className="flex items-center justify-center gap-2 border border-white/10 text-white/40 rounded-lg text-[0.7rem] tracking-[0.1em] uppercase px-3 py-2.5 hover:border-white/20 hover:text-white/60 transition-colors disabled:opacity-40">
+                      className="flex items-center justify-center gap-2 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-lg text-[0.7rem] tracking-[0.1em] uppercase px-3 py-2.5 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors disabled:opacity-40">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
                         <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
                       </svg>
@@ -1215,9 +1215,9 @@ export default function NutritionPage() {
                   {photoPreview && (
                     <div className="relative w-24 h-24 shrink-0">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={photoPreview} alt="Photo du repas" className="w-full h-full object-cover border border-white/10"/>
+                      <img src={photoPreview} alt="Photo du repas" className="w-full h-full object-cover border border-[var(--t-border)]"/>
                       <button onClick={() => { setPhotoPreview(null); setAiResult(null); try { sessionStorage.removeItem(PHOTO_DRAFT_KEY); } catch { /* ignore */ } }}
-                        className="absolute -top-2 -right-2 w-5 h-5 bg-black border border-white/20 rounded-full flex items-center justify-center text-white/60 hover:text-white transition-colors">
+                        className="absolute -top-2 -right-2 w-5 h-5 bg-black border border-[var(--t-text-20)] rounded-full flex items-center justify-center text-[var(--t-text-60)] hover:text-[var(--t-text)] transition-colors">
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                       </button>
                     </div>
@@ -1227,18 +1227,18 @@ export default function NutritionPage() {
                     <label className={labelCls}>{photoPreview ? "Précisions sur la photo (optionnel)" : "Décris ton repas"}</label>
                     <div className="relative">
                       <textarea
-                        className="w-full bg-[#0a0a0a] border border-white/10 text-white placeholder-white/20 text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none pr-12"
+                        className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none pr-12"
                         rows={3} placeholder={photoPreview ? "Ex : sauce à part, pas de fromage…" : "Ex : un bowl de riz avec du saumon grillé et des brocolis…"}
                         value={description} onChange={e => { setDescription(e.target.value); setAiResult(null); }}/>
                       <button onClick={listening ? stopVoice : startVoice}
-                        className={`absolute right-3 top-3 p-1.5 border transition-colors ${listening?"border-[#e07070] text-[#e07070] animate-pulse":"border-white/10 text-white/30 hover:text-white/60 hover:border-white/20"}`}>
+                        className={`absolute right-3 top-3 p-1.5 border transition-colors ${listening?"border-[#e07070] text-[#e07070] animate-pulse":"border-[var(--t-border)] text-[var(--t-text-30)] hover:text-[var(--t-text-60)] hover:border-[var(--t-text-20)]"}`}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
                           <path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/>
                         </svg>
                       </button>
                     </div>
-                    <p className="text-[0.65rem] text-white/20 mt-1">Tu peux aussi dicter en cliquant sur le micro</p>
+                    <p className="text-[0.65rem] text-[var(--t-text-20)] mt-1">Tu peux aussi dicter en cliquant sur le micro</p>
                   </div>
 
                   <div>
@@ -1246,7 +1246,7 @@ export default function NutritionPage() {
                     <input className={inputCls} type="number" inputMode="decimal" placeholder="Ex : 150"
                       value={gramsInput}
                       onChange={e => { setGramsInput(e.target.value); if (e.target.value.trim()) setPortionSize(null); setAiResult(null); }}/>
-                    <p className="text-[0.65rem] text-white/20 mt-1">Plus précis que la taille de portion ci-dessous — l&apos;IA l&apos;utilisera comme poids exact du repas.</p>
+                    <p className="text-[0.65rem] text-[var(--t-text-20)] mt-1">Plus précis que la taille de portion ci-dessous — l&apos;IA l&apos;utilisera comme poids exact du repas.</p>
                   </div>
 
                   <div>
@@ -1254,7 +1254,7 @@ export default function NutritionPage() {
                     <div className={`grid grid-cols-3 gap-2 transition-opacity ${gramsInput.trim() ? "opacity-30 pointer-events-none" : ""}`}>
                       {(["petite", "moyenne", "grande"] as const).map(p => (
                         <button key={p} onClick={() => { setPortionSize(v => v === p ? null : p); setAiResult(null); }}
-                          className={`border text-[0.68rem] tracking-[0.1em] uppercase py-2 capitalize transition-colors ${portionSize === p ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10 rounded-lg" : "border-white/10 text-white/40 hover:border-white/20 hover:text-white/60 rounded-lg"}`}>
+                          className={`border text-[0.68rem] tracking-[0.1em] uppercase py-2 capitalize transition-colors ${portionSize === p ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10 rounded-lg" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] rounded-lg"}`}>
                           {p}
                         </button>
                       ))}
@@ -1275,26 +1275,26 @@ export default function NutritionPage() {
                       <div className="border border-[#c9a84c]/20 bg-[#c9a84c]/5 rounded-lg p-4">
                         <div className="flex items-center justify-between mb-3">
                           <p className="text-[0.7rem] tracking-[0.15em] uppercase text-[#c9a84c]">Estimation IA</p>
-                          <button onClick={() => setAiResult(null)} className="text-[0.65rem] tracking-wider uppercase text-white/25 hover:text-white/50 transition-colors">Réestimer</button>
+                          <button onClick={() => setAiResult(null)} className="text-[0.65rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">Réestimer</button>
                         </div>
-                        <p className="text-xs text-white/70 mb-3">{aiResult.name}</p>
+                        <p className="text-xs text-[var(--t-text-70)] mb-3">{aiResult.name}</p>
                         <div className="grid grid-cols-4 gap-2">
                           {[
-                            { label:"Calories",  val:aiResult.calories,  unit:"kcal", color:"text-white/60" },
+                            { label:"Calories",  val:aiResult.calories,  unit:"kcal", color:"text-[var(--t-text-60)]" },
                             { label:"Protéines", val:aiResult.proteines, unit:"g",    color:"text-[#c9a84c]" },
                             { label:"Glucides",  val:aiResult.glucides,  unit:"g",    color:"text-[#7eb8a0]" },
                             { label:"Lipides",   val:aiResult.lipides,   unit:"g",    color:"text-[#e07070]" },
                           ].map(s => (
-                            <div key={s.label} className="text-center bg-[#0a0a0a] border border-white/10 py-3">
+                            <div key={s.label} className="text-center bg-[var(--t-bg)] border border-[var(--t-border)] py-3">
                               <p style={{ fontFamily:"var(--font-bebas)" }} className={`text-xl tracking-wide ${s.color}`}>{s.val}</p>
-                              <p className="text-[0.62rem] tracking-wider text-white/20 uppercase mt-0.5">{s.unit}</p>
-                              <p className="text-[0.62rem] text-white/15 mt-0.5">{s.label}</p>
+                              <p className="text-[0.62rem] tracking-wider text-[var(--t-text-20)] uppercase mt-0.5">{s.unit}</p>
+                              <p className="text-[0.62rem] text-[var(--t-text-15)] mt-0.5">{s.label}</p>
                             </div>
                           ))}
                         </div>
                       </div>
                       <div>
-                        <p className="text-[0.65rem] tracking-wider uppercase text-white/20 mb-2">Ajuster si nécessaire <span className="normal-case tracking-normal text-white/15">(les macros suivent les calories)</span></p>
+                        <p className="text-[0.65rem] tracking-wider uppercase text-[var(--t-text-20)] mb-2">Ajuster si nécessaire <span className="normal-case tracking-normal text-[var(--t-text-15)]">(les macros suivent les calories)</span></p>
                         <div className="flex flex-col gap-2">
                           <div><label className={labelCls}>Nom</label><input className={inputCls} value={aiResult.name} onChange={e => setAiResult(r => r ? {...r, name:e.target.value} : r)}/></div>
                           <div className="grid grid-cols-4 gap-2">
@@ -1307,7 +1307,7 @@ export default function NutritionPage() {
                       </div>
                       <div className="flex gap-2">
                         <button onClick={() => saveMeal({ ...aiResult, base_qty: 100, unit: "g" })} disabled={savedMeals.some(s => s.name === aiResult.name)}
-                          className="flex-1 border border-white/10 text-white/40 rounded-lg text-[0.7rem] tracking-[0.15em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-1.5">
+                          className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-lg text-[0.7rem] tracking-[0.15em] uppercase py-2.5 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-1.5">
                           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
                           {savedMeals.some(s => s.name === aiResult.name) ? "Déjà sauvegardé" : "Sauvegarder"}
                         </button>
@@ -1320,16 +1320,16 @@ export default function NutritionPage() {
                           Samuel, contrairement au reste du flux où elle n'est jamais conservée. */}
                       {!reportSent && (
                         showReportForm ? (
-                          <div className="border border-white/10 bg-[#0a0a0a] rounded-lg p-4 flex flex-col gap-3">
-                            <p className="text-[0.62rem] text-white/40 leading-relaxed">
+                          <div className="border border-[var(--t-border)] bg-[var(--t-bg)] rounded-lg p-4 flex flex-col gap-3">
+                            <p className="text-[0.62rem] text-[var(--t-text-40)] leading-relaxed">
                               Décris ce qui te semble incorrect. Ta photo sera envoyée à Samuel avec ton message pour l&apos;aider à améliorer l&apos;IA (normalement elle n&apos;est jamais conservée).
                             </p>
-                            <textarea className="w-full bg-[#060606] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={3}
+                            <textarea className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={3}
                               placeholder="Ex : ce plat fait bien plus que 400 kcal, il y avait de l'huile et du fromage en plus..."
                               value={reportComment} onChange={e => setReportComment(e.target.value)}/>
                             <div className="flex gap-2">
                               <button onClick={() => { setShowReportForm(false); setReportComment(""); }}
-                                className="flex-1 border border-white/10 text-white/40 rounded-lg text-[0.65rem] tracking-[0.15em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors">
+                                className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-lg text-[0.65rem] tracking-[0.15em] uppercase py-2.5 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors">
                                 Annuler
                               </button>
                               <button onClick={submitReport} disabled={reportSending || !reportComment.trim()}
@@ -1340,7 +1340,7 @@ export default function NutritionPage() {
                           </div>
                         ) : (
                           <button onClick={() => setShowReportForm(true)}
-                            className="text-[0.6rem] tracking-wider uppercase text-white/20 hover:text-[#e07070]/70 transition-colors text-center py-1">
+                            className="text-[0.6rem] tracking-wider uppercase text-[var(--t-text-20)] hover:text-[#e07070]/70 transition-colors text-center py-1">
                             Cette estimation te semble fausse ? Signale-la à Samuel →
                           </button>
                         )
@@ -1369,33 +1369,33 @@ export default function NutritionPage() {
                       avant la capture, donc le résultat est souvent bien plus net qu'une frame
                       prise en direct sur le flux vidéo — utile quand le scan live reste flou. */}
                   <button onClick={() => scanRef.current?.click()}
-                    className="text-[0.68rem] tracking-[0.15em] uppercase text-white/30 hover:text-white/55 transition-colors -mt-1">
+                    className="text-[0.68rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] hover:text-[var(--t-text-55)] transition-colors -mt-1">
                     Ou prendre une photo du code-barres
                   </button>
 
                   <div className="flex items-center gap-3">
-                    <div className="h-px flex-1 bg-white/10"/>
-                    <span className="text-[0.6rem] tracking-[0.2em] uppercase text-white/20">ou</span>
-                    <div className="h-px flex-1 bg-white/10"/>
+                    <div className="h-px flex-1 bg-[var(--t-border)]"/>
+                    <span className="text-[0.6rem] tracking-[0.2em] uppercase text-[var(--t-text-20)]">ou</span>
+                    <div className="h-px flex-1 bg-[var(--t-border)]"/>
                   </div>
 
                   <div className="relative">
-                    <input className="w-full bg-[#0a0a0a] border border-white/10 text-white placeholder-white/20 text-sm pl-4 pr-10 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
+                    <input className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm pl-4 pr-10 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
                       placeholder="Rechercher un aliment par nom…" value={query} onChange={e => { setQuery(e.target.value); setSelected(null); setScanError(""); }}/>
                     {searching && <div className="absolute right-3 top-1/2 -translate-y-1/2"><div className="w-3 h-3 border border-[#c9a84c] border-t-transparent rounded-full animate-spin"/></div>}
                   </div>
                   {scanError && <p className="text-[0.7rem] text-[#e07070]">{scanError}</p>}
 
                   {results.length > 0 && !selected && (
-                    <div className="flex flex-col border border-white/10 divide-y divide-white/5">
+                    <div className="flex flex-col border border-[var(--t-border)] divide-y divide-[var(--t-border-soft)]">
                       {results.map((p,i) => (
                         <button key={i} onClick={() => { setSelected(p); setResults([]); }}
-                          className="flex items-center justify-between px-4 py-3 text-left hover:bg-white/[0.03] transition-colors">
+                          className="flex items-center justify-between px-4 py-3 text-left hover:bg-[var(--t-glass-bg)] transition-colors">
                           <div>
-                            <p className="text-xs text-white/70">{p.product_name}</p>
-                            {p.brands && <p className="text-[0.7rem] text-white/25 mt-0.5">{p.brands}</p>}
+                            <p className="text-xs text-[var(--t-text-70)]">{p.product_name}</p>
+                            {p.brands && <p className="text-[0.7rem] text-[var(--t-text-25)] mt-0.5">{p.brands}</p>}
                           </div>
-                          <span className="text-[0.7rem] text-white/30 shrink-0 ml-4">{Math.round(p.nutriments["energy-kcal_100g"]??0)} kcal/100g</span>
+                          <span className="text-[0.7rem] text-[var(--t-text-30)] shrink-0 ml-4">{Math.round(p.nutriments["energy-kcal_100g"]??0)} kcal/100g</span>
                         </button>
                       ))}
                     </div>
@@ -1405,22 +1405,22 @@ export default function NutritionPage() {
                     <div className="border border-[#c9a84c]/20 bg-[#c9a84c]/5 rounded-lg p-4 flex flex-col gap-4">
                       <div className="flex items-start justify-between">
                         <div>
-                          <p className="text-xs text-white/70">{selected.product_name}</p>
-                          {selected.brands && <p className="text-[0.7rem] text-white/30 mt-0.5">{selected.brands}</p>}
+                          <p className="text-xs text-[var(--t-text-70)]">{selected.product_name}</p>
+                          {selected.brands && <p className="text-[0.7rem] text-[var(--t-text-30)] mt-0.5">{selected.brands}</p>}
                         </div>
-                        <button onClick={() => { setSelected(null); setQuery(""); }} className="text-[0.7rem] tracking-wider uppercase text-white/25 hover:text-white/50 transition-colors">Changer</button>
+                        <button onClick={() => { setSelected(null); setQuery(""); }} className="text-[0.7rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">Changer</button>
                       </div>
                       <div><label className={labelCls}>Quantité (g)</label><input className={inputCls} type="number" value={quantity} onChange={e => setQuantity(e.target.value)}/></div>
                       <div className="grid grid-cols-4 gap-2">
                         {[
-                          { label:"Calories",  val:computed.calories,  color:"text-white/60" },
+                          { label:"Calories",  val:computed.calories,  color:"text-[var(--t-text-60)]" },
                           { label:"Protéines", val:computed.proteines, color:"text-[#c9a84c]" },
                           { label:"Glucides",  val:computed.glucides,  color:"text-[#7eb8a0]" },
                           { label:"Lipides",   val:computed.lipides,   color:"text-[#e07070]" },
                         ].map(s => (
-                          <div key={s.label} className="text-center bg-[#0a0a0a] border border-white/10 py-3">
+                          <div key={s.label} className="text-center bg-[var(--t-bg)] border border-[var(--t-border)] py-3">
                             <p style={{ fontFamily:"var(--font-bebas)" }} className={`text-xl tracking-wide ${s.color}`}>{s.val}</p>
-                            <p className="text-[0.62rem] text-white/20 mt-0.5">{s.label}</p>
+                            <p className="text-[0.62rem] text-[var(--t-text-20)] mt-0.5">{s.label}</p>
                           </div>
                         ))}
                       </div>
@@ -1433,7 +1433,7 @@ export default function NutritionPage() {
                             lipides:   selected.nutriments.fat_100g ?? 0,
                             base_qty: 100, unit: "g",
                           })} disabled={savedMeals.some(s => s.name === selected.product_name)}
-                          className="flex-1 border border-white/10 text-white/40 rounded-lg text-[0.7rem] tracking-[0.15em] uppercase py-2.5 hover:border-white/20 hover:text-white/60 transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                          className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-lg text-[0.7rem] tracking-[0.15em] uppercase py-2.5 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
                           {savedMeals.some(s => s.name === selected.product_name) ? "Déjà sauvegardé" : "Sauvegarder"}
                         </button>
                         <button onClick={addFood} className="flex-1 bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg">
@@ -1452,14 +1452,14 @@ export default function NutritionPage() {
                   {/* Créer un produit avec macros pour une quantité de base */}
                   {!showNewProd ? (
                     <button onClick={() => { setShowNewProd(true); setSelectedSaved(null); }}
-                      className="border border-dashed border-white/15 rounded-lg text-white/35 text-[0.7rem] tracking-[0.12em] uppercase py-2.5 hover:border-[#c9a84c]/40 hover:text-[#c9a84c]/70 transition-colors">
+                      className="border border-dashed border-[var(--t-border-15)] rounded-lg text-[var(--t-text-35)] text-[0.7rem] tracking-[0.12em] uppercase py-2.5 hover:border-[#c9a84c]/40 hover:text-[#c9a84c]/70 transition-colors">
                       + Créer un produit
                     </button>
                   ) : (
-                    <div className="border border-[#c9a84c]/20 bg-[#0f0d07] rounded-lg p-4 flex flex-col gap-3">
+                    <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-lg p-4 flex flex-col gap-3">
                       <div className="flex items-center justify-between">
                         <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c]">Nouveau produit</p>
-                        <button onClick={() => { setShowNewProd(false); setNewProd(emptyProd); }} className="text-white/25 hover:text-white/50 transition-colors">
+                        <button onClick={() => { setShowNewProd(false); setNewProd(emptyProd); }} className="text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                         </button>
                       </div>
@@ -1471,17 +1471,17 @@ export default function NutritionPage() {
                           <div className="flex gap-2">
                             {["g", "ml"].map(u => (
                               <button key={u} onClick={() => setNewProd(p => ({ ...p, unit: u }))}
-                                className={`flex-1 py-2.5 text-xs border transition-all ${newProd.unit === u ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/5" : "border-white/10 text-white/30 hover:border-white/20"}`}>
+                                className={`flex-1 py-2.5 text-xs border transition-all ${newProd.unit === u ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/5" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[var(--t-text-20)]"}`}>
                                 {u}
                               </button>
                             ))}
                           </div>
                         </div>
                       </div>
-                      <p className="text-[0.65rem] text-white/25">Macros pour {newProd.base || "?"} {newProd.unit} :</p>
+                      <p className="text-[0.65rem] text-[var(--t-text-25)]">Macros pour {newProd.base || "?"} {newProd.unit} :</p>
                       <div className="grid grid-cols-4 gap-2">
                         {([
-                          { key: "calories",  label: "Kcal", color: "text-white/40" },
+                          { key: "calories",  label: "Kcal", color: "text-[var(--t-text-40)]" },
                           { key: "proteines", label: "Prot", color: "text-[#c9a84c]" },
                           { key: "glucides",  label: "Gluc", color: "text-[#7eb8a0]" },
                           { key: "lipides",   label: "Lip",  color: "text-[#e07070]" },
@@ -1500,25 +1500,25 @@ export default function NutritionPage() {
                   )}
 
                   {savedMeals.length === 0 && !showNewProd ? (
-                    <div className="text-center py-10 border border-white/5">
-                      <p className="text-white/20 text-xs mb-1">Aucun repas sauvegardé</p>
-                      <p className="text-white/10 text-[0.7rem]">Crée un produit ci-dessus, ou utilise l&apos;IA / la recherche et clique sur &quot;Sauvegarder&quot;</p>
+                    <div className="text-center py-10 border border-[var(--t-border-soft)]">
+                      <p className="text-[var(--t-text-20)] text-xs mb-1">Aucun repas sauvegardé</p>
+                      <p className="text-[var(--t-text-10)] text-[0.7rem]">Crée un produit ci-dessus, ou utilise l&apos;IA / la recherche et clique sur &quot;Sauvegarder&quot;</p>
                     </div>
                   ) : (
                     <div className="flex flex-col gap-1.5">
                       {savedMeals.map(meal => (
                         <div key={meal.id} onClick={() => { setShowNewProd(false); setSelectedSaved(s => s?.id === meal.id ? null : meal); setSavedQty(String(meal.base_qty ?? 100)); }}
-                          className={`flex items-center justify-between px-4 py-3 border cursor-pointer transition-all ${selectedSaved?.id === meal.id ? "border-[#c9a84c] bg-[#c9a84c]/5" : "border-white/10 hover:border-white/20"}`}>
+                          className={`flex items-center justify-between px-4 py-3 border cursor-pointer transition-all ${selectedSaved?.id === meal.id ? "border-[#c9a84c] bg-[#c9a84c]/5" : "border-[var(--t-border)] hover:border-[var(--t-text-20)]"}`}>
                           <div>
-                            <p className="text-xs text-white/70">{meal.name}</p>
-                            <p className="text-[0.65rem] text-white/25 mt-0.5">
+                            <p className="text-xs text-[var(--t-text-70)]">{meal.name}</p>
+                            <p className="text-[0.65rem] text-[var(--t-text-25)] mt-0.5">
                               {meal.base_qty ? `Pour ${meal.base_qty} ${meal.unit ?? "g"} · ` : ""}P {Math.round(meal.proteines)}g · G {Math.round(meal.glucides)}g · L {Math.round(meal.lipides)}g
                             </p>
                           </div>
                           <div className="flex items-center gap-3">
-                            <span className="text-xs text-white/40">{Math.round(meal.calories)} kcal</span>
+                            <span className="text-xs text-[var(--t-text-40)]">{Math.round(meal.calories)} kcal</span>
                             <button onClick={e => { e.stopPropagation(); setSavedMeals(s => s.filter(m => m.id !== meal.id)); if (selectedSaved?.id === meal.id) setSelectedSaved(null); }}
-                              className="text-white/15 hover:text-[#e07070] transition-colors">
+                              className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
                               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                             </button>
                           </div>
@@ -1535,14 +1535,14 @@ export default function NutritionPage() {
                       </div>
                       <div className="grid grid-cols-4 gap-2">
                         {[
-                          { label:"Calories",  val:savedComputed.calories,  color:"text-white/60" },
+                          { label:"Calories",  val:savedComputed.calories,  color:"text-[var(--t-text-60)]" },
                           { label:"Protéines", val:savedComputed.proteines, color:"text-[#c9a84c]" },
                           { label:"Glucides",  val:savedComputed.glucides,  color:"text-[#7eb8a0]" },
                           { label:"Lipides",   val:savedComputed.lipides,   color:"text-[#e07070]" },
                         ].map(s => (
-                          <div key={s.label} className="text-center bg-[#0a0a0a] border border-white/10 py-3">
+                          <div key={s.label} className="text-center bg-[var(--t-bg)] border border-[var(--t-border)] py-3">
                             <p style={{ fontFamily:"var(--font-bebas)" }} className={`text-xl tracking-wide ${s.color}`}>{s.val}</p>
-                            <p className="text-[0.62rem] text-white/20 mt-0.5">{s.label}</p>
+                            <p className="text-[0.62rem] text-[var(--t-text-20)] mt-0.5">{s.label}</p>
                           </div>
                         ))}
                       </div>
@@ -1565,10 +1565,10 @@ export default function NutritionPage() {
       {/* ══ GOALS MODAL ══ */}
       {showGoals && (
         <div className="fixed inset-0 bg-black/75 z-50 flex items-end justify-center" onClick={() => setShowGoals(false)}>
-          <div className="bg-[#0f0f0f] rounded-lg border border-white/10 w-full max-w-lg p-6" onClick={e => e.stopPropagation()}>
+          <div className="bg-[var(--t-surface-2)] rounded-lg border border-[var(--t-border)] w-full max-w-lg p-6" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-5">
-              <h3 style={{ fontFamily:"var(--font-bebas)" }} className="text-xl tracking-wider text-white">Objectifs journaliers</h3>
-              <button onClick={() => setShowGoals(false)} className="text-white/30 hover:text-white/60 transition-colors">
+              <h3 style={{ fontFamily:"var(--font-bebas)" }} className="text-xl tracking-wider text-[var(--t-text)]">Objectifs journaliers</h3>
+              <button onClick={() => setShowGoals(false)} className="text-[var(--t-text-30)] hover:text-[var(--t-text-60)] transition-colors">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
             </div>
@@ -1578,20 +1578,20 @@ export default function NutritionPage() {
                 onChange={e => setRawGoal(r => ({ ...r, calories: e.target.value }))}
                 onBlur={commitCalories}
                 onKeyDown={e => { if (e.key === "Enter") commitCalories(); }}/>
-              <p className="text-[0.65rem] text-white/20 mt-1">Modifier les calories redistribue les macros proportionnellement</p>
+              <p className="text-[0.65rem] text-[var(--t-text-20)] mt-1">Modifier les calories redistribue les macros proportionnellement</p>
             </div>
             <div className="flex flex-col gap-4 mb-5">
               {macroConfig.map(({ key, label, color }) => (
                 <div key={key}>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="text-[0.7rem] tracking-[0.2em] uppercase block" style={{ color }}>{label} (g)</label>
-                    <span className="text-[0.65rem] text-white/20">{Math.round(goalDraft[key]*CAL[key])} kcal</span>
+                    <span className="text-[0.65rem] text-[var(--t-text-20)]">{Math.round(goalDraft[key]*CAL[key])} kcal</span>
                   </div>
                   <input className={inputCls} type="number" value={rawGoal[key]}
                     onChange={e => setRawGoal(r => ({ ...r, [key]: e.target.value }))}
                     onBlur={() => commitMacro(key)}
                     onKeyDown={e => { if (e.key === "Enter") commitMacro(key); }}/>
-                  <p className="text-[0.65rem] text-white/15 mt-1">Les autres macros s&apos;ajustent pour rester à {goalDraft.calories} kcal</p>
+                  <p className="text-[0.65rem] text-[var(--t-text-15)] mt-1">Les autres macros s&apos;ajustent pour rester à {goalDraft.calories} kcal</p>
                 </div>
               ))}
             </div>
@@ -1619,23 +1619,23 @@ export default function NutritionPage() {
               <div className="absolute -bottom-px -left-px w-7 h-7 border-b-[3px] border-l-[3px] border-[#e2c97e]"/>
               <div className="absolute -bottom-px -right-px w-7 h-7 border-b-[3px] border-r-[3px] border-[#e2c97e]"/>
             </div>
-            <p className="text-white/40 text-[0.6rem] tracking-[0.12em] uppercase text-center max-w-[220px]">
+            <p className="text-[var(--t-text-40)] text-[0.6rem] tracking-[0.12em] uppercase text-center max-w-[220px]">
               Tiens le téléphone stable, à 15-20 cm (trop près = flou), code-barres bien à plat
             </p>
           </div>
 
           <div className="relative z-10 flex items-center justify-between px-5 pt-6">
-            <p className="text-white/70 text-[0.68rem] tracking-[0.15em] uppercase">Aligne le code-barres dans le cadre</p>
+            <p className="text-[var(--t-text-70)] text-[0.68rem] tracking-[0.15em] uppercase">Aligne le code-barres dans le cadre</p>
             <div className="flex items-center gap-3">
               {torchAvailable && (
                 <button onClick={toggleTorch}
-                  className={`p-1.5 rounded-full transition-colors ${torchOn ? "text-[#e2c97e] bg-[#c9a84c]/15" : "text-white/70 hover:text-white"}`}>
+                  className={`p-1.5 rounded-full transition-colors ${torchOn ? "text-[#e2c97e] bg-[#c9a84c]/15" : "text-[var(--t-text-70)] hover:text-[var(--t-text)]"}`}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill={torchOn ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M9 18h6M10 22h4M15 14c1.5-1.26 2-2.5 2-4a5 5 0 0 0-10 0c0 1.5.5 2.74 2 4 .93.78 1 1.5 1 2h4c0-.5.07-1.22 1-2Z"/>
                   </svg>
                 </button>
               )}
-              <button onClick={stopScanner} className="text-white/70 hover:text-white transition-colors p-1">
+              <button onClick={stopScanner} className="text-[var(--t-text-70)] hover:text-[var(--t-text)] transition-colors p-1">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
             </div>
@@ -1649,8 +1649,8 @@ export default function NutritionPage() {
 
       {/* ══ ANNULER SUPPRESSION ══ */}
       {deletedFood && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[70] flex items-center gap-4 bg-[#1a1a1a] border border-white/15 rounded-lg px-5 py-3 shadow-lg">
-          <span className="text-xs text-white/70">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[70] flex items-center gap-4 bg-[var(--t-surface)] border border-[var(--t-border-15)] rounded-lg px-5 py-3 shadow-lg">
+          <span className="text-xs text-[var(--t-text-70)]">
             &quot;{deletedFood.food.name}&quot; supprimé
           </span>
           <button

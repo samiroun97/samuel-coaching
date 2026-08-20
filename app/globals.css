@@ -33,9 +33,12 @@
   --t-glass-bg: rgba(255, 255, 255, 0.06);
   --t-glass-border: rgba(255, 255, 255, 0.1);
   --t-track: rgba(255, 255, 255, 0.04);
+  --t-surface-gold: #0f0d07;
   --t-text: #ffffff;
   --t-text-80: rgba(255, 255, 255, 0.8);
+  --t-text-75: rgba(255, 255, 255, 0.75);
   --t-text-70: rgba(255, 255, 255, 0.7);
+  --t-text-65: rgba(255, 255, 255, 0.65);
   --t-text-60: rgba(255, 255, 255, 0.6);
   --t-text-55: rgba(255, 255, 255, 0.55);
   --t-text-50: rgba(255, 255, 255, 0.5);
@@ -46,6 +49,9 @@
   --t-text-20: rgba(255, 255, 255, 0.2);
   --t-text-15: rgba(255, 255, 255, 0.15);
   --t-text-10: rgba(255, 255, 255, 0.1);
+  --t-text-8: rgba(255, 255, 255, 0.08);
+  --t-text-7: rgba(255, 255, 255, 0.07);
+  --t-text-5: rgba(255, 255, 255, 0.05);
 }
 
 :root[data-theme="light"] {
@@ -59,9 +65,12 @@
   --t-glass-bg: rgba(23, 21, 18, 0.04);
   --t-glass-border: rgba(23, 21, 18, 0.1);
   --t-track: rgba(23, 21, 18, 0.06);
+  --t-surface-gold: #fbf6e6;
   --t-text: #171512;
   --t-text-80: rgba(23, 21, 18, 0.8);
+  --t-text-75: rgba(23, 21, 18, 0.75);
   --t-text-70: rgba(23, 21, 18, 0.7);
+  --t-text-65: rgba(23, 21, 18, 0.65);
   --t-text-60: rgba(23, 21, 18, 0.6);
   --t-text-55: rgba(23, 21, 18, 0.55);
   --t-text-50: rgba(23, 21, 18, 0.5);
@@ -72,6 +81,9 @@
   --t-text-20: rgba(23, 21, 18, 0.25);
   --t-text-15: rgba(23, 21, 18, 0.18);
   --t-text-10: rgba(23, 21, 18, 0.1);
+  --t-text-8: rgba(23, 21, 18, 0.09);
+  --t-text-7: rgba(23, 21, 18, 0.08);
+  --t-text-5: rgba(23, 21, 18, 0.06);
 }
 
 html {

@@ -122,21 +122,21 @@ export default function OnboardingPage() {
     router.push("/dashboard");
   };
 
-  const inputClass = "w-full bg-[#0a0a0a] border border-white/10 text-white placeholder-white/20 text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/50 transition-colors";
+  const inputClass = "w-full bg-[var(--t-bg)] border border-[var(--t-border)] text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/50 transition-colors";
   const labelClass = "text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] block mb-2";
   const chipClass = (active: boolean) =>
     `px-4 py-2.5 text-xs tracking-[0.1em] uppercase border cursor-pointer transition-all duration-200 ${
-      active ? "border-[#c9a84c] bg-[#c9a84c]/10 text-[#c9a84c]" : "border-white/10 text-white/40 hover:border-white/30 hover:text-white/60"
+      active ? "border-[#c9a84c] bg-[#c9a84c]/10 text-[#c9a84c]" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[var(--t-text-30)] hover:text-[var(--t-text-60)]"
     }`;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-4 py-16 overflow-x-hidden">
+    <div className="min-h-screen bg-[var(--t-bg)] flex items-center justify-center px-4 py-16 overflow-x-hidden">
       <div className="w-full max-w-lg">
 
-        <div style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl tracking-[0.2em] text-white text-center mb-2">
+        <div style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl tracking-[0.2em] text-[var(--t-text)] text-center mb-2">
           SAMUEL<span style={{ color: "#c9a84c" }}>.</span><span style={{ color: "#c9a84c" }}>COACHING</span>
         </div>
-        <p className="text-center text-[0.68rem] tracking-[0.2em] uppercase text-white/30 mb-10">
+        <p className="text-center text-[0.68rem] tracking-[0.2em] uppercase text-[var(--t-text-30)] mb-10">
           {isEditing ? "Modifier mon profil" : "Compléter mon profil"}
         </p>
 
@@ -152,13 +152,13 @@ export default function OnboardingPage() {
                     ? "border-[#c9a84c] bg-[#c9a84c] text-black"
                     : isEditing || i < step
                     ? "border-[#c9a84c] text-[#c9a84c] bg-transparent cursor-pointer hover:bg-[#c9a84c]/10"
-                    : "border-white/20 text-white/20 cursor-default"
+                    : "border-[var(--t-text-20)] text-[var(--t-text-20)] cursor-default"
                 }`}
               >
                 {isEditing || i < step ? "✓" : i + 1}
               </button>
               <span className={`text-[0.65rem] tracking-widest uppercase text-center transition-colors duration-300 ${
-                i === step ? "text-[#c9a84c]" : isEditing || i < step ? "text-white/40" : "text-white/20"
+                i === step ? "text-[#c9a84c]" : isEditing || i < step ? "text-[var(--t-text-40)]" : "text-[var(--t-text-20)]"
               }`}>
                 {s}
               </span>
@@ -166,11 +166,11 @@ export default function OnboardingPage() {
           ))}
         </div>
 
-        <div className="bg-[#111] border border-white/10 rounded-lg p-8">
+        <div className="bg-[var(--t-surface)] border border-[var(--t-border)] rounded-lg p-8">
 
           {step === 0 && (
             <div className="flex flex-col gap-5">
-              <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl tracking-wider text-white mb-2">TON IDENTITÉ</h2>
+              <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl tracking-wider text-[var(--t-text)] mb-2">TON IDENTITÉ</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div><label className={labelClass}>Prénom</label><input className={inputClass} placeholder="Samuel" value={form.prenom} onChange={e => set("prenom", e.target.value)} /></div>
                 <div><label className={labelClass}>Nom</label><input className={inputClass} placeholder="Waelti" value={form.nom} onChange={e => set("nom", e.target.value)} /></div>
@@ -191,15 +191,15 @@ export default function OnboardingPage() {
 
           {step === 1 && (
             <div className="flex flex-col gap-5">
-              <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl tracking-wider text-white mb-2">TON ENTRAÎNEMENT</h2>
+              <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl tracking-wider text-[var(--t-text)] mb-2">TON ENTRAÎNEMENT</h2>
               <div>
                 <label className={labelClass}>Niveau d&apos;activité général</label>
                 <div className="flex flex-col gap-2">
                   {niveauOptions.map(o => (
                     <button key={o.label} type="button" onClick={() => set("niveau_activite", o.label)}
-                      className={`px-4 py-3 text-left border rounded-lg cursor-pointer transition-all duration-200 ${form.niveau_activite === o.label ? "border-[#c9a84c] bg-[#c9a84c]/10" : "border-white/10 hover:border-white/30"}`}>
-                      <p className={`text-xs tracking-[0.1em] uppercase font-bold ${form.niveau_activite === o.label ? "text-[#c9a84c]" : "text-white/60"}`}>{o.label}</p>
-                      <p className="text-[0.65rem] text-white/30 mt-0.5">{o.desc}</p>
+                      className={`px-4 py-3 text-left border rounded-lg cursor-pointer transition-all duration-200 ${form.niveau_activite === o.label ? "border-[#c9a84c] bg-[#c9a84c]/10" : "border-[var(--t-border)] hover:border-[var(--t-text-30)]"}`}>
+                      <p className={`text-xs tracking-[0.1em] uppercase font-bold ${form.niveau_activite === o.label ? "text-[#c9a84c]" : "text-[var(--t-text-60)]"}`}>{o.label}</p>
+                      <p className="text-[0.65rem] text-[var(--t-text-30)] mt-0.5">{o.desc}</p>
                     </button>
                   ))}
                 </div>
@@ -233,7 +233,7 @@ export default function OnboardingPage() {
 
           {step === 2 && (
             <div className="flex flex-col gap-5">
-              <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl tracking-wider text-white mb-2">TA SANTÉ</h2>
+              <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl tracking-wider text-[var(--t-text)] mb-2">TA SANTÉ</h2>
               <div>
                 <label className={labelClass}>Blessures ou douleurs chroniques</label>
                 <textarea className={`${inputClass} resize-none`} rows={3} placeholder="Ex : douleur genou gauche... (ou 'aucune')" value={form.blessures} onChange={e => set("blessures", e.target.value)} />
@@ -253,7 +253,7 @@ export default function OnboardingPage() {
 
           {step === 3 && (
             <div className="flex flex-col gap-5">
-              <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl tracking-wider text-white mb-2">TES OBJECTIFS</h2>
+              <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl tracking-wider text-[var(--t-text)] mb-2">TES OBJECTIFS</h2>
               <div>
                 <label className={labelClass}>Décris tes objectifs en 2-3 lignes</label>
                 <textarea className={`${inputClass} resize-none`} rows={5} placeholder="Ex : je veux perdre du ventre, gagner en force et me sentir mieux dans mon corps..." value={form.objectifs} onChange={e => set("objectifs", e.target.value)} />
@@ -267,13 +267,13 @@ export default function OnboardingPage() {
         <div className="flex gap-4 mt-6">
           {step > 0 && (
             <button onClick={() => { setError(""); setStep(s => s - 1); }}
-              className="flex-1 border border-white/10 rounded-lg text-white/50 text-xs tracking-[0.15em] uppercase py-4 hover:border-white/30 hover:text-white transition-colors">
+              className="flex-1 border border-[var(--t-border)] rounded-lg text-[var(--t-text-50)] text-xs tracking-[0.15em] uppercase py-4 hover:border-[var(--t-text-30)] hover:text-[var(--t-text)] transition-colors">
               ← Retour
             </button>
           )}
           {isEditing && step > 0 && (
             <button onClick={() => { setError(""); router.push("/dashboard"); }}
-              className="border border-white/10 text-white/30 text-xs tracking-[0.15em] uppercase py-4 px-5 rounded-lg hover:border-white/20 hover:text-white/50 transition-colors">
+              className="border border-[var(--t-border)] text-[var(--t-text-30)] text-xs tracking-[0.15em] uppercase py-4 px-5 rounded-lg hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">
               Annuler
             </button>
           )}

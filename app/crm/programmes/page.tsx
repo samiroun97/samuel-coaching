@@ -191,7 +191,7 @@ export default function ProgrammesPage() {
     await loadSentSeances(selected.email);
   };
 
-  const inp = "w-full bg-[#060606] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
+  const inp = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
   const lbl = "text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c] block mb-1.5";
 
   if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="w-5 h-5 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/></div>;
@@ -200,17 +200,17 @@ export default function ProgrammesPage() {
     <div className="flex h-[calc(100dvh-50px-env(safe-area-inset-bottom))] md:h-screen overflow-hidden">
 
       {/* ── Left: list (plein écran sur mobile quand aucun client sélectionné) ── */}
-      <div className={`flex-col border-r border-white/5 bg-[#0a0a0a] ${selected ? "hidden md:flex w-80 shrink-0" : "flex flex-1"}`}>
-        <div className="px-4 md:px-5 pt-5 md:pt-6 pb-4 border-b border-white/5">
+      <div className={`flex-col border-r border-[var(--t-border-soft)] bg-[var(--t-bg)] ${selected ? "hidden md:flex w-80 shrink-0" : "flex flex-1"}`}>
+        <div className="px-4 md:px-5 pt-5 md:pt-6 pb-4 border-b border-[var(--t-border-soft)]">
           <p className="text-[0.5rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-1">CRM</p>
-          <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl md:text-4xl text-white tracking-wide mb-3">PROGRAMMES</h1>
+          <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl md:text-4xl text-[var(--t-text)] tracking-wide mb-3">PROGRAMMES</h1>
           <div className="flex gap-2">
             <button onClick={() => setFilter("sans")}
-              className={`flex-1 py-2 text-[0.5rem] tracking-[0.12em] uppercase border transition-all ${filter === "sans" ? "border-[#e09070] text-[#e09070] bg-[#e09070]/5" : "border-white/10 text-white/30 hover:border-white/20"}`}>
+              className={`flex-1 py-2 text-[0.5rem] tracking-[0.12em] uppercase border transition-all ${filter === "sans" ? "border-[#e09070] text-[#e09070] bg-[#e09070]/5" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[var(--t-text-20)]"}`}>
               Sans programme ({sans.length})
             </button>
             <button onClick={() => setFilter("avec")}
-              className={`flex-1 py-2 text-[0.5rem] tracking-[0.12em] uppercase border transition-all ${filter === "avec" ? "border-[#7eb8a0] text-[#7eb8a0] bg-[#7eb8a0]/5" : "border-white/10 text-white/30 hover:border-white/20"}`}>
+              className={`flex-1 py-2 text-[0.5rem] tracking-[0.12em] uppercase border transition-all ${filter === "avec" ? "border-[#7eb8a0] text-[#7eb8a0] bg-[#7eb8a0]/5" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[var(--t-text-20)]"}`}>
               Avec ({avec.length})
             </button>
           </div>
@@ -219,7 +219,7 @@ export default function ProgrammesPage() {
         <div className="flex-1 overflow-y-auto py-2 px-2">
           {genError && !selected && <p className="text-xs text-[#e07070] px-3 py-2">{genError}</p>}
           {list.length === 0 ? (
-            <p className="text-white/20 text-xs text-center py-8">
+            <p className="text-[var(--t-text-20)] text-xs text-center py-8">
               {filter === "sans" ? "Tous les clients ont un programme ✓" : "Aucun client avec programme"}
             </p>
           ) : list.map(c => {
@@ -228,16 +228,16 @@ export default function ProgrammesPage() {
             const count = seanceCount.get(c.email) ?? 0;
             return (
               <button key={c.id} onClick={() => selectClient(c)}
-                className={`w-full text-left px-4 py-3 mb-1 border transition-all ${isSel ? "border-[#c9a84c]/30 bg-[#c9a84c]/5" : "border-white/5 hover:border-white/10 hover:bg-white/[0.02]"}`}>
+                className={`w-full text-left px-4 py-3 mb-1 border transition-all ${isSel ? "border-[#c9a84c]/30 bg-[#c9a84c]/5" : "border-[var(--t-border-soft)] hover:border-[var(--t-border)] hover:bg-[var(--t-glass-bg)]"}`}>
                 <div className="flex items-start justify-between mb-1 gap-2">
-                  <p className={`text-sm font-medium ${isSel ? "text-white" : "text-white/70"}`}>{c.prenom} {c.nom}</p>
+                  <p className={`text-sm font-medium ${isSel ? "text-[var(--t-text)]" : "text-[var(--t-text-70)]"}`}>{c.prenom} {c.nom}</p>
                   <span className="text-[0.42rem] tracking-wider uppercase px-1.5 py-0.5 border shrink-0"
                     style={{ color: stage.color, borderColor: `${stage.color}35`, backgroundColor: `${stage.color}10` }}>
                     {stage.label}
                   </span>
                 </div>
-                <p className="text-[0.55rem] text-white/40 line-clamp-2 leading-relaxed">🎯 {c.objectifs || "Objectif non renseigné"}</p>
-                <p className="text-[0.45rem] text-white/20 mt-1">
+                <p className="text-[0.55rem] text-[var(--t-text-40)] line-clamp-2 leading-relaxed">🎯 {c.objectifs || "Objectif non renseigné"}</p>
+                <p className="text-[0.45rem] text-[var(--t-text-20)] mt-1">
                   {c.experience || "—"} · {c.seances_par_semaine ? `${c.seances_par_semaine}×/sem` : "—"}
                   {count > 0 && <span className="text-[#7eb8a0]"> · {count} séance{count > 1 ? "s" : ""}</span>}
                 </p>
@@ -252,15 +252,15 @@ export default function ProgrammesPage() {
         <div className="flex-1 flex flex-col overflow-hidden">
 
           {/* Header */}
-          <div className="px-4 md:px-8 pt-5 md:pt-6 pb-4 border-b border-white/5 shrink-0">
+          <div className="px-4 md:px-8 pt-5 md:pt-6 pb-4 border-b border-[var(--t-border-soft)] shrink-0">
             <div className="flex items-start gap-2">
-              <button onClick={() => setSelected(null)} className="md:hidden text-white/40 hover:text-white/70 transition-colors mt-1.5 shrink-0">
+              <button onClick={() => setSelected(null)} className="md:hidden text-[var(--t-text-40)] hover:text-[var(--t-text-70)] transition-colors mt-1.5 shrink-0">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
               </button>
               <div className="min-w-0">
-                <p className="text-[0.45rem] tracking-[0.2em] text-white/25 uppercase truncate">{selected.email}</p>
-                <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl md:text-4xl text-white tracking-wide">{selected.prenom} {selected.nom}</h2>
-                <p className="text-white/30 text-xs mt-0.5">{selected.age} ans · {selected.sexe} · {selected.poids} kg · {selected.experience || "expérience —"} · {selected.seances_par_semaine ? `${selected.seances_par_semaine}×/sem` : "—"}{selected.duree_seance ? ` · ${selected.duree_seance}` : ""}</p>
+                <p className="text-[0.45rem] tracking-[0.2em] text-[var(--t-text-25)] uppercase truncate">{selected.email}</p>
+                <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl md:text-4xl text-[var(--t-text)] tracking-wide">{selected.prenom} {selected.nom}</h2>
+                <p className="text-[var(--t-text-30)] text-xs mt-0.5">{selected.age} ans · {selected.sexe} · {selected.poids} kg · {selected.experience || "expérience —"} · {selected.seances_par_semaine ? `${selected.seances_par_semaine}×/sem` : "—"}{selected.duree_seance ? ` · ${selected.duree_seance}` : ""}</p>
               </div>
             </div>
           </div>
@@ -269,13 +269,13 @@ export default function ProgrammesPage() {
             <div className="max-w-2xl flex flex-col gap-4">
 
               {/* Objectif + contraintes */}
-              <div className="border border-[#c9a84c]/10 bg-[#0f0d07] rounded-lg px-4 py-3">
+              <div className="border border-[#c9a84c]/10 bg-[var(--t-surface-gold)] rounded-lg px-4 py-3">
                 <p className="text-[0.48rem] tracking-[0.15em] uppercase text-[#c9a84c] mb-1">Objectif</p>
-                <p className="text-xs text-white/60 leading-relaxed">{selected.objectifs || "Non renseigné"}</p>
+                <p className="text-xs text-[var(--t-text-60)] leading-relaxed">{selected.objectifs || "Non renseigné"}</p>
                 {selected.blessures && (
                   <p className="text-[0.6rem] text-[#e09070]/80 mt-2">⚠ Blessures : {selected.blessures}</p>
                 )}
-                <p className="text-[0.55rem] text-white/25 mt-2">Lieu : {selected.lieu_entrainement || "—"}</p>
+                <p className="text-[0.55rem] text-[var(--t-text-25)] mt-2">Lieu : {selected.lieu_entrainement || "—"}</p>
               </div>
 
               {/* Confirmation d'envoi */}
@@ -287,27 +287,27 @@ export default function ProgrammesPage() {
 
               {/* Séances déjà envoyées — aperçu visuel identique à ce que le client voit */}
               {sentSeances.length > 0 && (
-                <div className="border border-white/8 bg-[#0a0a0a] rounded-lg">
-                  <p className="px-4 pt-3 pb-2 text-[0.55rem] tracking-[0.2em] uppercase text-white/40">
+                <div className="border border-[var(--t-text-8)] bg-[var(--t-bg)] rounded-lg">
+                  <p className="px-4 pt-3 pb-2 text-[0.55rem] tracking-[0.2em] uppercase text-[var(--t-text-40)]">
                     Séances envoyées à {selected.prenom} ({sentSeances.length})
                   </p>
                   {sentSeances.map(s => {
                     const open = openSentId === s.id;
                     return (
-                      <div key={s.id} className="border-t border-white/5">
+                      <div key={s.id} className="border-t border-[var(--t-border-soft)]">
                         <button onClick={() => setOpenSentId(open ? null : s.id)}
-                          className="w-full text-left px-4 py-2.5 flex items-center justify-between gap-2 hover:bg-white/[0.02] transition-colors">
+                          className="w-full text-left px-4 py-2.5 flex items-center justify-between gap-2 hover:bg-[var(--t-glass-bg)] transition-colors">
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
                               {s.completed_at && <span className="text-[0.7rem] text-[#7eb8a0] shrink-0">✓</span>}
                               {s.type_seance && <span className="text-[0.62rem] tracking-wider uppercase text-[#c9a84c] border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">{s.type_seance}</span>}
-                              {s.semaine && <span className="text-[0.62rem] tracking-wider uppercase text-white/30 border border-white/10 px-1.5 py-0.5 shrink-0">Sem. {s.semaine}</span>}
-                              <p className="text-xs text-white/70 truncate">{s.titre}</p>
+                              {s.semaine && <span className="text-[0.62rem] tracking-wider uppercase text-[var(--t-text-30)] border border-[var(--t-border)] px-1.5 py-0.5 shrink-0">Sem. {s.semaine}</span>}
+                              <p className="text-xs text-[var(--t-text-70)] truncate">{s.titre}</p>
                             </div>
-                            {s.date_prevue && <p className="text-[0.65rem] text-white/25 mt-0.5">{new Date(s.date_prevue + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</p>}
+                            {s.date_prevue && <p className="text-[0.65rem] text-[var(--t-text-25)] mt-0.5">{new Date(s.date_prevue + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</p>}
                           </div>
                           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-                            className={`text-white/25 shrink-0 transition-transform ${open ? "rotate-180" : ""}`}><polyline points="6 9 12 15 18 9"/></svg>
+                            className={`text-[var(--t-text-25)] shrink-0 transition-transform ${open ? "rotate-180" : ""}`}><polyline points="6 9 12 15 18 9"/></svg>
                         </button>
                         {open && <div className="px-4 pb-4"><SeanceBody s={s} /></div>}
                       </div>
@@ -317,19 +317,19 @@ export default function ProgrammesPage() {
               )}
 
               {/* Bibliothèque d'exercices */}
-              <div className="border border-white/8 bg-[#0a0a0a] rounded-lg">
+              <div className="border border-[var(--t-text-8)] bg-[var(--t-bg)] rounded-lg">
                 <button onClick={() => setShowLibrary(v => !v)} className="w-full flex items-center justify-between px-4 py-2.5 text-left">
-                  <span className="text-[0.55rem] tracking-[0.2em] uppercase text-white/40">Ma bibliothèque d&apos;exercices ({library.length})</span>
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={`text-white/25 transition-transform ${showLibrary ? "rotate-180" : ""}`}><polyline points="6 9 12 15 18 9"/></svg>
+                  <span className="text-[0.55rem] tracking-[0.2em] uppercase text-[var(--t-text-40)]">Ma bibliothèque d&apos;exercices ({library.length})</span>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={`text-[var(--t-text-25)] transition-transform ${showLibrary ? "rotate-180" : ""}`}><polyline points="6 9 12 15 18 9"/></svg>
                 </button>
                 {showLibrary && (
                   <div className="px-4 pb-4 flex flex-col gap-2.5">
                     {library.length > 0 && (
                       <div className="flex flex-col gap-1 max-h-40 overflow-y-auto">
                         {library.map(l => (
-                          <div key={l.id} className="flex items-center justify-between gap-2 border border-white/5 px-2.5 py-1.5">
-                            <span className="text-[0.62rem] text-white/50 truncate">{l.nom}{l.type ? <span className="text-white/25"> · {l.type}</span> : null}</span>
-                            <button onClick={() => removeLibItem(l.id)} className="shrink-0 text-white/15 hover:text-[#e07070] transition-colors">
+                          <div key={l.id} className="flex items-center justify-between gap-2 border border-[var(--t-border-soft)] px-2.5 py-1.5">
+                            <span className="text-[0.62rem] text-[var(--t-text-50)] truncate">{l.nom}{l.type ? <span className="text-[var(--t-text-25)]"> · {l.type}</span> : null}</span>
+                            <button onClick={() => removeLibItem(l.id)} className="shrink-0 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
                               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                             </button>
                           </div>
@@ -343,7 +343,7 @@ export default function ProgrammesPage() {
                       <input className={inp} placeholder="Lien vidéo (optionnel)" value={libForm.video_url} onChange={e => setLibForm(f => ({ ...f, video_url: e.target.value }))}/>
                     </div>
                     <button onClick={addLibItem} disabled={!libForm.nom.trim()}
-                      className="border border-white/10 text-white/30 text-[0.55rem] tracking-[0.12em] uppercase py-2 rounded-lg hover:border-white/20 hover:text-white/50 transition-colors disabled:opacity-30">
+                      className="border border-[var(--t-border)] text-[var(--t-text-30)] text-[0.55rem] tracking-[0.12em] uppercase py-2 rounded-lg hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors disabled:opacity-30">
                       + Ajouter à la bibliothèque
                     </button>
                   </div>
@@ -352,31 +352,31 @@ export default function ProgrammesPage() {
 
               {/* Génération */}
               {drafts.length === 0 && !showTemplates && (
-                <div className="border border-[#c9a84c]/20 bg-[#0f0d07] rounded-lg p-4 md:p-5 flex flex-col gap-3">
+                <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-lg p-4 md:p-5 flex flex-col gap-3">
                   <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c]">Programme ciblé</p>
-                  <p className="text-[0.65rem] text-white/35 leading-relaxed">
+                  <p className="text-[0.65rem] text-[var(--t-text-35)] leading-relaxed">
                     Génère {Math.min(Math.max(selected.seances_par_semaine || 3, 2), 6)} séances adaptées à l&apos;objectif, au niveau, au lieu et aux blessures de {selected.prenom}. Tu pourras tout modifier avant d&apos;envoyer.
                   </p>
                   <div>
-                    <label className="text-[0.5rem] tracking-[0.15em] uppercase text-white/30 block mb-1.5">
+                    <label className="text-[0.5rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] block mb-1.5">
                       Précisions pour ce programme (optionnel)
                     </label>
                     <textarea rows={2} className={`${inp} resize-none`}
                       placeholder="Ex : reprise après blessure au genou, priorité sur le haut du corps ce mois-ci…"
                       value={genDescription} onChange={e => setGenDescription(e.target.value)}/>
-                    <p className="text-[0.55rem] text-white/20 mt-1">Combiné avec le profil de {selected.prenom} (objectif enregistré, niveau, blessures, lieu…)</p>
+                    <p className="text-[0.55rem] text-[var(--t-text-20)] mt-1">Combiné avec le profil de {selected.prenom} (objectif enregistré, niveau, blessures, lieu…)</p>
                   </div>
                   <button onClick={generate} disabled={generating}
                     className="bg-[#c9a84c] text-black text-[0.58rem] font-bold tracking-[0.18em] uppercase py-3 hover:bg-[#e2c97e] transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
                     {generating ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Génération en cours…</> : "Générer avec l'IA →"}
                   </button>
                   <button onClick={() => setDrafts([emptySeance()])}
-                    className="border border-white/10 text-white/30 text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-lg hover:border-white/20 hover:text-white/50 transition-colors">
+                    className="border border-[var(--t-border)] text-[var(--t-text-30)] text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-lg hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">
                     Ou créer manuellement
                   </button>
                   {templates.length > 0 && (
                     <button onClick={() => setShowTemplates(true)}
-                      className="border border-white/10 text-white/30 text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-lg hover:border-white/20 hover:text-white/50 transition-colors">
+                      className="border border-[var(--t-border)] text-[var(--t-text-30)] text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-lg hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">
                       Ou choisir un modèle ({templates.length})
                     </button>
                   )}
@@ -384,18 +384,18 @@ export default function ProgrammesPage() {
               )}
 
               {drafts.length === 0 && showTemplates && (
-                <div className="border border-[#c9a84c]/20 bg-[#0f0d07] rounded-lg p-4 md:p-5 flex flex-col gap-3">
+                <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-lg p-4 md:p-5 flex flex-col gap-3">
                   <div className="flex items-center justify-between">
                     <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c]">Modèles enregistrés</p>
-                    <button onClick={() => setShowTemplates(false)} className="text-[0.5rem] tracking-wider uppercase text-white/25 hover:text-white/50 transition-colors">Retour</button>
+                    <button onClick={() => setShowTemplates(false)} className="text-[0.5rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">Retour</button>
                   </div>
                   {templates.map(t => (
-                    <div key={t.id} className="flex items-center justify-between gap-2 border border-white/8 bg-[#111] rounded-lg px-3 py-2.5">
+                    <div key={t.id} className="flex items-center justify-between gap-2 border border-[var(--t-text-8)] bg-[var(--t-surface)] rounded-lg px-3 py-2.5">
                       <button onClick={() => applyTemplate(t)} className="text-left min-w-0 flex-1">
-                        <p className="text-xs text-white/70 truncate">{t.nom}</p>
-                        <p className="text-[0.55rem] text-white/25 truncate">{t.objectif || t.type_seance || "—"}</p>
+                        <p className="text-xs text-[var(--t-text-70)] truncate">{t.nom}</p>
+                        <p className="text-[0.55rem] text-[var(--t-text-25)] truncate">{t.objectif || t.type_seance || "—"}</p>
                       </button>
-                      <button onClick={() => removeTemplate(t.id)} className="shrink-0 text-white/15 hover:text-[#e07070] transition-colors">
+                      <button onClick={() => removeTemplate(t.id)} className="shrink-0 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                       </button>
                     </div>
@@ -409,23 +409,23 @@ export default function ProgrammesPage() {
               {drafts.length > 0 && (
                 <>
                   <div className="flex items-center justify-between">
-                    <p className="text-[0.5rem] tracking-[0.2em] uppercase text-white/25">{drafts.length} séance{drafts.length > 1 ? "s" : ""} — modifiable{drafts.length > 1 ? "s" : ""}</p>
-                    <button onClick={() => { setDrafts([]); setGenError(""); }} className="text-[0.5rem] tracking-wider uppercase text-white/25 hover:text-[#e07070] transition-colors">Tout effacer</button>
+                    <p className="text-[0.5rem] tracking-[0.2em] uppercase text-[var(--t-text-25)]">{drafts.length} séance{drafts.length > 1 ? "s" : ""} — modifiable{drafts.length > 1 ? "s" : ""}</p>
+                    <button onClick={() => { setDrafts([]); setGenError(""); }} className="text-[0.5rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[#e07070] transition-colors">Tout effacer</button>
                   </div>
 
                   {drafts.map((d, i) => (
-                    <div key={i} className="border border-white/8 bg-[#111] rounded-lg p-4 flex flex-col gap-3">
+                    <div key={i} className="border border-[var(--t-text-8)] bg-[var(--t-surface)] rounded-lg p-4 flex flex-col gap-3">
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-[0.5rem] tracking-[0.2em] uppercase text-[#c9a84c]">Séance {i + 1}</span>
                         <div className="flex items-center gap-3">
                           <button onClick={() => saveAsTemplate(d)} disabled={!d.titre.trim()} title="Enregistrer comme modèle"
-                            className="text-[0.48rem] tracking-wider uppercase text-white/25 hover:text-[#c9a84c] transition-colors disabled:opacity-30">
+                            className="text-[0.48rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[#c9a84c] transition-colors disabled:opacity-30">
                             Modèle
                           </button>
-                          <button onClick={() => duplicateDraft(i)} title="Dupliquer cette séance" className="text-white/25 hover:text-[#c9a84c] transition-colors">
+                          <button onClick={() => duplicateDraft(i)} title="Dupliquer cette séance" className="text-[var(--t-text-25)] hover:text-[#c9a84c] transition-colors">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
                           </button>
-                          <button onClick={() => setDrafts(prev => prev.filter((_, j) => j !== i))} className="text-white/15 hover:text-[#e07070] transition-colors">
+                          <button onClick={() => setDrafts(prev => prev.filter((_, j) => j !== i))} className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                           </button>
                         </div>
@@ -445,29 +445,29 @@ export default function ProgrammesPage() {
                       </div>
                       <div>
                         <label className={lbl}>Notes libres (optionnel)</label>
-                        <p className="text-[0.55rem] text-white/20 mb-2 -mt-1">Pas forcément des exercices : consignes, rappels, précisions… Chaque note = un point affiché avec une puce, réordonnable comme les exercices.</p>
+                        <p className="text-[0.55rem] text-[var(--t-text-20)] mb-2 -mt-1">Pas forcément des exercices : consignes, rappels, précisions… Chaque note = un point affiché avec une puce, réordonnable comme les exercices.</p>
                         <div className="flex flex-col gap-2">
                           {d.notesLibres.map((n, ni) => (
-                            <div key={ni} className="border border-white/8 bg-[#0a0a0a] rounded-lg p-2.5 flex items-start gap-2">
-                              <div className="shrink-0 flex flex-col border border-white/10 rounded-md overflow-hidden mt-0.5">
+                            <div key={ni} className="border border-[var(--t-text-8)] bg-[var(--t-bg)] rounded-lg p-2.5 flex items-start gap-2">
+                              <div className="shrink-0 flex flex-col border border-[var(--t-border)] rounded-md overflow-hidden mt-0.5">
                                 <button type="button" onClick={() => moveNoteLibre(i, ni, -1)} disabled={ni === 0} title="Monter"
-                                  className="w-5 h-4 flex items-center justify-center text-white/30 hover:text-[#c9a84c] hover:bg-white/5 transition-colors disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-white/30 border-b border-white/10">
+                                  className="w-5 h-4 flex items-center justify-center text-[var(--t-text-30)] hover:text-[#c9a84c] hover:bg-[var(--t-track)] transition-colors disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-[var(--t-text-30)] border-b border-[var(--t-border)]">
                                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
                                 </button>
                                 <button type="button" onClick={() => moveNoteLibre(i, ni, 1)} disabled={ni === d.notesLibres.length - 1} title="Descendre"
-                                  className="w-5 h-4 flex items-center justify-center text-white/30 hover:text-[#c9a84c] hover:bg-white/5 transition-colors disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-white/30">
+                                  className="w-5 h-4 flex items-center justify-center text-[var(--t-text-30)] hover:text-[#c9a84c] hover:bg-[var(--t-track)] transition-colors disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-[var(--t-text-30)]">
                                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                                 </button>
                               </div>
                               <textarea className={`${inp} resize-none`} rows={2} placeholder="Ex : arriver 10 min en avance pour l'échauffement…"
                                 value={n} onChange={e => setNoteLibre(i, ni, e.target.value)}/>
-                              <button type="button" onClick={() => removeNoteLibre(i, ni)} className="shrink-0 text-white/15 hover:text-[#e07070] transition-colors mt-2">
+                              <button type="button" onClick={() => removeNoteLibre(i, ni)} className="shrink-0 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors mt-2">
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                               </button>
                             </div>
                           ))}
                           <button type="button" onClick={() => addNoteLibre(i)}
-                            className="border border-white/10 text-white/30 text-[0.55rem] tracking-[0.12em] uppercase py-2 rounded-lg hover:border-white/20 hover:text-white/50 transition-colors">
+                            className="border border-[var(--t-border)] text-[var(--t-text-30)] text-[0.55rem] tracking-[0.12em] uppercase py-2 rounded-lg hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">
                             + Ajouter une note libre
                           </button>
                         </div>
@@ -476,7 +476,7 @@ export default function ProgrammesPage() {
                   ))}
 
                   <button onClick={() => setDrafts(prev => [...prev, emptySeance()])}
-                    className="border border-white/10 text-white/30 text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-lg hover:border-white/20 hover:text-white/50 transition-colors">
+                    className="border border-[var(--t-border)] text-[var(--t-text-30)] text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-lg hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">
                     + Ajouter une séance
                   </button>
 
@@ -492,10 +492,10 @@ export default function ProgrammesPage() {
         </div>
       ) : (
         <div className="flex-1 hidden md:flex flex-col items-center justify-center gap-3">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--t-border)" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
             <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
           </svg>
-          <p className="text-white/15 text-sm">Sélectionne un client pour lui créer un programme</p>
+          <p className="text-[var(--t-text-15)] text-sm">Sélectionne un client pour lui créer un programme</p>
         </div>
       )}
     </div>

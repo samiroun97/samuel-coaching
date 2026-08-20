@@ -136,21 +136,21 @@ export default function CrmIaPage() {
     <div className="p-4 sm:p-8 max-w-3xl">
       <div className="mb-6">
         <p className="text-[0.65rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-1">CRM</p>
-        <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl sm:text-5xl text-white tracking-wide">IA</h1>
-        <p className="text-white/30 text-xs mt-1">Signalements clients et calibration des estimations IA</p>
+        <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl sm:text-5xl text-[var(--t-text)] tracking-wide">IA</h1>
+        <p className="text-[var(--t-text-30)] text-xs mt-1">Signalements clients et calibration des estimations IA</p>
       </div>
 
       {/* Tabs */}
-      <div className="flex border border-white/10 mb-6 rounded-lg overflow-hidden">
+      <div className="flex border border-[var(--t-border)] mb-6 rounded-lg overflow-hidden">
         {UI_TABS.map(t => {
           const count = msgs.filter(m => t.test(m.content) && !corrections.some(c => c.message_id === m.id)).length;
           return (
             <button key={t.key} onClick={() => setTab(t.key)}
               className={`flex-1 py-3 text-[0.68rem] tracking-[0.15em] uppercase transition-colors flex items-center justify-center gap-1.5 ${
-                tab === t.key ? "bg-[#c9a84c] text-black font-bold" : "text-white/40 hover:text-white/70 hover:bg-white/[0.03]"}`}>
+                tab === t.key ? "bg-[#c9a84c] text-black font-bold" : "text-[var(--t-text-40)] hover:text-[var(--t-text-70)] hover:bg-[var(--t-glass-bg)]"}`}>
               {t.label}
               {count > 0 && (
-                <span className={`text-[0.55rem] font-bold px-1.5 py-0.5 rounded-full min-w-[1.1rem] text-center ${tab === t.key ? "bg-black/20 text-black" : "bg-[#e07070] text-white"}`}>{count}</span>
+                <span className={`text-[0.55rem] font-bold px-1.5 py-0.5 rounded-full min-w-[1.1rem] text-center ${tab === t.key ? "bg-black/20 text-black" : "bg-[#e07070] text-[var(--t-text)]"}`}>{count}</span>
               )}
             </button>
           );
@@ -160,7 +160,7 @@ export default function CrmIaPage() {
       {/* Nourrir l'IA — note libre, pas liée à un signalement */}
       <div className="border border-[#c9a84c]/20 bg-[#c9a84c]/5 rounded-lg p-4 mb-8 flex flex-col gap-3">
         <p className="text-[0.68rem] tracking-[0.15em] uppercase text-[#c9a84c]">Nourrir l&apos;IA — {uiTab.label}</p>
-        <p className="text-[0.62rem] text-white/40 leading-relaxed">
+        <p className="text-[0.62rem] text-[var(--t-text-40)] leading-relaxed">
           Ajoute une info générale que l&apos;IA doit prendre en compte pour cette catégorie, sans attendre un signalement client (ex : une règle spécifique, une erreur récurrente que tu observes...).
         </p>
         {tab === "entrainement" && (
@@ -168,13 +168,13 @@ export default function CrmIaPage() {
             {(["programme", "activite"] as Category[]).map(c => (
               <button key={c} onClick={() => setNoteSubCategory(c)}
                 className={`px-3 py-1.5 rounded-lg text-[0.6rem] tracking-wider uppercase transition-colors ${
-                  noteSubCategory === c ? "bg-[#c9a84c] text-black font-bold" : "border border-white/10 text-white/40 hover:text-white/60"}`}>
+                  noteSubCategory === c ? "bg-[#c9a84c] text-black font-bold" : "border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-60)]"}`}>
                 {CATEGORY_LABELS[c]}
               </button>
             ))}
           </div>
         )}
-        <textarea className="w-full bg-[#060606] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={2}
+        <textarea className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={2}
           placeholder="Ex : pour les plats de pâtes maison, compte toujours au moins 15g d'huile d'olive même si le client ne la mentionne pas..."
           value={noteText} onChange={e => setNoteText(e.target.value)}/>
         <button onClick={submitNote} disabled={noteSaving || !noteText.trim()}
@@ -184,11 +184,11 @@ export default function CrmIaPage() {
       </div>
 
       {/* Signalements en attente */}
-      <p className="text-[0.68rem] tracking-[0.15em] uppercase text-white/30 mb-3">
+      <p className="text-[0.68rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mb-3">
         Signalements en attente {pending.length > 0 && <span className="text-[#e07070]">({pending.length})</span>}
       </p>
       {pending.length === 0 ? (
-        <p className="text-white/20 text-xs mb-8">Aucun signalement en attente sur cette catégorie.</p>
+        <p className="text-[var(--t-text-20)] text-xs mb-8">Aucun signalement en attente sur cette catégorie.</p>
       ) : (
         <div className="flex flex-col gap-3 mb-8">
           {pending.map(({ msg, category }) => (
@@ -210,7 +210,7 @@ export default function CrmIaPage() {
           ce qui a été effectivement transmis à l'IA (visible aussi juste après un envoi). */}
       {(resolved.length > 0 || standaloneNotes.length > 0) && (
         <>
-          <p className="text-[0.68rem] tracking-[0.15em] uppercase text-white/30 mb-3">Historique</p>
+          <p className="text-[0.68rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mb-3">Historique</p>
           <div className="flex flex-col gap-3">
             {resolved.map(({ msg, category, correction }) => (
               <SignalementCard key={msg.id} category={category} msg={msg} clientName={clientName(msg.from_email)}
@@ -222,12 +222,12 @@ export default function CrmIaPage() {
               />
             ))}
             {standaloneNotes.map(c => (
-              <div key={c.id} className="border-l-2 border-[#7eb8a0] bg-[#0d0d0d] px-4 py-3">
+              <div key={c.id} className="border-l-2 border-[#7eb8a0] bg-[var(--t-surface-2)] px-4 py-3">
                 <p className="text-[0.5rem] tracking-[0.15em] uppercase text-[#7eb8a0] mb-1">
                   ✓ Note générale envoyée à l&apos;IA{tab === "entrainement" ? ` · ${CATEGORY_LABELS[c.category]}` : ""}
                 </p>
-                <p className="text-[0.68rem] text-white/50 leading-relaxed">{c.coach_comment}</p>
-                <p className="text-[0.55rem] text-white/15 mt-1">{new Date(c.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}</p>
+                <p className="text-[0.68rem] text-[var(--t-text-50)] leading-relaxed">{c.coach_comment}</p>
+                <p className="text-[0.55rem] text-[var(--t-text-15)] mt-1">{new Date(c.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}</p>
               </div>
             ))}
           </div>
@@ -264,54 +264,54 @@ function SignalementCard({
       <div className="px-4 py-2.5 flex items-center justify-between gap-3" style={{ backgroundColor: "#e0707015" }}>
         <div className="flex items-center gap-2 min-w-0">
           <span className="text-sm shrink-0">🚩</span>
-          <span className="text-xs text-white/70 truncate">{clientName}</span>
-          <span className="text-[0.5rem] tracking-wider uppercase text-white/20 shrink-0">{CATEGORY_LABELS[category]}</span>
+          <span className="text-xs text-[var(--t-text-70)] truncate">{clientName}</span>
+          <span className="text-[0.5rem] tracking-wider uppercase text-[var(--t-text-20)] shrink-0">{CATEGORY_LABELS[category]}</span>
         </div>
-        <span className="text-[0.55rem] text-white/25 shrink-0">{new Date(msg.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}</span>
+        <span className="text-[0.55rem] text-[var(--t-text-25)] shrink-0">{new Date(msg.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}</span>
       </div>
-      <div className="px-4 py-3 bg-[#0d0d0d] flex flex-col gap-3">
+      <div className="px-4 py-3 bg-[var(--t-surface-2)] flex flex-col gap-3">
         {nutrition && (
           <div className="flex items-start gap-3">
             {nutrition.photo && (
-              <a href={nutrition.photo} target="_blank" rel="noopener noreferrer" className="block w-16 h-16 border border-white/10 rounded-lg overflow-hidden shrink-0 hover:border-[#e07070]/40 transition-colors">
+              <a href={nutrition.photo} target="_blank" rel="noopener noreferrer" className="block w-16 h-16 border border-[var(--t-border)] rounded-lg overflow-hidden shrink-0 hover:border-[#e07070]/40 transition-colors">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={nutrition.photo} alt="Photo du repas" className="w-full h-full object-cover"/>
               </a>
             )}
             <div className="min-w-0">
-              <p className="text-xs text-white/70 mb-1">{nutrition.name}</p>
-              <p className="text-[0.62rem] text-white/30">{nutrition.calories} kcal · P{nutrition.proteines} G{nutrition.glucides} L{nutrition.lipides}</p>
+              <p className="text-xs text-[var(--t-text-70)] mb-1">{nutrition.name}</p>
+              <p className="text-[0.62rem] text-[var(--t-text-30)]">{nutrition.calories} kcal · P{nutrition.proteines} G{nutrition.glucides} L{nutrition.lipides}</p>
             </div>
           </div>
         )}
         {activite && (
-          <p className="text-[0.62rem] text-white/30">{activite.activity} · {activite.duration_minutes} min · estimé {activite.calories_brulees} kcal</p>
+          <p className="text-[0.62rem] text-[var(--t-text-30)]">{activite.activity} · {activite.duration_minutes} min · estimé {activite.calories_brulees} kcal</p>
         )}
         {programme && (
-          <p className="text-[0.62rem] text-white/30">{programme.titre}{programme.type_seance ? ` · ${programme.type_seance}` : ""}</p>
+          <p className="text-[0.62rem] text-[var(--t-text-30)]">{programme.titre}{programme.type_seance ? ` · ${programme.type_seance}` : ""}</p>
         )}
-        <p className="text-[0.65rem] text-white/55 leading-relaxed">{comment}</p>
+        <p className="text-[0.65rem] text-[var(--t-text-55)] leading-relaxed">{comment}</p>
 
         {correction ? (
-          <div className="border-t border-white/5 pt-3">
+          <div className="border-t border-[var(--t-border-soft)] pt-3">
             <p className="text-[0.45rem] tracking-[0.15em] uppercase text-[#7eb8a0] mb-1">
               ✓ Correction envoyée à l&apos;IA{correction.corrected_data && typeof correction.corrected_data.valeur !== "undefined" ? ` · ${correction.corrected_data.valeur}` : ""}
             </p>
-            <p className="text-[0.62rem] text-white/40 leading-relaxed">{correction.coach_comment}</p>
+            <p className="text-[0.62rem] text-[var(--t-text-40)] leading-relaxed">{correction.coach_comment}</p>
           </div>
         ) : correcting ? (
-          <div className="border-t border-white/5 pt-3 flex flex-col gap-2">
+          <div className="border-t border-[var(--t-border-soft)] pt-3 flex flex-col gap-2">
             {category !== "programme" && (
               <input type="text" placeholder="Valeur corrigée (optionnel)" value={correctionValue}
                 onChange={e => setCorrectionValue(e.target.value)}
-                className="w-40 bg-[#060606] border border-white/10 rounded-lg text-white placeholder-white/20 text-xs px-2.5 py-2 focus:outline-none focus:border-[#c9a84c]/40"/>
+                className="w-40 bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-2.5 py-2 focus:outline-none focus:border-[#c9a84c]/40"/>
             )}
             <textarea rows={2} placeholder="Ce que l'IA a mal évalué et comment corriger..."
               value={correctionComment} onChange={e => setCorrectionComment(e.target.value)}
-              className="w-full bg-[#060606] border border-white/10 rounded-lg text-white placeholder-white/20 text-xs px-2.5 py-2 focus:outline-none focus:border-[#c9a84c]/40 resize-none"/>
+              className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-2.5 py-2 focus:outline-none focus:border-[#c9a84c]/40 resize-none"/>
             <div className="flex gap-2">
               <button onClick={onCancelCorrect}
-                className="flex-1 border border-white/10 text-white/40 rounded-lg text-[0.55rem] tracking-wider uppercase py-2 hover:border-white/20 hover:text-white/60 transition-colors">
+                className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-lg text-[0.55rem] tracking-wider uppercase py-2 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors">
                 Annuler
               </button>
               <button onClick={() => onSubmitCorrect(originalData, comment)} disabled={correctionSaving || !correctionComment.trim()}
@@ -322,7 +322,7 @@ function SignalementCard({
           </div>
         ) : (
           <button onClick={onStartCorrect}
-            className="text-[0.55rem] tracking-wider uppercase text-white/25 hover:text-[#c9a84c] transition-colors text-left border-t border-white/5 pt-3">
+            className="text-[0.55rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[#c9a84c] transition-colors text-left border-t border-[var(--t-border-soft)] pt-3">
             Corriger cette estimation →
           </button>
         )}

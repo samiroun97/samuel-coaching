@@ -22,7 +22,7 @@ export function DateNav({ date, onChange }: { date: string; onChange: (d: string
   };
   return (
     <div className="flex items-center gap-2 mb-6">
-      <button onClick={() => move(-1)} className="w-7 h-7 border border-white/10 text-white/40 rounded-lg hover:text-white/60 hover:border-white/20 transition-colors flex items-center justify-center shrink-0">
+      <button onClick={() => move(-1)} className="w-7 h-7 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-lg hover:text-[var(--t-text-60)] hover:border-[var(--t-text-20)] transition-colors flex items-center justify-center shrink-0">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
       <div className="flex-1 relative flex items-center justify-center gap-1.5 cursor-pointer group" onClick={openPicker}>
@@ -32,12 +32,12 @@ export function DateNav({ date, onChange }: { date: string; onChange: (d: string
           onChange={e => { if (e.target.value) onChange(e.target.value); }}
           className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
         />
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-white/30 group-hover:text-white/50 transition-colors shrink-0">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--t-text-30)] group-hover:text-[var(--t-text-50)] transition-colors shrink-0">
           <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
         </svg>
-        <p className="text-[0.7rem] tracking-[0.15em] uppercase text-white/50 group-hover:text-white/70 transition-colors capitalize select-none">{label}</p>
+        <p className="text-[0.7rem] tracking-[0.15em] uppercase text-[var(--t-text-50)] group-hover:text-[var(--t-text-70)] transition-colors capitalize select-none">{label}</p>
       </div>
-      <button onClick={() => move(1)} disabled={isToday} className="w-7 h-7 border border-white/10 text-white/40 rounded-lg hover:text-white/60 hover:border-white/20 transition-colors flex items-center justify-center shrink-0 disabled:opacity-20 disabled:cursor-not-allowed">
+      <button onClick={() => move(1)} disabled={isToday} className="w-7 h-7 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-lg hover:text-[var(--t-text-60)] hover:border-[var(--t-text-20)] transition-colors flex items-center justify-center shrink-0 disabled:opacity-20 disabled:cursor-not-allowed">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
       {!isToday && (

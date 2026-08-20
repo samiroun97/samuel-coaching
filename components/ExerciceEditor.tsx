@@ -2,10 +2,10 @@
 import { type ExerciceItem, type ExerciceMode, type SetDetail, type SimpleField, type ExerciceRun, EXERCICE_TYPES, emptyExercice, emptySet, groupExerciceRuns } from "@/lib/exercices";
 import { type LibraryEntry } from "@/lib/exerciceLibrary";
 
-const inp = "w-full bg-[#060606] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
-const inpSm = "w-full bg-[#060606] border border-white/10 text-white placeholder-white/20 text-xs px-2.5 py-2 text-center focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
-const inpXs = "w-full bg-[#060606] border border-white/10 text-white placeholder-white/20 text-[0.65rem] px-2 py-1.5 text-center focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
-const lblSm = "flex items-center justify-center gap-1 text-[0.42rem] tracking-[0.18em] uppercase text-white/30 mb-1";
+const inp = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
+const inpSm = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-2.5 py-2 text-center focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
+const inpXs = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] text-[var(--t-text)] placeholder-[var(--t-text-20)] text-[0.65rem] px-2 py-1.5 text-center focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
+const lblSm = "flex items-center justify-center gap-1 text-[0.42rem] tracking-[0.18em] uppercase text-[var(--t-text-30)] mb-1";
 
 const IconSeries = () => <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M17 2v4M7 2v4M3 10h18M5 22h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>;
 const IconReps = () => <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M17 1l4 4-4 4M3 11V9a4 4 0 014-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 01-4 4H3"/></svg>;
@@ -124,22 +124,22 @@ export default function ExerciceEditor({ items, onChange, library = [] }: { item
   const renderExercice = (i: number, isGrouped: boolean, onMoveUp?: () => void, onMoveDown?: () => void) => {
     const ex = items[i];
     return (
-      <div key={i} className="border border-white/8 bg-[#0a0a0a] rounded-lg p-3.5 flex flex-col gap-3">
+      <div key={i} className="border border-[var(--t-text-8)] bg-[var(--t-bg)] rounded-lg p-3.5 flex flex-col gap-3">
         <div className="flex items-center gap-2">
           <span className="shrink-0 w-6 h-6 flex items-center justify-center text-[0.6rem] font-bold text-[#c9a84c] border border-[#c9a84c]/25 bg-[#c9a84c]/5 rounded-md">{i + 1}</span>
-          <div className="shrink-0 flex flex-col border border-white/10 rounded-md overflow-hidden">
+          <div className="shrink-0 flex flex-col border border-[var(--t-border)] rounded-md overflow-hidden">
             <button type="button" onClick={onMoveUp} disabled={!onMoveUp} title="Monter"
-              className="w-5 h-4 flex items-center justify-center text-white/30 hover:text-[#c9a84c] hover:bg-white/5 transition-colors disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-white/30 border-b border-white/10">
+              className="w-5 h-4 flex items-center justify-center text-[var(--t-text-30)] hover:text-[#c9a84c] hover:bg-[var(--t-track)] transition-colors disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-[var(--t-text-30)] border-b border-[var(--t-border)]">
               <IconUp/>
             </button>
             <button type="button" onClick={onMoveDown} disabled={!onMoveDown} title="Descendre"
-              className="w-5 h-4 flex items-center justify-center text-white/30 hover:text-[#c9a84c] hover:bg-white/5 transition-colors disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-white/30">
+              className="w-5 h-4 flex items-center justify-center text-[var(--t-text-30)] hover:text-[#c9a84c] hover:bg-[var(--t-track)] transition-colors disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-[var(--t-text-30)]">
               <IconDown/>
             </button>
           </div>
           <input className={inp} list={DATALIST_ID} placeholder="Nom de l'exercice" value={ex.nom}
             onChange={e => update(i, { nom: e.target.value })} onBlur={e => applyFromLibrary(i, e.target.value)} />
-          <button type="button" onClick={() => remove(i)} className="shrink-0 text-white/15 hover:text-[#e07070] transition-colors">
+          <button type="button" onClick={() => remove(i)} className="shrink-0 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
           </button>
         </div>
@@ -149,17 +149,17 @@ export default function ExerciceEditor({ items, onChange, library = [] }: { item
             <option value="">Type d&apos;exercice…</option>
             {EXERCICE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
-          <div className="flex border border-white/10 rounded-lg overflow-hidden">
+          <div className="flex border border-[var(--t-border)] rounded-lg overflow-hidden">
             {MODES.map(m => (
               <button key={m.key} type="button" onClick={() => setMode(i, m.key)}
-                className={`px-2.5 py-2 text-[0.55rem] tracking-[0.1em] uppercase transition-colors ${ex.mode === m.key ? "bg-[#c9a84c] text-black" : "text-white/35 hover:text-white/60"}`}>
+                className={`px-2.5 py-2 text-[0.55rem] tracking-[0.1em] uppercase transition-colors ${ex.mode === m.key ? "bg-[#c9a84c] text-black" : "text-[var(--t-text-35)] hover:text-[var(--t-text-60)]"}`}>
                 {m.label}
               </button>
             ))}
           </div>
           {i > 0 && !isGrouped && (
             <button type="button" onClick={() => linkWithPrevious(i)}
-              className="text-[0.5rem] tracking-[0.1em] uppercase text-white/25 border border-white/10 px-2 py-2 hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors">
+              className="text-[0.5rem] tracking-[0.1em] uppercase text-[var(--t-text-25)] border border-[var(--t-border)] px-2 py-2 hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors">
               Lier au précédent
             </button>
           )}
@@ -170,11 +170,11 @@ export default function ExerciceEditor({ items, onChange, library = [] }: { item
             {SIMPLE_FIELDS.filter(f => !ex.hiddenFields.includes(f.key)).map(f => (
               <div key={f.key} className="w-24">
                 <div className="flex items-center justify-center gap-1 mb-1">
-                  <span className="flex items-center gap-1 text-[0.42rem] tracking-[0.18em] uppercase text-white/30 whitespace-nowrap">
+                  <span className="flex items-center gap-1 text-[0.42rem] tracking-[0.18em] uppercase text-[var(--t-text-30)] whitespace-nowrap">
                     <f.icon />{f.label}
                   </span>
                   <button type="button" onClick={() => hideField(i, f.key)} title={`Retirer le champ ${f.label}`}
-                    className="text-white/25 hover:text-[#e07070] transition-colors p-1.5 -m-1.5">
+                    className="text-[var(--t-text-25)] hover:text-[#e07070] transition-colors p-1.5 -m-1.5">
                     <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                   </button>
                 </div>
@@ -183,7 +183,7 @@ export default function ExerciceEditor({ items, onChange, library = [] }: { item
             ))}
             {SIMPLE_FIELDS.filter(f => ex.hiddenFields.includes(f.key)).map(f => (
               <button key={f.key} type="button" onClick={() => showField(i, f.key)}
-                className="flex items-center gap-1 text-[0.5rem] tracking-[0.1em] uppercase text-white/25 border border-dashed border-white/15 rounded-lg px-2 py-1.5 hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors">
+                className="flex items-center gap-1 text-[0.5rem] tracking-[0.1em] uppercase text-[var(--t-text-25)] border border-dashed border-[var(--t-border-15)] rounded-lg px-2 py-1.5 hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors">
                 + {f.label}
               </button>
             ))}
@@ -193,7 +193,7 @@ export default function ExerciceEditor({ items, onChange, library = [] }: { item
         {ex.mode === "avance" && (
           <div className="pl-8 flex flex-col gap-2">
             {ex.sets.length > 0 && (
-              <div className="grid grid-cols-[1fr_1fr_1fr_1fr_1fr_auto] gap-1.5 text-[0.4rem] tracking-[0.15em] uppercase text-white/25 px-0.5">
+              <div className="grid grid-cols-[1fr_1fr_1fr_1fr_1fr_auto] gap-1.5 text-[0.4rem] tracking-[0.15em] uppercase text-[var(--t-text-25)] px-0.5">
                 <span>Reps</span><span>Poids</span><span>Repos</span><span>RPE</span><span>Tempo</span><span></span>
               </div>
             )}
@@ -205,17 +205,17 @@ export default function ExerciceEditor({ items, onChange, library = [] }: { item
                 <input className={inpXs} placeholder="8" value={s.rpe} onChange={e => updateSet(i, si, { rpe: e.target.value })} />
                 <input className={inpXs} placeholder="3-1-2-0" value={s.tempo} onChange={e => updateSet(i, si, { tempo: e.target.value })} />
                 <div className="flex gap-1">
-                  <button type="button" onClick={() => duplicateSet(i, si)} title="Dupliquer cette série" className="text-white/20 hover:text-[#c9a84c] transition-colors">
+                  <button type="button" onClick={() => duplicateSet(i, si)} title="Dupliquer cette série" className="text-[var(--t-text-20)] hover:text-[#c9a84c] transition-colors">
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
                   </button>
-                  <button type="button" onClick={() => removeSet(i, si)} title="Supprimer cette série" className="text-white/20 hover:text-[#e07070] transition-colors">
+                  <button type="button" onClick={() => removeSet(i, si)} title="Supprimer cette série" className="text-[var(--t-text-20)] hover:text-[#e07070] transition-colors">
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                   </button>
                 </div>
               </div>
             ))}
             <button type="button" onClick={() => addSet(i)}
-              className="border border-white/10 text-white/30 text-[0.5rem] tracking-[0.12em] uppercase py-2 rounded-lg hover:border-white/20 hover:text-white/50 transition-colors">
+              className="border border-[var(--t-border)] text-[var(--t-text-30)] text-[0.5rem] tracking-[0.12em] uppercase py-2 rounded-lg hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">
               + Ajouter une série
             </button>
           </div>
@@ -244,23 +244,23 @@ export default function ExerciceEditor({ items, onChange, library = [] }: { item
           <div className="relative shrink-0">
             <select className="appearance-none bg-[#0c0a05] border border-[#c9a84c]/40 rounded-md text-[0.6rem] font-bold tracking-[0.1em] uppercase text-[#c9a84c] focus:outline-none focus:border-[#c9a84c] cursor-pointer pl-2.5 pr-6 py-1.5"
               value={run.groupLabel || "Superset"} onChange={e => renameGroup(run.groupId!, e.target.value)}>
-              {GROUP_LABELS.map(l => <option key={l} value={l} className="bg-[#111] text-white normal-case tracking-normal">{l}</option>)}
+              {GROUP_LABELS.map(l => <option key={l} value={l} className="bg-[var(--t-surface)] text-[var(--t-text)] normal-case tracking-normal">{l}</option>)}
             </select>
             <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
               className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[#c9a84c]"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <div className="flex border border-white/10 rounded-md overflow-hidden">
+            <div className="flex border border-[var(--t-border)] rounded-md overflow-hidden">
               <button type="button" onClick={() => moveRun(runPos, -1)} disabled={runPos === 0} title="Monter le groupe"
-                className="w-5 h-5 flex items-center justify-center text-white/30 hover:text-[#c9a84c] hover:bg-white/5 transition-colors disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-white/30 border-r border-white/10">
+                className="w-5 h-5 flex items-center justify-center text-[var(--t-text-30)] hover:text-[#c9a84c] hover:bg-[var(--t-track)] transition-colors disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-[var(--t-text-30)] border-r border-[var(--t-border)]">
                 <IconUp/>
               </button>
               <button type="button" onClick={() => moveRun(runPos, 1)} disabled={runPos === runs.length - 1} title="Descendre le groupe"
-                className="w-5 h-5 flex items-center justify-center text-white/30 hover:text-[#c9a84c] hover:bg-white/5 transition-colors disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-white/30">
+                className="w-5 h-5 flex items-center justify-center text-[var(--t-text-30)] hover:text-[#c9a84c] hover:bg-[var(--t-track)] transition-colors disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-[var(--t-text-30)]">
                 <IconDown/>
               </button>
             </div>
-            <button type="button" onClick={() => unlinkGroup(run.groupId!)} className="text-[0.48rem] tracking-wider uppercase text-white/25 hover:text-[#e07070] transition-colors">
+            <button type="button" onClick={() => unlinkGroup(run.groupId!)} className="text-[0.48rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[#e07070] transition-colors">
               Délier
             </button>
           </div>
@@ -284,7 +284,7 @@ export default function ExerciceEditor({ items, onChange, library = [] }: { item
         {library.map(l => <option key={l.id} value={l.nom} />)}
       </datalist>
       {nodes}
-      <button type="button" onClick={add} className="border border-white/10 text-white/30 text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-lg hover:border-white/20 hover:text-white/50 transition-colors">
+      <button type="button" onClick={add} className="border border-[var(--t-border)] text-[var(--t-text-30)] text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-lg hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">
         + Ajouter un exercice
       </button>
     </div>

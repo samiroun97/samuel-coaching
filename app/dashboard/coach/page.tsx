@@ -104,20 +104,20 @@ export default function CoachPage() {
     <div className="flex flex-col h-full">
 
       {/* ── Header + Tabs ── */}
-      <div className="border-b border-white/5 px-8 py-5 shrink-0">
+      <div className="border-b border-[var(--t-border-soft)] px-8 py-5 shrink-0">
         <div className="flex items-center gap-4 mb-4">
           <div className="w-8 h-8 border border-[#c9a84c]/40 rounded-full flex items-center justify-center">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
             </svg>
           </div>
-          <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-xl tracking-wider text-white leading-none">MESSAGES</h1>
+          <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-xl tracking-wider text-[var(--t-text)] leading-none">MESSAGES</h1>
         </div>
-        <div className="flex gap-0 border border-white/10 rounded-lg overflow-hidden">
+        <div className="flex gap-0 border border-[var(--t-border)] rounded-lg overflow-hidden">
           {(["ia", "samuel"] as const).map(t => (
             <button key={t} onClick={() => setTab(t)}
               className={`flex-1 py-2.5 text-[0.7rem] tracking-[0.15em] uppercase font-bold transition-colors flex items-center justify-center gap-2 ${
-                tab === t ? "bg-[#c9a84c] text-black" : "text-white/30 hover:text-white/60 hover:bg-white/[0.03]"
+                tab === t ? "bg-[#c9a84c] text-black" : "text-[var(--t-text-30)] hover:text-[var(--t-text-60)] hover:bg-[var(--t-glass-bg)]"
               }`}>
               {t === "ia" ? (
                 <>
@@ -153,7 +153,7 @@ export default function CoachPage() {
                   </div>
                 )}
                 <div className={`max-w-sm px-4 py-3 rounded-lg text-xs leading-relaxed whitespace-pre-line ${
-                  m.role === "user" ? "bg-[#c9a84c] text-black" : "bg-[#111] border border-white/10 text-white/60"
+                  m.role === "user" ? "bg-[#c9a84c] text-black" : "bg-[var(--t-surface)] border border-[var(--t-border)] text-[var(--t-text-60)]"
                 }`}>
                   {m.content}
                 </div>
@@ -166,19 +166,19 @@ export default function CoachPage() {
                     <rect x="3" y="11" width="18" height="10" rx="2"/><path d="M12 11V7"/><circle cx="12" cy="5" r="2"/><line x1="8" y1="15" x2="8" y2="15"/><line x1="12" y1="15" x2="12" y2="15"/><line x1="16" y1="15" x2="16" y2="15"/>
                   </svg>
                 </div>
-                <div className="bg-[#111] border border-white/10 rounded-lg px-4 py-3 flex items-center gap-1.5">
-                  {[0,1,2].map(j => <div key={j} className="w-1.5 h-1.5 rounded-full bg-white/20 animate-bounce" style={{ animationDelay: `${j*0.15}s` }}/>)}
+                <div className="bg-[var(--t-surface)] border border-[var(--t-border)] rounded-lg px-4 py-3 flex items-center gap-1.5">
+                  {[0,1,2].map(j => <div key={j} className="w-1.5 h-1.5 rounded-full bg-[var(--t-text-20)] animate-bounce" style={{ animationDelay: `${j*0.15}s` }}/>)}
                 </div>
               </div>
             )}
             <div ref={aiBottom}/>
           </div>
-          <div className="border-t border-white/5 px-8 py-4 flex gap-3 shrink-0">
+          <div className="border-t border-[var(--t-border-soft)] px-8 py-4 flex gap-3 shrink-0">
             <input ref={aiInputRef} value={aiInput} onChange={e => setAiInput(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendAi(); } }}
               placeholder="Pose ta question sur ton entraînement ou ta nutrition…"
               disabled={aiLoading}
-              className="flex-1 bg-[#111] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors disabled:opacity-50"/>
+              className="flex-1 bg-[var(--t-surface)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors disabled:opacity-50"/>
             <button onClick={sendAi} disabled={!aiInput.trim() || aiLoading}
               className="bg-[#c9a84c] text-black px-6 py-3 text-[0.7rem] font-bold tracking-[0.15em] uppercase hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed">
               Envoyer
@@ -194,13 +194,13 @@ export default function CoachPage() {
             {dirMsgs.length === 0 && (
               <div className="flex-1 flex items-center justify-center">
                 <div className="text-center">
-                  <div className="w-10 h-10 border border-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <div className="w-10 h-10 border border-[var(--t-border)] rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--t-text-20)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
                     </svg>
                   </div>
-                  <p className="text-white/20 text-xs">Aucun message pour l&apos;instant</p>
-                  <p className="text-white/10 text-[0.68rem] mt-1">Envoie un message à Samuel ci-dessous</p>
+                  <p className="text-[var(--t-text-20)] text-xs">Aucun message pour l&apos;instant</p>
+                  <p className="text-[var(--t-text-10)] text-[0.68rem] mt-1">Envoie un message à Samuel ci-dessous</p>
                 </div>
               </div>
             )}
@@ -215,11 +215,11 @@ export default function CoachPage() {
                   )}
                   <div className="max-w-sm">
                     <div className={`px-4 py-3 rounded-lg text-xs leading-relaxed whitespace-pre-line ${
-                      isMe ? "bg-[#c9a84c] text-black" : "bg-[#111] border border-white/10 text-white/60"
+                      isMe ? "bg-[#c9a84c] text-black" : "bg-[var(--t-surface)] border border-[var(--t-border)] text-[var(--t-text-60)]"
                     }`}>
                       {m.content}
                     </div>
-                    <p className={`text-[0.6rem] text-white/15 mt-1 tracking-wider ${isMe ? "text-right" : ""}`}>
+                    <p className={`text-[0.6rem] text-[var(--t-text-15)] mt-1 tracking-wider ${isMe ? "text-right" : ""}`}>
                       {new Date(m.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
                     </p>
                   </div>
@@ -228,12 +228,12 @@ export default function CoachPage() {
             })}
             <div ref={dirBottom}/>
           </div>
-          <div className="border-t border-white/5 px-8 py-4 flex gap-3 shrink-0">
+          <div className="border-t border-[var(--t-border-soft)] px-8 py-4 flex gap-3 shrink-0">
             <input ref={dirInputRef} value={dirInput} onChange={e => setDirInput(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendDirect(); } }}
               placeholder="Envoie un message à Samuel…"
               disabled={dirLoading}
-              className="flex-1 bg-[#111] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors disabled:opacity-50"/>
+              className="flex-1 bg-[var(--t-surface)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors disabled:opacity-50"/>
             <button onClick={sendDirect} disabled={!dirInput.trim() || dirLoading}
               className="bg-[#c9a84c] text-black px-6 py-3 text-[0.7rem] font-bold tracking-[0.15em] uppercase hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed">
               Envoyer

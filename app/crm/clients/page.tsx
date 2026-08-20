@@ -175,7 +175,7 @@ export default function ClientsPage() {
     setPlanSaving(false);
   };
 
-  const inp = "w-full bg-[#060606] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
+  const inp = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
   const lbl = "text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c] block mb-1.5";
 
   const filtered = clients.filter(c => {
@@ -192,28 +192,28 @@ export default function ClientsPage() {
     <div className="flex h-[calc(100dvh-50px-env(safe-area-inset-bottom))] md:h-screen overflow-hidden">
 
       {/* ── Left: list (plein écran sur mobile quand aucun client sélectionné) ── */}
-      <div className={`flex-col border-r border-white/5 bg-[#0a0a0a] ${selected ? "hidden md:flex w-72 shrink-0" : "flex flex-1"}`}>
-        <div className="px-4 md:px-5 pt-5 md:pt-6 pb-4 border-b border-white/5">
+      <div className={`flex-col border-r border-[var(--t-border-soft)] bg-[var(--t-bg)] ${selected ? "hidden md:flex w-72 shrink-0" : "flex flex-1"}`}>
+        <div className="px-4 md:px-5 pt-5 md:pt-6 pb-4 border-b border-[var(--t-border-soft)]">
           <p className="text-[0.5rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-1">CRM</p>
-          <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-white tracking-wide mb-3">CLIENTS</h1>
+          <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-[var(--t-text)] tracking-wide mb-3">CLIENTS</h1>
           <input className={`${inp} mb-3`} placeholder="Rechercher un client…" value={search} onChange={e => setSearch(e.target.value)}/>
           <div className="flex gap-2 flex-wrap">
-            <select className="bg-[#060606] border border-white/10 text-white/50 text-[0.5rem] px-2 py-1.5 focus:outline-none cursor-pointer"
+            <select className="bg-[var(--t-surface-2)] border border-[var(--t-border)] text-[var(--t-text-50)] text-[0.5rem] px-2 py-1.5 focus:outline-none cursor-pointer"
               value={filterStage} onChange={e => setFilterStage(e.target.value)}>
               <option value="all">Tous stages</option>
               {Object.entries(STAGE_CFG).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
             </select>
-            <select className="bg-[#060606] border border-white/10 text-white/50 text-[0.5rem] px-2 py-1.5 focus:outline-none cursor-pointer"
+            <select className="bg-[var(--t-surface-2)] border border-[var(--t-border)] text-[var(--t-text-50)] text-[0.5rem] px-2 py-1.5 focus:outline-none cursor-pointer"
               value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
               <option value="all">Tous statuts</option>
               {Object.entries(STATUS_CFG).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
             </select>
           </div>
-          <p className="text-[0.45rem] text-white/20 mt-2">{filtered.length} client{filtered.length !== 1 ? "s" : ""}</p>
+          <p className="text-[0.45rem] text-[var(--t-text-20)] mt-2">{filtered.length} client{filtered.length !== 1 ? "s" : ""}</p>
         </div>
 
         {pendingSignups.length > 0 && (
-          <div className="border-b border-[#c9a84c]/10 bg-[#0f0d07] rounded-lg px-4 md:px-5 py-3 shrink-0">
+          <div className="border-b border-[#c9a84c]/10 bg-[var(--t-surface-gold)] rounded-lg px-4 md:px-5 py-3 shrink-0">
             <p className="text-[0.5rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-2">
               Inscriptions en attente ({pendingSignups.length})
             </p>
@@ -221,18 +221,18 @@ export default function ClientsPage() {
               {pendingSignups.map(p => (
                 <div key={p.id} className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="text-[0.65rem] text-white/70 truncate">{p.full_name || "Sans nom"}</p>
-                    <p className="text-[0.5rem] text-white/30 truncate">{p.email}</p>
+                    <p className="text-[0.65rem] text-[var(--t-text-70)] truncate">{p.full_name || "Sans nom"}</p>
+                    <p className="text-[0.5rem] text-[var(--t-text-30)] truncate">{p.email}</p>
                   </div>
                   <div className="flex items-start gap-2 shrink-0">
                     <div className="flex flex-col items-end gap-0.5">
                       <span className={`text-[0.4rem] tracking-wider uppercase px-1.5 py-0.5 border whitespace-nowrap ${p.email_confirmed_at ? "text-[#7eb8a0] border-[#7eb8a0]/30" : "text-[#e09070] border-[#e09070]/30"}`}>
                         {p.email_confirmed_at ? "Email confirmé" : "Confirmation en attente"}
                       </span>
-                      <span className="text-[0.42rem] text-white/20">{new Date(p.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}</span>
+                      <span className="text-[0.42rem] text-[var(--t-text-20)]">{new Date(p.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}</span>
                     </div>
                     <button onClick={() => deletePendingSignup(p)} disabled={deletingPendingId === p.id}
-                      title="Supprimer ce compte" className="text-white/15 hover:text-[#e07070] transition-colors disabled:opacity-40 mt-px">
+                      title="Supprimer ce compte" className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors disabled:opacity-40 mt-px">
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                     </button>
                   </div>
@@ -251,16 +251,16 @@ export default function ClientsPage() {
             const isSelected = selected?.id === c.id;
             return (
               <button key={c.id} onClick={() => selectClient(c)}
-                className={`w-full text-left px-4 py-3 mb-1 border transition-all ${isSelected ? "border-[#c9a84c]/30 bg-[#c9a84c]/5" : "border-white/5 hover:border-white/10 hover:bg-white/[0.02]"}`}>
+                className={`w-full text-left px-4 py-3 mb-1 border transition-all ${isSelected ? "border-[#c9a84c]/30 bg-[#c9a84c]/5" : "border-[var(--t-border-soft)] hover:border-[var(--t-border)] hover:bg-[var(--t-glass-bg)]"}`}>
                 <div className="flex items-start justify-between mb-0.5">
-                  <p className={`text-sm font-medium ${isSelected ? "text-white" : "text-white/70"}`}>{c.prenom} {c.nom}</p>
+                  <p className={`text-sm font-medium ${isSelected ? "text-[var(--t-text)]" : "text-[var(--t-text-70)]"}`}>{c.prenom} {c.nom}</p>
                   <span className="text-[0.42rem] tracking-wider uppercase px-1.5 py-0.5 border shrink-0 ml-2"
                     style={{ color: stageCfg.color, borderColor: `${stageCfg.color}35`, backgroundColor: `${stageCfg.color}10` }}>
                     {stageCfg.label}
                   </span>
                 </div>
-                <p className="text-[0.48rem] text-white/30">{c.age} ans · {c.poids} kg · {c.sexe}</p>
-                {subEnd && <p className={`text-[0.45rem] mt-0.5 ${subSoon ? "text-[#e09070]" : "text-white/20"}`}>Abo. {subEnd.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}{subSoon ? " ⚠" : ""}</p>}
+                <p className="text-[0.48rem] text-[var(--t-text-30)]">{c.age} ans · {c.poids} kg · {c.sexe}</p>
+                {subEnd && <p className={`text-[0.45rem] mt-0.5 ${subSoon ? "text-[#e09070]" : "text-[var(--t-text-20)]"}`}>Abo. {subEnd.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}{subSoon ? " ⚠" : ""}</p>}
               </button>
             );
           })}
@@ -272,21 +272,21 @@ export default function ClientsPage() {
         <div className="flex-1 flex flex-col overflow-hidden">
 
           {/* Header */}
-          <div className="px-4 md:px-8 pt-5 md:pt-6 pb-4 border-b border-white/5 shrink-0">
+          <div className="px-4 md:px-8 pt-5 md:pt-6 pb-4 border-b border-[var(--t-border-soft)] shrink-0">
             <div className="flex items-start justify-between mb-3 gap-2">
               <div className="flex items-start gap-2 min-w-0">
-                <button onClick={() => setSelected(null)} className="md:hidden text-white/40 hover:text-white/70 transition-colors mt-1.5 shrink-0">
+                <button onClick={() => setSelected(null)} className="md:hidden text-[var(--t-text-40)] hover:text-[var(--t-text-70)] transition-colors mt-1.5 shrink-0">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
                 </button>
                 <div className="min-w-0">
-                <p className="text-[0.45rem] tracking-[0.2em] text-white/25 uppercase truncate">{selected.email}</p>
-                <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl md:text-4xl text-white tracking-wide">{selected.prenom} {selected.nom}</h2>
-                <p className="text-white/30 text-xs mt-0.5">{selected.age} ans · {selected.sexe} · {selected.poids} kg · {selected.taille} cm{bodyFat !== null && ` · Body fat ${bodyFat}%`}</p>
+                <p className="text-[0.45rem] tracking-[0.2em] text-[var(--t-text-25)] uppercase truncate">{selected.email}</p>
+                <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl md:text-4xl text-[var(--t-text)] tracking-wide">{selected.prenom} {selected.nom}</h2>
+                <p className="text-[var(--t-text-30)] text-xs mt-0.5">{selected.age} ans · {selected.sexe} · {selected.poids} kg · {selected.taille} cm{bodyFat !== null && ` · Body fat ${bodyFat}%`}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3 shrink-0">
                 <Link href={`/crm/inbox?client=${encodeURIComponent(selected.email)}`}
-                  className="flex items-center gap-1.5 px-3 py-1.5 border border-white/10 text-white/30 hover:text-white/70 hover:border-white/25 transition-all text-[0.45rem] tracking-[0.15em] uppercase">
+                  className="flex items-center gap-1.5 px-3 py-1.5 border border-[var(--t-border)] text-[var(--t-text-30)] hover:text-[var(--t-text-70)] hover:border-[var(--t-text-25)] transition-all text-[0.45rem] tracking-[0.15em] uppercase">
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
                   Inbox
                 </Link>
@@ -295,7 +295,7 @@ export default function ClientsPage() {
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
                   {deleting ? "Suppression…" : "Supprimer"}
                 </button>
-                <button onClick={() => setSelected(null)} className="text-white/20 hover:text-white/50 transition-colors">
+                <button onClick={() => setSelected(null)} className="text-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
               </div>
@@ -306,7 +306,7 @@ export default function ClientsPage() {
               {/* Stage */}
               <select disabled={statusSaving} value={selected.pipeline_stage ?? "actif"}
                 onChange={e => updateField({ pipeline_stage: e.target.value })}
-                className="bg-transparent border border-white/15 text-white/50 text-[0.5rem] tracking-wider uppercase px-2 py-1.5 focus:outline-none cursor-pointer">
+                className="bg-transparent border border-[var(--t-border-15)] text-[var(--t-text-50)] text-[0.5rem] tracking-wider uppercase px-2 py-1.5 focus:outline-none cursor-pointer">
                 {Object.entries(STAGE_CFG).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
               </select>
               {/* Status pills */}
@@ -323,16 +323,16 @@ export default function ClientsPage() {
               })}
               {/* Fin abonnement */}
               <div className="flex items-center gap-1.5">
-                <span className="text-[0.42rem] text-white/25 uppercase tracking-wider">Fin abo.</span>
+                <span className="text-[0.42rem] text-[var(--t-text-25)] uppercase tracking-wider">Fin abo.</span>
                 <input type="date" value={selected.subscription_end ?? ""}
                   onChange={e => updateField({ subscription_end: e.target.value || null })}
-                  className="bg-transparent border border-white/10 text-white/40 rounded-lg text-[0.48rem] px-2 py-1 focus:outline-none focus:border-[#c9a84c]/40"/>
+                  className="bg-transparent border border-[var(--t-border)] text-[var(--t-text-40)] rounded-lg text-[0.48rem] px-2 py-1 focus:outline-none focus:border-[#c9a84c]/40"/>
               </div>
             </div>
           </div>
 
           {/* Tabs */}
-          <div className="flex border-b border-white/5 px-4 md:px-8 shrink-0 overflow-x-auto">
+          <div className="flex border-b border-[var(--t-border-soft)] px-4 md:px-8 shrink-0 overflow-x-auto">
             {([
               { key: "profil",     label: "Profil" },
               { key: "notes",      label: `Notes (${notes.length})` },
@@ -341,14 +341,14 @@ export default function ClientsPage() {
               { key: "journal",    label: `Journal (${journal.length})` },
             ] as const).map(({ key, label }) => (
               <button key={key} onClick={() => setTab(key)}
-                className={`py-3 mr-5 text-[0.58rem] tracking-[0.12em] uppercase border-b-2 transition-colors whitespace-nowrap ${tab === key ? "border-[#c9a84c] text-[#c9a84c]" : "border-transparent text-white/30 hover:text-white/50"}`}>
+                className={`py-3 mr-5 text-[0.58rem] tracking-[0.12em] uppercase border-b-2 transition-colors whitespace-nowrap ${tab === key ? "border-[#c9a84c] text-[#c9a84c]" : "border-transparent text-[var(--t-text-30)] hover:text-[var(--t-text-50)]"}`}>
                 {label}
               </button>
             ))}
             {/* Renvoie vers la même section Programmes (bibliothèque + modèles + IA) que le menu
                 CRM, pré-sélectionnée sur ce client — plus de formulaire de séance dupliqué ici. */}
             <Link href={`/crm/programmes?client=${encodeURIComponent(selected.email)}`}
-              className="py-3 mr-5 text-[0.58rem] tracking-[0.12em] uppercase border-b-2 border-transparent text-white/30 hover:text-white/50 transition-colors whitespace-nowrap flex items-center gap-1">
+              className="py-3 mr-5 text-[0.58rem] tracking-[0.12em] uppercase border-b-2 border-transparent text-[var(--t-text-30)] hover:text-[var(--t-text-50)] transition-colors whitespace-nowrap flex items-center gap-1">
               Programme ({seances.length})
               <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
             </Link>
@@ -368,16 +368,16 @@ export default function ClientsPage() {
                   { label: "Sommeil/stress", val: selected.sommeil_stress },
                   { label: "Alimentation",   val: selected.alimentation },
                 ].map(r => (
-                  <div key={r.label} className="border border-white/7 bg-[#111] rounded-lg px-4 py-3">
+                  <div key={r.label} className="border border-[var(--t-text-7)] bg-[var(--t-surface)] rounded-lg px-4 py-3">
                     <p className="text-[0.48rem] tracking-[0.15em] uppercase text-[#c9a84c] mb-1">{r.label}</p>
-                    <p className="text-xs text-white/55">{r.val || "—"}</p>
+                    <p className="text-xs text-[var(--t-text-55)]">{r.val || "—"}</p>
                   </div>
                 ))}
-                <div className="col-span-2 border border-white/7 bg-[#111] rounded-lg px-4 py-3">
+                <div className="col-span-2 border border-[var(--t-text-7)] bg-[var(--t-surface)] rounded-lg px-4 py-3">
                   <p className="text-[0.48rem] tracking-[0.15em] uppercase text-[#c9a84c] mb-1">Blessures</p>
-                  <p className="text-xs text-white/55 leading-relaxed">{selected.blessures || "—"}</p>
+                  <p className="text-xs text-[var(--t-text-55)] leading-relaxed">{selected.blessures || "—"}</p>
                 </div>
-                <div className="col-span-2 border border-[#c9a84c]/10 bg-[#0f0d07] rounded-lg px-4 py-3">
+                <div className="col-span-2 border border-[#c9a84c]/10 bg-[var(--t-surface-gold)] rounded-lg px-4 py-3">
                   <div className="flex items-start justify-between gap-3 mb-1">
                     <p className="text-[0.48rem] tracking-[0.15em] uppercase text-[#c9a84c]">Objectifs{selected.objectif_echeance && ` · Échéance : ${selected.objectif_echeance}`}</p>
                     {selected.objectif_pending ? (
@@ -387,12 +387,12 @@ export default function ClientsPage() {
                       </button>
                     ) : (
                       <button disabled={statusSaving} onClick={() => updateField({ objectif_pending: true })}
-                        className="shrink-0 text-[0.48rem] tracking-wider uppercase text-white/30 hover:text-[#c9a84c] transition-colors whitespace-nowrap border border-white/10 hover:border-[#c9a84c]/40 rounded-lg px-2 py-1">
+                        className="shrink-0 text-[0.48rem] tracking-wider uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] transition-colors whitespace-nowrap border border-[var(--t-border)] hover:border-[#c9a84c]/40 rounded-lg px-2 py-1">
                         Demander précision →
                       </button>
                     )}
                   </div>
-                  <p className="text-xs text-white/55 leading-relaxed">{selected.objectifs || "—"}</p>
+                  <p className="text-xs text-[var(--t-text-55)] leading-relaxed">{selected.objectifs || "—"}</p>
                 </div>
               </div>
             )}
@@ -400,26 +400,26 @@ export default function ClientsPage() {
             {/* NOTES */}
             {tab === "notes" && (
               <div className="max-w-2xl flex flex-col gap-4">
-                <div className="border border-[#c9a84c]/20 bg-[#0f0d07] rounded-lg p-5">
+                <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-lg p-5">
                   <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-3">Nouvelle note</p>
                   <textarea className={`${inp} resize-none mb-3`} rows={4} placeholder="Observations, ajustements, retours séance…" value={noteInput} onChange={e => setNoteInput(e.target.value)}/>
                   <button onClick={addNote} disabled={noteSaving || !noteInput.trim()} className="bg-[#c9a84c] text-black text-[0.58rem] font-bold tracking-[0.18em] uppercase py-2.5 px-5 hover:bg-[#e2c97e] transition-colors disabled:opacity-40">
                     {noteSaving ? "Enregistrement…" : "Ajouter →"}
                   </button>
                 </div>
-                {notes.length === 0 ? <p className="text-white/20 text-xs text-center py-4">Aucune note</p>
+                {notes.length === 0 ? <p className="text-[var(--t-text-20)] text-xs text-center py-4">Aucune note</p>
                   : notes.map(n => (
-                    <div key={n.id} className="border border-white/8 bg-[#111] rounded-lg p-4">
+                    <div key={n.id} className="border border-[var(--t-text-8)] bg-[var(--t-surface)] rounded-lg p-4">
                       <div className="flex items-start justify-between mb-2">
-                        <p className="text-[0.48rem] tracking-wider text-white/25">
+                        <p className="text-[0.48rem] tracking-wider text-[var(--t-text-25)]">
                           {new Date(n.created_at).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
                         </p>
                         <button onClick={async () => { await supabase.from("coach_notes").delete().eq("id", n.id); setNotes(prev => prev.filter(x => x.id !== n.id)); }}
-                          className="text-white/15 hover:text-[#e07070] transition-colors">
+                          className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
                           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                         </button>
                       </div>
-                      <p className="text-sm text-white/60 leading-relaxed whitespace-pre-line">{n.content}</p>
+                      <p className="text-sm text-[var(--t-text-60)] leading-relaxed whitespace-pre-line">{n.content}</p>
                     </div>
                   ))}
               </div>
@@ -428,7 +428,7 @@ export default function ClientsPage() {
             {/* CHECK-INS */}
             {tab === "checkin" && (
               <div className="max-w-2xl flex flex-col gap-4">
-                <div className="border border-[#c9a84c]/20 bg-[#0f0d07] rounded-lg p-5">
+                <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-lg p-5">
                   <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Check-in hebdomadaire</p>
                   <div className="grid grid-cols-3 gap-3 mb-3">
                     <div><label className={lbl}>Date</label><input type="date" className={inp} value={ckForm.week_date} onChange={e => setCkForm(f => ({ ...f, week_date: e.target.value }))}/></div>
@@ -440,7 +440,7 @@ export default function ClientsPage() {
                     <div className="flex gap-2 mt-1">
                       {[1,2,3,4,5].map(n => (
                         <button key={n} onClick={() => setCkForm(f => ({ ...f, compliance: n }))}
-                          className={`w-9 h-9 border text-sm font-bold transition-all ${ckForm.compliance >= n ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-white/15 text-white/25"}`}>{n}</button>
+                          className={`w-9 h-9 border text-sm font-bold transition-all ${ckForm.compliance >= n ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-[var(--t-border-15)] text-[var(--t-text-25)]"}`}>{n}</button>
                       ))}
                     </div>
                   </div>
@@ -449,25 +449,25 @@ export default function ClientsPage() {
                     {ckSaving ? "Enregistrement…" : "Enregistrer →"}
                   </button>
                 </div>
-                {checkins.length === 0 ? <p className="text-white/20 text-xs text-center py-4">Aucun check-in</p>
+                {checkins.length === 0 ? <p className="text-[var(--t-text-20)] text-xs text-center py-4">Aucun check-in</p>
                   : checkins.map(ck => (
-                    <div key={ck.id} className="border border-white/8 bg-[#111] rounded-lg px-5 py-4 flex items-start justify-between gap-3">
+                    <div key={ck.id} className="border border-[var(--t-text-8)] bg-[var(--t-surface)] rounded-lg px-5 py-4 flex items-start justify-between gap-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-4 mb-1.5">
-                          <span className="text-[0.65rem] tracking-wider text-white/35">
+                          <span className="text-[0.65rem] tracking-wider text-[var(--t-text-35)]">
                             {new Date(ck.week_date + "T00:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
                           </span>
-                          {ck.compliance && <div className="flex gap-0.5">{[1,2,3,4,5].map(n => <div key={n} className="w-2.5 h-2.5 border" style={{ backgroundColor: n <= ck.compliance! ? "#c9a84c" : "transparent", borderColor: n <= ck.compliance! ? "#c9a84c" : "rgba(255,255,255,0.1)" }}/>)}</div>}
+                          {ck.compliance && <div className="flex gap-0.5">{[1,2,3,4,5].map(n => <div key={n} className="w-2.5 h-2.5 border" style={{ backgroundColor: n <= ck.compliance! ? "#c9a84c" : "transparent", borderColor: n <= ck.compliance! ? "#c9a84c" : "var(--t-border)" }}/>)}</div>}
                         </div>
                         <div className="flex gap-5 mb-1 items-center flex-wrap">
-                          {ck.weight && <span className="text-sm text-white/70 font-medium">{ck.weight} kg</span>}
+                          {ck.weight && <span className="text-sm text-[var(--t-text-70)] font-medium">{ck.weight} kg</span>}
                           {ck.body_fat && <span className="text-sm text-[#7eb8a0]">{ck.body_fat}% BF</span>}
                           {ck.energy && <span className="text-[0.6rem] tracking-wider uppercase text-[#7eb8a0]/70">Énergie {ck.energy}/5</span>}
                         </div>
-                        {ck.notes && <p className="text-xs text-white/35 leading-relaxed">{ck.notes}</p>}
+                        {ck.notes && <p className="text-xs text-[var(--t-text-35)] leading-relaxed">{ck.notes}</p>}
                       </div>
                       <button onClick={async () => { await supabase.from("weekly_checkins").delete().eq("id", ck.id); setCheckins(prev => prev.filter(x => x.id !== ck.id)); }}
-                        className="text-white/15 hover:text-[#e07070] transition-colors shrink-0">
+                        className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors shrink-0">
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                       </button>
                     </div>
@@ -478,7 +478,7 @@ export default function ClientsPage() {
             {/* REPAS */}
             {tab === "repas" && (
               <div className="max-w-2xl flex flex-col gap-5">
-                <div className="border border-[#c9a84c]/20 bg-[#0f0d07] rounded-lg p-5">
+                <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-lg p-5">
                   <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">{activePlanId ? "Plan actif" : `Créer un plan — ${selected.prenom}`}</p>
                   {!activePlanId ? (
                     <div className="flex flex-col gap-3">
@@ -488,20 +488,20 @@ export default function ClientsPage() {
                     </div>
                   ) : (
                     <div className="flex items-center justify-between">
-                      <p className="text-xs text-white/60">{mealPlans.find(p => p.id === activePlanId)?.name}</p>
+                      <p className="text-xs text-[var(--t-text-60)]">{mealPlans.find(p => p.id === activePlanId)?.name}</p>
                       <button onClick={async () => { await supabase.from("meal_plans").update({ is_active: false }).eq("id", activePlanId); setActivePlanId(null); setMealItems([]); }} className="text-[0.65rem] tracking-wider uppercase text-[#e07070]/60 hover:text-[#e07070] transition-colors">Désactiver</button>
                     </div>
                   )}
                 </div>
                 {activePlanId && (
-                  <div className="border border-white/8 bg-[#111] rounded-lg p-5 flex flex-col gap-4">
+                  <div className="border border-[var(--t-text-8)] bg-[var(--t-surface)] rounded-lg p-5 flex flex-col gap-4">
                     <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c]">Ajouter un repas</p>
                     <div className="grid grid-cols-2 gap-3">
                       <div><label className={lbl}>Type</label><select className={`${inp} cursor-pointer`} value={itemForm.meal_type} onChange={e => setItemForm(f => ({ ...f, meal_type: e.target.value }))}>{["Petit-déjeuner","Déjeuner","Dîner","Collation"].map(t => <option key={t}>{t}</option>)}</select></div>
                       <div><label className={lbl}>Nom *</label><input className={inp} placeholder="Riz + poulet grillé" value={itemForm.name} onChange={e => setItemForm(f => ({ ...f, name: e.target.value }))}/></div>
                     </div>
                     <div className="grid grid-cols-4 gap-2">
-                      {[{k:"calories",l:"Kcal",c:"text-white/40"},{k:"proteines",l:"Prot",c:"text-[#c9a84c]"},{k:"glucides",l:"Gluc",c:"text-[#7eb8a0]"},{k:"lipides",l:"Lip",c:"text-[#e07070]"}].map(({k,l,c}) => (
+                      {[{k:"calories",l:"Kcal",c:"text-[var(--t-text-40)]"},{k:"proteines",l:"Prot",c:"text-[#c9a84c]"},{k:"glucides",l:"Gluc",c:"text-[#7eb8a0]"},{k:"lipides",l:"Lip",c:"text-[#e07070]"}].map(({k,l,c}) => (
                         <div key={k}><label className={`text-[0.48rem] tracking-wider uppercase block mb-1 ${c}`}>{l}</label><input type="number" className={inp} value={itemForm[k as keyof typeof itemForm]} onChange={e => setItemForm(f => ({ ...f, [k]: e.target.value }))}/></div>
                       ))}
                     </div>
@@ -517,9 +517,9 @@ export default function ClientsPage() {
                         <div key={type} className="mb-4">
                           <p className="text-[0.48rem] tracking-wider uppercase text-[#c9a84c]/50 mb-1.5">{type}</p>
                           {items.map(item => (
-                            <div key={item.id} className="flex items-center justify-between border border-white/8 bg-[#111] rounded-lg px-4 py-2.5 mb-1">
-                              <div><p className="text-xs text-white/60">{item.name}</p><div className="flex gap-2 mt-0.5"><span className="text-[0.42rem] text-white/25">{item.calories} kcal</span><span className="text-[0.42rem] text-[#c9a84c]/55">P {item.proteines}g</span><span className="text-[0.42rem] text-[#7eb8a0]/55">G {item.glucides}g</span><span className="text-[0.42rem] text-[#e07070]/55">L {item.lipides}g</span></div></div>
-                              <button onClick={async () => { await supabase.from("meal_plan_items").delete().eq("id", item.id); setMealItems(prev => prev.filter(x => x.id !== item.id)); }} className="text-white/15 hover:text-[#e07070] transition-colors"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                            <div key={item.id} className="flex items-center justify-between border border-[var(--t-text-8)] bg-[var(--t-surface)] rounded-lg px-4 py-2.5 mb-1">
+                              <div><p className="text-xs text-[var(--t-text-60)]">{item.name}</p><div className="flex gap-2 mt-0.5"><span className="text-[0.42rem] text-[var(--t-text-25)]">{item.calories} kcal</span><span className="text-[0.42rem] text-[#c9a84c]/55">P {item.proteines}g</span><span className="text-[0.42rem] text-[#7eb8a0]/55">G {item.glucides}g</span><span className="text-[0.42rem] text-[#e07070]/55">L {item.lipides}g</span></div></div>
+                              <button onClick={async () => { await supabase.from("meal_plan_items").delete().eq("id", item.id); setMealItems(prev => prev.filter(x => x.id !== item.id)); }} className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
                             </div>
                           ))}
                         </div>
@@ -534,13 +534,13 @@ export default function ClientsPage() {
             {tab === "journal" && (
               <div className="max-w-2xl flex flex-col gap-3">
                 {journal.length === 0 ? (
-                  <p className="text-white/20 text-xs text-center py-8">Aucun repas loggé par ce client</p>
+                  <p className="text-[var(--t-text-20)] text-xs text-center py-8">Aucun repas loggé par ce client</p>
                 ) : journal.map(d => (
-                  <div key={d.date} className="border border-white/8 bg-[#111] rounded-lg">
-                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/5">
-                      <p className="text-xs text-white/70 capitalize">{new Date(d.date + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</p>
+                  <div key={d.date} className="border border-[var(--t-text-8)] bg-[var(--t-surface)] rounded-lg">
+                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-[var(--t-border-soft)]">
+                      <p className="text-xs text-[var(--t-text-70)] capitalize">{new Date(d.date + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</p>
                       <div className="flex items-center gap-3 text-[0.6rem]">
-                        <span className="text-white/50">{Math.round(d.calories)} kcal</span>
+                        <span className="text-[var(--t-text-50)]">{Math.round(d.calories)} kcal</span>
                         <span className="text-[#c9a84c]/70">P {Math.round(d.proteines)}</span>
                         <span className="text-[#7eb8a0]/70">G {Math.round(d.glucides)}</span>
                         <span className="text-[#e07070]/70">L {Math.round(d.lipides)}</span>
@@ -550,13 +550,13 @@ export default function ClientsPage() {
                       <div className="px-4 py-2 flex flex-col gap-1.5">
                         {d.foods.map((f, i) => (
                           <div key={i} className="flex items-center justify-between">
-                            <p className="text-[0.7rem] text-white/55">{f.name}</p>
-                            <p className="text-[0.6rem] text-white/30 shrink-0 ml-3">{Math.round(f.calories)} kcal · P{Math.round(f.proteines)} G{Math.round(f.glucides)} L{Math.round(f.lipides)}</p>
+                            <p className="text-[0.7rem] text-[var(--t-text-55)]">{f.name}</p>
+                            <p className="text-[0.6rem] text-[var(--t-text-30)] shrink-0 ml-3">{Math.round(f.calories)} kcal · P{Math.round(f.proteines)} G{Math.round(f.glucides)} L{Math.round(f.lipides)}</p>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <p className="px-4 py-2 text-[0.6rem] text-white/20">Détail des aliments non disponible (totaux seulement)</p>
+                      <p className="px-4 py-2 text-[0.6rem] text-[var(--t-text-20)]">Détail des aliments non disponible (totaux seulement)</p>
                     )}
                   </div>
                 ))}
@@ -569,7 +569,7 @@ export default function ClientsPage() {
 
       {!selected && (
         <div className="flex-1 hidden md:flex items-center justify-center">
-          <p className="text-white/10 text-sm">Sélectionne un client</p>
+          <p className="text-[var(--t-text-10)] text-sm">Sélectionne un client</p>
         </div>
       )}
     </div>

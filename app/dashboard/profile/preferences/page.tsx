@@ -15,17 +15,17 @@ function Row({ label, sublabel, open, onClick, children }: {
 }) {
   return (
     <div>
-      <button onClick={onClick} className="w-full flex items-center justify-between px-5 py-4 text-left transition-colors hover:bg-white/[0.03]">
+      <button onClick={onClick} className="w-full flex items-center justify-between px-5 py-4 text-left transition-colors hover:bg-[var(--t-glass-bg)]">
         <div>
-          <p className="text-sm text-white/70">{label}</p>
-          {sublabel && <p className="text-[0.62rem] text-white/25 mt-0.5">{sublabel}</p>}
+          <p className="text-sm text-[var(--t-text-70)]">{label}</p>
+          {sublabel && <p className="text-[0.62rem] text-[var(--t-text-25)] mt-0.5">{sublabel}</p>}
         </div>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-          className={`text-white/25 shrink-0 transition-transform ${open ? "rotate-90" : ""}`}>
+          className={`text-[var(--t-text-25)] shrink-0 transition-transform ${open ? "rotate-90" : ""}`}>
           <polyline points="9 18 15 12 9 6"/>
         </svg>
       </button>
-      {open && <div className="px-5 pb-5 border-t border-white/5 pt-5">{children}</div>}
+      {open && <div className="px-5 pb-5 border-t border-[var(--t-border-soft)] pt-5">{children}</div>}
     </div>
   );
 }
@@ -34,14 +34,14 @@ function Row({ label, sublabel, open, onClick, children }: {
 function LinkRow({ label, href, onClick, danger }: { label: string; href?: string; onClick?: () => void; danger?: boolean }) {
   const content = (
     <>
-      <p className={`text-sm ${danger ? "text-[#e07070]" : "text-white/70"}`}>{label}</p>
+      <p className={`text-sm ${danger ? "text-[#e07070]" : "text-[var(--t-text-70)]"}`}>{label}</p>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-        className={danger ? "text-[#e07070]/50 shrink-0" : "text-white/25 shrink-0"}>
+        className={danger ? "text-[#e07070]/50 shrink-0" : "text-[var(--t-text-25)] shrink-0"}>
         <polyline points="9 18 15 12 9 6"/>
       </svg>
     </>
   );
-  const cls = "w-full flex items-center justify-between px-5 py-4 text-left transition-colors hover:bg-white/[0.03]";
+  const cls = "w-full flex items-center justify-between px-5 py-4 text-left transition-colors hover:bg-[var(--t-glass-bg)]";
   return href
     ? <Link href={href} className={cls}>{content}</Link>
     : <button onClick={onClick} className={cls}>{content}</button>;
@@ -130,27 +130,27 @@ export default function PreferencesPage() {
     setNewPassword(""); setConfirmPassword("");
   };
 
-  const inp = "w-full bg-[#0a0a0a] border border-white/10 rounded-lg text-white placeholder-white/20 text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
-  const lbl = "text-[0.7rem] tracking-[0.2em] uppercase text-white/40 block mb-1.5";
-  const groupCls = "border border-white/10 bg-[#111] rounded-lg divide-y divide-white/5";
+  const inp = "w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
+  const lbl = "text-[0.7rem] tracking-[0.2em] uppercase text-[var(--t-text-40)] block mb-1.5";
+  const groupCls = "border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg divide-y divide-[var(--t-border-soft)]";
 
   return (
     <div className="p-4 sm:p-8 max-w-lg">
       <div className="flex items-center gap-4 mb-8">
         <button onClick={() => router.push("/dashboard/profile")}
-          className="w-9 h-9 border border-white/10 rounded-full flex items-center justify-center text-white/40 hover:text-white/70 hover:border-white/25 transition-colors shrink-0">
+          className="w-9 h-9 border border-[var(--t-border)] rounded-full flex items-center justify-center text-[var(--t-text-40)] hover:text-[var(--t-text-70)] hover:border-[var(--t-text-25)] transition-colors shrink-0">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
           </svg>
         </button>
-        <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-white tracking-wide">PRÉFÉRENCES</h1>
+        <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[var(--t-text)] tracking-wide">PRÉFÉRENCES</h1>
       </div>
 
       {isCoach && (
         <div className="border border-[#c9a84c]/25 bg-[#c9a84c]/5 rounded-lg p-5 flex items-center justify-between gap-4 mb-8">
           <div>
             <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1">Espace coach</p>
-            <p className="text-[0.62rem] text-white/35 tracking-wider">Tu es actuellement dans ton espace perso (aperçu adhérent)</p>
+            <p className="text-[0.62rem] text-[var(--t-text-35)] tracking-wider">Tu es actuellement dans ton espace perso (aperçu adhérent)</p>
           </div>
           <Link href="/crm"
             className="shrink-0 bg-[#c9a84c] text-black text-[0.65rem] font-bold tracking-[0.15em] uppercase px-4 py-2.5 hover:bg-[#e2c97e] transition-colors rounded-lg">
@@ -195,7 +195,7 @@ export default function PreferencesPage() {
               <div className="flex gap-2">
                 {["Homme", "Femme"].map(s => (
                   <button key={s} onClick={() => setForm(f => ({ ...f, sexe: s }))}
-                    className={`flex-1 py-2.5 text-[0.7rem] tracking-[0.1em] uppercase border transition-all ${form.sexe === s ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10" : "border-white/10 text-white/40 hover:border-white/30"}`}>
+                    className={`flex-1 py-2.5 text-[0.7rem] tracking-[0.1em] uppercase border transition-all ${form.sexe === s ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[var(--t-text-30)]"}`}>
                     {s}
                   </button>
                 ))}
@@ -220,21 +220,21 @@ export default function PreferencesPage() {
       <div className={groupCls}>
         <Row label="Notifications" sublabel="Rappels de repas" open={openSection === "notifications"} onClick={() => toggle("notifications")}>
           {!pushSupported ? (
-            <p className="text-xs text-white/30 leading-relaxed">
+            <p className="text-xs text-[var(--t-text-30)] leading-relaxed">
               Ton navigateur ne supporte pas les notifications. Sur iPhone, installe d&apos;abord l&apos;app sur l&apos;écran d&apos;accueil (Safari → Partager → Sur l&apos;écran d&apos;accueil), puis reviens ici depuis l&apos;icône.
             </p>
           ) : (
             <div className="flex items-center justify-between">
               <div className="pr-4">
-                <p className="text-[0.7rem] tracking-[0.1em] uppercase text-white/50">Rappels repas</p>
-                <p className="text-[0.62rem] text-white/25 mt-0.5">
+                <p className="text-[0.7rem] tracking-[0.1em] uppercase text-[var(--t-text-50)]">Rappels repas</p>
+                <p className="text-[0.62rem] text-[var(--t-text-25)] mt-0.5">
                   {pushEnabled
                     ? "Un rappel vers midi et vers 18-19h si tu n'as pas encore loggué le repas"
                     : "Reçois un rappel vers midi et vers 18-19h pour penser à logguer tes repas"}
                 </p>
               </div>
               <button onClick={togglePush} disabled={pushLoading}
-                className={`w-10 h-5.5 rounded-full transition-all relative shrink-0 disabled:opacity-50 ${pushEnabled ? "bg-[#c9a84c]" : "bg-white/10"}`}
+                className={`w-10 h-5.5 rounded-full transition-all relative shrink-0 disabled:opacity-50 ${pushEnabled ? "bg-[#c9a84c]" : "bg-[var(--t-border)]"}`}
                 style={{ minWidth: 40, height: 22 }}>
                 <span className={`absolute top-[3px] w-4 h-4 rounded-full bg-white transition-transform ${pushEnabled ? "translate-x-[20px]" : "translate-x-[3px]"}`}
                   style={{ display: "block" }}/>
