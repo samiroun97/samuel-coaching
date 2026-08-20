@@ -98,6 +98,10 @@ body {
   background: var(--bg);
   color: #ffffff;
   font-family: 'Inter', Arial, Helvetica, sans-serif;
+  /* Inter est chargée en police variable : un poids un peu plus épais que
+     le 400 par défaut donne plus de présence au texte sans le rendre gras
+     ni changer sa taille (contrairement à agrandir la police globale). */
+  font-weight: 500;
   overflow-x: hidden;
 }
 
