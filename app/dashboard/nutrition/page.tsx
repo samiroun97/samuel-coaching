@@ -42,16 +42,16 @@ const MEAL_TYPE_ICON_SRC: Record<string, string> = {
   "Collation":      "/icons/meal-types/collation.svg",
 };
 
-function MealTypeIcon({ type, className }: { type: string; className?: string }) {
+function MealTypeIcon({ type, className, size = 48 }: { type: string; className?: string; size?: number }) {
   const src = MEAL_TYPE_ICON_SRC[type];
   if (!src) { // Autres — points
     return (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none" className={className}>
+      <svg width={size * 0.875} height={size * 0.875} viewBox="0 0 24 24" fill="currentColor" stroke="none" className={className}>
         <circle cx="6" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18" cy="12" r="1.6"/>
       </svg>
     );
   }
-  return <img src={src} alt="" width={16} height={16} className={className}/>;
+  return <img src={src} alt="" width={size} height={size} className={`shrink-0 ${className ?? ""}`}/>;
 }
 type OFFProduct = { product_name: string; brands?: string; nutriments: { "energy-kcal_100g"?: number; proteins_100g?: number; carbohydrates_100g?: number; fat_100g?: number; fiber_100g?: number } };
 // base_qty/unit : produit dont les macros valent pour une quantité de base (ex. 100 ml) — la quantité est choisie à l'ajout.
@@ -1066,11 +1066,11 @@ export default function NutritionPage() {
         <div className="flex gap-1.5 px-5 pt-3 pb-1">
           {MEAL_TYPES.map(t => (
             <button key={t} onClick={() => setIdeaMealType(t)}
-              className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[0.5rem] tracking-[0.06em] uppercase border transition-colors ${ideaMealType === t ? "" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)]"}`}
+              className={`flex-1 flex flex-col items-center justify-center gap-1 py-2 rounded-lg text-[0.5rem] tracking-[0.06em] uppercase border transition-colors ${ideaMealType === t ? "" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)]"}`}
               style={ideaMealType === t
                 ? { borderColor: MEAL_TYPE_COLOR[t], color: MEAL_TYPE_COLOR[t], backgroundColor: `${MEAL_TYPE_COLOR[t]}18` }
                 : undefined}>
-              <MealTypeIcon type={t} className={`transition-opacity ${ideaMealType === t ? "opacity-100" : "opacity-45"}`}/>
+              <MealTypeIcon type={t} size={44} className={`transition-opacity ${ideaMealType === t ? "opacity-100" : "opacity-45"}`}/>
               {t}
             </button>
           ))}
@@ -1252,11 +1252,11 @@ export default function NutritionPage() {
                 <div className="flex gap-1.5">
                   {MEAL_TYPES.map(t => (
                     <button key={t} onClick={() => setAddMealType(t)}
-                      className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[0.5rem] tracking-[0.06em] uppercase border transition-colors ${addMealType === t ? "" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)]"}`}
+                      className={`flex-1 flex flex-col items-center justify-center gap-1 py-2 rounded-lg text-[0.5rem] tracking-[0.06em] uppercase border transition-colors ${addMealType === t ? "" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)]"}`}
                       style={addMealType === t
                         ? { borderColor: MEAL_TYPE_COLOR[t], color: MEAL_TYPE_COLOR[t], backgroundColor: `${MEAL_TYPE_COLOR[t]}18` }
                         : undefined}>
-                      <MealTypeIcon type={t} className={`transition-opacity ${addMealType === t ? "opacity-100" : "opacity-45"}`}/>
+                      <MealTypeIcon type={t} size={44} className={`transition-opacity ${addMealType === t ? "opacity-100" : "opacity-45"}`}/>
                       {t}
                     </button>
                   ))}
