@@ -205,9 +205,9 @@ export function WeeklyReport({ data }: { data: WeeklyReportData }) {
       <div className="relative border border-white/10 bg-[#111] p-5 print:p-4 mb-6 print:mb-3 flex flex-col gap-3 print:gap-2 break-inside-avoid">
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-white/10" />
         <p className="text-[0.65rem] tracking-[0.2em] uppercase text-white/30">Macros moyennes / jour</p>
-        <MacroBar label="Protéines" avg={data.avgProteines} goal={data.goalProteines} color="#d1656d" />
-        <MacroBar label="Glucides" avg={data.avgGlucides} goal={data.goalGlucides} color="#e0834a" />
-        <MacroBar label="Lipides" avg={data.avgLipides} goal={data.goalLipides} color="#e8c547" />
+        <MacroBar label="Protéines" avg={data.avgProteines} goal={data.goalProteines} color="#dd8790" />
+        <MacroBar label="Glucides" avg={data.avgGlucides} goal={data.goalGlucides} color="#e8a374" />
+        <MacroBar label="Lipides" avg={data.avgLipides} goal={data.goalLipides} color="#eed37a" />
       </div>
 
       {/* Feedback */}
