@@ -6,6 +6,7 @@ import { getMyCoachEmail } from "@/lib/coach";
 import { DateNav } from "@/components/DateNav";
 import { CalRefToggle, TdeeIcon } from "@/components/CalRefToggle";
 import { WATER_GLASS_ICON } from "@/components/waterGlassIcon";
+import { LIGHTBULB_ICON } from "@/components/lightbulbIcon";
 import { useSelectedDate, todayStr } from "@/lib/useSelectedDate";
 import { syncSteps } from "@/lib/steps";
 import { BrowserMultiFormatReader } from "@zxing/browser";
@@ -1089,10 +1090,7 @@ export default function NutritionPage() {
         <div className="flex items-start justify-between px-5 py-4 border-b border-[var(--t-border-soft)]">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2a7 7 0 017 7c0 4-3 6-3 9H8c0-3-3-5-3-9a7 7 0 017-7z"/>
-                <line x1="8" y1="22" x2="16" y2="22"/><line x1="12" y1="18" x2="12" y2="22"/>
-              </svg>
+              <img src={LIGHTBULB_ICON} alt="" width={18} height={18} className="shrink-0"/>
               <span style={{ fontFamily:"var(--font-bebas)" }} className="text-sm tracking-wider text-[var(--t-text)]">Idée repas</span>
             </div>
             {respectBudget ? (
