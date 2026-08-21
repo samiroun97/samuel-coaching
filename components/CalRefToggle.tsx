@@ -17,22 +17,8 @@ const EXPLANATIONS: Record<Mode, { label: string; color: string; text: string }>
   },
 };
 
-function ObjectifIcon({ size = 13 }: { size?: number }) {
-  const gradId = useId();
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24">
-      <defs>
-        <radialGradient id={gradId} cx="42%" cy="38%" r="65%">
-          <stop offset="0%" stopColor="#ffe9a8"/>
-          <stop offset="55%" stopColor="#e2c97e"/>
-          <stop offset="100%" stopColor="#b8903a"/>
-        </radialGradient>
-      </defs>
-      <circle cx="12" cy="12" r="9.5" fill="none" stroke={`url(#${gradId})`} strokeWidth="2"/>
-      <circle cx="12" cy="12" r="5.5" fill="none" stroke={`url(#${gradId})`} strokeWidth="2"/>
-      <circle cx="12" cy="12" r="1.7" fill={`url(#${gradId})`}/>
-    </svg>
-  );
+function ObjectifIcon({ size = 15 }: { size?: number }) {
+  return <img src="/icons/objectif-target.svg" alt="" width={size} height={Math.round(size * (328 / 394.632812))} className="shrink-0"/>;
 }
 
 export function TdeeIcon({ size = 13 }: { size?: number }) {
