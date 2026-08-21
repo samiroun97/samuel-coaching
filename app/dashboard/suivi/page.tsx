@@ -10,6 +10,7 @@ import { CalendarPicker } from "@/components/CalendarPicker";
 import { isCoachUser, getMyCoachEmail } from "@/lib/coach";
 import { useSelectedDate } from "@/lib/useSelectedDate";
 import { syncSteps } from "@/lib/steps";
+import { BALANCE_ICON } from "@/components/balanceIcon";
 
 type Profile      = { prenom?: string; sexe?: string; poids?: number; taille?: number; age?: number; objectifs?: string; seances_par_semaine?: number; experience?: string; niveau_activite?: string };
 type WeightEntry  = { id: string; date: string; weight: number };
@@ -671,6 +672,7 @@ export default function SuiviPage() {
       {/* ── Pesée ── */}
       <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg p-5 mb-4">
         <div className="flex items-center gap-3 mb-4">
+          <img src={BALANCE_ICON} alt="" width={30} height={30} className="shrink-0"/>
           <div className="flex-1 min-w-0 flex items-center justify-between gap-2 flex-wrap">
             <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">
               {selectedDate === today() ? "Pesée du jour" : `Pesée · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
