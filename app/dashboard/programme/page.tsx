@@ -46,40 +46,6 @@ function IntensityBars({ level, color }: { level: 1 | 2 | 3; color: string }) {
 const neatFromSteps = (steps: number, poids: number) =>
   Math.round(steps * 0.04 * (poids / 70));
 
-// Petit bonhomme qui, au repos, se tient à la position correspondant au pourcentage
-// de l'objectif de pas atteint. Pendant qu'on modifie les pas, il se détache de cette
-// position fixe et traverse toute la longueur de la barre en boucle (aller-retour,
-// se retournant à chaque extrémité), jambes à genoux visibles pour bien lire la marche.
-function Walker({ pct, color, walking }: { pct: number; color: string; walking: boolean }) {
-  const clamped = Math.min(Math.max(pct, 0), 100);
-  return (
-    <div className={`absolute bottom-3 -translate-x-1/2 ${walking ? "animate-walk-across" : "transition-[left] duration-500 ease-out"}`}
-      style={walking ? undefined : { left: `${clamped}%` }}>
-      {/* Ombre au sol : détache visuellement le bonhomme de la barre */}
-      <div className="absolute left-1/2 -translate-x-1/2 -bottom-3.5 w-3 h-1 rounded-full bg-black/25 blur-[1px]"/>
-      <div className={walking ? "animate-walk-flip" : ""}>
-        <svg width="24" height="24" viewBox="0 0 16 16" className={walking ? "animate-walk-bob" : ""}>
-          <circle cx="8" cy="2.6" r="1.9" fill={color}/>
-          <path d="M8 4.7 L8 9.8" stroke={color} strokeWidth="2.2" strokeLinecap="round"/>
-          {/* bras */}
-          <path className={walking ? "animate-walk-arm-r" : ""} d="M8 6 L10.8 7.5" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
-          <path className={walking ? "animate-walk-arm-l" : ""} d="M8 6 L5.2 7.5" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
-          {/* jambe gauche : cuisse + tibia, genou visible à l'articulation */}
-          <g className={walking ? "animate-walk-thigh-l" : ""} style={{ transformOrigin: "8px 9.8px" }}>
-            <path d="M8 9.8 L6.5 12.1" stroke={color} strokeWidth="2" strokeLinecap="round"/>
-            <path className={walking ? "animate-walk-shin-l" : ""} style={{ transformOrigin: "6.5px 12.1px" }} d="M6.5 12.1 L5 14.3" stroke={color} strokeWidth="1.8" strokeLinecap="round"/>
-          </g>
-          {/* jambe droite */}
-          <g className={walking ? "animate-walk-thigh-r" : ""} style={{ transformOrigin: "8px 9.8px" }}>
-            <path d="M8 9.8 L9.5 12.1" stroke={color} strokeWidth="2" strokeLinecap="round"/>
-            <path className={walking ? "animate-walk-shin-r" : ""} style={{ transformOrigin: "9.5px 12.1px" }} d="M9.5 12.1 L11 14.3" stroke={color} strokeWidth="1.8" strokeLinecap="round"/>
-          </g>
-        </svg>
-      </div>
-    </div>
-  );
-}
-
 function WorkoutCard({ w, onRemove }: { w: LoggedWorkout; onRemove: () => void }) {
   return (
     <div className="flex items-center gap-3 rounded-lg border border-[var(--t-border-soft)] bg-[var(--t-bg)] px-4 py-3 group">
@@ -113,8 +79,6 @@ export default function ProgrammePage() {
   const [stepGoal,     setStepGoal]     = useState(10000);
   const [goalInput,    setGoalInput]    = useState("10000");
   const [editingGoal,  setEditingGoal]  = useState(false);
-  const [isWalking,    setIsWalking]    = useState(false);
-  const walkTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const [coachSeances, setCoachSeances] = useState<CoachSeance[]>([]);
   const [openSeance,   setOpenSeance]   = useState<string | null>(null);
   const [seancesJourOpen, setSeancesJourOpen] = useState(false);
@@ -208,8 +172,6 @@ export default function ProgrammePage() {
     return () => { cancelled = true; };
   }, [selectedDate, userId]);
 
-  useEffect(() => () => clearTimeout(walkTimerRef.current), []);
-
   const saveSteps = (n: number) => {
     const clamped = Math.max(0, n);
     setSteps(clamped);
@@ -220,11 +182,6 @@ export default function ProgrammePage() {
         user_id: userId, date: selectedDate, steps: clamped, source: "manuel", updated_at: new Date().toISOString(),
       }, { onConflict: "user_id,date" });
     }
-    // Le bonhomme ne marche que le temps de la modification — les clics rapprochés
-    // repoussent l'arrêt au lieu de le couper court.
-    setIsWalking(true);
-    clearTimeout(walkTimerRef.current);
-    walkTimerRef.current = setTimeout(() => setIsWalking(false), 1200);
   };
 
   const saveGoal = (g: number) => {
@@ -555,11 +512,8 @@ export default function ProgrammePage() {
           </div>
         </div>
 
-        <div className="relative mb-2 pt-4">
-          <div className="h-2 bg-[var(--t-track)] rounded-full overflow-hidden">
-            <div className="h-full transition-all duration-500 rounded-full" style={{ width: `${stepsPct}%`, backgroundColor: steps >= stepGoal ? "#c9a84c" : "#7eb8a0" }}/>
-          </div>
-          <Walker pct={stepsPct} color={steps >= stepGoal ? "#c9a84c" : "#7eb8a0"} walking={isWalking}/>
+        <div className="h-2 bg-[var(--t-track)] rounded-full overflow-hidden mb-2">
+          <div className="h-full transition-all duration-500 rounded-full" style={{ width: `${stepsPct}%`, backgroundColor: steps >= stepGoal ? "#c9a84c" : "#7eb8a0" }}/>
         </div>
 
         <div className="flex items-center justify-between text-[0.62rem] text-[var(--t-text-20)] tracking-wider mb-5">
