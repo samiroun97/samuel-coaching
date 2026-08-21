@@ -42,7 +42,6 @@ const navItems = [
   { label: "Activité",  href: "/dashboard/programme",  icon: "programme" },
   { label: "Suivi",     href: "/dashboard/suivi",      icon: "suivi" },
   { label: "Académie",  href: "/dashboard/academie",   icon: "academy" },
-  { label: "Messages",  href: "/dashboard/coach",      icon: "coach" },
   { label: "Compte",    href: "/dashboard/profile",    icon: "profile" },
 ];
 

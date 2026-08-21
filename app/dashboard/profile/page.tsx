@@ -64,6 +64,7 @@ export default function ProfilePage() {
   const [joinMsg,     setJoinMsg]     = useState<{ ok: boolean; text: string } | null>(null);
 
   const [showEcheancePicker, setShowEcheancePicker] = useState(false);
+  const [unread, setUnread] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -74,6 +75,15 @@ export default function ProfilePage() {
       const coach = await isCoachUser(user.id);
       setIsCoach(coach);
       if (!coach) getMyCoachEmail(user.id).then(setCoachEmail);
+      if (!coach) {
+        const lastSeen = localStorage.getItem(`msg_seen_${user.email}`) ?? "1970-01-01";
+        const { count } = await supabase
+          .from("messages")
+          .select("id", { count: "exact", head: true })
+          .eq("to_email", user.email)
+          .gt("created_at", lastSeen);
+        if ((count ?? 0) > 0) setUnread(true);
+      }
       const { data } = await supabase.from("profiles")
         .select("prenom,nom,age,poids,taille,sexe,objectifs,objectif_echeance,objectif_pending,seances_par_semaine,lieu_entrainement,blessures,alimentation,sommeil_stress,niveau_activite,experience,duree_seance")
         .eq("id", user.id).single();
@@ -206,6 +216,22 @@ export default function ProfilePage() {
         <p className="text-sm text-[var(--t-text-55)] leading-relaxed">{profile?.objectifs || "Aucun objectif renseigné"}</p>
         <p className="text-[0.6rem] text-[var(--t-text-20)] tracking-wider mt-3">Entraînement · Blessures · Alimentation · Sommeil/stress</p>
       </button>
+
+      {!isCoach && (
+        <Link href="/dashboard/coach"
+          className="flex items-center justify-between border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg px-5 py-4 hover:bg-[var(--t-glass-bg)] transition-colors mb-4">
+          <div className="flex items-center gap-3 relative">
+            <span className="text-[var(--t-text-40)]">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              {unread && <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#e07070] ring-2 ring-[var(--t-surface)]"/>}
+            </span>
+            <p className="text-sm text-[var(--t-text-70)]">Messages</p>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--t-text-25)] shrink-0">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </Link>
+      )}
 
       <Link href="/dashboard/profile/preferences"
         className="flex items-center justify-between border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg px-5 py-4 hover:bg-[var(--t-glass-bg)] transition-colors mb-4">
