@@ -500,9 +500,10 @@ export default function ProgrammePage() {
       <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg p-5 mb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-<p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">
-                  {selectedDate === todayStr() ? "Pas aujourd'hui" : `Pas · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
-                </p>
+            <img src="/icons/steps.svg" alt="" width={22} height={22} className="shrink-0"/>
+            <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">
+              {selectedDate === todayStr() ? "Pas aujourd'hui" : `Pas · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
+            </p>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[0.7rem] text-[var(--t-text-30)]">{stepsKm} km</span>
