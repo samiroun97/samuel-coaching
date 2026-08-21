@@ -17,10 +17,20 @@ const EXPLANATIONS: Record<Mode, { label: string; color: string; text: string }>
   },
 };
 
-function ObjectifIcon() {
+function ObjectifIcon({ size = 13 }: { size?: number }) {
+  const gradId = useId();
   return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/>
+    <svg width={size} height={size} viewBox="0 0 24 24">
+      <defs>
+        <radialGradient id={gradId} cx="42%" cy="38%" r="65%">
+          <stop offset="0%" stopColor="#ffe9a8"/>
+          <stop offset="55%" stopColor="#e2c97e"/>
+          <stop offset="100%" stopColor="#b8903a"/>
+        </radialGradient>
+      </defs>
+      <circle cx="12" cy="12" r="9.5" fill="none" stroke={`url(#${gradId})`} strokeWidth="2"/>
+      <circle cx="12" cy="12" r="5.5" fill="none" stroke={`url(#${gradId})`} strokeWidth="2"/>
+      <circle cx="12" cy="12" r="1.7" fill={`url(#${gradId})`}/>
     </svg>
   );
 }
