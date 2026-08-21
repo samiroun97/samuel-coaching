@@ -15,6 +15,7 @@ const SYNC_PREFIXES = [
   "bodyfat_history",   // historique body fat (avec et sans suffixe uid)
   "msg_seen_",         // dernier message lu
   "crm_treated_convs", // conversations traitées (CRM)
+  "academy_",          // progression Académie (leçons terminées, scores quiz)
 ];
 
 let userId: string | null = null;

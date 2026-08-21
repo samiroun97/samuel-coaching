@@ -29,6 +29,8 @@ function NavIcon({ name, size = 17 }: { name: string; size?: number }) {
       return <svg {...p}><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>;
     case "profile":
       return <svg {...p}><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>;
+    case "academy":
+      return <svg {...p}><path d="M12 6.2c-1.6-1.1-4.3-1.6-6.5-1.1v13.4c2.2-.5 4.9 0 6.5 1.1 1.6-1.1 4.3-1.6 6.5-1.1V5.1c-2.2-.5-4.9 0-6.5 1.1z"/><path d="M12 6.2v13.4"/></svg>;
     default:
       return null;
   }
@@ -39,6 +41,7 @@ const navItems = [
   { label: "Nutrition", href: "/dashboard/nutrition",  icon: "nutrition" },
   { label: "Activité",  href: "/dashboard/programme",  icon: "programme" },
   { label: "Suivi",     href: "/dashboard/suivi",      icon: "suivi" },
+  { label: "Académie",  href: "/dashboard/academie",   icon: "academy" },
   { label: "Messages",  href: "/dashboard/coach",      icon: "coach" },
   { label: "Compte",    href: "/dashboard/profile",    icon: "profile" },
 ];
