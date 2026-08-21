@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
+import { OBJECTIF_TARGET_ICON } from "./objectifTargetIcon";
 
 type Mode = "objectif" | "tdee";
 
@@ -18,7 +19,7 @@ const EXPLANATIONS: Record<Mode, { label: string; color: string; text: string }>
 };
 
 function ObjectifIcon({ size = 15 }: { size?: number }) {
-  return <img src="/icons/objectif-target.svg" alt="" width={size} height={Math.round(size * (328 / 394.632812))} className="shrink-0"/>;
+  return <img src={OBJECTIF_TARGET_ICON} alt="" width={size} height={Math.round(size * (100 / 120))} className="shrink-0"/>;
 }
 
 export function TdeeIcon({ size = 13 }: { size?: number }) {
