@@ -1021,8 +1021,10 @@ export default function NutritionPage() {
       </div>
 
       <button onClick={() => setShowAdd(true)}
-        className="w-full bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg mt-6 flex items-center justify-center gap-2">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.72rem] font-bold tracking-[0.22em] uppercase py-4 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl mt-6 flex items-center justify-center gap-2.5">
+        <span className="w-5 h-5 rounded-full bg-black/15 flex items-center justify-center shrink-0">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </span>
         Ajouter un repas
       </button>
 
