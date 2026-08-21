@@ -199,7 +199,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       )}
 
       {/* Bottom nav — mobile only, flottante style verre */}
-      <nav className="md:hidden print:hidden fixed left-3 right-3 z-10 flex rounded-[1.75rem] bg-[var(--t-glass-bg)] backdrop-blur-xl border border-[var(--t-glass-border)] shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
+      <nav className="md:hidden print:hidden fixed left-3 right-3 z-10 flex rounded-[1.25rem] bg-[var(--t-glass-bg)] backdrop-blur-xl border border-[var(--t-glass-border)] shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
         style={{ bottom: "calc(0.9rem + env(safe-area-inset-bottom))" }}>
         {navItems.map(({ label, href, icon }) => {
           const active = pathname === href;
@@ -209,7 +209,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <Link key={href} href={dest}
               className="relative flex-1 flex flex-col items-center justify-center gap-1 py-2.5 min-w-0">
               {active && (
-                <span className="absolute inset-x-1 top-1 bottom-1 rounded-2xl bg-gradient-to-b from-[#c9a84c]/25 to-[#c9a84c]/[0.05] border border-[#c9a84c]/30 shadow-[0_0_16px_-2px_rgba(201,168,76,0.5)]"/>
+                <span className="absolute inset-x-1 top-1 bottom-1 rounded-xl bg-gradient-to-b from-[#c9a84c]/25 to-[#c9a84c]/[0.05] border border-[#c9a84c]/30 shadow-[0_0_16px_-2px_rgba(201,168,76,0.5)]"/>
               )}
               <div className={`relative transition-all duration-300 ${active ? "text-[#c9a84c] scale-110" : "text-[var(--t-text-30)]"}`}>
                 <NavIcon name={icon} size={active ? 21 : 18}/>
