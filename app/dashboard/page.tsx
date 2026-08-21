@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { DateNav } from "@/components/DateNav";
-import { CalRefToggle } from "@/components/CalRefToggle";
+import { CalRefToggle, TdeeIcon } from "@/components/CalRefToggle";
 import { useSelectedDate } from "@/lib/useSelectedDate";
 import { syncSteps } from "@/lib/steps";
 
@@ -68,9 +68,7 @@ function CalorieRow({ consumed, target, expended, goalDefined }: { consumed: num
       </div>
 
       <div className="flex flex-col items-center text-center w-16 sm:w-20 shrink-0">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--t-text-25)] mb-1">
-          <path d="M12 2c-3.5 4-5.5 7-5.5 10.5a5.5 5.5 0 0011 0c0-1.3-.4-2.6-1.3-3.6.2 1.7-.9 2.6-1.9 2.6-1.3 0-2-1.2-1.2-2.7C13.9 7 14 4.5 12 2z"/>
-        </svg>
+        <div className="mb-1"><TdeeIcon size={15}/></div>
         <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl sm:text-3xl text-[var(--t-text)] tracking-wide leading-none">{Math.round(expended).toLocaleString("fr-FR")}</p>
         <p className="text-[0.55rem] sm:text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mt-1.5">TDEE</p>
       </div>

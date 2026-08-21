@@ -25,10 +25,10 @@ function ObjectifIcon() {
   );
 }
 
-function TdeeIcon() {
+export function TdeeIcon({ size = 13 }: { size?: number }) {
   const gradId = useId();
   return (
-    <svg width="13" height="13" viewBox="0 0 24 24">
+    <svg width={size} height={size} viewBox="0 0 24 24">
       <defs>
         <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#ffd873"/>
