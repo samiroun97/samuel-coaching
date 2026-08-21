@@ -174,9 +174,9 @@ function bmr(p: MiniProfile, bodyFatPct: number | null): number {
 const CAL: Record<MacroKey, number> = { proteines: 4, glucides: 4, lipides: 9 };
 const defaultGoals: Goals = { calories: 2200, proteines: 150, glucides: 220, lipides: 70, fibres: 27 };
 const macroConfig: { key: MacroKey; label: string; color: string }[] = [
-  { key: "proteines", label: "Protéines", color: "#F3F4F6" },
+  { key: "proteines", label: "Protéines", color: "#d1656d" },
   { key: "glucides",  label: "Glucides",  color: "#e0834a" },
-  { key: "lipides",   label: "Lipides",   color: "#9c8563" },
+  { key: "lipides",   label: "Lipides",   color: "#e8c547" },
 ];
 const DAY_LABELS = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
 
@@ -1000,7 +1000,7 @@ export default function NutritionPage() {
         <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Macronutriments</p>
         <div className="flex items-start justify-around">
           {macroConfig.map(m => <MacroBar key={m.key} label={m.label} consumed={totals[m.key]} goal={goals[m.key]} color={m.color}/>)}
-          <MacroBar label="Fibres" consumed={totals.fibres} goal={goals.fibres} color="#a08ec9"/>
+          <MacroBar label="Fibres" consumed={totals.fibres} goal={goals.fibres} color="#9c8563"/>
         </div>
       </div>
 
@@ -1139,7 +1139,7 @@ export default function NutritionPage() {
                     <span className="text-[0.65rem] text-[#c9a84c]/70">P {idea.proteines}g</span>
                     <span className="text-[0.65rem] text-[#7eb8a0]/70">G {idea.glucides}g</span>
                     <span className="text-[0.65rem] text-[#e07070]/70">L {idea.lipides}g</span>
-                    <span className="text-[0.65rem] text-[#a08ec9]/70">F {idea.fibres ?? 0}g</span>
+                    <span className="text-[0.65rem] text-[#9c8563]/70">F {idea.fibres ?? 0}g</span>
                   </div>
                 </div>
                 <button onClick={() => addFoodDirect(idea, ideaMealType)}
@@ -1217,10 +1217,10 @@ export default function NutritionPage() {
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
-                      <MacroChip label="P" value={f.proteines} color="#F3F4F6"/>
+                      <MacroChip label="P" value={f.proteines} color="#d1656d"/>
                       <MacroChip label="G" value={f.glucides} color="#e0834a"/>
-                      <MacroChip label="L" value={f.lipides} color="#9c8563"/>
-                      <MacroChip label="F" value={f.fibres ?? 0} color="#a08ec9"/>
+                      <MacroChip label="L" value={f.lipides} color="#e8c547"/>
+                      <MacroChip label="F" value={f.fibres ?? 0} color="#9c8563"/>
                     </div>
                   </div>
                 );})}
@@ -1391,7 +1391,7 @@ export default function NutritionPage() {
                             { label:"Protéines", val:aiResult.proteines,     unit:"g",    color:"text-[#c9a84c]" },
                             { label:"Glucides",  val:aiResult.glucides,      unit:"g",    color:"text-[#7eb8a0]" },
                             { label:"Lipides",   val:aiResult.lipides,       unit:"g",    color:"text-[#e07070]" },
-                            { label:"Fibres",    val:aiResult.fibres ?? 0,   unit:"g",    color:"text-[#a08ec9]" },
+                            { label:"Fibres",    val:aiResult.fibres ?? 0,   unit:"g",    color:"text-[#9c8563]" },
                           ].map(s => (
                             <div key={s.label} className="text-center rounded-lg bg-[var(--t-bg)] border border-[var(--t-border)] py-3">
                               <p style={{ fontFamily:"var(--font-bebas)" }} className={`text-xl tracking-wide ${s.color}`}>{s.val}</p>
@@ -1410,7 +1410,7 @@ export default function NutritionPage() {
                             <div><label className={labelCls} style={{ color:"#c9a84c" }}>Prot</label><input className={inputCls} type="number" value={aiResult.proteines} onChange={e => setAiResult(r => r ? {...r, proteines:+e.target.value} : r)}/></div>
                             <div><label className={labelCls} style={{ color:"#7eb8a0" }}>Gluc</label><input className={inputCls} type="number" value={aiResult.glucides} onChange={e => setAiResult(r => r ? {...r, glucides:+e.target.value} : r)}/></div>
                             <div><label className={labelCls} style={{ color:"#e07070" }}>Lip</label><input className={inputCls} type="number" value={aiResult.lipides} onChange={e => setAiResult(r => r ? {...r, lipides:+e.target.value} : r)}/></div>
-                            <div><label className={labelCls} style={{ color:"#a08ec9" }}>Fib</label><input className={inputCls} type="number" value={aiResult.fibres ?? 0} onChange={e => setAiResult(r => r ? {...r, fibres:+e.target.value} : r)}/></div>
+                            <div><label className={labelCls} style={{ color:"#9c8563" }}>Fib</label><input className={inputCls} type="number" value={aiResult.fibres ?? 0} onChange={e => setAiResult(r => r ? {...r, fibres:+e.target.value} : r)}/></div>
                           </div>
                         </div>
                       </div>
@@ -1526,7 +1526,7 @@ export default function NutritionPage() {
                           { label:"Protéines", val:computed.proteines, color:"text-[#c9a84c]" },
                           { label:"Glucides",  val:computed.glucides,  color:"text-[#7eb8a0]" },
                           { label:"Lipides",   val:computed.lipides,   color:"text-[#e07070]" },
-                          { label:"Fibres",    val:computed.fibres,    color:"text-[#a08ec9]" },
+                          { label:"Fibres",    val:computed.fibres,    color:"text-[#9c8563]" },
                         ].map(s => (
                           <div key={s.label} className="text-center rounded-lg bg-[var(--t-bg)] border border-[var(--t-border)] py-3">
                             <p style={{ fontFamily:"var(--font-bebas)" }} className={`text-xl tracking-wide ${s.color}`}>{s.val}</p>
@@ -1596,7 +1596,7 @@ export default function NutritionPage() {
                           { key: "proteines", label: "Prot", color: "text-[#c9a84c]" },
                           { key: "glucides",  label: "Gluc", color: "text-[#7eb8a0]" },
                           { key: "lipides",   label: "Lip",  color: "text-[#e07070]" },
-                          { key: "fibres",    label: "Fib",  color: "text-[#a08ec9]" },
+                          { key: "fibres",    label: "Fib",  color: "text-[#9c8563]" },
                         ] as const).map(({ key, label, color }) => (
                           <div key={key}>
                             <label className={`text-[0.62rem] tracking-wider uppercase block mb-1 ${color}`}>{label}</label>
@@ -1651,7 +1651,7 @@ export default function NutritionPage() {
                           { label:"Protéines", val:savedComputed.proteines, color:"text-[#c9a84c]" },
                           { label:"Glucides",  val:savedComputed.glucides,  color:"text-[#7eb8a0]" },
                           { label:"Lipides",   val:savedComputed.lipides,   color:"text-[#e07070]" },
-                          { label:"Fibres",    val:savedComputed.fibres,    color:"text-[#a08ec9]" },
+                          { label:"Fibres",    val:savedComputed.fibres,    color:"text-[#9c8563]" },
                         ].map(s => (
                           <div key={s.label} className="text-center rounded-lg bg-[var(--t-bg)] border border-[var(--t-border)] py-3">
                             <p style={{ fontFamily:"var(--font-bebas)" }} className={`text-xl tracking-wide ${s.color}`}>{s.val}</p>

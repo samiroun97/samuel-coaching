@@ -364,10 +364,10 @@ export default function AccueilPage() {
 
         {/* Macros */}
         <div className="mt-6 pt-5 border-t border-[var(--t-border-soft)] flex items-start justify-around">
-          <MacroRing label="Protéines" consumed={consumed.proteines} goal={goals.proteines} color="#F3F4F6"/>
+          <MacroRing label="Protéines" consumed={consumed.proteines} goal={goals.proteines} color="#d1656d"/>
           <MacroRing label="Glucides"  consumed={consumed.glucides}  goal={goals.glucides}  color="#e0834a"/>
-          <MacroRing label="Lipides"   consumed={consumed.lipides}   goal={goals.lipides}   color="#9c8563"/>
-          <MacroRing label="Fibres"    consumed={consumed.fibres}    goal={goals.fibres}    color="#a08ec9"/>
+          <MacroRing label="Lipides"   consumed={consumed.lipides}   goal={goals.lipides}   color="#e8c547"/>
+          <MacroRing label="Fibres"    consumed={consumed.fibres}    goal={goals.fibres}    color="#9c8563"/>
         </div>
 
       </div>
