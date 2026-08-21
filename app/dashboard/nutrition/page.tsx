@@ -7,6 +7,7 @@ import { DateNav } from "@/components/DateNav";
 import { CalRefToggle, TdeeIcon } from "@/components/CalRefToggle";
 import { WATER_GLASS_ICON } from "@/components/waterGlassIcon";
 import { LIGHTBULB_ICON } from "@/components/lightbulbIcon";
+import { MEAL_ICON_PETIT_DEJEUNER, MEAL_ICON_DEJEUNER, MEAL_ICON_DINER, MEAL_ICON_COLLATION } from "@/components/mealTypeIcons";
 import { useSelectedDate, todayStr } from "@/lib/useSelectedDate";
 import { syncSteps } from "@/lib/steps";
 import { BrowserMultiFormatReader } from "@zxing/browser";
@@ -40,10 +41,10 @@ const MEAL_TYPE_COLOR: Record<string, string> = {
 };
 
 const MEAL_TYPE_ICON_SRC: Record<string, string> = {
-  "Petit-déjeuner": "/icons/meal-types/petit-dejeuner.svg",
-  "Déjeuner":       "/icons/meal-types/dejeuner.svg",
-  "Dîner":          "/icons/meal-types/diner.svg",
-  "Collation":      "/icons/meal-types/collation.svg",
+  "Petit-déjeuner": MEAL_ICON_PETIT_DEJEUNER,
+  "Déjeuner":       MEAL_ICON_DEJEUNER,
+  "Dîner":          MEAL_ICON_DINER,
+  "Collation":      MEAL_ICON_COLLATION,
 };
 
 function MealTypeIcon({ type, className, size = 48 }: { type: string; className?: string; size?: number }) {
@@ -55,23 +56,21 @@ function MealTypeIcon({ type, className, size = 48 }: { type: string; className?
       </svg>
     );
   }
-  return <img src={src} alt="" width={size} height={size} className={`shrink-0 ${className ?? ""}`}/>;
+  return <img src={src} alt="" width={size} height={size} className={`shrink-0 object-contain ${className ?? ""}`}/>;
 }
 
 // Thème unique (couleur de marque) pour le badge capsule des catégories.
 const MEAL_BADGE_COLOR = "#c9a84c";
 
-// Rond plein (badge circulaire) — les 4 icônes fournies sont déjà des badges ronds ;
-// "Autres" n'ayant pas d'icône dédiée, on lui donne un fond rond assorti pour rester cohérent.
+// Rond plein (badge circulaire) — les icônes fournies sont des illustrations à plat
+// (pas de fond rond intégré), donc on leur donne toutes un fond rond assorti, avec
+// une légère marge interne pour ne pas coller aux bords du cercle.
 function MealTypeBadge({ type, size = 42 }: { type: string; size?: number }) {
-  if (!MEAL_TYPE_ICON_SRC[type]) {
-    return (
-      <div className="relative z-10 rounded-full flex items-center justify-center shrink-0" style={{ width: size, height: size, backgroundColor: `${MEAL_BADGE_COLOR}22`, color: MEAL_BADGE_COLOR }}>
-        <MealTypeIcon type={type} size={size * 0.4}/>
-      </div>
-    );
-  }
-  return <MealTypeIcon type={type} size={size} className="relative z-10 rounded-full"/>;
+  return (
+    <div className="relative z-10 rounded-full flex items-center justify-center shrink-0 overflow-hidden" style={{ width: size, height: size, backgroundColor: `${MEAL_BADGE_COLOR}18`, color: MEAL_BADGE_COLOR }}>
+      <MealTypeIcon type={type} size={size * (MEAL_TYPE_ICON_SRC[type] ? 0.78 : 0.4)}/>
+    </div>
+  );
 }
 
 function MacroChip({ label, value, color }: { label: string; value: number; color: string }) {
