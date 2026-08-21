@@ -46,6 +46,24 @@ function IntensityBars({ level, color }: { level: 1 | 2 | 3; color: string }) {
 const neatFromSteps = (steps: number, poids: number) =>
   Math.round(steps * 0.04 * (poids / 70));
 
+// Petit bonhomme animé qui avance sur la barre de progression, à la position
+// correspondant au pourcentage de l'objectif de pas atteint.
+function Walker({ pct, color }: { pct: number; color: string }) {
+  const clamped = Math.min(Math.max(pct, 0), 100);
+  return (
+    <div className="absolute bottom-1 -translate-x-1/2 transition-[left] duration-500 ease-out" style={{ left: `${clamped}%` }}>
+      <svg width="16" height="16" viewBox="0 0 16 16" className="animate-walk-bob">
+        <circle cx="8" cy="3" r="1.8" fill={color}/>
+        <path d="M8 5 L8 10" stroke={color} strokeWidth="2" strokeLinecap="round"/>
+        <path d="M8 6.5 L5 8" stroke={color} strokeWidth="1.4" strokeLinecap="round"/>
+        <path d="M8 6.5 L11 8" stroke={color} strokeWidth="1.4" strokeLinecap="round"/>
+        <path className="animate-walk-leg-l" d="M8 10 L5.5 14" stroke={color} strokeWidth="1.8" strokeLinecap="round"/>
+        <path className="animate-walk-leg-r" d="M8 10 L10.5 14" stroke={color} strokeWidth="1.8" strokeLinecap="round"/>
+      </svg>
+    </div>
+  );
+}
+
 function WorkoutCard({ w, onRemove }: { w: LoggedWorkout; onRemove: () => void }) {
   return (
     <div className="flex items-center gap-3 rounded-lg border border-[var(--t-border-soft)] bg-[var(--t-bg)] px-4 py-3 group">
@@ -512,8 +530,11 @@ export default function ProgrammePage() {
           </div>
         </div>
 
-        <div className="h-2 bg-[var(--t-track)] rounded-full overflow-hidden mb-2">
-          <div className="h-full transition-all duration-500 rounded-full" style={{ width: `${stepsPct}%`, backgroundColor: steps >= stepGoal ? "#c9a84c" : "#7eb8a0" }}/>
+        <div className="relative mb-2 pt-4">
+          <div className="h-2 bg-[var(--t-track)] rounded-full overflow-hidden">
+            <div className="h-full transition-all duration-500 rounded-full" style={{ width: `${stepsPct}%`, backgroundColor: steps >= stepGoal ? "#c9a84c" : "#7eb8a0" }}/>
+          </div>
+          <Walker pct={stepsPct} color={steps >= stepGoal ? "#c9a84c" : "#7eb8a0"}/>
         </div>
 
         <div className="flex items-center justify-between text-[0.62rem] text-[var(--t-text-20)] tracking-wider mb-5">
