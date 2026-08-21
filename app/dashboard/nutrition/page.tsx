@@ -271,7 +271,7 @@ function MacroBar({ label, consumed, goal, color }: { label: string; consumed: n
           <circle cx="34" cy="34" r={r} fill="none" stroke="var(--t-track)" strokeWidth="5"/>
           <circle cx="34" cy="34" r={r} fill="none" stroke={color} strokeWidth="5"
             strokeDasharray={`${circ * pct} ${circ}`} strokeLinecap="round"
-            style={{ transition: "stroke-dasharray 0.7s ease" }}/>
+            style={{ transition: "stroke-dasharray 0.7s ease", filter: `drop-shadow(0 0 3px ${color}) drop-shadow(0 0 7px ${color}70)` }}/>
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
           <span className="text-sm font-bold text-[var(--t-text)] leading-none">{consumed}</span>

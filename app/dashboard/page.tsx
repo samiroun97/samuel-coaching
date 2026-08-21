@@ -88,7 +88,7 @@ function MacroRing({ label, consumed, goal, color }: { label: string; consumed: 
           <circle cx="32" cy="32" r={r} fill="none" stroke="var(--t-track)" strokeWidth="5"/>
           <circle cx="32" cy="32" r={r} fill="none" stroke={color} strokeWidth="5"
             strokeDasharray={`${circ * pct} ${circ}`} strokeLinecap="round"
-            style={{ transition: "stroke-dasharray 0.6s ease" }}/>
+            style={{ transition: "stroke-dasharray 0.6s ease", filter: `drop-shadow(0 0 3px ${color}) drop-shadow(0 0 7px ${color}70)` }}/>
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
           <span className="text-xs sm:text-sm font-bold text-[var(--t-text)] leading-none">{consumed}</span>
