@@ -347,21 +347,20 @@ function WeekChart({ history, goal }: { history: DayHistory[]; goal: number }) {
   const BAR = 64;
   return (
     <div>
-      <div className="flex items-end gap-1.5" style={{ height: `${BAR + 16}px` }}>
+      <div className="flex items-end gap-1.5 border-b border-[var(--t-border-soft)] pb-0" style={{ height: `${BAR + 16}px` }}>
         {history.map(d => {
           const barH = d.calories > 0 ? Math.max(Math.round((d.calories / max) * BAR), 3) : 2;
           const isToday = d.label === "Auj";
           const over = d.calories > goal && d.calories > 0;
+          const background = isToday
+            ? (over ? "linear-gradient(180deg, #ec9494 0%, #e07070 100%)" : "linear-gradient(180deg, #e2c97e 0%, #c9a84c 100%)")
+            : d.calories > 0 ? (over ? "rgba(224,112,112,0.35)" : "var(--t-text-15)") : "var(--t-track)";
           return (
             <div key={d.date} className="flex-1 flex flex-col items-center gap-0.5">
               {d.calories > 0 && <span className="text-[0.6rem] text-[var(--t-text-25)] leading-none">{d.calories}</span>}
               <div className="flex-1 flex items-end w-full">
-                <div className="w-full transition-all duration-700" style={{
-                  height: `${barH}px`,
-                  backgroundColor: isToday
-                    ? (over ? "#e07070" : "#c9a84c")
-                    : d.calories > 0 ? (over ? "rgba(224,112,112,0.35)" : "var(--t-text-15)") : "var(--t-track)",
-                }}/>
+                <div className="w-full rounded-t-[3px] transition-all duration-700"
+                  style={{ height: `${barH}px`, background, boxShadow: isToday ? `0 0 6px -1px ${over ? "#e0707070" : "#c9a84c70"}` : undefined }}/>
               </div>
             </div>
           );
@@ -370,7 +369,7 @@ function WeekChart({ history, goal }: { history: DayHistory[]; goal: number }) {
       <div className="flex gap-1.5 mt-1.5">
         {history.map(d => (
           <div key={d.date} className="flex-1 text-center">
-            <span className={`text-[0.62rem] tracking-wider ${d.label === "Auj" ? "text-[#c9a84c]" : "text-[var(--t-text-20)]"}`}>{d.label}</span>
+            <span className={`text-[0.62rem] tracking-wider ${d.label === "Auj" ? "text-[#c9a84c] font-bold" : "text-[var(--t-text-20)]"}`}>{d.label}</span>
           </div>
         ))}
       </div>
@@ -1262,18 +1261,18 @@ export default function NutritionPage() {
         <div className="flex items-center justify-between mb-4">
           <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Cette semaine</p>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1"><div className="w-2 h-2 bg-[#c9a84c]"/><span className="text-[0.62rem] text-[var(--t-text-25)]">{useTdee ? "TDEE" : "Objectif"}</span></div>
-            <div className="flex items-center gap-1"><div className="w-2 h-2 bg-[#e07070]"/><span className="text-[0.62rem] text-[var(--t-text-25)]">Excédent</span></div>
+            <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-[#c9a84c]"/><span className="text-[0.62rem] text-[var(--t-text-25)]">{useTdee ? "TDEE" : "Objectif"}</span></div>
+            <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-[#e07070]"/><span className="text-[0.62rem] text-[var(--t-text-25)]">Excédent</span></div>
           </div>
         </div>
         <WeekChart history={fullHistory} goal={calTarget}/>
-        <div className="mt-4 pt-4 border-t border-[var(--t-border-soft)] grid grid-cols-3 gap-4 text-center">
+        <div className="mt-4 pt-4 border-t border-[var(--t-border-soft)] grid grid-cols-3 text-center">
           {[
             { label:"Moyenne / jour", val: avgCal ? `${avgCal} kcal` : "—" },
             { label:"Jours suivis",   val: daysWithData.length },
             { label: useTdee ? "TDEE" : "Objectif", val: `${calTarget} kcal` },
-          ].map(s => (
-            <div key={s.label}>
+          ].map((s, i) => (
+            <div key={s.label} className={i > 0 ? "border-l border-[var(--t-border-soft)]" : ""}>
               <p style={{ fontFamily:"var(--font-bebas)" }} className="text-lg text-[var(--t-text)] tracking-wide">{s.val}</p>
               <p className="text-[0.62rem] tracking-wider text-[var(--t-text-25)] uppercase mt-0.5">{s.label}</p>
             </div>
