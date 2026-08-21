@@ -5,6 +5,7 @@ import { apiPost } from "@/lib/apiClient";
 import { getMyCoachEmail } from "@/lib/coach";
 import { DateNav } from "@/components/DateNav";
 import { CalRefToggle, TdeeIcon } from "@/components/CalRefToggle";
+import { WATER_GLASS_ICON } from "@/components/waterGlassIcon";
 import { useSelectedDate, todayStr } from "@/lib/useSelectedDate";
 import { syncSteps } from "@/lib/steps";
 import { BrowserMultiFormatReader } from "@zxing/browser";
@@ -298,15 +299,11 @@ function WaterDropIcon({ size = 15 }: { size?: number }) {
   );
 }
 
-// Petit verre : plein (bleu, avec un reflet) une fois ce cran d'hydratation atteint, sinon vide.
+// Petit verre : plein une fois ce cran d'hydratation atteint, estompé sinon.
 function GlassIcon({ filled }: { filled: boolean }) {
   return (
-    <svg width="16" height="20" viewBox="0 0 16 20" fill="none" className="shrink-0">
-      <path d="M2.5 1.5h11L12.2 18a1 1 0 01-1 .9H4.8a1 1 0 01-1-.9L2.5 1.5z"
-        fill={filled ? "#6fa3c4" : "transparent"}
-        stroke={filled ? "#6fa3c4" : "var(--t-border)"} strokeWidth="1.4" strokeLinejoin="round"/>
-      {filled && <path d="M3.6 7.5h8.8" stroke="#ffffff" strokeOpacity="0.4" strokeWidth="1" strokeLinecap="round"/>}
-    </svg>
+    <img src={WATER_GLASS_ICON} alt="" width={16} height={23} draggable={false}
+      className={`shrink-0 transition-opacity ${filled ? "opacity-100" : "opacity-25 grayscale"}`}/>
   );
 }
 
