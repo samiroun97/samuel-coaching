@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useId } from "react";
 import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
 import { getMyCoachEmail } from "@/lib/coach";
@@ -281,6 +281,35 @@ function MacroBar({ label, consumed, goal, color }: { label: string; consumed: n
   );
 }
 
+function WaterDropIcon({ size = 15 }: { size?: number }) {
+  const gradId = useId();
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24">
+      <defs>
+        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#aed8ef"/>
+          <stop offset="55%" stopColor="#6fa3c4"/>
+          <stop offset="100%" stopColor="#3f7ca3"/>
+        </linearGradient>
+      </defs>
+      <path fill={`url(#${gradId})`} d="M12 2C6 8 4 12 4 15a8 8 0 0016 0c0-3-2-7-8-13z"/>
+      <ellipse cx="9.4" cy="14" rx="1.5" ry="2.3" fill="#ffffff" opacity="0.35"/>
+    </svg>
+  );
+}
+
+// Petit verre : plein (bleu, avec un reflet) une fois ce cran d'hydratation atteint, sinon vide.
+function GlassIcon({ filled }: { filled: boolean }) {
+  return (
+    <svg width="16" height="20" viewBox="0 0 16 20" fill="none" className="shrink-0">
+      <path d="M2.5 1.5h11L12.2 18a1 1 0 01-1 .9H4.8a1 1 0 01-1-.9L2.5 1.5z"
+        fill={filled ? "#6fa3c4" : "transparent"}
+        stroke={filled ? "#6fa3c4" : "var(--t-border)"} strokeWidth="1.4" strokeLinejoin="round"/>
+      {filled && <path d="M3.6 7.5h8.8" stroke="#ffffff" strokeOpacity="0.4" strokeWidth="1" strokeLinecap="round"/>}
+    </svg>
+  );
+}
+
 function WaterTracker({ water, goal, onAdd, onRemove }: { water: number; goal: number; onAdd: () => void; onRemove: () => void }) {
   const liters = (water * 0.25).toFixed(2).replace(/\.?0+$/, "");
   const goalLiters = (goal * 0.25).toFixed(1);
@@ -288,9 +317,7 @@ function WaterTracker({ water, goal, onAdd, onRemove }: { water: number; goal: n
     <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg p-5 mb-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6fa3c4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2C6 8 4 12 4 15a8 8 0 0016 0c0-3-2-7-8-13z"/>
-          </svg>
+          <WaterDropIcon/>
           <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Hydratation</p>
         </div>
         <div className="flex items-center gap-3">
@@ -303,10 +330,12 @@ function WaterTracker({ water, goal, onAdd, onRemove }: { water: number; goal: n
           </div>
         </div>
       </div>
-      <div className="flex gap-1 mb-2">
+      <div className="flex flex-wrap gap-1.5 mb-2">
         {Array.from({ length: goal }).map((_, i) => (
-          <div key={i} onClick={() => i < water ? onRemove() : onAdd()}
-            className={`flex-1 h-3 rounded border cursor-pointer transition-all ${i < water ? "border-[#6fa3c4] bg-[#6fa3c4]/25" : "border-[var(--t-border)] hover:border-[var(--t-text-20)]"}`}/>
+          <button key={i} onClick={() => i < water ? onRemove() : onAdd()} title={`Verre ${i + 1}`}
+            className="cursor-pointer hover:opacity-70 transition-opacity">
+            <GlassIcon filled={i < water}/>
+          </button>
         ))}
       </div>
       <p className="text-[0.62rem] tracking-wider text-[var(--t-text-20)] text-right">
