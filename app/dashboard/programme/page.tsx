@@ -389,13 +389,13 @@ export default function ProgrammePage() {
 
         <div>
           <label className="text-[0.7rem] tracking-[0.2em] uppercase text-[var(--t-text-40)] block mb-2">Intensité</label>
-          <div className="flex gap-2">
+          <div className="flex gap-1.5">
             {INTENSITIES.map((i, idx) => {
               const active = intensity === i.key;
               const color  = INTENSITY_COLOR[i.key];
               return (
                 <button key={i.key} onClick={() => setIntensity(i.key)}
-                  className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-full text-[0.7rem] tracking-[0.1em] uppercase border transition-all duration-200 ${active ? "-translate-y-px" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[var(--t-text-30)] hover:text-[var(--t-text-60)]"}`}
+                  className={`flex items-center justify-center gap-1 px-2.5 py-2 rounded-full text-[0.62rem] tracking-[0.04em] uppercase border transition-all duration-200 ${active ? "-translate-y-px" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[var(--t-text-30)] hover:text-[var(--t-text-60)]"}`}
                   style={active ? { borderColor: color, color, backgroundColor: `${color}14`, boxShadow: `0 3px 12px -4px ${color}99` } : undefined}>
                   <IntensityBars level={(idx + 1) as 1 | 2 | 3} color={active ? color : "var(--t-text-30)"}/>
                   {i.label}
