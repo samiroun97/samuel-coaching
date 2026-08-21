@@ -46,26 +46,36 @@ function IntensityBars({ level, color }: { level: 1 | 2 | 3; color: string }) {
 const neatFromSteps = (steps: number, poids: number) =>
   Math.round(steps * 0.04 * (poids / 70));
 
-// Petit bonhomme qui marche au-dessus de la barre de progression, à la position
-// correspondant au pourcentage de l'objectif de pas atteint. Ne marche vraiment
-// (jambes/bras qui se balancent, léger rebond) que pendant qu'on modifie les pas —
-// sinon il reste en pose neutre, immobile, pour ne pas distraire en permanence.
+// Petit bonhomme qui, au repos, se tient à la position correspondant au pourcentage
+// de l'objectif de pas atteint. Pendant qu'on modifie les pas, il se détache de cette
+// position fixe et traverse toute la longueur de la barre en boucle (aller-retour,
+// se retournant à chaque extrémité), jambes à genoux visibles pour bien lire la marche.
 function Walker({ pct, color, walking }: { pct: number; color: string; walking: boolean }) {
   const clamped = Math.min(Math.max(pct, 0), 100);
   return (
-    <div className="absolute bottom-3 -translate-x-1/2 transition-[left] duration-500 ease-out" style={{ left: `${clamped}%` }}>
+    <div className={`absolute bottom-3 -translate-x-1/2 ${walking ? "animate-walk-across" : "transition-[left] duration-500 ease-out"}`}
+      style={walking ? undefined : { left: `${clamped}%` }}>
       {/* Ombre au sol : détache visuellement le bonhomme de la barre */}
       <div className="absolute left-1/2 -translate-x-1/2 -bottom-3.5 w-3 h-1 rounded-full bg-black/25 blur-[1px]"/>
-      <svg width="22" height="22" viewBox="0 0 16 16" className={walking ? "animate-walk-bob" : ""}>
-        <circle cx="8" cy="2.6" r="1.9" fill={color}/>
-        <path d="M8 4.7 L8 9.8" stroke={color} strokeWidth="2.2" strokeLinecap="round"/>
-        {/* bras */}
-        <path className={walking ? "animate-walk-arm-r" : ""} d="M8 6 L10.8 7.5" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
-        <path className={walking ? "animate-walk-arm-l" : ""} d="M8 6 L5.2 7.5" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
-        {/* jambes */}
-        <path className={walking ? "animate-walk-leg-l" : ""} d="M8 9.8 L5 14.2" stroke={color} strokeWidth="2" strokeLinecap="round"/>
-        <path className={walking ? "animate-walk-leg-r" : ""} d="M8 9.8 L11 14.2" stroke={color} strokeWidth="2" strokeLinecap="round"/>
-      </svg>
+      <div className={walking ? "animate-walk-flip" : ""}>
+        <svg width="24" height="24" viewBox="0 0 16 16" className={walking ? "animate-walk-bob" : ""}>
+          <circle cx="8" cy="2.6" r="1.9" fill={color}/>
+          <path d="M8 4.7 L8 9.8" stroke={color} strokeWidth="2.2" strokeLinecap="round"/>
+          {/* bras */}
+          <path className={walking ? "animate-walk-arm-r" : ""} d="M8 6 L10.8 7.5" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
+          <path className={walking ? "animate-walk-arm-l" : ""} d="M8 6 L5.2 7.5" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
+          {/* jambe gauche : cuisse + tibia, genou visible à l'articulation */}
+          <g className={walking ? "animate-walk-thigh-l" : ""} style={{ transformOrigin: "8px 9.8px" }}>
+            <path d="M8 9.8 L6.5 12.1" stroke={color} strokeWidth="2" strokeLinecap="round"/>
+            <path className={walking ? "animate-walk-shin-l" : ""} style={{ transformOrigin: "6.5px 12.1px" }} d="M6.5 12.1 L5 14.3" stroke={color} strokeWidth="1.8" strokeLinecap="round"/>
+          </g>
+          {/* jambe droite */}
+          <g className={walking ? "animate-walk-thigh-r" : ""} style={{ transformOrigin: "8px 9.8px" }}>
+            <path d="M8 9.8 L9.5 12.1" stroke={color} strokeWidth="2" strokeLinecap="round"/>
+            <path className={walking ? "animate-walk-shin-r" : ""} style={{ transformOrigin: "9.5px 12.1px" }} d="M9.5 12.1 L11 14.3" stroke={color} strokeWidth="1.8" strokeLinecap="round"/>
+          </g>
+        </svg>
+      </div>
     </div>
   );
 }

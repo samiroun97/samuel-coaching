@@ -148,8 +148,8 @@ body {
 .animate-heartbeat-pulse { animation: heartbeatPulse 1.1s ease-in-out infinite; transform-origin: center; }
 
 @keyframes walkBob {
-  0%, 100% { transform: translateY(0) rotate(-4deg); }
-  50%      { transform: translateY(-2px) rotate(4deg); }
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50%      { transform: translateY(-1.5px) rotate(2deg); }
 }
 @keyframes walkLegLeft {
   0%, 100% { transform: rotate(22deg); }
@@ -159,11 +159,43 @@ body {
   0%, 100% { transform: rotate(-22deg); }
   50%      { transform: rotate(22deg); }
 }
-.animate-walk-bob   { animation: walkBob 0.6s ease-in-out infinite; transform-origin: 8px 14px; }
-.animate-walk-leg-l { animation: walkLegLeft 0.6s ease-in-out infinite; transform-origin: 8px 10px; }
-.animate-walk-leg-r { animation: walkLegRight 0.6s ease-in-out infinite; transform-origin: 8px 10px; }
-.animate-walk-arm-l { animation: walkLegRight 0.6s ease-in-out infinite; transform-origin: 8px 6px; }
-.animate-walk-arm-r { animation: walkLegLeft 0.6s ease-in-out infinite; transform-origin: 8px 6px; }
+@keyframes walkThighLeft {
+  0%, 100% { transform: rotate(24deg); }
+  50%      { transform: rotate(-20deg); }
+}
+@keyframes walkThighRight {
+  0%, 100% { transform: rotate(-20deg); }
+  50%      { transform: rotate(24deg); }
+}
+@keyframes walkShinLeft {
+  0%, 100% { transform: rotate(-6deg); }
+  25%      { transform: rotate(38deg); }
+  50%      { transform: rotate(-4deg); }
+  75%      { transform: rotate(6deg); }
+}
+@keyframes walkShinRight {
+  0%, 100% { transform: rotate(-4deg); }
+  25%      { transform: rotate(6deg); }
+  50%      { transform: rotate(-6deg); }
+  75%      { transform: rotate(38deg); }
+}
+@keyframes walkAcrossPos {
+  0%   { left: 4%; }
+  100% { left: 96%; }
+}
+@keyframes walkFlip {
+  0%   { transform: scaleX(1); }
+  100% { transform: scaleX(-1); }
+}
+.animate-walk-bob     { animation: walkBob 0.5s ease-in-out infinite; transform-origin: 8px 14px; }
+.animate-walk-arm-l   { animation: walkLegRight 0.5s ease-in-out infinite; transform-origin: 8px 6px; }
+.animate-walk-arm-r   { animation: walkLegLeft 0.5s ease-in-out infinite; transform-origin: 8px 6px; }
+.animate-walk-thigh-l { animation: walkThighLeft 0.5s ease-in-out infinite; }
+.animate-walk-thigh-r { animation: walkThighRight 0.5s ease-in-out infinite; }
+.animate-walk-shin-l  { animation: walkShinLeft 0.5s ease-in-out infinite; }
+.animate-walk-shin-r  { animation: walkShinRight 0.5s ease-in-out infinite; }
+.animate-walk-across  { animation: walkAcrossPos 2.2s ease-in-out infinite alternate; }
+.animate-walk-flip    { animation: walkFlip 2.2s steps(1) infinite alternate; }
 
 .section-label {
   font-size: 0.7rem;
