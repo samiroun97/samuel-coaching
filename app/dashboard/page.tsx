@@ -59,7 +59,7 @@ function CalorieRow({ consumed, target, expended, goalDefined }: { consumed: num
           <circle cx="110" cy="110" r={r} fill="none" stroke="var(--t-track)" strokeWidth="10"/>
           <circle cx="110" cy="110" r={r} fill="none" stroke={color} strokeWidth="10"
             strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
-            style={{ transition: "stroke-dasharray 0.6s ease" }}/>
+            style={{ transition: "stroke-dasharray 0.6s ease", ...(goalDefined ? { filter: `drop-shadow(0 0 2px ${color}55) drop-shadow(0 0 4px ${color}30)` } : {}) }}/>
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
           <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl sm:text-4xl text-[var(--t-text)] tracking-wide leading-none">{consumed.toLocaleString("fr-FR")}</p>
