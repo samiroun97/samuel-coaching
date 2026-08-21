@@ -46,19 +46,25 @@ function IntensityBars({ level, color }: { level: 1 | 2 | 3; color: string }) {
 const neatFromSteps = (steps: number, poids: number) =>
   Math.round(steps * 0.04 * (poids / 70));
 
-// Petit bonhomme animé qui avance sur la barre de progression, à la position
-// correspondant au pourcentage de l'objectif de pas atteint.
-function Walker({ pct, color }: { pct: number; color: string }) {
+// Petit bonhomme qui marche au-dessus de la barre de progression, à la position
+// correspondant au pourcentage de l'objectif de pas atteint. Ne marche vraiment
+// (jambes/bras qui se balancent, léger rebond) que pendant qu'on modifie les pas —
+// sinon il reste en pose neutre, immobile, pour ne pas distraire en permanence.
+function Walker({ pct, color, walking }: { pct: number; color: string; walking: boolean }) {
   const clamped = Math.min(Math.max(pct, 0), 100);
   return (
-    <div className="absolute bottom-1 -translate-x-1/2 transition-[left] duration-500 ease-out" style={{ left: `${clamped}%` }}>
-      <svg width="16" height="16" viewBox="0 0 16 16" className="animate-walk-bob">
-        <circle cx="8" cy="3" r="1.8" fill={color}/>
-        <path d="M8 5 L8 10" stroke={color} strokeWidth="2" strokeLinecap="round"/>
-        <path d="M8 6.5 L5 8" stroke={color} strokeWidth="1.4" strokeLinecap="round"/>
-        <path d="M8 6.5 L11 8" stroke={color} strokeWidth="1.4" strokeLinecap="round"/>
-        <path className="animate-walk-leg-l" d="M8 10 L5.5 14" stroke={color} strokeWidth="1.8" strokeLinecap="round"/>
-        <path className="animate-walk-leg-r" d="M8 10 L10.5 14" stroke={color} strokeWidth="1.8" strokeLinecap="round"/>
+    <div className="absolute bottom-3 -translate-x-1/2 transition-[left] duration-500 ease-out" style={{ left: `${clamped}%` }}>
+      {/* Ombre au sol : détache visuellement le bonhomme de la barre */}
+      <div className="absolute left-1/2 -translate-x-1/2 -bottom-3.5 w-3 h-1 rounded-full bg-black/25 blur-[1px]"/>
+      <svg width="22" height="22" viewBox="0 0 16 16" className={walking ? "animate-walk-bob" : ""}>
+        <circle cx="8" cy="2.6" r="1.9" fill={color}/>
+        <path d="M8 4.7 L8 9.8" stroke={color} strokeWidth="2.2" strokeLinecap="round"/>
+        {/* bras */}
+        <path className={walking ? "animate-walk-arm-r" : ""} d="M8 6 L10.8 7.5" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
+        <path className={walking ? "animate-walk-arm-l" : ""} d="M8 6 L5.2 7.5" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
+        {/* jambes */}
+        <path className={walking ? "animate-walk-leg-l" : ""} d="M8 9.8 L5 14.2" stroke={color} strokeWidth="2" strokeLinecap="round"/>
+        <path className={walking ? "animate-walk-leg-r" : ""} d="M8 9.8 L11 14.2" stroke={color} strokeWidth="2" strokeLinecap="round"/>
       </svg>
     </div>
   );
@@ -97,6 +103,8 @@ export default function ProgrammePage() {
   const [stepGoal,     setStepGoal]     = useState(10000);
   const [goalInput,    setGoalInput]    = useState("10000");
   const [editingGoal,  setEditingGoal]  = useState(false);
+  const [isWalking,    setIsWalking]    = useState(false);
+  const walkTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const [coachSeances, setCoachSeances] = useState<CoachSeance[]>([]);
   const [openSeance,   setOpenSeance]   = useState<string | null>(null);
   const [seancesJourOpen, setSeancesJourOpen] = useState(false);
@@ -190,6 +198,8 @@ export default function ProgrammePage() {
     return () => { cancelled = true; };
   }, [selectedDate, userId]);
 
+  useEffect(() => () => clearTimeout(walkTimerRef.current), []);
+
   const saveSteps = (n: number) => {
     const clamped = Math.max(0, n);
     setSteps(clamped);
@@ -200,6 +210,11 @@ export default function ProgrammePage() {
         user_id: userId, date: selectedDate, steps: clamped, source: "manuel", updated_at: new Date().toISOString(),
       }, { onConflict: "user_id,date" });
     }
+    // Le bonhomme ne marche que le temps de la modification — les clics rapprochés
+    // repoussent l'arrêt au lieu de le couper court.
+    setIsWalking(true);
+    clearTimeout(walkTimerRef.current);
+    walkTimerRef.current = setTimeout(() => setIsWalking(false), 1200);
   };
 
   const saveGoal = (g: number) => {
@@ -534,7 +549,7 @@ export default function ProgrammePage() {
           <div className="h-2 bg-[var(--t-track)] rounded-full overflow-hidden">
             <div className="h-full transition-all duration-500 rounded-full" style={{ width: `${stepsPct}%`, backgroundColor: steps >= stepGoal ? "#c9a84c" : "#7eb8a0" }}/>
           </div>
-          <Walker pct={stepsPct} color={steps >= stepGoal ? "#c9a84c" : "#7eb8a0"}/>
+          <Walker pct={stepsPct} color={steps >= stepGoal ? "#c9a84c" : "#7eb8a0"} walking={isWalking}/>
         </div>
 
         <div className="flex items-center justify-between text-[0.62rem] text-[var(--t-text-20)] tracking-wider mb-5">

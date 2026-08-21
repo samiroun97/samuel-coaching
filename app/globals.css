@@ -162,6 +162,8 @@ body {
 .animate-walk-bob   { animation: walkBob 0.6s ease-in-out infinite; transform-origin: 8px 14px; }
 .animate-walk-leg-l { animation: walkLegLeft 0.6s ease-in-out infinite; transform-origin: 8px 10px; }
 .animate-walk-leg-r { animation: walkLegRight 0.6s ease-in-out infinite; transform-origin: 8px 10px; }
+.animate-walk-arm-l { animation: walkLegRight 0.6s ease-in-out infinite; transform-origin: 8px 6px; }
+.animate-walk-arm-r { animation: walkLegLeft 0.6s ease-in-out infinite; transform-origin: 8px 6px; }
 
 .section-label {
   font-size: 0.7rem;
