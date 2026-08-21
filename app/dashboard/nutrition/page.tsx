@@ -1198,8 +1198,8 @@ export default function NutritionPage() {
             const groupCal = items.reduce((s, f) => s + f.calories, 0);
             return (
               <div key={type} className="rounded-lg border border-[var(--t-border)] bg-[var(--t-surface)] mb-3 last:mb-0 overflow-hidden">
-                <div className="flex items-center gap-2.5 px-4 py-2.5 border-b border-[var(--t-border-soft)]">
-                  <MealTypeBadge type={type} size={26}/>
+                <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--t-border-soft)]">
+                  <MealTypeBadge type={type} size={44}/>
                   <p className="flex-1 text-[0.65rem] tracking-[0.15em] uppercase text-[var(--t-text-50)]">{type}</p>
                   <p className="text-[0.62rem] text-[var(--t-text-30)]">{groupCal} kcal</p>
                 </div>
