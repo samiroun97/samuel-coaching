@@ -408,6 +408,7 @@ export default function NutritionPage() {
   const [mealPlan,    setMealPlan]    = useState<MealPlan | null>(null);
   const [description, setDescription] = useState("");
   const [showFoods,   setShowFoods]   = useState(true);
+  const [showWeek,    setShowWeek]    = useState(false);
   const userIdRef       = useRef("");
   const userEmailRef    = useRef("");
   const coachEmailRef   = useRef<string | null>(null);
@@ -1020,6 +1021,12 @@ export default function NutritionPage() {
         </div>
       </div>
 
+      <button onClick={() => setShowAdd(true)}
+        className="w-full border border-[#c9a84c]/30 text-[#c9a84c] rounded-lg text-[0.7rem] tracking-[0.2em] uppercase py-3.5 hover:bg-[#c9a84c]/5 transition-colors mt-6 flex items-center justify-center gap-2">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Ajouter un repas
+      </button>
+
       <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg p-6 mb-6 mt-6">
         <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Macronutriments</p>
         <div className="flex items-start justify-around">
@@ -1078,12 +1085,6 @@ export default function NutritionPage() {
           )}
         </div>
       )}
-
-      <button onClick={() => setShowAdd(true)}
-        className="w-full border border-[#c9a84c]/30 text-[#c9a84c] rounded-lg text-[0.7rem] tracking-[0.2em] uppercase py-3.5 hover:bg-[#c9a84c]/5 transition-colors mb-6 flex items-center justify-center gap-2">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Ajouter un repas
-      </button>
 
       {/* ── Idée repas ── */}
       <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg mb-6">
@@ -1255,26 +1256,37 @@ export default function NutritionPage() {
       </div>
 
       {/* ── Week history ── */}
-      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg p-5 mt-6">
-        <div className="flex items-center justify-between mb-4">
+      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg mt-6">
+        <button onClick={() => setShowWeek(v => !v)}
+          className="w-full text-left flex items-center justify-between px-5 py-3 hover:bg-[var(--t-glass-bg)] transition-colors rounded-lg">
           <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Cette semaine</p>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-[#c9a84c]"/><span className="text-[0.62rem] text-[var(--t-text-25)]">{useTdee ? "TDEE" : "Objectif"}</span></div>
-            <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-[#e07070]"/><span className="text-[0.62rem] text-[var(--t-text-25)]">Excédent</span></div>
-          </div>
-        </div>
-        <WeekChart history={fullHistory} goal={calTarget}/>
-        <div className="mt-4 pt-4 border-t border-[var(--t-border-soft)] grid grid-cols-3 text-center">
-          {[
-            { label:"Moyenne / jour", val: avgCal ? `${avgCal} kcal` : "—" },
-            { label:"Jours suivis",   val: daysWithData.length },
-            { label: useTdee ? "TDEE" : "Objectif", val: `${calTarget} kcal` },
-          ].map((s, i) => (
-            <div key={s.label} className={i > 0 ? "border-l border-[var(--t-border-soft)]" : ""}>
-              <p style={{ fontFamily:"var(--font-bebas)" }} className="text-lg text-[var(--t-text)] tracking-wide">{s.val}</p>
-              <p className="text-[0.62rem] tracking-wider text-[var(--t-text-25)] uppercase mt-0.5">{s.label}</p>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+            className={`text-[var(--t-text-25)] shrink-0 transition-transform duration-300 ${showWeek ? "rotate-180" : ""}`}>
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+        <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${showWeek ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
+          <div className="overflow-hidden">
+            <div className="px-5 pb-5 pt-1 border-t border-[var(--t-border-soft)]">
+              <div className="flex items-center justify-end gap-3 mb-4">
+                <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-[#c9a84c]"/><span className="text-[0.62rem] text-[var(--t-text-25)]">{useTdee ? "TDEE" : "Objectif"}</span></div>
+                <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-[#e07070]"/><span className="text-[0.62rem] text-[var(--t-text-25)]">Excédent</span></div>
+              </div>
+              <WeekChart history={fullHistory} goal={calTarget}/>
+              <div className="mt-4 pt-4 border-t border-[var(--t-border-soft)] grid grid-cols-3 text-center">
+                {[
+                  { label:"Moyenne / jour", val: avgCal ? `${avgCal} kcal` : "—" },
+                  { label:"Jours suivis",   val: daysWithData.length },
+                  { label: useTdee ? "TDEE" : "Objectif", val: `${calTarget} kcal` },
+                ].map((s, i) => (
+                  <div key={s.label} className={i > 0 ? "border-l border-[var(--t-border-soft)]" : ""}>
+                    <p style={{ fontFamily:"var(--font-bebas)" }} className="text-lg text-[var(--t-text)] tracking-wide">{s.val}</p>
+                    <p className="text-[0.62rem] tracking-wider text-[var(--t-text-25)] uppercase mt-0.5">{s.label}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-          ))}
+          </div>
         </div>
       </div>
 
