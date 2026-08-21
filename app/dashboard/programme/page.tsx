@@ -498,36 +498,25 @@ export default function ProgrammePage() {
 
       {/* ── Pas ── */}
       <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg p-5 mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <img src="/icons/steps.svg" alt="" width={22} height={22} className="shrink-0"/>
+        <div className="flex items-center gap-3 mb-5">
+          <img src="/icons/steps.svg" alt="" width={48} height={48} className="shrink-0"/>
+          <div className="flex-1 min-w-0">
             <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">
               {selectedDate === todayStr() ? "Pas aujourd'hui" : `Pas · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
             </p>
+            <p className="text-[0.62rem] text-[var(--t-text-25)] mt-0.5">{stepsKm} km parcourus</p>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[0.7rem] text-[var(--t-text-30)]">{stepsKm} km</span>
-            <button onClick={() => saveSteps(steps - 500)} disabled={steps === 0}
-              className="w-7 h-7 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-lg hover:text-[var(--t-text-70)] hover:border-[var(--t-text-20)] transition-colors disabled:opacity-20 flex items-center justify-center text-sm">−</button>
-            <input
-              type="number" min="0"
-              className="w-20 bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] text-center text-sm py-1 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
-              value={stepsInput}
-              onChange={e => setStepsInput(e.target.value)}
-              onBlur={() => saveSteps(parseInt(stepsInput) || 0)}
-              onKeyDown={e => { if (e.key === "Enter") saveSteps(parseInt(stepsInput) || 0); }}
-            />
-            <button onClick={() => saveSteps(steps + 500)}
-              className="w-7 h-7 rounded-full border border-[#7eb8a0]/40 text-[#7eb8a0] hover:bg-[#7eb8a0]/10 transition-colors flex items-center justify-center text-sm">+</button>
+          <div className="text-right shrink-0">
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[var(--t-text)] tracking-wide leading-none">{steps.toLocaleString("fr-FR")}</p>
+            <p className="text-[0.58rem] tracking-[0.15em] uppercase text-[var(--t-text-20)] mt-0.5">pas</p>
           </div>
         </div>
 
-        <div className="h-1.5 bg-[var(--t-track)] mb-2">
+        <div className="h-2 bg-[var(--t-track)] rounded-full overflow-hidden mb-2">
           <div className="h-full transition-all duration-500 rounded-full" style={{ width: `${stepsPct}%`, backgroundColor: steps >= stepGoal ? "#c9a84c" : "#7eb8a0" }}/>
         </div>
 
-        <div className="flex items-center justify-between text-[0.62rem] text-[var(--t-text-20)] tracking-wider">
-          <span>{steps.toLocaleString("fr-FR")} pas</span>
+        <div className="flex items-center justify-between text-[0.62rem] text-[var(--t-text-20)] tracking-wider mb-5">
           <span className={steps >= stepGoal ? "text-[#c9a84c]" : ""}>
             {steps >= stepGoal ? "Objectif atteint ✓" : `${(stepGoal - steps).toLocaleString("fr-FR")} restants`}
           </span>
@@ -551,6 +540,21 @@ export default function ProgrammePage() {
             )}
             <span>pas</span>
           </div>
+        </div>
+
+        <div className="flex items-center justify-center gap-3 pt-4 border-t border-[var(--t-border-soft)]">
+          <button onClick={() => saveSteps(steps - 500)} disabled={steps === 0}
+            className="w-9 h-9 rounded-full border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-70)] hover:border-[var(--t-text-20)] transition-colors disabled:opacity-20 flex items-center justify-center text-base">−</button>
+          <input
+            type="number" min="0"
+            className="w-24 bg-[var(--t-bg)] border border-[var(--t-border)] rounded-full text-[var(--t-text)] text-center text-sm py-2 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
+            value={stepsInput}
+            onChange={e => setStepsInput(e.target.value)}
+            onBlur={() => saveSteps(parseInt(stepsInput) || 0)}
+            onKeyDown={e => { if (e.key === "Enter") saveSteps(parseInt(stepsInput) || 0); }}
+          />
+          <button onClick={() => saveSteps(steps + 500)}
+            className="w-9 h-9 rounded-full border border-[#7eb8a0]/40 text-[#7eb8a0] hover:bg-[#7eb8a0]/10 transition-colors flex items-center justify-center text-base">+</button>
         </div>
       </div>
 
