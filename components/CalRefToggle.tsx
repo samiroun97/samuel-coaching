@@ -43,7 +43,7 @@ export function CalRefToggle({ value, onChange, tdeeDisabled }: { value: Mode; o
 
   return (
     <div className="flex flex-col items-center w-full">
-      <div className="flex items-center gap-2">
+      <div className="relative w-full flex justify-center">
         <div className="relative flex border border-[var(--t-border)] rounded-full p-1 bg-[var(--t-surface)] w-[248px]">
           <div className="absolute top-1.5 bottom-1.5 rounded-full transition-[left,width] duration-300 ease-out"
             style={{ backgroundColor: `${EXPLANATIONS[value].color}18`, left: value === "tdee" ? "127px" : "7px", width: value === "tdee" ? "108px" : "114px" }}/>
@@ -59,7 +59,7 @@ export function CalRefToggle({ value, onChange, tdeeDisabled }: { value: Mode; o
         </div>
         <button onClick={() => setShowInfo(v => !v)}
           title="Comment ça marche ?"
-          className={`w-[18px] h-[18px] rounded-full border flex items-center justify-center text-[0.6rem] shrink-0 transition-colors ${showInfo ? "border-[#c9a84c] text-[#c9a84c]" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:text-[var(--t-text-60)] hover:border-[var(--t-text-25)]"}`}>
+          className={`absolute right-0 top-1/2 -translate-y-1/2 w-[18px] h-[18px] rounded-full border flex items-center justify-center text-[0.6rem] shrink-0 transition-colors ${showInfo ? "border-[#c9a84c] text-[#c9a84c]" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:text-[var(--t-text-60)] hover:border-[var(--t-text-25)]"}`}>
           ?
         </button>
       </div>
