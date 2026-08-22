@@ -677,17 +677,17 @@ export default function SuiviPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 bg-[var(--t-bg)] border border-[var(--t-border)] rounded-full pl-4 pr-3 py-2 focus-within:border-[#c9a84c]/40 transition-colors">
+          <div className="flex-1 flex items-center gap-1.5 bg-[var(--t-bg)] border border-[var(--t-border)] rounded-full pl-4 pr-3 py-2 focus-within:border-[#c9a84c]/40 transition-colors">
             <input type="number" min="20" max="300" step="0.1" value={weightInput}
               onChange={e => setWeightInput(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter") saveWeight(); }}
-              className="w-16 bg-transparent text-[var(--t-text)] text-xl font-light text-center focus:outline-none"
+              className="w-full bg-transparent text-[var(--t-text)] text-xl font-light text-center focus:outline-none"
               placeholder="70.0"/>
-            <span className="text-[var(--t-text-30)] text-sm">kg</span>
+            <span className="text-[var(--t-text-30)] text-sm shrink-0">kg</span>
           </div>
           <button onClick={saveWeight} disabled={weightSaving || !weightInput}
             aria-label={alreadySelected ? "Mettre à jour la pesée" : "Enregistrer la pesée"}
-            className={`ml-auto w-11 h-11 rounded-full flex items-center justify-center transition-colors shrink-0 disabled:opacity-30 ${
+            className={`w-11 h-11 rounded-full flex items-center justify-center transition-colors shrink-0 disabled:opacity-30 ${
               weightSaved ? "bg-[#7eb8a0] text-black" : "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black hover:brightness-110"
             }`}>
             {weightSaved ? (
