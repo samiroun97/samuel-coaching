@@ -669,41 +669,40 @@ export default function SuiviPage() {
       <DateNav date={selectedDate} onChange={setSelectedDate} />
 
       {/* ── Pesée ── */}
-      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 mb-4">
-        <div className="flex items-center gap-3 mb-4">
-          <img src={BALANCE_ICON} alt="" width={30} height={30} className="shrink-0"/>
-          <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">
+      <div className={`rounded-xl border p-4 mb-4 flex items-center gap-4 ${alreadySelected ? "border-[var(--t-border-soft)] bg-[var(--t-surface-2)]" : "border-[#c9a84c]/25 bg-[#c9a84c]/5"}`}>
+        <img src={BALANCE_ICON} alt="" width={34} height={34} className="shrink-0"/>
+        <div className="flex-1 min-w-0">
+          <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-0.5">
             {selectedDate === today() ? "Pesée du jour" : `Pesée · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
           </p>
+          {alreadySelected && (
+            <p className="text-[0.65rem] text-[var(--t-text-30)] tracking-wider">Enregistrée — {weightHist.find(e => e.date === selectedDate)?.weight} kg</p>
+          )}
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex-1 flex items-center gap-1.5 bg-[var(--t-bg)] border border-[var(--t-border)] rounded-full pl-4 pr-3 py-2 focus-within:border-[#c9a84c]/40 transition-colors">
+
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1 bg-[var(--t-bg)] border border-[var(--t-border)] rounded-full pl-3 pr-2.5 py-1.5 focus-within:border-[#c9a84c]/40 transition-colors">
             <input type="number" min="20" max="300" step="0.1" value={weightInput}
               onChange={e => setWeightInput(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter") saveWeight(); }}
-              className="w-full bg-transparent text-[var(--t-text)] text-xl font-light text-center focus:outline-none"
+              className="w-12 bg-transparent text-[var(--t-text)] text-sm text-center focus:outline-none"
               placeholder="70.0"/>
-            <span className="text-[var(--t-text-30)] text-sm shrink-0">kg</span>
+            <span className="text-[var(--t-text-25)] text-[0.62rem]">kg</span>
           </div>
           <button onClick={saveWeight} disabled={weightSaving || !weightInput}
             aria-label={alreadySelected ? "Mettre à jour la pesée" : "Enregistrer la pesée"}
-            className={`w-11 h-11 rounded-full flex items-center justify-center transition-colors shrink-0 disabled:opacity-30 ${
+            className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors shrink-0 disabled:opacity-30 ${
               weightSaved ? "bg-[#7eb8a0] text-black" : "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black hover:brightness-110"
             }`}>
             {weightSaved ? (
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             ) : alreadySelected ? (
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
             ) : (
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             )}
           </button>
         </div>
-        {alreadySelected && (
-          <p className="text-[0.62rem] text-[#7eb8a0] mt-2 tracking-wider">
-            ✓ {weightHist.find(e => e.date === selectedDate)?.weight} kg enregistré
-          </p>
-        )}
       </div>
 
       {/* ── Body fat — rappel ── */}
