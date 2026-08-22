@@ -13,7 +13,7 @@ type Ck     = { client_id: string; week_date: string; weight: number | null; com
 
 function KPI({ label, value, color, href }: { label: string; value: number | string; color?: string; href?: string }) {
   const inner = (
-    <div className={`border bg-[var(--t-surface-2)] rounded-lg px-4 py-3 md:px-5 md:py-4 flex flex-col gap-1 ${href ? "hover:border-[var(--t-border-15)] transition-colors cursor-pointer" : ""}`}
+    <div className={`border bg-[var(--t-surface-2)] rounded-xl px-4 py-3 md:px-5 md:py-4 flex flex-col gap-1 ${href ? "hover:border-[var(--t-border-15)] transition-colors cursor-pointer" : ""}`}
       style={{ borderColor: color ? `${color}25` : "var(--t-text-7)" }}>
       <p style={{ fontFamily: "var(--font-bebas)", color: color ?? "var(--t-text)" }} className="text-3xl md:text-4xl tracking-wide leading-none">{value}</p>
       <p className="text-[0.48rem] tracking-[0.2em] uppercase text-[var(--t-text-30)]">{label}</p>
@@ -157,18 +157,18 @@ export default function CRMDashboard() {
 
       {/* Inviter un client */}
       {inviteCode && (
-        <div className="border border-[#c9a84c]/20 bg-[#c9a84c]/5 rounded-lg p-4 md:p-5 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="border border-[#c9a84c]/20 bg-[#c9a84c]/5 rounded-xl p-4 md:p-5 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <p className="text-[0.65rem] tracking-[0.22em] uppercase text-[#c9a84c] mb-1">Inviter un client</p>
             <p className="text-xs text-[var(--t-text-40)]">Code coach : <span style={{ fontFamily: "var(--font-bebas)" }} className="text-[var(--t-text)] tracking-[0.2em] text-sm">{inviteCode}</span></p>
           </div>
           <div className="flex gap-2 shrink-0">
             <button onClick={() => copy(inviteCode, "code")}
-              className="px-3 py-2 border border-[var(--t-border)] text-[var(--t-text-50)] text-[0.6rem] tracking-[0.1em] uppercase hover:border-[var(--t-text-25)] hover:text-[var(--t-text-80)] transition-colors rounded-lg">
+              className="px-3 py-2 border border-[var(--t-border)] text-[var(--t-text-50)] text-[0.6rem] tracking-[0.1em] uppercase hover:border-[var(--t-text-25)] hover:text-[var(--t-text-80)] transition-colors rounded-xl">
               {copied === "code" ? "Copié ✓" : "Copier le code"}
             </button>
             <button onClick={() => copy(inviteLink, "link")}
-              className="px-3 py-2 bg-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.1em] uppercase hover:bg-[#e2c97e] transition-colors rounded-lg">
+              className="px-3 py-2 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.1em] uppercase shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
               {copied === "link" ? "Copié ✓" : "Copier le lien"}
             </button>
           </div>
@@ -192,7 +192,7 @@ export default function CRMDashboard() {
           <div className="flex flex-col gap-2">
             {alerts.slice(0, 8).map((a, i) => (
               <Link key={i} href={a.href}
-                className="flex items-center justify-between gap-2 rounded-lg border px-3 md:px-4 py-3 hover:bg-[var(--t-glass-bg)] transition-colors"
+                className="flex items-center justify-between gap-2 rounded-xl border px-3 md:px-4 py-3 hover:bg-[var(--t-glass-bg)] transition-colors"
                 style={{ borderColor: `${a.color}25`, backgroundColor: `${a.color}07` }}>
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-1 h-5 shrink-0" style={{ backgroundColor: a.color }}/>
@@ -209,7 +209,7 @@ export default function CRMDashboard() {
       <div className="grid md:grid-cols-2 gap-6">
 
         {/* Recent check-ins */}
-        <div className="border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-lg p-4 md:p-5">
+        <div className="border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-xl p-4 md:p-5">
           <div className="flex items-center justify-between mb-4">
             <p className="text-[0.65rem] tracking-[0.22em] uppercase text-[#c9a84c]">Derniers check-ins</p>
             <Link href="/crm/clients" className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">Voir tout →</Link>
@@ -244,7 +244,7 @@ export default function CRMDashboard() {
         </div>
 
         {/* Recent messages */}
-        <div className="border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-lg p-4 md:p-5">
+        <div className="border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-xl p-4 md:p-5">
           <div className="flex items-center justify-between mb-4">
             <p className="text-[0.65rem] tracking-[0.22em] uppercase text-[#c9a84c]">Messages en attente</p>
             <Link href="/crm/inbox" className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">Inbox →</Link>
@@ -275,7 +275,7 @@ export default function CRMDashboard() {
       </div>
 
       {/* Pipeline snapshot */}
-      <div className="mt-6 border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-lg p-4 md:p-5">
+      <div className="mt-6 border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-xl p-4 md:p-5">
         <div className="flex items-center justify-between mb-4">
           <p className="text-[0.65rem] tracking-[0.22em] uppercase text-[#c9a84c]">Répartition pipeline</p>
           <Link href="/crm/pipeline" className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">Vue complète →</Link>

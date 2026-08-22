@@ -46,7 +46,7 @@ function PathNode({ lesson, offset, top, state, onClick }: {
   return (
     <div className="absolute" style={{ left: `calc(50% + ${offset}px)`, top, transform: "translateX(-50%)" }}>
       {state === "current" && (
-        <div className="absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap px-3 py-1 rounded-full bg-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.12em] uppercase shadow-[0_4px_16px_-4px_rgba(201,168,76,0.7)]">
+        <div className="absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap px-3 py-1 rounded-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.12em] uppercase shadow-[0_4px_16px_-4px_rgba(201,168,76,0.7)]">
           Continuer
         </div>
       )}

@@ -68,7 +68,7 @@ export default function ProgramsSection() {
               }`}
             >
               {p.badge && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#c9a84c] text-black text-[0.65rem] font-bold tracking-[0.2em] uppercase px-4 py-1">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.65rem] font-bold tracking-[0.2em] uppercase px-4 py-1">
                   {p.badge}
                 </div>
               )}
@@ -96,9 +96,9 @@ export default function ProgramsSection() {
 
               <a
                 href="#contact"
-                className={`text-center text-xs font-bold tracking-[0.15em] uppercase py-4 transition-colors duration-300 ${
+                className={`text-center text-xs font-bold tracking-[0.15em] uppercase py-4 rounded-xl transition-all duration-300 ${
                   p.highlight
-                    ? "bg-[#c9a84c] text-black hover:bg-[#e2c97e]"
+                    ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0"
                     : "border border-white/20 text-white hover:border-[#c9a84c] hover:text-[#c9a84c]"
                 }`}
               >

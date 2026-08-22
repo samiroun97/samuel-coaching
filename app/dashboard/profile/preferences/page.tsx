@@ -156,9 +156,9 @@ export default function PreferencesPage() {
     setNewPassword(""); setConfirmPassword("");
   };
 
-  const inp = "w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
+  const inp = "w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
   const lbl = "text-[0.7rem] tracking-[0.2em] uppercase text-[var(--t-text-40)] block mb-1.5";
-  const groupCls = "border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg divide-y divide-[var(--t-border-soft)]";
+  const groupCls = "border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl divide-y divide-[var(--t-border-soft)]";
 
   return (
     <div className="p-4 sm:p-8 max-w-lg">
@@ -173,13 +173,13 @@ export default function PreferencesPage() {
       </div>
 
       {isCoach && (
-        <div className="border border-[#c9a84c]/25 bg-[#c9a84c]/5 rounded-lg p-5 flex items-center justify-between gap-4 mb-8">
+        <div className="border border-[#c9a84c]/25 bg-[#c9a84c]/5 rounded-xl p-5 flex items-center justify-between gap-4 mb-8">
           <div>
             <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1">Espace coach</p>
             <p className="text-[0.62rem] text-[var(--t-text-35)] tracking-wider">Tu es actuellement dans ton espace perso (aperçu adhérent)</p>
           </div>
           <Link href="/crm"
-            className="shrink-0 bg-[#c9a84c] text-black text-[0.65rem] font-bold tracking-[0.15em] uppercase px-4 py-2.5 hover:bg-[#e2c97e] transition-colors rounded-lg">
+            className="shrink-0 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.65rem] font-bold tracking-[0.15em] uppercase px-4 py-2.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
             Retour espace coach →
           </Link>
         </div>
@@ -221,18 +221,18 @@ export default function PreferencesPage() {
               <div className="flex gap-2">
                 {["Homme", "Femme"].map(s => (
                   <button key={s} onClick={() => setForm(f => ({ ...f, sexe: s }))}
-                    className={`flex-1 py-2.5 rounded-lg text-[0.7rem] tracking-[0.1em] uppercase border transition-all ${form.sexe === s ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[var(--t-text-30)]"}`}>
+                    className={`flex-1 py-2.5 rounded-xl text-[0.7rem] tracking-[0.1em] uppercase border transition-all ${form.sexe === s ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/10" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[var(--t-text-30)]"}`}>
                     {s}
                   </button>
                 ))}
               </div>
             </div>
 
-            {error && <p className="text-xs text-[#e07070] rounded-lg border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2">{error}</p>}
-            {saved && <p className="text-xs text-[#7eb8a0] rounded-lg border border-[#7eb8a0]/20 bg-[#7eb8a0]/5 px-3 py-2">Profil mis à jour ✓ — le BMR sera recalculé automatiquement</p>}
+            {error && <p className="text-xs text-[#e07070] rounded-xl border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2">{error}</p>}
+            {saved && <p className="text-xs text-[#7eb8a0] rounded-xl border border-[#7eb8a0]/20 bg-[#7eb8a0]/5 px-3 py-2">Profil mis à jour ✓ — le BMR sera recalculé automatiquement</p>}
 
             <button onClick={save} disabled={saving}
-              className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg disabled:opacity-50 flex items-center justify-center gap-2">
+              className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-50 flex items-center justify-center gap-2">
               {saving
                 ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Enregistrement…</>
                 : "Enregistrer"}
@@ -267,7 +267,7 @@ export default function PreferencesPage() {
               </button>
             </div>
           )}
-          {pushError && <p className="text-xs text-[#e07070] rounded-lg border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2 mt-3">{pushError}</p>}
+          {pushError && <p className="text-xs text-[#e07070] rounded-xl border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2 mt-3">{pushError}</p>}
         </Row>
 
         <Row label="Pas (iPhone)" sublabel="Synchro automatique via Raccourcis" open={openSection === "steps"}
@@ -286,7 +286,7 @@ export default function PreferencesPage() {
                 <div className="flex gap-2">
                   <input readOnly className={`${inp} font-mono text-xs`} value={typeof window !== "undefined" ? `${window.location.origin}/api/programme/steps-webhook` : ""}/>
                   <button onClick={() => copyField("url", `${window.location.origin}/api/programme/steps-webhook`)}
-                    className="shrink-0 px-3 rounded-lg border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-70)] hover:border-[var(--t-text-25)] transition-colors text-xs">
+                    className="shrink-0 px-3 rounded-xl border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-70)] hover:border-[var(--t-text-25)] transition-colors text-xs">
                     {copiedField === "url" ? "Copié ✓" : "Copier"}
                   </button>
                 </div>
@@ -296,13 +296,13 @@ export default function PreferencesPage() {
                 <div className="flex gap-2">
                   <input readOnly className={`${inp} font-mono text-xs`} value={stepsToken}/>
                   <button onClick={() => copyField("token", stepsToken)}
-                    className="shrink-0 px-3 rounded-lg border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-70)] hover:border-[var(--t-text-25)] transition-colors text-xs">
+                    className="shrink-0 px-3 rounded-xl border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-70)] hover:border-[var(--t-text-25)] transition-colors text-xs">
                     {copiedField === "token" ? "Copié ✓" : "Copier"}
                   </button>
                 </div>
               </div>
 
-              <div className="border border-[var(--t-border-soft)] rounded-lg p-4 flex flex-col gap-2">
+              <div className="border border-[var(--t-border-soft)] rounded-xl p-4 flex flex-col gap-2">
                 <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--t-text-40)] mb-1">Configuration (une fois)</p>
                 <ol className="text-[0.72rem] text-[var(--t-text-40)] leading-relaxed list-decimal list-inside flex flex-col gap-1.5">
                   <li>Ouvre l&apos;app <strong className="text-[var(--t-text-60)]">Raccourcis</strong> sur ton iPhone, crée un nouveau Raccourci.</li>
@@ -319,7 +319,7 @@ export default function PreferencesPage() {
               </button>
             </div>
           ) : null}
-          {stepsError && <p className="text-xs text-[#e07070] rounded-lg border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2 mt-3">{stepsError}</p>}
+          {stepsError && <p className="text-xs text-[#e07070] rounded-xl border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2 mt-3">{stepsError}</p>}
         </Row>
 
         <Row label="Mot de passe" sublabel="Changer ton mot de passe" open={openSection === "password"} onClick={() => toggle("password")}>
@@ -335,11 +335,11 @@ export default function PreferencesPage() {
               </div>
             </div>
 
-            {pwdError && <p className="text-xs text-[#e07070] rounded-lg border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2">{pwdError}</p>}
-            {pwdSaved && <p className="text-xs text-[#7eb8a0] rounded-lg border border-[#7eb8a0]/20 bg-[#7eb8a0]/5 px-3 py-2">Mot de passe mis à jour ✓</p>}
+            {pwdError && <p className="text-xs text-[#e07070] rounded-xl border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2">{pwdError}</p>}
+            {pwdSaved && <p className="text-xs text-[#7eb8a0] rounded-xl border border-[#7eb8a0]/20 bg-[#7eb8a0]/5 px-3 py-2">Mot de passe mis à jour ✓</p>}
 
             <button onClick={savePassword} disabled={pwdSaving}
-              className="border border-[#c9a84c]/30 text-[#c9a84c] rounded-lg text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+              className="border border-[#c9a84c]/30 text-[#c9a84c] rounded-xl text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
               {pwdSaving
                 ? <><div className="w-3 h-3 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>Enregistrement…</>
                 : "Changer le mot de passe"}

@@ -279,7 +279,7 @@ export default function AccueilPage() {
       <DateNav date={selectedDate} onChange={setSelectedDate} />
 
       {/* ── Pesée ── */}
-      <div className={`rounded-lg border p-4 mb-4 flex items-center gap-4 ${entryForDate ? "border-[var(--t-border-soft)] bg-[var(--t-surface-2)]" : "border-[#c9a84c]/25 bg-[#c9a84c]/5"}`}>
+      <div className={`rounded-xl border p-4 mb-4 flex items-center gap-4 ${entryForDate ? "border-[var(--t-border-soft)] bg-[var(--t-surface-2)]" : "border-[#c9a84c]/25 bg-[#c9a84c]/5"}`}>
         <img src={BALANCE_ICON} alt="" width={34} height={34} className="shrink-0"/>
         <div className="flex-1 min-w-0">
           <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-0.5">
@@ -306,7 +306,7 @@ export default function AccueilPage() {
           <button onClick={saveWeight} disabled={weightSaving || !weightInput}
             aria-label={entryForDate ? "Modifier la pesée" : "Enregistrer la pesée"}
             className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors shrink-0 disabled:opacity-30 ${
-              weightSaved ? "bg-[#7eb8a0] text-black" : "bg-[#c9a84c] text-black hover:bg-[#e2c97e]"
+              weightSaved ? "bg-[#7eb8a0] text-black" : "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black hover:brightness-110"
             }`}>
             {weightSaved ? (
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -336,7 +336,7 @@ export default function AccueilPage() {
 
         {/* Balance banner */}
         {refCal > 0 && (calView === "tdee" || goalsSet) && (
-          <div className="mt-5 px-4 py-2.5 rounded-lg border flex items-center justify-between"
+          <div className="mt-5 px-4 py-2.5 rounded-xl border flex items-center justify-between"
             style={{ borderColor: `${bannerColor}25`, backgroundColor: `${bannerColor}08` }}>
             <span className="text-[0.7rem] tracking-[0.15em] uppercase" style={{ color: bannerColor }}>{bannerLabel}</span>
             <span style={{ fontFamily: "var(--font-bebas)", color: bannerColor }} className="text-xl tracking-wide">
@@ -375,17 +375,17 @@ export default function AccueilPage() {
       {/* ── Quick stats ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         {/* Poids */}
-        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg p-4">
+        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-4">
           <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1.5">Poids</p>
           <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[var(--t-text)] tracking-wide">{lastWeight ? `${lastWeight} kg` : `${profile.poids} kg`}</p>
         </div>
         {/* Taille */}
-        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg p-4">
+        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-4">
           <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1.5">Taille</p>
           <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[var(--t-text)] tracking-wide">{profile.taille} cm</p>
         </div>
         {/* Body fat — lien vers suivi avec flèche si check-in requis */}
-        <Link href="/dashboard/suivi" className={`border rounded-lg p-4 flex flex-col justify-between group transition-colors ${needsBF ? "border-[#c9a84c]/25 bg-[#c9a84c]/5 hover:bg-[#c9a84c]/8" : "border-[var(--t-border)] bg-[var(--t-surface)] hover:border-[var(--t-border-15)]"}`}>
+        <Link href="/dashboard/suivi" className={`border rounded-xl p-4 flex flex-col justify-between group transition-colors ${needsBF ? "border-[#c9a84c]/25 bg-[#c9a84c]/5 hover:bg-[#c9a84c]/8" : "border-[var(--t-border)] bg-[var(--t-surface)] hover:border-[var(--t-border-15)]"}`}>
           <div className="flex items-center justify-between">
             <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c]">Body fat</p>
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={needsBF ? "#c9a84c" : "var(--t-text-20)"} strokeWidth="2" strokeLinecap="round" className="transition-transform group-hover:translate-x-0.5"><polyline points="9 18 15 12 9 6"/></svg>
@@ -400,7 +400,7 @@ export default function AccueilPage() {
           const balColor = !balDefined ? "var(--t-text-25)" : Math.abs(balance) <= 100 ? "#c9a84c" : surplus ? "#e07070" : "#7eb8a0";
           const balLabel = !balDefined ? "Déficit" : Math.abs(balance) <= 100 ? "Maintenance" : surplus ? "Surplus" : "Déficit";
           return (
-            <div className="border bg-[var(--t-surface)] rounded-lg p-4" style={{ borderColor: balDefined ? `${balColor}30` : "var(--t-border)" }}>
+            <div className="border bg-[var(--t-surface)] rounded-xl p-4" style={{ borderColor: balDefined ? `${balColor}30` : "var(--t-border)" }}>
               <p className="text-[0.65rem] tracking-[0.2em] uppercase mb-1.5" style={{ color: balColor }}>{balLabel}</p>
               <p style={{ fontFamily: "var(--font-bebas)", color: balColor }} className="text-2xl tracking-wide">
                 {balDefined ? `${surplus ? "+" : ""}${balance.toLocaleString("fr-FR")} kcal` : "À définir"}

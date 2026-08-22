@@ -18,7 +18,7 @@ export type PreviewSeance = {
 
 export function ExerciceCard({ ex }: { ex: ExerciceItem }) {
   return (
-    <div className="border border-[var(--t-text-8)] bg-[var(--t-glass-bg)] rounded-lg px-3 py-2.5">
+    <div className="border border-[var(--t-text-8)] bg-[var(--t-glass-bg)] rounded-xl px-3 py-2.5">
       <div className="flex items-center gap-2 flex-wrap">
         <p className="text-xs text-[var(--t-text-70)] font-medium leading-snug">{ex.nom}</p>
         {ex.type && <span className="text-[0.55rem] tracking-wider uppercase text-[var(--t-text-30)] rounded-full border border-[var(--t-border)] px-1.5 py-0.5 shrink-0">{ex.type}</span>}
@@ -55,7 +55,7 @@ export function ExerciceCard({ ex }: { ex: ExerciceItem }) {
 export function ExercicesList({ items }: { items: ExerciceItem[] }) {
   const nodes: ReactNode[] = groupExerciceRuns(items).map(run =>
     run.groupId ? (
-      <div key={`g-${run.indices[0]}`} className="border border-[#c9a84c]/25 bg-[#c9a84c]/[0.03] rounded-lg p-2 flex flex-col gap-2">
+      <div key={`g-${run.indices[0]}`} className="border border-[#c9a84c]/25 bg-[#c9a84c]/[0.03] rounded-xl p-2 flex flex-col gap-2">
         <p className="text-[0.55rem] tracking-[0.15em] uppercase text-[#c9a84c] px-1">{run.groupLabel || "Superset"}</p>
         {run.indices.map(k => <ExerciceCard key={k} ex={items[k]} />)}
       </div>
@@ -79,7 +79,7 @@ export function SeanceBody({ s }: { s: PreviewSeance }) {
         </div>
       )}
       {notes.length > 0 && (
-        <div className="border border-[var(--t-text-8)] bg-[var(--t-glass-bg)] rounded-lg px-3 py-2.5 mb-4 flex flex-col gap-1.5">
+        <div className="border border-[var(--t-text-8)] bg-[var(--t-glass-bg)] rounded-xl px-3 py-2.5 mb-4 flex flex-col gap-1.5">
           {notes.map((n, ni) => (
             <p key={ni} className="text-[0.68rem] text-[var(--t-text-50)] leading-relaxed flex items-start gap-1.5">
               <span className="text-[#c9a84c] shrink-0">•</span><span className="whitespace-pre-line">{n}</span>

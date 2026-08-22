@@ -61,7 +61,7 @@ export default function HeroSection() {
 
         <div className="flex justify-center" style={{ animation: "fadeInUp 1s ease 0.8s both" }}>
           <a href="#contact"
-            className="group relative bg-[#c9a84c] text-black text-xs font-bold tracking-[0.25em] uppercase px-10 py-4 overflow-hidden hover:scale-105 transition-transform duration-300">
+            className="group relative bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-xs font-bold tracking-[0.25em] uppercase px-10 py-4 rounded-xl overflow-hidden shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:scale-105 transition-all duration-300">
             <span className="relative z-10">Je commence maintenant</span>
             <div className="absolute inset-0 bg-[#e8c76a] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
           </a>

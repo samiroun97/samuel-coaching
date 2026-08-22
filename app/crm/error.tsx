@@ -25,7 +25,7 @@ export default function CrmError({
         </p>
         <button
           onClick={() => unstable_retry()}
-          className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.15em] uppercase px-6 py-3 hover:bg-[#e2c97e] transition-colors"
+          className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.15em] uppercase px-6 py-3 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
         >
           Réessayer
         </button>

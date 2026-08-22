@@ -141,13 +141,13 @@ export default function CrmIaPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex border border-[var(--t-border)] mb-6 rounded-lg overflow-hidden">
+      <div className="flex border border-[var(--t-border)] mb-6 rounded-xl overflow-hidden">
         {UI_TABS.map(t => {
           const count = msgs.filter(m => t.test(m.content) && !corrections.some(c => c.message_id === m.id)).length;
           return (
             <button key={t.key} onClick={() => setTab(t.key)}
               className={`flex-1 py-3 text-[0.68rem] tracking-[0.15em] uppercase transition-colors flex items-center justify-center gap-1.5 ${
-                tab === t.key ? "bg-[#c9a84c] text-black font-bold" : "text-[var(--t-text-40)] hover:text-[var(--t-text-70)] hover:bg-[var(--t-glass-bg)]"}`}>
+                tab === t.key ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black font-bold" : "text-[var(--t-text-40)] hover:text-[var(--t-text-70)] hover:bg-[var(--t-glass-bg)]"}`}>
               {t.label}
               {count > 0 && (
                 <span className={`text-[0.55rem] font-bold px-1.5 py-0.5 rounded-full min-w-[1.1rem] text-center ${tab === t.key ? "bg-black/20 text-black" : "bg-[#e07070] text-[var(--t-text)]"}`}>{count}</span>
@@ -158,7 +158,7 @@ export default function CrmIaPage() {
       </div>
 
       {/* Nourrir l'IA — note libre, pas liée à un signalement */}
-      <div className="border border-[#c9a84c]/20 bg-[#c9a84c]/5 rounded-lg p-4 mb-8 flex flex-col gap-3">
+      <div className="border border-[#c9a84c]/20 bg-[#c9a84c]/5 rounded-xl p-4 mb-8 flex flex-col gap-3">
         <p className="text-[0.68rem] tracking-[0.15em] uppercase text-[#c9a84c]">Nourrir l&apos;IA — {uiTab.label}</p>
         <p className="text-[0.62rem] text-[var(--t-text-40)] leading-relaxed">
           Ajoute une info générale que l&apos;IA doit prendre en compte pour cette catégorie, sans attendre un signalement client (ex : une règle spécifique, une erreur récurrente que tu observes...).
@@ -167,18 +167,18 @@ export default function CrmIaPage() {
           <div className="flex gap-2">
             {(["programme", "activite"] as Category[]).map(c => (
               <button key={c} onClick={() => setNoteSubCategory(c)}
-                className={`px-3 py-1.5 rounded-lg text-[0.6rem] tracking-wider uppercase transition-colors ${
-                  noteSubCategory === c ? "bg-[#c9a84c] text-black font-bold" : "border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-60)]"}`}>
+                className={`px-3 py-1.5 rounded-xl text-[0.6rem] tracking-wider uppercase transition-colors ${
+                  noteSubCategory === c ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black font-bold" : "border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-60)]"}`}>
                 {CATEGORY_LABELS[c]}
               </button>
             ))}
           </div>
         )}
-        <textarea className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={2}
+        <textarea className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={2}
           placeholder="Ex : pour les plats de pâtes maison, compte toujours au moins 15g d'huile d'olive même si le client ne la mentionne pas..."
           value={noteText} onChange={e => setNoteText(e.target.value)}/>
         <button onClick={submitNote} disabled={noteSaving || !noteText.trim()}
-          className="self-end bg-[#c9a84c] text-black text-[0.65rem] font-bold tracking-[0.15em] uppercase px-4 py-2 hover:bg-[#e2c97e] transition-colors disabled:opacity-40 rounded-lg">
+          className="self-end bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.65rem] font-bold tracking-[0.15em] uppercase px-4 py-2 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40 rounded-xl">
           {noteSaving ? "Enregistrement…" : "Enregistrer →"}
         </button>
       </div>
@@ -273,7 +273,7 @@ function SignalementCard({
         {nutrition && (
           <div className="flex items-start gap-3">
             {nutrition.photo && (
-              <a href={nutrition.photo} target="_blank" rel="noopener noreferrer" className="block w-16 h-16 border border-[var(--t-border)] rounded-lg overflow-hidden shrink-0 hover:border-[#e07070]/40 transition-colors">
+              <a href={nutrition.photo} target="_blank" rel="noopener noreferrer" className="block w-16 h-16 border border-[var(--t-border)] rounded-xl overflow-hidden shrink-0 hover:border-[#e07070]/40 transition-colors">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={nutrition.photo} alt="Photo du repas" className="w-full h-full object-cover"/>
               </a>
@@ -304,18 +304,18 @@ function SignalementCard({
             {category !== "programme" && (
               <input type="text" placeholder="Valeur corrigée (optionnel)" value={correctionValue}
                 onChange={e => setCorrectionValue(e.target.value)}
-                className="w-40 bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-2.5 py-2 focus:outline-none focus:border-[#c9a84c]/40"/>
+                className="w-40 bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-2.5 py-2 focus:outline-none focus:border-[#c9a84c]/40"/>
             )}
             <textarea rows={2} placeholder="Ce que l'IA a mal évalué et comment corriger..."
               value={correctionComment} onChange={e => setCorrectionComment(e.target.value)}
-              className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-2.5 py-2 focus:outline-none focus:border-[#c9a84c]/40 resize-none"/>
+              className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-2.5 py-2 focus:outline-none focus:border-[#c9a84c]/40 resize-none"/>
             <div className="flex gap-2">
               <button onClick={onCancelCorrect}
-                className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-lg text-[0.55rem] tracking-wider uppercase py-2 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors">
+                className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-xl text-[0.55rem] tracking-wider uppercase py-2 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors">
                 Annuler
               </button>
               <button onClick={() => onSubmitCorrect(originalData, comment)} disabled={correctionSaving || !correctionComment.trim()}
-                className="flex-1 bg-[#c9a84c] text-black text-[0.55rem] font-bold tracking-wider uppercase py-2 hover:bg-[#e2c97e] transition-colors disabled:opacity-40 rounded-lg">
+                className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.55rem] font-bold tracking-wider uppercase py-2 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40 rounded-xl">
                 {correctionSaving ? "Envoi…" : "Envoyer à l'IA →"}
               </button>
             </div>

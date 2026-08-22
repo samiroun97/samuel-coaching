@@ -125,7 +125,7 @@ export default function OnboardingPage() {
   const inputClass = "w-full bg-[var(--t-bg)] border border-[var(--t-border)] text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/50 transition-colors";
   const labelClass = "text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] block mb-2";
   const chipClass = (active: boolean) =>
-    `px-4 py-2.5 rounded-lg text-xs tracking-[0.1em] uppercase border cursor-pointer transition-all duration-200 ${
+    `px-4 py-2.5 rounded-xl text-xs tracking-[0.1em] uppercase border cursor-pointer transition-all duration-200 ${
       active ? "border-[#c9a84c] bg-[#c9a84c]/10 text-[#c9a84c]" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[var(--t-text-30)] hover:text-[var(--t-text-60)]"
     }`;
 
@@ -149,7 +149,7 @@ export default function OnboardingPage() {
                 disabled={!isEditing && i > step}
                 className={`w-9 h-9 rounded-full border-2 flex items-center justify-center text-xs font-bold transition-all duration-300 ${
                   i === step
-                    ? "border-[#c9a84c] bg-[#c9a84c] text-black"
+                    ? "border-[#c9a84c] bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black"
                     : isEditing || i < step
                     ? "border-[#c9a84c] text-[#c9a84c] bg-transparent cursor-pointer hover:bg-[#c9a84c]/10"
                     : "border-[var(--t-text-20)] text-[var(--t-text-20)] cursor-default"
@@ -166,7 +166,7 @@ export default function OnboardingPage() {
           ))}
         </div>
 
-        <div className="bg-[var(--t-surface)] border border-[var(--t-border)] rounded-lg p-8">
+        <div className="bg-[var(--t-surface)] border border-[var(--t-border)] rounded-xl p-8">
 
           {step === 0 && (
             <div className="flex flex-col gap-5">
@@ -197,7 +197,7 @@ export default function OnboardingPage() {
                 <div className="flex flex-col gap-2">
                   {niveauOptions.map(o => (
                     <button key={o.label} type="button" onClick={() => set("niveau_activite", o.label)}
-                      className={`px-4 py-3 text-left border rounded-lg cursor-pointer transition-all duration-200 ${form.niveau_activite === o.label ? "border-[#c9a84c] bg-[#c9a84c]/10" : "border-[var(--t-border)] hover:border-[var(--t-text-30)]"}`}>
+                      className={`px-4 py-3 text-left border rounded-xl cursor-pointer transition-all duration-200 ${form.niveau_activite === o.label ? "border-[#c9a84c] bg-[#c9a84c]/10" : "border-[var(--t-border)] hover:border-[var(--t-text-30)]"}`}>
                       <p className={`text-xs tracking-[0.1em] uppercase font-bold ${form.niveau_activite === o.label ? "text-[#c9a84c]" : "text-[var(--t-text-60)]"}`}>{o.label}</p>
                       <p className="text-[0.65rem] text-[var(--t-text-30)] mt-0.5">{o.desc}</p>
                     </button>
@@ -261,30 +261,30 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {error && <p className="text-[#e07070] text-xs mt-4 border border-[#e07070]/20 bg-[#e07070]/5 rounded-lg px-3 py-2">{error}</p>}
+          {error && <p className="text-[#e07070] text-xs mt-4 border border-[#e07070]/20 bg-[#e07070]/5 rounded-xl px-3 py-2">{error}</p>}
         </div>
 
         <div className="flex gap-4 mt-6">
           {step > 0 && (
             <button onClick={() => { setError(""); setStep(s => s - 1); }}
-              className="flex-1 border border-[var(--t-border)] rounded-lg text-[var(--t-text-50)] text-xs tracking-[0.15em] uppercase py-4 hover:border-[var(--t-text-30)] hover:text-[var(--t-text)] transition-colors">
+              className="flex-1 border border-[var(--t-border)] rounded-xl text-[var(--t-text-50)] text-xs tracking-[0.15em] uppercase py-4 hover:border-[var(--t-text-30)] hover:text-[var(--t-text)] transition-colors">
               ← Retour
             </button>
           )}
           {isEditing && step > 0 && (
             <button onClick={() => { setError(""); router.push("/dashboard"); }}
-              className="border border-[var(--t-border)] text-[var(--t-text-30)] text-xs tracking-[0.15em] uppercase py-4 px-5 rounded-lg hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">
+              className="border border-[var(--t-border)] text-[var(--t-text-30)] text-xs tracking-[0.15em] uppercase py-4 px-5 rounded-xl hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">
               Annuler
             </button>
           )}
           {step < steps.length - 1 ? (
             <button onClick={next}
-              className="flex-1 bg-[#c9a84c] text-black text-xs font-bold tracking-[0.15em] uppercase py-4 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg">
+              className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-xs font-bold tracking-[0.15em] uppercase py-4 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
               Suivant →
             </button>
           ) : (
             <button onClick={handleSubmit} disabled={loading}
-              className="flex-1 bg-[#c9a84c] text-black text-xs font-bold tracking-[0.15em] uppercase py-4 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg disabled:opacity-50">
+              className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-xs font-bold tracking-[0.15em] uppercase py-4 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-50">
               {loading ? "Enregistrement..." : isEditing ? "Enregistrer ✓" : "Terminer ✓"}
             </button>
           )}

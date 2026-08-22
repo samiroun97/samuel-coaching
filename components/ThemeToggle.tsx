@@ -15,11 +15,11 @@ export default function ThemeToggle() {
   };
 
   return (
-    <div className="flex border border-[var(--t-border)] rounded-lg overflow-hidden">
+    <div className="flex border border-[var(--t-border)] rounded-xl overflow-hidden">
       {([["dark", "Sombre"], ["light", "Clair"]] as const).map(([key, label]) => (
         <button key={key} type="button" onClick={() => choose(key)}
           className={`px-4 py-2 text-[0.65rem] tracking-[0.12em] uppercase transition-colors ${
-            theme === key ? "bg-[#c9a84c] text-black" : "text-[var(--t-text-40)] hover:text-[var(--t-text-70)]"
+            theme === key ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-[var(--t-text-40)] hover:text-[var(--t-text-70)]"
           }`}>
           {label}
         </button>

@@ -31,7 +31,7 @@ function InstallGuide() {
     <div className="mb-6">
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center gap-3 bg-[#c9a84c] text-black px-4 py-3 hover:bg-[#e2c97e] transition-colors shadow-[0_0_20px_rgba(201,168,76,0.25)]"
+        className="w-full flex items-center gap-3 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black px-4 py-3 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
       >
         <span className="flex-1 text-left text-[0.7rem] font-bold tracking-[0.08em] uppercase">Installer l&apos;app sur mon téléphone</span>
         <span className={`transition-transform ${open ? "rotate-180" : ""}`}>▾</span>
@@ -42,13 +42,13 @@ function InstallGuide() {
           <div className="flex mb-5 border border-white/10">
             <button
               onClick={() => setOs("ios")}
-              className={`flex-1 py-2 text-[0.65rem] tracking-[0.15em] uppercase font-bold transition-colors duration-200 ${os === "ios" ? "bg-[#c9a84c] text-black" : "text-white/40 hover:text-white"}`}
+              className={`flex-1 py-2 text-[0.65rem] tracking-[0.15em] uppercase font-bold transition-colors duration-200 ${os === "ios" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-white/40 hover:text-white"}`}
             >
               iPhone
             </button>
             <button
               onClick={() => setOs("android")}
-              className={`flex-1 py-2 text-[0.65rem] tracking-[0.15em] uppercase font-bold transition-colors duration-200 ${os === "android" ? "bg-[#c9a84c] text-black" : "text-white/40 hover:text-white"}`}
+              className={`flex-1 py-2 text-[0.65rem] tracking-[0.15em] uppercase font-bold transition-colors duration-200 ${os === "android" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-white/40 hover:text-white"}`}
             >
               Android
             </button>
@@ -176,13 +176,13 @@ export default function LoginPage() {
           <div className="flex mb-6 border border-white/10">
             <button
               onClick={() => { setMode("login"); setError(""); setSuccess(""); }}
-              className={`flex-1 py-3 text-xs tracking-[0.15em] uppercase font-bold transition-colors duration-200 ${mode === "login" ? "bg-[#c9a84c] text-black" : "text-white/40 hover:text-white"}`}
+              className={`flex-1 py-3 text-xs tracking-[0.15em] uppercase font-bold transition-colors duration-200 ${mode === "login" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-white/40 hover:text-white"}`}
             >
               Connexion
             </button>
             <button
               onClick={() => { setMode("register"); setError(""); setSuccess(""); }}
-              className={`flex-1 py-3 text-xs tracking-[0.15em] uppercase font-bold transition-colors duration-200 ${mode === "register" ? "bg-[#c9a84c] text-black" : "text-white/40 hover:text-white"}`}
+              className={`flex-1 py-3 text-xs tracking-[0.15em] uppercase font-bold transition-colors duration-200 ${mode === "register" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-white/40 hover:text-white"}`}
             >
               Créer un compte
             </button>
@@ -280,7 +280,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="bg-[#c9a84c] text-black text-xs font-bold tracking-[0.2em] uppercase py-4 hover:bg-[#e2c97e] transition-colors mt-2 disabled:opacity-50"
+              className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-xs font-bold tracking-[0.2em] uppercase py-4 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 mt-2 disabled:opacity-50"
             >
               {loading ? "..." : mode === "login" ? "Se connecter" : mode === "register" ? "Créer mon compte" : "Envoyer le lien"}
             </button>

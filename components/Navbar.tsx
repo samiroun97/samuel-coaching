@@ -51,7 +51,7 @@ export default function Navbar() {
           <li>
             <a
               href="#contact"
-              className="text-xs tracking-[0.15em] uppercase bg-[#c9a84c] text-black px-5 py-2.5 font-semibold hover:bg-[#e2c97e] transition-colors duration-200"
+              className="text-xs tracking-[0.15em] uppercase bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black px-5 py-2.5 font-semibold rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
             >
               Séance Gratuite
             </a>
@@ -89,7 +89,7 @@ export default function Navbar() {
           <a
             href="#contact"
             onClick={() => setMenuOpen(false)}
-            className="text-xs tracking-[0.2em] uppercase bg-[#c9a84c] text-black px-5 py-3 text-center font-semibold"
+            className="text-xs tracking-[0.2em] uppercase bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black px-5 py-3 text-center font-semibold rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] active:translate-y-0 transition-all duration-200"
           >
             Séance Gratuite
           </a>

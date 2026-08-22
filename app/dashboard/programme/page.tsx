@@ -48,7 +48,7 @@ const neatFromSteps = (steps: number, poids: number) =>
 
 function WorkoutCard({ w, onRemove }: { w: LoggedWorkout; onRemove: () => void }) {
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-[var(--t-border-soft)] bg-[var(--t-bg)] px-4 py-3 group">
+    <div className="flex items-center gap-3 rounded-xl border border-[var(--t-border-soft)] bg-[var(--t-bg)] px-4 py-3 group">
       <div className="w-9 h-9 rounded-full bg-[#c9a84c]/10 text-[#c9a84c] flex items-center justify-center shrink-0">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="3 12 8 12 10 6 14 18 16 12 21 12"/>
@@ -294,7 +294,7 @@ export default function ProgrammePage() {
 
   const chip = (active: boolean) =>
     `px-3.5 py-2 rounded-full text-[0.7rem] tracking-[0.1em] uppercase border transition-all duration-200 ${active ? "border-[#c9a84c] text-black bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] shadow-[0_3px_12px_-4px_rgba(201,168,76,0.6)] -translate-y-px" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[var(--t-text-30)] hover:text-[var(--t-text-60)]"}`;
-  const inputCls = "w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
+  const inputCls = "w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
 
   const pastDates = [...new Set(
     workouts.filter(w => !w.date.startsWith(selectedDate)).map(w => w.date.split("T")[0])
@@ -312,23 +312,23 @@ export default function ProgrammePage() {
       <DateNav date={selectedDate} onChange={setSelectedDate} />
 
       {/* ── EAT / NEAT / TOTAL ── */}
-      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg p-5 mb-6">
+      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 mb-6">
         <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Dépense du jour</p>
         <div className="grid grid-cols-3 gap-3 mb-4">
           {/* EAT */}
-          <div className="border border-[var(--t-border-soft)] bg-[var(--t-bg)] rounded-lg py-4 px-3 text-center">
+          <div className="border border-[var(--t-border-soft)] bg-[var(--t-bg)] rounded-xl py-4 px-3 text-center">
             <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[#c9a84c] tracking-wide leading-none">{eatCal}</p>
             <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mt-1.5">EAT</p>
             <p className="text-[0.62rem] text-[var(--t-text-15)] mt-0.5">Exercice intentionnel</p>
           </div>
           {/* NEAT */}
-          <div className="border border-[var(--t-border-soft)] bg-[var(--t-bg)] rounded-lg py-4 px-3 text-center">
+          <div className="border border-[var(--t-border-soft)] bg-[var(--t-bg)] rounded-xl py-4 px-3 text-center">
             <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[#7eb8a0] tracking-wide leading-none">{neatCal}</p>
             <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mt-1.5">NEAT</p>
             <p className="text-[0.62rem] text-[var(--t-text-15)] mt-0.5">Activité quotidienne</p>
           </div>
           {/* Total */}
-          <div className="border border-[#c9a84c]/15 bg-[#c9a84c]/5 rounded-lg py-4 px-3 text-center">
+          <div className="border border-[#c9a84c]/15 bg-[#c9a84c]/5 rounded-xl py-4 px-3 text-center">
             <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[var(--t-text)] tracking-wide leading-none">{totalCal}</p>
             <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mt-1.5">Total</p>
             <p className="text-[0.62rem] text-[var(--t-text-15)] mt-0.5">kcal brûlées</p>
@@ -355,7 +355,7 @@ export default function ProgrammePage() {
       </div>
 
       {/* ── Formulaire séance ── */}
-      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg p-6 mb-6 flex flex-col gap-5">
+      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-6 mb-6 flex flex-col gap-5">
         <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Enregistrer une séance</p>
 
         <div>
@@ -363,7 +363,7 @@ export default function ProgrammePage() {
           <input className={inputCls} placeholder="Ex : musculation, boxe, natation, vélo…"
             value={activity} onChange={e => { setActivity(e.target.value); setCalResult(null); }}/>
           {lastPerf && (
-            <div className="mt-1.5 flex items-center justify-between rounded-lg bg-[var(--t-bg)] border border-[var(--t-border-soft)] px-3 py-2">
+            <div className="mt-1.5 flex items-center justify-between rounded-xl bg-[var(--t-bg)] border border-[var(--t-border-soft)] px-3 py-2">
               <span className="text-[0.65rem] tracking-wider text-[var(--t-text-25)] uppercase">Dernière fois</span>
               <div className="flex items-center gap-3">
                 <span className="text-[0.65rem] text-[var(--t-text-35)]">{lastPerf.duration} min</span>
@@ -411,7 +411,7 @@ export default function ProgrammePage() {
           </label>
           <div className="relative">
             <textarea
-              className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none pr-12"
+              className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none pr-12"
               rows={2} placeholder="Ex : séance intense, supersets, bonne récupération…"
               value={description} onChange={e => { setDescription(e.target.value); setCalResult(null); }}
             />
@@ -425,11 +425,11 @@ export default function ProgrammePage() {
           </div>
         </div>
 
-        {calError && <p className="text-xs text-[#e07070] rounded-lg border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2">{calError}</p>}
+        {calError && <p className="text-xs text-[#e07070] rounded-xl border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2">{calError}</p>}
 
         {calResult ? (
           <div className="flex flex-col gap-3">
-            <div className="border border-[#c9a84c]/20 bg-[#c9a84c]/5 rounded-lg p-4 flex items-center justify-between">
+            <div className="border border-[#c9a84c]/20 bg-[#c9a84c]/5 rounded-xl p-4 flex items-center justify-between">
               <div className="flex-1 min-w-0 mr-4">
                 <div className="flex items-center gap-2 mb-1">
                   <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]">Estimation IA</p>
@@ -451,11 +451,11 @@ export default function ProgrammePage() {
             </div>
             <div className="flex gap-2">
               <button onClick={() => setCalResult(null)}
-                className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-lg text-[0.7rem] tracking-[0.15em] uppercase py-2.5 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors">
+                className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-xl text-[0.7rem] tracking-[0.15em] uppercase py-2.5 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors">
                 Ré-estimer
               </button>
               <button onClick={addWorkout}
-                className="flex-1 bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg">
+                className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
                 Ajouter à ma journée →
               </button>
             </div>
@@ -464,17 +464,17 @@ export default function ProgrammePage() {
             {actReportSent ? (
               <p className="text-[0.62rem] text-[#7eb8a0] text-center py-1">Signalement envoyé, merci ! 🙏</p>
             ) : showActReportForm ? (
-              <div className="border border-[var(--t-border)] bg-[var(--t-bg)] rounded-lg p-4 flex flex-col gap-3">
-                <textarea className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={3}
+              <div className="border border-[var(--t-border)] bg-[var(--t-bg)] rounded-xl p-4 flex flex-col gap-3">
+                <textarea className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={3}
                   placeholder="Ex : pour cette durée et cette activité, ça me semble bien trop élevé..."
                   value={actReportComment} onChange={e => setActReportComment(e.target.value)}/>
                 <div className="flex gap-2">
                   <button onClick={() => { setShowActReportForm(false); setActReportComment(""); }}
-                    className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-lg text-[0.65rem] tracking-[0.15em] uppercase py-2.5 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors">
+                    className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-xl text-[0.65rem] tracking-[0.15em] uppercase py-2.5 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors">
                     Annuler
                   </button>
                   <button onClick={submitActReport} disabled={actReportSending || !actReportComment.trim()}
-                    className="flex-1 bg-[#e07070] text-black text-[0.65rem] font-bold tracking-[0.15em] uppercase py-2.5 hover:bg-[#e58888] transition-colors disabled:opacity-40 rounded-lg">
+                    className="flex-1 bg-[#e07070] text-black text-[0.65rem] font-bold tracking-[0.15em] uppercase py-2.5 hover:bg-[#e58888] transition-colors disabled:opacity-40 rounded-xl">
                     {actReportSending ? "Envoi…" : "Envoyer le signalement →"}
                   </button>
                 </div>
@@ -488,7 +488,7 @@ export default function ProgrammePage() {
           </div>
         ) : (
           <button onClick={estimate} disabled={!activity.trim() || estimating}
-            className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             {estimating
               ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Estimation en cours…</>
               : "Estimer les calories brûlées"}
@@ -497,7 +497,7 @@ export default function ProgrammePage() {
       </div>
 
       {/* ── Pas ── */}
-      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg p-5 mb-6">
+      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 mb-6">
         <div className="flex items-center gap-3 mb-5">
           <img src="/icons/steps.svg" alt="" width={48} height={48} className="shrink-0"/>
           <div className="flex-1 min-w-0">
@@ -526,7 +526,7 @@ export default function ProgrammePage() {
             {editingGoal ? (
               <input
                 type="number" autoFocus
-                className="w-16 bg-[var(--t-bg)] border border-[#c9a84c]/40 rounded-lg text-[#c9a84c] text-center text-[0.62rem] py-0.5 focus:outline-none"
+                className="w-16 bg-[var(--t-bg)] border border-[#c9a84c]/40 rounded-xl text-[#c9a84c] text-center text-[0.62rem] py-0.5 focus:outline-none"
                 value={goalInput}
                 onChange={e => setGoalInput(e.target.value)}
                 onBlur={() => saveGoal(parseInt(goalInput) || 10000)}
@@ -569,7 +569,7 @@ export default function ProgrammePage() {
 
       {/* ── Séances du jour ── */}
       {todayWorkouts.length > 0 && (
-        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg mb-6">
+        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl mb-6">
           <button onClick={() => setSeancesJourOpen(v => !v)}
             className="w-full text-left flex items-center justify-between px-5 py-3 hover:bg-[var(--t-glass-bg)] transition-colors">
             <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[var(--t-text)]">
@@ -616,7 +616,7 @@ export default function ProgrammePage() {
               return next;
             });
             return (
-              <div key={date} className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg mb-3">
+              <div key={date} className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl mb-3">
                 <button onClick={toggle}
                   className="w-full text-left flex items-center justify-between gap-2 px-5 py-3 hover:bg-[var(--t-glass-bg)] transition-colors">
                   <span className="text-[0.7rem] tracking-wider text-[var(--t-text-40)] capitalize">{label}</span>
@@ -641,14 +641,14 @@ export default function ProgrammePage() {
 
       {/* ── Mon programme (séances envoyées par Samuel) ── */}
       {coachSeances.length > 0 && (
-        <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-lg mb-6 mt-6">
+        <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-xl mb-6 mt-6">
           <div className="px-5 py-3 border-b border-[#c9a84c]/10 flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[#c9a84c]">Mon programme</p>
               <span className="text-[0.62rem] text-[var(--t-text-25)] uppercase tracking-wider">{coachSeances.length} séance{coachSeances.length > 1 ? "s" : ""} · par Samuel</span>
             </div>
             <button onClick={downloadPdf} disabled={exportingPdf}
-              className="shrink-0 flex items-center gap-1.5 border border-[#c9a84c]/30 text-[#c9a84c] rounded-lg text-[0.6rem] font-bold tracking-[0.12em] uppercase px-2.5 py-2 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-40">
+              className="shrink-0 flex items-center gap-1.5 border border-[#c9a84c]/30 text-[#c9a84c] rounded-xl text-[0.6rem] font-bold tracking-[0.12em] uppercase px-2.5 py-2 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-40">
               {exportingPdf ? (
                 <div className="w-3 h-3 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>
               ) : (
@@ -682,9 +682,9 @@ export default function ProgrammePage() {
                   <div className="px-5 pb-4">
                     <SeanceBody s={s} />
                     <button onClick={() => toggleSeanceDone(s)}
-                      className={`w-full py-2.5 text-[0.7rem] font-bold tracking-[0.15em] uppercase transition-colors ${
+                      className={`w-full py-2.5 rounded-xl text-[0.7rem] font-bold tracking-[0.15em] uppercase transition-all duration-200 ${
                         done ? "border border-[#7eb8a0]/40 text-[#7eb8a0] bg-[#7eb8a0]/5 hover:bg-[#7eb8a0]/10"
-                             : "bg-[#c9a84c] text-black hover:bg-[#e2c97e]"}`}>
+                             : "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black shadow-[0_4px_16px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_20px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0"}`}>
                       {done ? "✓ Séance terminée — annuler" : "Marquer comme terminée"}
                     </button>
 
@@ -693,17 +693,17 @@ export default function ProgrammePage() {
                     {seanceReportSentIds.has(s.id) ? (
                       <p className="text-[0.6rem] text-[#7eb8a0] text-center mt-2">Signalement envoyé, merci ! 🙏</p>
                     ) : reportingSeanceId === s.id ? (
-                      <div className="border border-[var(--t-border)] bg-[var(--t-bg)] rounded-lg p-3 mt-2 flex flex-col gap-2">
-                        <textarea className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={2}
+                      <div className="border border-[var(--t-border)] bg-[var(--t-bg)] rounded-xl p-3 mt-2 flex flex-col gap-2">
+                        <textarea className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={2}
                           placeholder="Ex : la charge suggérée est trop lourde pour cet exercice à mon niveau..."
                           value={seanceReportComment} onChange={e => setSeanceReportComment(e.target.value)}/>
                         <div className="flex gap-2">
                           <button onClick={() => { setReportingSeanceId(null); setSeanceReportComment(""); }}
-                            className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-lg text-[0.6rem] tracking-[0.1em] uppercase py-2 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors">
+                            className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-xl text-[0.6rem] tracking-[0.1em] uppercase py-2 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors">
                             Annuler
                           </button>
                           <button onClick={() => submitSeanceReport(s)} disabled={seanceReportSending || !seanceReportComment.trim()}
-                            className="flex-1 bg-[#e07070] text-black text-[0.6rem] font-bold tracking-[0.1em] uppercase py-2 hover:bg-[#e58888] transition-colors disabled:opacity-40 rounded-lg">
+                            className="flex-1 bg-[#e07070] text-black text-[0.6rem] font-bold tracking-[0.1em] uppercase py-2 hover:bg-[#e58888] transition-colors disabled:opacity-40 rounded-xl">
                             {seanceReportSending ? "Envoi…" : "Envoyer →"}
                           </button>
                         </div>

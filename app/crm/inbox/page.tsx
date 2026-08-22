@@ -206,7 +206,7 @@ export default function InboxPage() {
             const isActive = activeEmail === conv.email;
             return (
               <button key={conv.email} onClick={() => setActiveEmail(conv.email)}
-                className={`w-full text-left px-4 py-3.5 mb-1 border transition-all ${isActive ? "border-[#c9a84c]/30 bg-[#c9a84c]/5 rounded-lg" : conv.unread ? "border-[#e07070]/15 bg-[#e07070]/3 rounded-lg" : "border-[var(--t-border-soft)] hover:border-[var(--t-border)] hover:bg-[var(--t-glass-bg)] rounded-lg"}`}>
+                className={`w-full text-left px-4 py-3.5 mb-1 border transition-all ${isActive ? "border-[#c9a84c]/30 bg-[#c9a84c]/5 rounded-xl" : conv.unread ? "border-[#e07070]/15 bg-[#e07070]/3 rounded-xl" : "border-[var(--t-border-soft)] hover:border-[var(--t-border)] hover:bg-[var(--t-glass-bg)] rounded-xl"}`}>
                 <div className="flex items-start justify-between gap-2 mb-1">
                   <div className="flex items-center gap-2 min-w-0">
                     {conv.unread && <span className="w-1.5 h-1.5 rounded-full bg-[#e07070] shrink-0"/>}
@@ -323,7 +323,7 @@ export default function InboxPage() {
                               {bff.photos?.length > 0 && (
                                 <div className="flex flex-wrap gap-2">
                                   {bff.photos.map((p, i) => (
-                                    <a key={i} href={p} target="_blank" rel="noopener noreferrer" className="block w-16 h-20 border border-[var(--t-border)] rounded-lg overflow-hidden hover:border-[#e07070]/40 transition-colors">
+                                    <a key={i} href={p} target="_blank" rel="noopener noreferrer" className="block w-16 h-20 border border-[var(--t-border)] rounded-xl overflow-hidden hover:border-[#e07070]/40 transition-colors">
                                       <img src={p} alt={`Photo ${i + 1}`} className="w-full h-full object-cover"/>
                                     </a>
                                   ))}
@@ -341,18 +341,18 @@ export default function InboxPage() {
                                   <div className="flex gap-2 items-center">
                                     <input type="number" step="0.1" placeholder="% correct (optionnel)" value={correctionValue}
                                       onChange={e => setCorrectionValue(e.target.value)}
-                                      className="w-32 bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-2.5 py-2 focus:outline-none focus:border-[#c9a84c]/40"/>
+                                      className="w-32 bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-2.5 py-2 focus:outline-none focus:border-[#c9a84c]/40"/>
                                   </div>
                                   <textarea rows={2} placeholder="Ce que l'IA a mal évalué et comment corriger (ex : sous-estime le gras abdominal chez les hommes avec cette morphologie...)"
                                     value={correctionComment} onChange={e => setCorrectionComment(e.target.value)}
-                                    className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-2.5 py-2 focus:outline-none focus:border-[#c9a84c]/40 resize-none"/>
+                                    className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-2.5 py-2 focus:outline-none focus:border-[#c9a84c]/40 resize-none"/>
                                   <div className="flex gap-2">
                                     <button onClick={() => { setCorrectingId(null); setCorrectionComment(""); setCorrectionValue(""); }}
-                                      className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-lg text-[0.55rem] tracking-wider uppercase py-2 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors">
+                                      className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-xl text-[0.55rem] tracking-wider uppercase py-2 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors">
                                       Annuler
                                     </button>
                                     <button onClick={() => submitCorrection(m.id, bff.estimated_bf, bff.comment)} disabled={correctionSaving || !correctionComment.trim()}
-                                      className="flex-1 bg-[#c9a84c] text-black text-[0.55rem] font-bold tracking-wider uppercase py-2 hover:bg-[#e2c97e] transition-colors disabled:opacity-40 rounded-lg">
+                                      className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.55rem] font-bold tracking-wider uppercase py-2 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40 rounded-xl">
                                       {correctionSaving ? "Envoi…" : "Envoyer à l'IA →"}
                                     </button>
                                   </div>
@@ -408,7 +408,7 @@ export default function InboxPage() {
                         );
                       }
                       return (
-                        <div className={`px-4 py-3 text-xs leading-relaxed whitespace-pre-line ${isMe ? "bg-[#c9a84c] text-black rounded-lg" : "bg-[var(--t-surface)] border border-[var(--t-text-8)] text-[var(--t-text-60)] rounded-lg"}`}>
+                        <div className={`px-4 py-3 text-xs leading-relaxed whitespace-pre-line ${isMe ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black rounded-xl" : "bg-[var(--t-surface)] border border-[var(--t-text-8)] text-[var(--t-text-60)] rounded-xl"}`}>
                           {m.content}
                         </div>
                       );
@@ -429,7 +429,7 @@ export default function InboxPage() {
               <div className="mb-3 flex flex-wrap gap-2">
                 {TEMPLATES.map(t => (
                   <button key={t.label} onClick={() => { setInput(t.text); setShowTpls(false); }}
-                    className="text-[0.48rem] tracking-wider uppercase px-3 py-1.5 border border-[#c9a84c]/25 rounded-lg text-[#c9a84c]/70 hover:border-[#c9a84c]/50 hover:text-[#c9a84c] transition-colors">
+                    className="text-[0.48rem] tracking-wider uppercase px-3 py-1.5 border border-[#c9a84c]/25 rounded-xl text-[#c9a84c]/70 hover:border-[#c9a84c]/50 hover:text-[#c9a84c] transition-colors">
                     {t.label}
                   </button>
                 ))}
@@ -437,15 +437,15 @@ export default function InboxPage() {
             )}
             <div className="flex gap-2 md:gap-3">
               <button onClick={() => setShowTpls(v => !v)}
-                className={`shrink-0 px-2.5 md:px-3 py-3 border rounded-lg text-[0.48rem] tracking-wider uppercase transition-colors ${showTpls ? "border-[#c9a84c]/40 text-[#c9a84c]/70 bg-[#c9a84c]/5" : "border-[var(--t-border)] text-[var(--t-text-25)] hover:border-[var(--t-text-20)]"}`}>
+                className={`shrink-0 px-2.5 md:px-3 py-3 border rounded-xl text-[0.48rem] tracking-wider uppercase transition-colors ${showTpls ? "border-[#c9a84c]/40 text-[#c9a84c]/70 bg-[#c9a84c]/5" : "border-[var(--t-border)] text-[var(--t-text-25)] hover:border-[var(--t-text-20)]"}`}>
                 Templates
               </button>
               <input value={input} onChange={e => setInput(e.target.value)}
                 onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
                 placeholder={`Répondre à ${activeConv.name}…`} disabled={sending}
-                className="flex-1 min-w-0 bg-[var(--t-surface)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 md:px-4 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors disabled:opacity-50"/>
+                className="flex-1 min-w-0 bg-[var(--t-surface)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 md:px-4 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors disabled:opacity-50"/>
               <button onClick={send} disabled={!input.trim() || sending}
-                className="bg-[#c9a84c] text-black px-4 md:px-6 py-3 text-[0.58rem] font-bold tracking-[0.15em] uppercase hover:bg-[#e2c97e] transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black px-4 md:px-6 py-3 text-[0.58rem] font-bold tracking-[0.15em] uppercase rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed">
                 Envoyer
               </button>
             </div>

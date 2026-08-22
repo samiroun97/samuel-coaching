@@ -63,7 +63,7 @@ export default function ResultsSection() {
                     Après
                   </div>
                 </div>
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#c9a84c] text-black font-[family-name:var(--font-bebas)] font-black text-xl px-3 py-1 z-10">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black font-[family-name:var(--font-bebas)] font-black text-xl px-3 py-1 z-10">
                   {r.badge}
                 </div>
               </div>

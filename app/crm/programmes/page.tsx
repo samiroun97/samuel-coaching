@@ -191,7 +191,7 @@ export default function ProgrammesPage() {
     await loadSentSeances(selected.email);
   };
 
-  const inp = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
+  const inp = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
   const lbl = "text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c] block mb-1.5";
 
   if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="w-5 h-5 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/></div>;
@@ -206,11 +206,11 @@ export default function ProgrammesPage() {
           <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl md:text-4xl text-[var(--t-text)] tracking-wide mb-3">PROGRAMMES</h1>
           <div className="flex gap-2">
             <button onClick={() => setFilter("sans")}
-              className={`flex-1 py-2 rounded-lg text-[0.5rem] tracking-[0.12em] uppercase border transition-all ${filter === "sans" ? "border-[#e09070] text-[#e09070] bg-[#e09070]/5" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[var(--t-text-20)]"}`}>
+              className={`flex-1 py-2 rounded-xl text-[0.5rem] tracking-[0.12em] uppercase border transition-all ${filter === "sans" ? "border-[#e09070] text-[#e09070] bg-[#e09070]/5" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[var(--t-text-20)]"}`}>
               Sans programme ({sans.length})
             </button>
             <button onClick={() => setFilter("avec")}
-              className={`flex-1 py-2 rounded-lg text-[0.5rem] tracking-[0.12em] uppercase border transition-all ${filter === "avec" ? "border-[#7eb8a0] text-[#7eb8a0] bg-[#7eb8a0]/5" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[var(--t-text-20)]"}`}>
+              className={`flex-1 py-2 rounded-xl text-[0.5rem] tracking-[0.12em] uppercase border transition-all ${filter === "avec" ? "border-[#7eb8a0] text-[#7eb8a0] bg-[#7eb8a0]/5" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[var(--t-text-20)]"}`}>
               Avec ({avec.length})
             </button>
           </div>
@@ -228,7 +228,7 @@ export default function ProgrammesPage() {
             const count = seanceCount.get(c.email) ?? 0;
             return (
               <button key={c.id} onClick={() => selectClient(c)}
-                className={`w-full text-left px-4 py-3 mb-1 rounded-lg border transition-all ${isSel ? "border-[#c9a84c]/30 bg-[#c9a84c]/5" : "border-[var(--t-border-soft)] hover:border-[var(--t-border)] hover:bg-[var(--t-glass-bg)]"}`}>
+                className={`w-full text-left px-4 py-3 mb-1 rounded-xl border transition-all ${isSel ? "border-[#c9a84c]/30 bg-[#c9a84c]/5" : "border-[var(--t-border-soft)] hover:border-[var(--t-border)] hover:bg-[var(--t-glass-bg)]"}`}>
                 <div className="flex items-start justify-between mb-1 gap-2">
                   <p className={`text-sm font-medium ${isSel ? "text-[var(--t-text)]" : "text-[var(--t-text-70)]"}`}>{c.prenom} {c.nom}</p>
                   <span className="text-[0.42rem] tracking-wider uppercase px-1.5 py-0.5 rounded-full border shrink-0"
@@ -269,7 +269,7 @@ export default function ProgrammesPage() {
             <div className="max-w-2xl flex flex-col gap-4">
 
               {/* Objectif + contraintes */}
-              <div className="border border-[#c9a84c]/10 bg-[var(--t-surface-gold)] rounded-lg px-4 py-3">
+              <div className="border border-[#c9a84c]/10 bg-[var(--t-surface-gold)] rounded-xl px-4 py-3">
                 <p className="text-[0.48rem] tracking-[0.15em] uppercase text-[#c9a84c] mb-1">Objectif</p>
                 <p className="text-xs text-[var(--t-text-60)] leading-relaxed">{selected.objectifs || "Non renseigné"}</p>
                 {selected.blessures && (
@@ -280,14 +280,14 @@ export default function ProgrammesPage() {
 
               {/* Confirmation d'envoi */}
               {sentTo === selected.email && (
-                <div className="border border-[#7eb8a0]/25 bg-[#7eb8a0]/5 rounded-lg px-4 py-3 text-center">
+                <div className="border border-[#7eb8a0]/25 bg-[#7eb8a0]/5 rounded-xl px-4 py-3 text-center">
                   <p className="text-xs text-[#7eb8a0]">Programme envoyé à {selected.prenom} ✓ — aperçu ci-dessous</p>
                 </div>
               )}
 
               {/* Séances déjà envoyées — aperçu visuel identique à ce que le client voit */}
               {sentSeances.length > 0 && (
-                <div className="border border-[var(--t-text-8)] bg-[var(--t-bg)] rounded-lg">
+                <div className="border border-[var(--t-text-8)] bg-[var(--t-bg)] rounded-xl">
                   <p className="px-4 pt-3 pb-2 text-[0.55rem] tracking-[0.2em] uppercase text-[var(--t-text-40)]">
                     Séances envoyées à {selected.prenom} ({sentSeances.length})
                   </p>
@@ -317,7 +317,7 @@ export default function ProgrammesPage() {
               )}
 
               {/* Bibliothèque d'exercices */}
-              <div className="border border-[var(--t-text-8)] bg-[var(--t-bg)] rounded-lg">
+              <div className="border border-[var(--t-text-8)] bg-[var(--t-bg)] rounded-xl">
                 <button onClick={() => setShowLibrary(v => !v)} className="w-full flex items-center justify-between px-4 py-2.5 text-left">
                   <span className="text-[0.55rem] tracking-[0.2em] uppercase text-[var(--t-text-40)]">Ma bibliothèque d&apos;exercices ({library.length})</span>
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={`text-[var(--t-text-25)] transition-transform ${showLibrary ? "rotate-180" : ""}`}><polyline points="6 9 12 15 18 9"/></svg>
@@ -327,7 +327,7 @@ export default function ProgrammesPage() {
                     {library.length > 0 && (
                       <div className="flex flex-col gap-1 max-h-40 overflow-y-auto">
                         {library.map(l => (
-                          <div key={l.id} className="flex items-center justify-between gap-2 rounded-lg border border-[var(--t-border-soft)] px-2.5 py-1.5">
+                          <div key={l.id} className="flex items-center justify-between gap-2 rounded-xl border border-[var(--t-border-soft)] px-2.5 py-1.5">
                             <span className="text-[0.62rem] text-[var(--t-text-50)] truncate">{l.nom}{l.type ? <span className="text-[var(--t-text-25)]"> · {l.type}</span> : null}</span>
                             <button onClick={() => removeLibItem(l.id)} className="shrink-0 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
                               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -343,7 +343,7 @@ export default function ProgrammesPage() {
                       <input className={inp} placeholder="Lien vidéo (optionnel)" value={libForm.video_url} onChange={e => setLibForm(f => ({ ...f, video_url: e.target.value }))}/>
                     </div>
                     <button onClick={addLibItem} disabled={!libForm.nom.trim()}
-                      className="border border-[var(--t-border)] text-[var(--t-text-30)] text-[0.55rem] tracking-[0.12em] uppercase py-2 rounded-lg hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors disabled:opacity-30">
+                      className="border border-[var(--t-border)] text-[var(--t-text-30)] text-[0.55rem] tracking-[0.12em] uppercase py-2 rounded-xl hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors disabled:opacity-30">
                       + Ajouter à la bibliothèque
                     </button>
                   </div>
@@ -352,7 +352,7 @@ export default function ProgrammesPage() {
 
               {/* Génération */}
               {drafts.length === 0 && !showTemplates && (
-                <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-lg p-4 md:p-5 flex flex-col gap-3">
+                <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-xl p-4 md:p-5 flex flex-col gap-3">
                   <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c]">Programme ciblé</p>
                   <p className="text-[0.65rem] text-[var(--t-text-35)] leading-relaxed">
                     Génère {Math.min(Math.max(selected.seances_par_semaine || 3, 2), 6)} séances adaptées à l&apos;objectif, au niveau, au lieu et aux blessures de {selected.prenom}. Tu pourras tout modifier avant d&apos;envoyer.
@@ -367,16 +367,16 @@ export default function ProgrammesPage() {
                     <p className="text-[0.55rem] text-[var(--t-text-20)] mt-1">Combiné avec le profil de {selected.prenom} (objectif enregistré, niveau, blessures, lieu…)</p>
                   </div>
                   <button onClick={generate} disabled={generating}
-                    className="bg-[#c9a84c] text-black text-[0.58rem] font-bold tracking-[0.18em] uppercase py-3 hover:bg-[#e2c97e] transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+                    className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.58rem] font-bold tracking-[0.18em] uppercase py-3 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-50 flex items-center justify-center gap-2">
                     {generating ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Génération en cours…</> : "Générer avec l'IA →"}
                   </button>
                   <button onClick={() => setDrafts([emptySeance()])}
-                    className="border border-[var(--t-border)] text-[var(--t-text-30)] text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-lg hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">
+                    className="border border-[var(--t-border)] text-[var(--t-text-30)] text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-xl hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">
                     Ou créer manuellement
                   </button>
                   {templates.length > 0 && (
                     <button onClick={() => setShowTemplates(true)}
-                      className="border border-[var(--t-border)] text-[var(--t-text-30)] text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-lg hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">
+                      className="border border-[var(--t-border)] text-[var(--t-text-30)] text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-xl hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">
                       Ou choisir un modèle ({templates.length})
                     </button>
                   )}
@@ -384,13 +384,13 @@ export default function ProgrammesPage() {
               )}
 
               {drafts.length === 0 && showTemplates && (
-                <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-lg p-4 md:p-5 flex flex-col gap-3">
+                <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-xl p-4 md:p-5 flex flex-col gap-3">
                   <div className="flex items-center justify-between">
                     <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c]">Modèles enregistrés</p>
                     <button onClick={() => setShowTemplates(false)} className="text-[0.5rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">Retour</button>
                   </div>
                   {templates.map(t => (
-                    <div key={t.id} className="flex items-center justify-between gap-2 border border-[var(--t-text-8)] bg-[var(--t-surface)] rounded-lg px-3 py-2.5">
+                    <div key={t.id} className="flex items-center justify-between gap-2 border border-[var(--t-text-8)] bg-[var(--t-surface)] rounded-xl px-3 py-2.5">
                       <button onClick={() => applyTemplate(t)} className="text-left min-w-0 flex-1">
                         <p className="text-xs text-[var(--t-text-70)] truncate">{t.nom}</p>
                         <p className="text-[0.55rem] text-[var(--t-text-25)] truncate">{t.objectif || t.type_seance || "—"}</p>
@@ -403,7 +403,7 @@ export default function ProgrammesPage() {
                 </div>
               )}
 
-              {genError && <p className="text-xs text-[#e07070] rounded-lg border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2">{genError}</p>}
+              {genError && <p className="text-xs text-[#e07070] rounded-xl border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2">{genError}</p>}
 
               {/* Séances éditables */}
               {drafts.length > 0 && (
@@ -414,7 +414,7 @@ export default function ProgrammesPage() {
                   </div>
 
                   {drafts.map((d, i) => (
-                    <div key={i} className="border border-[var(--t-text-8)] bg-[var(--t-surface)] rounded-lg p-4 flex flex-col gap-3">
+                    <div key={i} className="border border-[var(--t-text-8)] bg-[var(--t-surface)] rounded-xl p-4 flex flex-col gap-3">
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-[0.5rem] tracking-[0.2em] uppercase text-[#c9a84c]">Séance {i + 1}</span>
                         <div className="flex items-center gap-3">
@@ -448,7 +448,7 @@ export default function ProgrammesPage() {
                         <p className="text-[0.55rem] text-[var(--t-text-20)] mb-2 -mt-1">Pas forcément des exercices : consignes, rappels, précisions… Chaque note = un point affiché avec une puce, réordonnable comme les exercices.</p>
                         <div className="flex flex-col gap-2">
                           {d.notesLibres.map((n, ni) => (
-                            <div key={ni} className="border border-[var(--t-text-8)] bg-[var(--t-bg)] rounded-lg p-2.5 flex items-start gap-2">
+                            <div key={ni} className="border border-[var(--t-text-8)] bg-[var(--t-bg)] rounded-xl p-2.5 flex items-start gap-2">
                               <div className="shrink-0 flex flex-col border border-[var(--t-border)] rounded-md overflow-hidden mt-0.5">
                                 <button type="button" onClick={() => moveNoteLibre(i, ni, -1)} disabled={ni === 0} title="Monter"
                                   className="w-5 h-4 flex items-center justify-center text-[var(--t-text-30)] hover:text-[#c9a84c] hover:bg-[var(--t-track)] transition-colors disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-[var(--t-text-30)] border-b border-[var(--t-border)]">
@@ -467,7 +467,7 @@ export default function ProgrammesPage() {
                             </div>
                           ))}
                           <button type="button" onClick={() => addNoteLibre(i)}
-                            className="border border-[var(--t-border)] text-[var(--t-text-30)] text-[0.55rem] tracking-[0.12em] uppercase py-2 rounded-lg hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">
+                            className="border border-[var(--t-border)] text-[var(--t-text-30)] text-[0.55rem] tracking-[0.12em] uppercase py-2 rounded-xl hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">
                             + Ajouter une note libre
                           </button>
                         </div>
@@ -476,12 +476,12 @@ export default function ProgrammesPage() {
                   ))}
 
                   <button onClick={() => setDrafts(prev => [...prev, emptySeance()])}
-                    className="border border-[var(--t-border)] text-[var(--t-text-30)] text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-lg hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">
+                    className="border border-[var(--t-border)] text-[var(--t-text-30)] text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-xl hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">
                     + Ajouter une séance
                   </button>
 
                   <button onClick={sendAll} disabled={sending || !drafts.some(d => d.titre.trim())}
-                    className="bg-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] transition-colors disabled:opacity-40 flex items-center justify-center gap-2">
+                    className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.2em] uppercase py-3.5 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40 flex items-center justify-center gap-2">
                     {sending ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Envoi…</> : `Envoyer le programme à ${selected.prenom} →`}
                   </button>
                 </>

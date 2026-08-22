@@ -168,19 +168,19 @@ export default function ProfilePage() {
       </div>
 
       {isCoach && (
-        <div className="border border-[#c9a84c]/25 bg-[#c9a84c]/5 rounded-lg p-5 flex items-center justify-between gap-4 mb-6">
+        <div className="border border-[#c9a84c]/25 bg-[#c9a84c]/5 rounded-xl p-5 flex items-center justify-between gap-4 mb-6">
           <div>
             <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1">Espace coach</p>
             <p className="text-[0.62rem] text-[var(--t-text-35)] tracking-wider">Tu es actuellement dans ton espace perso (aperçu adhérent)</p>
           </div>
           <Link href="/crm"
-            className="shrink-0 bg-[#c9a84c] text-black text-[0.65rem] font-bold tracking-[0.15em] uppercase px-4 py-2.5 hover:bg-[#e2c97e] transition-colors rounded-lg">
+            className="shrink-0 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.65rem] font-bold tracking-[0.15em] uppercase px-4 py-2.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
             Retour espace coach →
           </Link>
         </div>
       )}
 
-      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg p-6 flex items-center gap-4 mb-4">
+      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-6 flex items-center gap-4 mb-4">
         <div className="w-14 h-14 rounded-full bg-[#c9a84c]/10 border border-[#c9a84c]/30 flex items-center justify-center shrink-0">
           <span style={{ fontFamily: "var(--font-bebas)" }} className="text-lg text-[#c9a84c] tracking-wide">{initials || "?"}</span>
         </div>
@@ -195,7 +195,7 @@ export default function ProfilePage() {
       {/* ── Demande de précision d'objectif (déclenchée par le coach) ── */}
       {profile?.objectif_pending && (
         <button onClick={openObjForm}
-          className="w-full text-left border border-[#c9a84c]/30 bg-[#c9a84c]/5 hover:bg-[#c9a84c]/8 rounded-lg p-4 mb-4 flex items-center justify-between gap-3 transition-colors group">
+          className="w-full text-left border border-[#c9a84c]/30 bg-[#c9a84c]/5 hover:bg-[#c9a84c]/8 rounded-xl p-4 mb-4 flex items-center justify-between gap-3 transition-colors group">
           <div>
             <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-0.5">Ton coach veut en savoir plus</p>
             <p className="text-xs text-[var(--t-text-50)]">Précise ton objectif pour qu'on te construise un plan adapté</p>
@@ -205,7 +205,7 @@ export default function ProfilePage() {
       )}
 
       <button onClick={openObjForm}
-        className="w-full text-left border border-[var(--t-border)] bg-[var(--t-surface)] hover:border-[#c9a84c]/30 hover:bg-[#c9a84c]/5 rounded-lg p-6 mb-4 transition-colors group">
+        className="w-full text-left border border-[var(--t-border)] bg-[var(--t-surface)] hover:border-[#c9a84c]/30 hover:bg-[#c9a84c]/5 rounded-xl p-6 mb-4 transition-colors group">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Objectif</p>
@@ -219,7 +219,7 @@ export default function ProfilePage() {
 
       {!isCoach && (
         <Link href="/dashboard/coach"
-          className="flex items-center justify-between border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg px-5 py-4 hover:bg-[var(--t-glass-bg)] transition-colors mb-4">
+          className="flex items-center justify-between border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl px-5 py-4 hover:bg-[var(--t-glass-bg)] transition-colors mb-4">
           <div className="flex items-center gap-3 relative">
             <span className="text-[var(--t-text-40)]">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
@@ -234,7 +234,7 @@ export default function ProfilePage() {
       )}
 
       <Link href="/dashboard/profile/preferences"
-        className="flex items-center justify-between border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg px-5 py-4 hover:bg-[var(--t-glass-bg)] transition-colors mb-4">
+        className="flex items-center justify-between border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl px-5 py-4 hover:bg-[var(--t-glass-bg)] transition-colors mb-4">
         <div className="flex items-center gap-3">
           <span className="text-[var(--t-text-40)]"><GearIcon/></span>
           <p className="text-sm text-[var(--t-text-70)]">Préférences</p>
@@ -245,7 +245,7 @@ export default function ProfilePage() {
       </Link>
 
       {!isCoach && (
-        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg overflow-hidden mb-4">
+        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl overflow-hidden mb-4">
           <button onClick={() => setJoinOpen(o => !o)}
             className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-[var(--t-glass-bg)] transition-colors">
             <div className="flex items-center gap-3">
@@ -269,9 +269,9 @@ export default function ProfilePage() {
                 <input value={joinCode} onChange={e => setJoinCode(e.target.value.toUpperCase())}
                   onKeyDown={e => { if (e.key === "Enter") joinCoach(); }}
                   placeholder="Code du coach"
-                  className="flex-1 min-w-0 bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm tracking-[0.15em] uppercase px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"/>
+                  className="flex-1 min-w-0 bg-[var(--t-bg)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm tracking-[0.15em] uppercase px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"/>
                 <button onClick={joinCoach} disabled={!joinCode.trim() || joining}
-                  className="shrink-0 px-4 bg-[#c9a84c] text-black text-[0.65rem] font-bold tracking-[0.15em] uppercase rounded-lg hover:bg-[#e2c97e] transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                  className="shrink-0 px-4 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.65rem] font-bold tracking-[0.15em] uppercase rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed">
                   {joining ? "…" : "Rejoindre"}
                 </button>
               </div>
@@ -283,7 +283,7 @@ export default function ProfilePage() {
         </div>
       )}
 
-      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg overflow-hidden mb-4">
+      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl overflow-hidden mb-4">
         <button onClick={() => setFbOpen(o => !o)}
           className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-[var(--t-glass-bg)] transition-colors">
           <div className="flex items-center gap-3">
@@ -303,7 +303,7 @@ export default function ProfilePage() {
             <div className="flex gap-2">
               {(["bug", "suggestion", "idee"] as const).map(t => (
                 <button key={t} onClick={() => setFbType(t)}
-                  className={`flex-1 py-2 text-[0.45rem] tracking-[0.12em] uppercase border rounded-lg transition-all ${
+                  className={`flex-1 py-2 text-[0.45rem] tracking-[0.12em] uppercase border rounded-xl transition-all ${
                     fbType === t ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c]/5" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[var(--t-border-15)]"
                   }`}>
                   {FB_LABELS[t]}
@@ -314,13 +314,13 @@ export default function ProfilePage() {
             <textarea value={fbMsg} onChange={e => setFbMsg(e.target.value)}
               placeholder="Décris le problème ou ton idée…"
               rows={4}
-              className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg text-[var(--t-text-70)] placeholder-[var(--t-text-20)] text-xs px-4 py-3 resize-none focus:outline-none focus:border-[#c9a84c]/40 transition-colors"/>
+              className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-xl text-[var(--t-text-70)] placeholder-[var(--t-text-20)] text-xs px-4 py-3 resize-none focus:outline-none focus:border-[#c9a84c]/40 transition-colors"/>
 
             {fbDone ? (
               <div className="text-center py-2 text-[#7eb8a0] text-xs tracking-wider">Merci, c'est envoyé ✓</div>
             ) : (
               <button onClick={sendFeedback} disabled={!fbMsg.trim() || fbSending}
-                className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#e2c97e] hover:shadow-[0_4px_16px_-4px_rgba(201,168,76,0.5)] hover:-translate-y-px transition-all duration-200 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                 {fbSending ? "Envoi…" : "Envoyer"}
               </button>
             )}
@@ -328,7 +328,7 @@ export default function ProfilePage() {
         )}
       </div>
 
-      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-lg p-5 flex items-center justify-between gap-4">
+      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 flex items-center justify-between gap-4">
         <div>
           <p className="text-sm text-[var(--t-text-70)]">Thème</p>
           <p className="text-[0.6rem] text-[var(--t-text-25)] tracking-wider mt-0.5">Sombre ou clair, selon ta préférence</p>
@@ -339,7 +339,7 @@ export default function ProfilePage() {
       {/* ── Questionnaire de précision d'objectif ── */}
       {showObjForm && (
         <div className="fixed inset-0 bg-black/75 z-50 flex items-center justify-center px-4" onClick={() => setShowObjForm(false)}>
-          <div className="bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg w-full max-w-md max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <div className="bg-[var(--t-bg)] border border-[var(--t-border)] rounded-xl w-full max-w-md max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="p-6 flex flex-col gap-5">
               <div>
                 <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1">Précise ton objectif</p>
@@ -348,7 +348,7 @@ export default function ProfilePage() {
 
               <div>
                 <label className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-40)] block mb-1.5">Ton objectif, en détail</label>
-                <textarea className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={4}
+                <textarea className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={4}
                   placeholder="Ex : perdre 5 kg de graisse tout en gardant ma masse musculaire, pour être à l'aise cet été..."
                   value={objForm.objectifs} onChange={e => setObjForm(f => ({ ...f, objectifs: e.target.value }))}/>
               </div>
@@ -358,7 +358,7 @@ export default function ProfilePage() {
                 <div className="flex flex-wrap gap-2 mb-2">
                   {ECHEANCES.map(e => (
                     <button key={e} type="button" onClick={() => setObjForm(f => ({ ...f, echeance: e, echeanceDate: "" }))}
-                      className={`text-[0.65rem] tracking-wider px-3 py-2 rounded-lg border transition-colors ${objForm.echeance === e ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-[var(--t-border-15)] text-[var(--t-text-40)] hover:border-[var(--t-border)]"}`}>
+                      className={`text-[0.65rem] tracking-wider px-3 py-2 rounded-xl border transition-colors ${objForm.echeance === e ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-[var(--t-border-15)] text-[var(--t-text-40)] hover:border-[var(--t-border)]"}`}>
                       {e}
                     </button>
                   ))}
@@ -366,7 +366,7 @@ export default function ProfilePage() {
                 <div className="relative flex items-center gap-2">
                   <span className="text-[0.58rem] text-[var(--t-text-25)] uppercase tracking-wider shrink-0">ou une date précise</span>
                   <button type="button" onClick={() => setShowEcheancePicker(o => !o)}
-                    className="bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] text-xs px-3 py-2 hover:border-[#c9a84c]/40 transition-colors">
+                    className="bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] text-xs px-3 py-2 hover:border-[#c9a84c]/40 transition-colors">
                     {objForm.echeanceDate
                       ? new Date(objForm.echeanceDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })
                       : "Choisir une date"}
@@ -388,7 +388,7 @@ export default function ProfilePage() {
                 <div className="flex flex-col gap-2">
                   {NIVEAU_OPTIONS.map(o => (
                     <button key={o.label} type="button" onClick={() => setObjForm(f => ({ ...f, niveauActivite: o.label }))}
-                      className={`px-4 py-3 text-left border rounded-lg transition-all ${objForm.niveauActivite === o.label ? "border-[#c9a84c] bg-[#c9a84c]/10" : "border-[var(--t-border)] hover:border-[var(--t-border-15)]"}`}>
+                      className={`px-4 py-3 text-left border rounded-xl transition-all ${objForm.niveauActivite === o.label ? "border-[#c9a84c] bg-[#c9a84c]/10" : "border-[var(--t-border)] hover:border-[var(--t-border-15)]"}`}>
                       <p className={`text-xs tracking-[0.1em] uppercase font-bold ${objForm.niveauActivite === o.label ? "text-[#c9a84c]" : "text-[var(--t-text-60)]"}`}>{o.label}</p>
                       <p className="text-[0.62rem] text-[var(--t-text-25)] mt-0.5">{o.desc}</p>
                     </button>
@@ -401,7 +401,7 @@ export default function ProfilePage() {
                 <div className="flex flex-wrap gap-2">
                   {EXPERIENCE_OPTIONS.map(o => (
                     <button key={o} type="button" onClick={() => setObjForm(f => ({ ...f, experience: o }))}
-                      className={`text-[0.65rem] tracking-wider px-3 py-2 rounded-lg border transition-colors ${objForm.experience === o ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-[var(--t-border-15)] text-[var(--t-text-40)] hover:border-[var(--t-border)]"}`}>
+                      className={`text-[0.65rem] tracking-wider px-3 py-2 rounded-xl border transition-colors ${objForm.experience === o ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-[var(--t-border-15)] text-[var(--t-text-40)] hover:border-[var(--t-border)]"}`}>
                       {o}
                     </button>
                   ))}
@@ -413,7 +413,7 @@ export default function ProfilePage() {
                 <div className="flex flex-wrap gap-2">
                   {DUREE_OPTIONS.map(o => (
                     <button key={o} type="button" onClick={() => setObjForm(f => ({ ...f, dureeSeance: o }))}
-                      className={`text-[0.65rem] tracking-wider px-3 py-2 rounded-lg border transition-colors ${objForm.dureeSeance === o ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-[var(--t-border-15)] text-[var(--t-text-40)] hover:border-[var(--t-border)]"}`}>
+                      className={`text-[0.65rem] tracking-wider px-3 py-2 rounded-xl border transition-colors ${objForm.dureeSeance === o ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-[var(--t-border-15)] text-[var(--t-text-40)] hover:border-[var(--t-border)]"}`}>
                       {o}
                     </button>
                   ))}
@@ -428,7 +428,7 @@ export default function ProfilePage() {
                     return (
                       <button key={l} type="button"
                         onClick={() => setObjForm(f => ({ ...f, lieux: checked ? f.lieux.filter(x => x !== l) : [...f.lieux, l] }))}
-                        className={`flex items-center gap-1.5 text-[0.65rem] tracking-wider px-3 py-2 rounded-lg border transition-colors ${checked ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-[var(--t-border-15)] text-[var(--t-text-40)] hover:border-[var(--t-border)]"}`}>
+                        className={`flex items-center gap-1.5 text-[0.65rem] tracking-wider px-3 py-2 rounded-xl border transition-colors ${checked ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-[var(--t-border-15)] text-[var(--t-text-40)] hover:border-[var(--t-border)]"}`}>
                         <span className={`w-3 h-3 rounded-sm border flex items-center justify-center shrink-0 ${checked ? "border-black" : "border-[var(--t-text-25)]"}`}>
                           {checked && <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
                         </span>
@@ -444,7 +444,7 @@ export default function ProfilePage() {
                 <div className="flex flex-wrap gap-2">
                   {["2", "3", "4", "5", "6"].map(n => (
                     <button key={n} type="button" onClick={() => setObjForm(f => ({ ...f, seances: n }))}
-                      className={`w-10 h-10 border rounded-lg text-sm font-bold transition-all ${objForm.seances === n ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-[var(--t-border-15)] text-[var(--t-text-40)] hover:border-[var(--t-border)]"}`}>
+                      className={`w-10 h-10 border rounded-xl text-sm font-bold transition-all ${objForm.seances === n ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-[var(--t-border-15)] text-[var(--t-text-40)] hover:border-[var(--t-border)]"}`}>
                       {n}
                     </button>
                   ))}
@@ -453,14 +453,14 @@ export default function ProfilePage() {
 
               <div>
                 <label className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-40)] block mb-1.5">Blessures</label>
-                <textarea className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={2}
+                <textarea className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={2}
                   placeholder="Ex : douleur genou gauche... (ou 'aucune')"
                   value={objForm.blessures} onChange={e => setObjForm(f => ({ ...f, blessures: e.target.value }))}/>
               </div>
 
               <div>
                 <label className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-40)] block mb-1.5">Alimentation</label>
-                <textarea className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={2}
+                <textarea className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={2}
                   placeholder="Ex : végétarien, allergie... (ou 'standard')"
                   value={objForm.alimentation} onChange={e => setObjForm(f => ({ ...f, alimentation: e.target.value }))}/>
               </div>
@@ -470,7 +470,7 @@ export default function ProfilePage() {
                 <div className="flex flex-wrap gap-2">
                   {STRESS_OPTIONS.map(o => (
                     <button key={o} type="button" onClick={() => setObjForm(f => ({ ...f, sommeilStress: o }))}
-                      className={`text-[0.65rem] tracking-wider px-3 py-2 rounded-lg border transition-colors ${objForm.sommeilStress === o ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-[var(--t-border-15)] text-[var(--t-text-40)] hover:border-[var(--t-border)]"}`}>
+                      className={`text-[0.65rem] tracking-wider px-3 py-2 rounded-xl border transition-colors ${objForm.sommeilStress === o ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-[var(--t-border-15)] text-[var(--t-text-40)] hover:border-[var(--t-border)]"}`}>
                       {o}
                     </button>
                   ))}
@@ -478,7 +478,7 @@ export default function ProfilePage() {
               </div>
 
               <button onClick={submitObjForm} disabled={objSaving || !objForm.objectifs.trim()}
-                className="bg-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.18em] uppercase py-3 hover:bg-[#e2c97e] transition-colors disabled:opacity-40 rounded-lg">
+                className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.18em] uppercase py-3 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40 rounded-xl">
                 {objSaving ? "Envoi…" : "Envoyer →"}
               </button>
             </div>
