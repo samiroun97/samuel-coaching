@@ -233,7 +233,6 @@ export default function SuiviPage() {
     }
   };
 
-  const lastWeight      = weightHist[0] ?? null;
   const alreadySelected = weightHist.some(e => e.date === selectedDate);
   const lastBF       = bfHist[0] ?? null;
   const daysSinceBF  = lastBF ? Math.floor((Date.now() - new Date(lastBF.date).getTime()) / 86400000) : null;
@@ -673,16 +672,9 @@ export default function SuiviPage() {
       <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 mb-4">
         <div className="flex items-center gap-3 mb-4">
           <img src={BALANCE_ICON} alt="" width={30} height={30} className="shrink-0"/>
-          <div className="flex-1 min-w-0 flex items-center justify-between gap-2 flex-wrap">
-            <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">
-              {selectedDate === today() ? "Pesée du jour" : `Pesée · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
-            </p>
-            {lastWeight && (
-              <span className="text-[0.62rem] text-[var(--t-text-25)] tracking-wider">
-                Dernière · {new Date(lastWeight.date + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })} · {lastWeight.weight} kg
-              </span>
-            )}
-          </div>
+          <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">
+            {selectedDate === today() ? "Pesée du jour" : `Pesée · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
+          </p>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5 bg-[var(--t-bg)] border border-[var(--t-border)] rounded-full pl-4 pr-3 py-2 focus-within:border-[#c9a84c]/40 transition-colors">

@@ -285,10 +285,9 @@ export default function AccueilPage() {
           <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-0.5">
             Pesée {selectedDate === today() ? "du jour" : `· ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
           </p>
-          {entryForDate
-            ? <p className="text-[0.65rem] text-[var(--t-text-30)] tracking-wider">Enregistrée — {entryForDate.weight} kg</p>
-            : <p className="text-[0.65rem] text-[var(--t-text-30)] tracking-wider">Dernière : {lastWeight ? `${lastWeight} kg` : "—"}</p>
-          }
+          {entryForDate && (
+            <p className="text-[0.65rem] text-[var(--t-text-30)] tracking-wider">Enregistrée — {entryForDate.weight} kg</p>
+          )}
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
