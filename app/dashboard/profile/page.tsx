@@ -6,10 +6,11 @@ import { isCoachUser, getMyCoachEmail } from "@/lib/coach";
 import { apiPost } from "@/lib/apiClient";
 import ThemeToggle from "@/components/ThemeToggle";
 import { CalendarPicker } from "@/components/CalendarPicker";
+import { OBJECTIF_TYPES, OBJECTIF_TYPE_LABEL, type ObjectifType } from "@/lib/objectifTypes";
 
 type Profile = {
   prenom: string; nom: string; age: number | null; poids: number | null; taille: number | null; sexe: string | null;
-  objectifs: string | null; objectif_echeance: string | null; objectif_pending: boolean;
+  objectifs: string | null; objectif_type: string | null; objectif_echeance: string | null; objectif_pending: boolean;
   seances_par_semaine: number | null; lieu_entrainement: string | null;
   blessures: string | null; alimentation: string | null; sommeil_stress: string | null;
   niveau_activite: string | null; experience: string | null; duree_seance: string | null;
@@ -52,7 +53,7 @@ export default function ProfilePage() {
   const [userId,      setUserId]      = useState<string | null>(null);
   const [showObjForm, setShowObjForm] = useState(false);
   const [objForm,     setObjForm]     = useState({
-    objectifs: "", echeance: "", echeanceDate: "", seances: "", lieux: [] as string[],
+    objectifs: "", objectifType: "" as ObjectifType | "", echeance: "", echeanceDate: "", seances: "", lieux: [] as string[],
     blessures: "", alimentation: "", sommeilStress: "",
     niveauActivite: "", experience: "", dureeSeance: "",
   });
@@ -85,7 +86,7 @@ export default function ProfilePage() {
         if ((count ?? 0) > 0) setUnread(true);
       }
       const { data } = await supabase.from("profiles")
-        .select("prenom,nom,age,poids,taille,sexe,objectifs,objectif_echeance,objectif_pending,seances_par_semaine,lieu_entrainement,blessures,alimentation,sommeil_stress,niveau_activite,experience,duree_seance")
+        .select("prenom,nom,age,poids,taille,sexe,objectifs,objectif_type,objectif_echeance,objectif_pending,seances_par_semaine,lieu_entrainement,blessures,alimentation,sommeil_stress,niveau_activite,experience,duree_seance")
         .eq("id", user.id).single();
       if (data) setProfile(data as Profile);
     })();
@@ -104,7 +105,7 @@ export default function ProfilePage() {
     if (!profile) return;
     const knownLieux = (profile.lieu_entrainement || "").split(",").map(s => s.trim()).filter(s => LIEUX.includes(s));
     setObjForm({
-      objectifs: profile.objectifs || "", echeance: profile.objectif_echeance || "", echeanceDate: "",
+      objectifs: profile.objectifs || "", objectifType: (profile.objectif_type as ObjectifType) || "", echeance: profile.objectif_echeance || "", echeanceDate: "",
       seances: String(profile.seances_par_semaine || ""), lieux: knownLieux,
       blessures: profile.blessures || "", alimentation: profile.alimentation || "", sommeilStress: profile.sommeil_stress || "",
       niveauActivite: profile.niveau_activite || "", experience: profile.experience || "", dureeSeance: profile.duree_seance || "",
@@ -117,6 +118,7 @@ export default function ProfilePage() {
     setObjSaving(true);
     const fields = {
       objectifs: objForm.objectifs.trim(),
+      objectif_type: objForm.objectifType || profile?.objectif_type || null,
       objectif_echeance: objForm.echeance || null,
       seances_par_semaine: objForm.seances ? parseInt(objForm.seances) : profile?.seances_par_semaine,
       lieu_entrainement: objForm.lieux.length ? objForm.lieux.join(", ") : profile?.lieu_entrainement,
@@ -209,6 +211,11 @@ export default function ProfilePage() {
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Objectif</p>
+            {profile?.objectif_type && (
+              <span className="text-[0.55rem] tracking-[0.1em] uppercase text-[#c9a84c] bg-[#c9a84c]/10 border border-[#c9a84c]/25 rounded-full px-2 py-0.5">
+                {OBJECTIF_TYPE_LABEL[profile.objectif_type as ObjectifType] ?? profile.objectif_type}
+              </span>
+            )}
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-0 group-hover:opacity-60 transition-opacity"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
           </div>
           {profile?.objectif_echeance && <p className="text-[0.62rem] text-[var(--t-text-25)] tracking-wider uppercase">Échéance : {profile.objectif_echeance}</p>}
@@ -344,6 +351,18 @@ export default function ProfilePage() {
               <div>
                 <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1">Précise ton objectif</p>
                 <p className="text-xs text-[var(--t-text-30)]">Pour que ton coach te construise un plan vraiment adapté</p>
+              </div>
+
+              <div>
+                <label className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-40)] block mb-1.5">Type d'objectif</label>
+                <div className="flex flex-wrap gap-2">
+                  {OBJECTIF_TYPES.map(o => (
+                    <button key={o.value} type="button" onClick={() => setObjForm(f => ({ ...f, objectifType: o.value }))}
+                      className={`text-[0.65rem] tracking-wider px-3 py-2 rounded-xl border transition-colors ${objForm.objectifType === o.value ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-[var(--t-border-15)] text-[var(--t-text-40)] hover:border-[var(--t-border)]"}`}>
+                      {o.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div>

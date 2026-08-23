@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
           content: `Tu es Samuel, coach sportif expert. Voici le bilan chiffré de la semaine de ton client :
 ${JSON.stringify(stats, null, 2)}
 
-Génère un retour en 3 domaines, plus une synthèse globale. CHAQUE conseil doit être directement lié à l'objectif déclaré ("objectifs") et au profil du client ("experience", "niveauActivite"). Sois direct, concret, sans généralités.
+Génère un retour en 3 domaines, plus une synthèse globale. CHAQUE conseil doit être directement lié à l'objectif du client et à son profil ("experience", "niveauActivite"). "objectifType" (perte_gras / prise_muscle / recomposition / maintien) est la donnée structurée qui fait foi pour juger si le déficit/surplus de la semaine va dans le bon sens ; "objectifs" est le texte libre qui apporte la nuance (délai, contraintes...). Sois direct, concret, sans généralités.
 
 Retourne UNIQUEMENT ce JSON valide, sans texte avant ni après :
 {

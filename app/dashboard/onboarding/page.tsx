@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
+import { OBJECTIF_TYPES } from "@/lib/objectifTypes";
 
 const steps = ["Identité", "Entraînement", "Santé", "Objectifs"];
 
@@ -22,7 +23,7 @@ const initialForm = {
   niveau_activite: "", experience: "", seances_par_semaine: "",
   duree_seance: "", lieu_entrainement: "",
   blessures: "", alimentation: "", sommeil_stress: "",
-  objectifs: "",
+  objectifs: "", objectif_type: "",
 };
 
 function validateStep(step: number, form: typeof initialForm): string | null {
@@ -47,6 +48,7 @@ function validateStep(step: number, form: typeof initialForm): string | null {
     if (!form.sommeil_stress) return "Le niveau de sommeil/stress est requis.";
   }
   if (step === 3) {
+    if (!form.objectif_type) return "Choisis ton type d'objectif.";
     if (!form.objectifs) return "Décris tes objectifs.";
   }
   return null;
@@ -82,6 +84,7 @@ export default function OnboardingPage() {
           alimentation: profile.alimentation || "",
           sommeil_stress: profile.sommeil_stress || "",
           objectifs: profile.objectifs || "",
+          objectif_type: profile.objectif_type || "",
         });
         setIsEditing(true);
       }
@@ -254,6 +257,16 @@ export default function OnboardingPage() {
           {step === 3 && (
             <div className="flex flex-col gap-5">
               <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl tracking-wider text-[var(--t-text)] mb-2">TES OBJECTIFS</h2>
+              <div>
+                <label className={labelClass}>Type d'objectif</label>
+                <div className="flex flex-wrap gap-2">
+                  {OBJECTIF_TYPES.map(o => (
+                    <button key={o.value} type="button" onClick={() => set("objectif_type", o.value)} className={chipClass(form.objectif_type === o.value)}>
+                      {o.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div>
                 <label className={labelClass}>Décris tes objectifs en 2-3 lignes</label>
                 <textarea className={`${inputClass} resize-none`} rows={5} placeholder="Ex : je veux perdre du ventre, gagner en force et me sentir mieux dans mon corps..." value={form.objectifs} onChange={e => set("objectifs", e.target.value)} />

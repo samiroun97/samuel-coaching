@@ -1,3 +1,5 @@
+import { goalAwareStatus, OBJECTIF_TYPE_LABEL, type ObjectifType } from "@/lib/objectifTypes";
+
 export type ReportSection = { point_fort: string; point_faible: string; conseil: string };
 
 export type DailyBreakdownEntry = { date: string; calories: number; tdee: number; balance: number };
@@ -28,6 +30,7 @@ export type WeeklyReportData = {
   weightStart: number | null;
   weightEnd: number | null;
   objectifs?: string | null;
+  objectifType?: string | null;
   dailyBreakdown?: DailyBreakdownEntry[];
   synthese?: string;
   nutrition: ReportSection;
@@ -73,12 +76,12 @@ function MacroBar({ label, avg, goal, color }: { label: string; avg: number; goa
   );
 }
 
-function DayMini({ entry }: { entry: DailyBreakdownEntry }) {
+function DayMini({ entry, objectifType }: { entry: DailyBreakdownEntry; objectifType?: string | null }) {
   const d = new Date(entry.date + "T12:00:00");
   const label = d.toLocaleDateString("fr-FR", { weekday: "short" }).replace(".", "");
   const dayNum = d.getDate();
   const status = Math.abs(entry.balance) <= 100 ? "maintenance" : entry.balance > 0 ? "surplus" : "deficit";
-  const color = status === "surplus" ? "#e07070" : status === "deficit" ? "#7eb8a0" : "#c9a84c";
+  const { color } = goalAwareStatus(status, objectifType);
   return (
     <div className="flex-1 min-w-[4.2rem] border border-white/10 bg-[#111] p-2.5 text-center break-inside-avoid">
       <p className="text-[0.6rem] tracking-wider uppercase text-white/30 capitalize">{label} {dayNum}</p>
@@ -101,17 +104,17 @@ function FeedbackBlock({ title, section }: { title: string; section: ReportSecti
     // Le padding-top (sur cette enveloppe transparente) sert d'espace de tête : contrairement
     // à une margin-top, il n'est jamais absorbé si ce bloc atterrit en haut d'une nouvelle page
     // après une coupure — donc l'air reste garanti même quand "print:mb-*" seul ne suffit pas.
-    <div className="mb-4 print:mb-0 print:pt-8 break-inside-avoid">
+    <div className="mb-3 print:mb-0 print:pt-6 break-inside-avoid">
       <div className="relative border border-white/10 bg-[#111]">
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-[#c9a84c]/40" />
-        <div className="px-5 py-3 print:py-2 border-b border-white/5 flex items-center gap-2.5">
+        <div className="px-5 py-2.5 border-b border-white/5">
           <p style={bebas} className="text-sm tracking-[0.15em] text-[#c9a84c] uppercase">{title}</p>
         </div>
         <div className="divide-y divide-white/5">
           {rows.map(r => (
-            <div key={r.label} className="flex gap-3 px-5 py-3 print:py-2">
-              <span className="text-[0.62rem] tracking-[0.15em] uppercase shrink-0 w-24 pt-0.5" style={{ color: r.color }}>{r.label}</span>
-              <p className="text-[0.75rem] text-white/70 leading-relaxed">{r.text}</p>
+            <div key={r.label} className="flex gap-3 px-5 py-2.5">
+              <span className="text-[0.6rem] tracking-[0.12em] uppercase shrink-0 w-[5.2rem] pt-0.5" style={{ color: r.color }}>{r.label}</span>
+              <p className="text-[0.72rem] text-white/70 leading-snug">{r.text}</p>
             </div>
           ))}
         </div>
@@ -122,8 +125,8 @@ function FeedbackBlock({ title, section }: { title: string; section: ReportSecti
 
 export function WeeklyReport({ data }: { data: WeeklyReportData }) {
   const fmtDate = (d: string) => new Date(d + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
-  const statusColor = data.balanceStatus === "surplus" ? "#e07070" : data.balanceStatus === "deficit" ? "#7eb8a0" : "#c9a84c";
-  const statusLabel = data.balanceStatus === "surplus" ? "Surplus calorique" : data.balanceStatus === "deficit" ? "Déficit calorique" : "Maintien calorique";
+  const { color: statusColor, label: statusLabel, note: statusNote } = goalAwareStatus(data.balanceStatus, data.objectifType);
+  const objectifTypeLabel = data.objectifType ? OBJECTIF_TYPE_LABEL[data.objectifType as ObjectifType] : null;
   // On ne compte que les jours écoulés (daysElapsed) : pour une semaine en cours non
   // terminée, les jours à venir n'ont pas encore de dépense/consommation réelle et ne
   // doivent pas être extrapolés dans le total (sinon leur BMR apparaît comme déjà "brûlé").
@@ -143,7 +146,9 @@ export function WeeklyReport({ data }: { data: WeeklyReportData }) {
         <p className="text-white/40 text-sm">
           {data.clientName ? `Préparé pour ${data.clientName}` : "Bilan personnalisé"} · {fmtDate(data.weekStart)} — {fmtDate(data.weekEnd)}
         </p>
-        {data.objectifs && <p className="text-[0.68rem] tracking-[0.15em] uppercase text-[#c9a84c]/70 mt-2">{data.objectifs}</p>}
+        {objectifTypeLabel && (
+          <p className="text-[0.62rem] tracking-[0.2em] uppercase text-[#c9a84c]/70 mt-2">Objectif · {objectifTypeLabel}</p>
+        )}
       </div>
 
       {/* Synthèse du coach */}
@@ -162,6 +167,7 @@ export function WeeklyReport({ data }: { data: WeeklyReportData }) {
           <div>
             <p className="text-[0.65rem] tracking-[0.2em] uppercase text-white/30 mb-1">Résultat de la semaine</p>
             <p style={{ ...bebas, color: statusColor }} className="text-3xl tracking-wide">{statusLabel}</p>
+            {statusNote && <p className="text-[0.62rem] tracking-[0.1em] uppercase mt-1" style={{ color: statusColor }}>{statusNote}</p>}
           </div>
           <p className="text-sm text-white/60">{data.balancePerDay > 0 ? "+" : ""}{fmtInt(data.balancePerDay)} kcal / jour</p>
         </div>
@@ -186,17 +192,15 @@ export function WeeklyReport({ data }: { data: WeeklyReportData }) {
         <div className="mb-6 print:mb-3 break-inside-avoid">
           <p className="text-[0.65rem] tracking-[0.2em] uppercase text-white/30 mb-2">Jour par jour</p>
           <div className="flex gap-2 print:gap-1.5">
-            {data.dailyBreakdown.map(entry => <DayMini key={entry.date} entry={entry} />)}
+            {data.dailyBreakdown.map(entry => <DayMini key={entry.date} entry={entry} objectifType={data.objectifType} />)}
           </div>
         </div>
       )}
 
-      {/* Stats grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 print:gap-2 mb-6 print:mb-3 print:grid-cols-3">
-        <StatCard label="Calories / jour" value={`${fmtInt(data.avgCalories)} kcal`} gold />
+      {/* Stats grid — calories/TDEE déjà couverts par "Résultat de la semaine" ci-dessus */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 print:gap-2 mb-6 print:mb-3 print:grid-cols-4">
         <StatCard label="Séances" value={data.targetSessions ? `${data.sessionsCount} / ${data.targetSessions}` : `${data.sessionsCount}`} gold />
         <StatCard label="Jours de repos" value={`${data.restDays} / ${data.daysElapsed}`} />
-        <StatCard label="TDEE moyen" value={`${fmtInt(data.avgTdee)} kcal`} />
         <StatCard label="Pas / jour" value={fmtInt(data.avgSteps)} gold />
         <StatCard label="Poids" value={data.weightStart !== null && data.weightEnd !== null ? `${data.weightStart} → ${data.weightEnd} kg` : "—"} />
       </div>

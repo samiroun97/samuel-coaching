@@ -12,7 +12,7 @@ import { useSelectedDate } from "@/lib/useSelectedDate";
 import { syncSteps } from "@/lib/steps";
 import { BALANCE_ICON } from "@/components/balanceIcon";
 
-type Profile      = { prenom?: string; sexe?: string; poids?: number; taille?: number; age?: number; objectifs?: string; seances_par_semaine?: number; experience?: string; niveau_activite?: string };
+type Profile      = { prenom?: string; sexe?: string; poids?: number; taille?: number; age?: number; objectifs?: string; objectif_type?: string; seances_par_semaine?: number; experience?: string; niveau_activite?: string };
 type WeightEntry  = { id: string; date: string; weight: number };
 type BodyFatEntry = {
   id: string; date: string; body_fat: number; note: string;
@@ -197,7 +197,7 @@ export default function SuiviPage() {
       setUserEmail(user.email ?? "");
       isCoachUser(user.id).then(setIsCoach);
       getMyCoachEmail(user.id).then(setCoachEmail);
-      const { data: p } = await supabase.from("profiles").select("prenom,poids,taille,age,sexe,objectifs,seances_par_semaine,experience,niveau_activite").eq("id", user.id).single();
+      const { data: p } = await supabase.from("profiles").select("prenom,poids,taille,age,sexe,objectifs,objectif_type,seances_par_semaine,experience,niveau_activite").eq("id", user.id).single();
       if (p) setProfile(p as Profile);
 
       const wRaw = localStorage.getItem(`weight_history_${user.id}`);
@@ -346,7 +346,7 @@ export default function SuiviPage() {
       };
 
       const res = await apiPost("/api/suivi/weekly-report", {
-        stats: { ...stats, objectifs: profile?.objectifs ?? null, experience: profile?.experience ?? null, niveauActivite: profile?.niveau_activite ?? null },
+        stats: { ...stats, objectifs: profile?.objectifs ?? null, objectifType: profile?.objectif_type ?? null, experience: profile?.experience ?? null, niveauActivite: profile?.niveau_activite ?? null },
       });
       if (!res.ok) throw new Error(await res.text() || `Erreur ${res.status}`);
       const feedback = await res.json();
@@ -355,6 +355,8 @@ export default function SuiviPage() {
       sessionStorage.setItem("pending_weekly_report", JSON.stringify({
         ...stats,
         clientName: profile?.prenom,
+        objectifs: profile?.objectifs ?? null,
+        objectifType: profile?.objectif_type ?? null,
         synthese: feedback.synthese,
         nutrition: feedback.nutrition,
         neat: feedback.neat,
