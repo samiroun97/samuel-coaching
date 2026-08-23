@@ -75,7 +75,8 @@ function MealTypeBadge({ type, size = 42 }: { type: string; size?: number }) {
 
 function MacroChip({ label, value, color }: { label: string; value: number; color: string }) {
   return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.58rem] tracking-wide whitespace-nowrap" style={{ backgroundColor: `${color}18`, color }}>
+    <span className="inline-flex items-center gap-1.5 text-[0.62rem] tracking-wide whitespace-nowrap text-[var(--t-text-40)]">
+      <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: color }}/>
       {label} {Math.round(value)}g
     </span>
   );
@@ -1236,7 +1237,7 @@ export default function NutritionPage() {
                         </button>
                       </div>
                     </div>
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-x-3.5 gap-y-1">
                       <MacroChip label="P" value={f.proteines} color="#dd8790"/>
                       <MacroChip label="G" value={f.glucides} color="#e8a374"/>
                       <MacroChip label="L" value={f.lipides} color="#eed37a"/>

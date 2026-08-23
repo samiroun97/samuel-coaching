@@ -143,6 +143,7 @@ export default function SuiviPage() {
   const [reportSent,     setReportSent]     = useState(false);
   const [showUpload,     setShowUpload]     = useState(false);
   const [showManual,     setShowManual]     = useState(false);
+  const [showBFInfo,     setShowBFInfo]     = useState(false);
   const [weightHistOpen, setWeightHistOpen] = useState(false);
   const [manualVal,      setManualVal]      = useState("");
   const [manualDate,     setManualDate]     = useState("");
@@ -766,18 +767,27 @@ export default function SuiviPage() {
         </div>
 
         {/* Encadré explicatif */}
-        <div className="border-t border-[var(--t-border-soft)] px-5 py-4 bg-[var(--t-bg)]/60">
-          <p className="text-[0.68rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mb-3">Pourquoi suivre ton taux de masse grasse plutôt que juste ton poids ?</p>
-          <div className="flex flex-col gap-2.5">
-            <p className="text-[0.65rem] text-[var(--t-text-35)] leading-relaxed">
-              Ta balance ne te dit qu&apos;un chiffre : ton poids total. Mais deux personnes qui pèsent 70 kg peuvent avoir un corps complètement différent — l&apos;une avec plus de muscle, l&apos;autre avec plus de gras. Résultat : leur corps ne brûle pas les mêmes calories au quotidien, même à poids égal.
-            </p>
-            <p className="text-[0.65rem] text-[var(--t-text-35)] leading-relaxed">
-              En connaissant ton taux de masse grasse, on peut calculer précisément combien de calories ton corps brûle au repos (ton métabolisme de base) — de façon bien plus juste qu&apos;avec le poids seul.
-            </p>
-            <p className="text-[0.65rem] text-[var(--t-text-35)] leading-relaxed">
-              C&apos;est aussi le meilleur moyen de savoir si tu progresses vraiment. Si tu perds du gras et prends du muscle en même temps, ton poids sur la balance peut rester identique... alors que ton corps change complètement. En suivant ton taux de masse grasse toutes les 2 semaines, tu vois ta vraie évolution même quand le chiffre sur la balance ne bouge pas.
-            </p>
+        <button onClick={() => setShowBFInfo(v => !v)}
+          className="w-full flex items-center justify-between gap-2 border-t border-[var(--t-border-soft)] px-5 py-3 hover:bg-[var(--t-bg)]/40 transition-colors">
+          <span className="text-[0.62rem] tracking-[0.12em] uppercase text-[var(--t-text-30)]">Pourquoi suivre le body fat plutôt que le poids ?</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+            className={`text-[var(--t-text-25)] shrink-0 transition-transform duration-300 ${showBFInfo ? "rotate-180" : ""}`}>
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+        <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${showBFInfo ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
+          <div className="overflow-hidden">
+            <div className="px-5 pb-5 pt-1 bg-[var(--t-bg)]/60 flex flex-col gap-2.5">
+              <p className="text-[0.65rem] text-[var(--t-text-35)] leading-relaxed">
+                Ta balance ne te dit qu&apos;un chiffre : ton poids total. Mais deux personnes qui pèsent 70 kg peuvent avoir un corps complètement différent — l&apos;une avec plus de muscle, l&apos;autre avec plus de gras. Résultat : leur corps ne brûle pas les mêmes calories au quotidien, même à poids égal.
+              </p>
+              <p className="text-[0.65rem] text-[var(--t-text-35)] leading-relaxed">
+                En connaissant ton taux de masse grasse, on peut calculer précisément combien de calories ton corps brûle au repos (ton métabolisme de base) — de façon bien plus juste qu&apos;avec le poids seul.
+              </p>
+              <p className="text-[0.65rem] text-[var(--t-text-35)] leading-relaxed">
+                C&apos;est aussi le meilleur moyen de savoir si tu progresses vraiment. Si tu perds du gras et prends du muscle en même temps, ton poids sur la balance peut rester identique... alors que ton corps change complètement. En suivant ton taux de masse grasse toutes les 2 semaines, tu vois ta vraie évolution même quand le chiffre sur la balance ne bouge pas.
+              </p>
+            </div>
           </div>
         </div>
       </div>
