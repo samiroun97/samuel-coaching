@@ -397,6 +397,17 @@ export default function NutritionPage() {
   const [tdeeParts,   setTdeeParts]   = useState({ neat: 0, eat: 0 });
   const [deletedFood, setDeletedFood] = useState<{ food: Food; index: number } | null>(null);
   const undoTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const [deletedMeal, setDeletedMeal] = useState<{ meal: SavedMeal; index: number } | null>(null);
+  const undoMealTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const removeSavedMeal = (id: string) => {
+    const index = savedMeals.findIndex(m => m.id === id);
+    if (index === -1) return;
+    const meal = savedMeals[index];
+    setSavedMeals(s => s.filter(m => m.id !== id));
+    clearTimeout(undoMealTimer.current);
+    setDeletedMeal({ meal, index });
+    undoMealTimer.current = setTimeout(() => setDeletedMeal(null), 6000);
+  };
 
   const [modalMode, setModalMode] = useState<"ai"|"search"|"saved">("ai");
   const [addMealType, setAddMealType] = useState<string>(MEAL_TYPES[0]);
@@ -417,6 +428,8 @@ export default function NutritionPage() {
   const scanRef         = useRef<HTMLInputElement>(null);
   const [scanError, setScanError] = useState("");
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [scanTakingLong, setScanTakingLong] = useState(false);
+  const scanTimeoutRef  = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const [torchOn, setTorchOn] = useState(false);
   const [torchAvailable, setTorchAvailable] = useState(false);
   const videoRef        = useRef<HTMLVideoElement>(null);
@@ -728,9 +741,20 @@ export default function NutritionPage() {
     return downscaleViaImage(file);
   };
 
+  // Un fichier aussi lourd (photo RAW, Live Photo exportée, capture d'un appareil très
+  // récent) fait courir un vrai risque de plantage à la compression, même avec les
+  // protections ci-dessous. Mieux vaut prévenir tout de suite que tenter et planter.
+  const MAX_PHOTO_FILE_BYTES = 30 * 1024 * 1024;
+
   const selectPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return;
     setAiError(""); setAiResult(null);
+    if (file.size > MAX_PHOTO_FILE_BYTES) {
+      if (photoRef.current) photoRef.current.value = "";
+      if (galleryRef.current) galleryRef.current.value = "";
+      setAiError("Cette photo est trop lourde et risquerait de faire planter la page. Reprends-la avec l'appareil photo plutôt que depuis un fichier haute résolution.");
+      return;
+    }
     if (photoRef.current) photoRef.current.value = "";
     if (galleryRef.current) galleryRef.current.value = "";
     // Posée avant compressImage (l'étape coûteuse en mémoire) : si l'onglet est tué pendant
@@ -806,7 +830,9 @@ export default function NutritionPage() {
   const stopScanner = useCallback(() => {
     scanControlsRef.current?.stop();
     scanControlsRef.current = null;
+    clearTimeout(scanTimeoutRef.current);
     setScannerOpen(false);
+    setScanTakingLong(false);
     setTorchOn(false);
     setTorchAvailable(false);
   }, []);
@@ -829,6 +855,12 @@ export default function NutritionPage() {
     setScanError("");
     if (!navigator.mediaDevices?.getUserMedia) { scanRef.current?.click(); return; }
     setScannerOpen(true);
+    setScanTakingLong(false);
+    // Le décodage caméra live peut ramer selon l'éclairage/l'état du code-barres (froissé,
+    // reflet...) — au-delà d'un certain temps, on propose une porte de sortie plutôt que de
+    // laisser l'utilisateur bloqué face à un cadre qui ne détecte rien.
+    clearTimeout(scanTimeoutRef.current);
+    scanTimeoutRef.current = setTimeout(() => setScanTakingLong(true), 7000);
     requestAnimationFrame(async () => {
       if (!videoRef.current) return;
       try {
@@ -859,6 +891,7 @@ export default function NutritionPage() {
         scanControlsRef.current = controls;
         setTorchAvailable(!!controls.switchTorch);
       } catch {
+        clearTimeout(scanTimeoutRef.current);
         setScanError("Impossible d'accéder à la caméra. Vérifie les autorisations.");
         setScannerOpen(false);
       }
@@ -866,7 +899,7 @@ export default function NutritionPage() {
   };
 
   // Coupe bien la caméra si l'utilisateur quitte la page pendant un scan.
-  useEffect(() => () => { scanControlsRef.current?.stop(); }, []);
+  useEffect(() => () => { scanControlsRef.current?.stop(); clearTimeout(scanTimeoutRef.current); }, []);
 
   const doSearch = useCallback(async (q: string) => {
     setSearching(true);
@@ -1205,7 +1238,8 @@ export default function NutritionPage() {
                 </div>
                 <div className="divide-y divide-[var(--t-border-soft)]">
                 {items.map(f => {
-                  const isFav = savedMeals.some(s => s.name === f.name);
+                  const favMeal = savedMeals.find(s => s.name === f.name);
+                  const isFav = !!favMeal;
                   return (
                   <div key={f.id} className="px-4 py-3 group">
                     <div className="flex items-center justify-between gap-2 mb-2">
@@ -1218,7 +1252,7 @@ export default function NutritionPage() {
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
                         </button>
                         <button
-                          onClick={() => isFav ? setSavedMeals(s => s.filter(m => m.name !== f.name)) : saveMeal({ ...f, base_qty: 100, unit: "g" })}
+                          onClick={() => favMeal ? removeSavedMeal(favMeal.id) : saveMeal({ ...f, base_qty: 100, unit: "g" })}
                           title={isFav ? "Retirer des favoris" : "Ajouter aux favoris"}
                           className={`transition-colors ${isFav ? "text-[#c9a84c] opacity-100" : "text-[var(--t-text-35)] hover:text-[#c9a84c] opacity-70 group-hover:opacity-100"}`}>
                           <svg width="16" height="16" viewBox="0 0 24 24" fill={isFav ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
@@ -1661,8 +1695,8 @@ export default function NutritionPage() {
                           </div>
                           <div className="flex items-center gap-3">
                             <span className="text-xs text-[var(--t-text-40)]">{Math.round(meal.calories)} kcal</span>
-                            <button onClick={e => { e.stopPropagation(); setSavedMeals(s => s.filter(m => m.id !== meal.id)); if (selectedSaved?.id === meal.id) setSelectedSaved(null); }}
-                              className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
+                            <button onClick={e => { e.stopPropagation(); removeSavedMeal(meal.id); if (selectedSaved?.id === meal.id) setSelectedSaved(null); }}
+                              className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors p-1.5 -m-1.5">
                               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                             </button>
                           </div>
@@ -1775,6 +1809,12 @@ export default function NutritionPage() {
             <p className="text-[var(--t-text-40)] text-[0.6rem] tracking-[0.12em] uppercase text-center max-w-[220px]">
               Tiens le téléphone stable, à 15-20 cm (trop près = flou), code-barres bien à plat
             </p>
+            {scanTakingLong && (
+              <button onClick={stopScanner}
+                className="pointer-events-auto bg-[var(--t-surface)] text-[var(--t-text-70)] text-[0.62rem] tracking-[0.12em] uppercase px-4 py-2.5 rounded-full border border-[var(--t-border-15)] hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors">
+                Toujours rien ? Recherche le nom manuellement
+              </button>
+            )}
           </div>
 
           <div className="relative z-10 flex items-center justify-between px-5 pt-6">
@@ -1815,6 +1855,28 @@ export default function NutritionPage() {
                 return copy;
               });
               setDeletedFood(null);
+            }}
+            className="text-[0.7rem] tracking-[0.15em] uppercase text-[#c9a84c] hover:text-[#e2c97e] transition-colors">
+            Annuler
+          </button>
+        </div>
+      )}
+
+      {/* ══ ANNULER SUPPRESSION FAVORI ══ */}
+      {deletedMeal && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[70] flex items-center gap-4 bg-[var(--t-surface)] border border-[var(--t-border-15)] rounded-xl px-5 py-3 shadow-lg">
+          <span className="text-xs text-[var(--t-text-70)]">
+            &quot;{deletedMeal.meal.name}&quot; retiré des favoris
+          </span>
+          <button
+            onClick={() => {
+              clearTimeout(undoMealTimer.current);
+              setSavedMeals(s => {
+                const copy = [...s];
+                copy.splice(Math.min(deletedMeal.index, copy.length), 0, deletedMeal.meal);
+                return copy;
+              });
+              setDeletedMeal(null);
             }}
             className="text-[0.7rem] tracking-[0.15em] uppercase text-[#c9a84c] hover:text-[#e2c97e] transition-colors">
             Annuler
