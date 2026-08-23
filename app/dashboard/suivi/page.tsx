@@ -624,45 +624,54 @@ export default function SuiviPage() {
       )}
 
       {/* ── Bilan hebdomadaire PDF ── */}
-      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 mb-4">
-        <div className="flex items-center justify-between gap-4 flex-wrap mb-3">
-          <div>
-            <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Bilan de la semaine</p>
-            <p className="text-[0.62rem] text-[var(--t-text-25)] mt-0.5 tracking-wider">
-              Nutrition, entraînement, repos et déficit/surplus — exportable en PDF
-            </p>
+      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl overflow-hidden mb-4">
+        <div className="p-5">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-full bg-[#c9a84c]/10 border border-[#c9a84c]/25 flex items-center justify-center shrink-0">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M9 13h6"/><path d="M9 17h6"/>
+              </svg>
+            </div>
+            <div className="min-w-0">
+              <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Bilan de la semaine</p>
+              <p className="text-[0.6rem] text-[var(--t-text-25)] mt-0.5 tracking-wider">
+                Nutrition, entraînement, repos et déficit/surplus
+              </p>
+            </div>
           </div>
-          <button onClick={downloadWeeklyReport} disabled={reportLoading}
-            className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.68rem] font-bold tracking-[0.15em] uppercase px-4 py-2.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-40 flex items-center gap-2 shrink-0">
-            {reportLoading
-              ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Préparation…</>
-              : "Voir le bilan"}
-          </button>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => { const d = new Date(reportWeekMonday + "T12:00:00"); d.setDate(d.getDate() - 7); setReportWeekMonday(d.toISOString().split("T")[0]); }}
-            className="w-7 h-7 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-xl hover:text-[var(--t-text-60)] hover:border-[var(--t-text-20)] transition-colors flex items-center justify-center shrink-0">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-          </button>
-          <p className="flex-1 text-center text-[0.65rem] tracking-[0.12em] uppercase text-[var(--t-text-40)]">
-            {new Date(reportWeekMonday + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}
-            {" — "}
-            {(() => { const d = new Date(reportWeekMonday + "T12:00:00"); d.setDate(d.getDate() + 6); return d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }); })()}
-          </p>
-          <button
-            onClick={() => { const d = new Date(reportWeekMonday + "T12:00:00"); d.setDate(d.getDate() + 7); const next = d.toISOString().split("T")[0]; if (next <= weekMonday) setReportWeekMonday(next); }}
-            disabled={reportWeekMonday === weekMonday}
-            className="w-7 h-7 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-xl hover:text-[var(--t-text-60)] hover:border-[var(--t-text-20)] transition-colors flex items-center justify-center shrink-0 disabled:opacity-20 disabled:cursor-not-allowed">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-          {reportWeekMonday !== weekMonday && (
-            <button onClick={() => setReportWeekMonday(weekMonday)}
-              className="text-[0.62rem] tracking-[0.12em] uppercase text-[#c9a84c] rounded-xl border border-[#c9a84c]/30 px-2 py-1 hover:bg-[#c9a84c]/10 transition-colors shrink-0">
-              Actuelle
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => { const d = new Date(reportWeekMonday + "T12:00:00"); d.setDate(d.getDate() - 7); setReportWeekMonday(d.toISOString().split("T")[0]); }}
+              className="w-9 h-9 rounded-full border border-[var(--t-border)] bg-[var(--t-surface-2)] text-[var(--t-text-50)] hover:text-[var(--t-text-80)] hover:border-[var(--t-text-25)] transition-colors flex items-center justify-center shrink-0">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
-          )}
+            <p className="flex-1 text-center text-[0.65rem] tracking-[0.12em] uppercase text-[var(--t-text-40)] border border-[var(--t-border)] bg-[var(--t-surface-2)] rounded-full py-2 px-3">
+              {new Date(reportWeekMonday + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}
+              {" — "}
+              {(() => { const d = new Date(reportWeekMonday + "T12:00:00"); d.setDate(d.getDate() + 6); return d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }); })()}
+            </p>
+            <button
+              onClick={() => { const d = new Date(reportWeekMonday + "T12:00:00"); d.setDate(d.getDate() + 7); const next = d.toISOString().split("T")[0]; if (next <= weekMonday) setReportWeekMonday(next); }}
+              disabled={reportWeekMonday === weekMonday}
+              className="w-9 h-9 rounded-full border border-[var(--t-border)] bg-[var(--t-surface-2)] text-[var(--t-text-50)] hover:text-[var(--t-text-80)] hover:border-[var(--t-text-25)] transition-colors flex items-center justify-center shrink-0 disabled:opacity-20 disabled:cursor-not-allowed">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+            {reportWeekMonday !== weekMonday && (
+              <button onClick={() => setReportWeekMonday(weekMonday)}
+                className="text-[0.62rem] tracking-[0.12em] uppercase text-[#c9a84c] rounded-full border border-[#c9a84c]/30 px-3 py-2 hover:bg-[#c9a84c]/10 transition-colors shrink-0">
+                Actuelle
+              </button>
+            )}
+          </div>
         </div>
+
+        <button onClick={downloadWeeklyReport} disabled={reportLoading}
+          className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.72rem] font-bold tracking-[0.2em] uppercase py-4 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] transition-all duration-200 disabled:opacity-40 flex items-center justify-center gap-2">
+          {reportLoading
+            ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Préparation…</>
+            : "Voir le bilan PDF →"}
+        </button>
       </div>
       {reportError && <p className="text-xs text-[#e07070] rounded-xl border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2 mb-4">{reportError}</p>}
 
