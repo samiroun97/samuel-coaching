@@ -978,99 +978,100 @@ export default function SuiviPage() {
 
       {/* ── Historique body fat avec feedback ── */}
       {bfHist.length > 0 && (
-        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl mb-4">
-          <div className="px-5 py-3 border-b border-[var(--t-border-soft)]">
-            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[var(--t-text)]">Historique body fat</p>
-          </div>
-          {bfHist.map((entry, i) => {
-            const prev = bfHist[i + 1];
-            const diff = prev ? +(entry.body_fat - prev.body_fat).toFixed(1) : null;
-            const hasFeedback = entry.points_forts || entry.points_faibles || entry.conseils;
-            return (
-              <div key={entry.id} className="border-b border-[var(--t-border-soft)] last:border-0">
-                <div className="flex items-center justify-between px-5 py-3.5">
-                  <div className="flex-1 min-w-0 relative">
-                    {editingBFDate === entry.id ? (
-                      <>
-                        <button type="button"
-                          className="bg-[var(--t-bg)] border border-[#c9a84c]/40 rounded-xl text-[#c9a84c] text-[0.7rem] px-2 py-1 mb-0.5">
-                          {new Date(entry.date.split("T")[0] + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
+        <div className="mb-4">
+          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[var(--t-text)] mb-3 px-0.5">Historique body fat</p>
+          <div className="space-y-3">
+            {bfHist.map((entry, i) => {
+              const prev = bfHist[i + 1];
+              const diff = prev ? +(entry.body_fat - prev.body_fat).toFixed(1) : null;
+              const hasFeedback = entry.points_forts || entry.points_faibles || entry.conseils;
+              const entryPhotos = bfPhotos[entry.id] ?? [];
+              return (
+                <div key={entry.id} className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-2xl overflow-hidden">
+                  {/* Photos du check-in : évolution visuelle, en grand */}
+                  {entryPhotos.length > 0 && (
+                    <div className="flex gap-1.5 p-2 overflow-x-auto snap-x snap-mandatory">
+                      {entryPhotos.map((url, pi) => (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img key={pi} src={url} alt="" onClick={() => setViewingPhoto(url)}
+                          className="h-36 sm:h-44 aspect-[3/4] object-cover rounded-xl border border-[var(--t-border)] cursor-pointer hover:border-[#c9a84c]/40 hover:opacity-90 transition-all shrink-0 snap-start"/>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between px-5 py-3.5">
+                    <div className="flex-1 min-w-0 relative">
+                      {editingBFDate === entry.id ? (
+                        <>
+                          <button type="button"
+                            className="bg-[var(--t-bg)] border border-[#c9a84c]/40 rounded-xl text-[#c9a84c] text-[0.7rem] px-2 py-1 mb-0.5">
+                            {new Date(entry.date.split("T")[0] + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
+                          </button>
+                          <CalendarPicker value={entry.date.split("T")[0]} max={today()}
+                            onChange={val => saveBFEditDate(entry.id, val)}
+                            onClose={() => setEditingBFDate(null)}
+                            className="top-full left-0 mt-1"/>
+                        </>
+                      ) : (
+                        <p className="text-[0.65rem] tracking-wider text-[var(--t-text-40)] capitalize cursor-pointer hover:text-[var(--t-text-60)] transition-colors"
+                          onClick={() => setEditingBFDate(entry.id)}>
+                          {new Date(entry.date).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <p className="text-[0.6rem] text-[var(--t-text-20)] italic truncate">{entry.note}</p>
+                        <button
+                          onClick={() => togglePhotoSharing(entry.id, !entry.shared)}
+                          className={`text-[0.6rem] tracking-wider uppercase border px-1.5 py-px transition-colors shrink-0 ${
+                            entry.shared
+                              ? "text-[#c9a84c]/60 border-[#c9a84c]/25 hover:text-[#e07070]/50 hover:border-[#e07070]/20"
+                              : "text-[var(--t-text-15)] border-[var(--t-text-8)] hover:text-[#c9a84c]/40 hover:border-[#c9a84c]/20"
+                          }`}
+                        >
+                          {entry.shared ? "Partagé ✓" : "Partager"}
                         </button>
-                        <CalendarPicker value={entry.date.split("T")[0]} max={today()}
-                          onChange={val => saveBFEditDate(entry.id, val)}
-                          onClose={() => setEditingBFDate(null)}
-                          className="top-full left-0 mt-1"/>
-                      </>
-                    ) : (
-                      <p className="text-[0.65rem] tracking-wider text-[var(--t-text-40)] capitalize cursor-pointer hover:text-[var(--t-text-60)] transition-colors"
-                        onClick={() => setEditingBFDate(entry.id)}>
-                        {new Date(entry.date).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <p className="text-[0.6rem] text-[var(--t-text-20)] italic truncate">{entry.note}</p>
-                      <button
-                        onClick={() => togglePhotoSharing(entry.id, !entry.shared)}
-                        className={`text-[0.6rem] tracking-wider uppercase border px-1.5 py-px transition-colors shrink-0 ${
-                          entry.shared
-                            ? "text-[#c9a84c]/60 border-[#c9a84c]/25 hover:text-[#e07070]/50 hover:border-[#e07070]/20"
-                            : "text-[var(--t-text-15)] border-[var(--t-text-8)] hover:text-[#c9a84c]/40 hover:border-[#c9a84c]/20"
-                        }`}
-                      >
-                        {entry.shared ? "Partagé ✓" : "Partager"}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 ml-4 shrink-0">
+                      <div className="text-right">
+                        {editingBFId === entry.id ? (
+                          <input type="number" min="1" max="60" step="0.1" autoFocus
+                            className="w-16 bg-[var(--t-bg)] border border-[#c9a84c]/40 rounded-xl text-[#c9a84c] text-center text-sm py-0.5 focus:outline-none"
+                            value={editingBFVal} onChange={e => setEditingBFVal(e.target.value)}
+                            onBlur={() => saveBFEdit(entry.id)}
+                            onKeyDown={e => { if (e.key === "Enter") saveBFEdit(entry.id); if (e.key === "Escape") setEditingBFId(null); }}
+                          />
+                        ) : (
+                          <div className="flex items-baseline gap-1 justify-end cursor-pointer"
+                            onClick={() => { setEditingBFId(entry.id); setEditingBFVal(entry.body_fat.toString()); }}>
+                            <span style={{ fontFamily: "var(--font-bebas)" }} className={`text-2xl tracking-wide leading-none ${i === 0 ? "text-[var(--t-text)]" : "text-[var(--t-text-40)]"}`}>{entry.body_fat}</span>
+                            <span className="text-[0.62rem] text-[var(--t-text-25)]">%</span>
+                          </div>
+                        )}
+                        {diff !== null && editingBFId !== entry.id && (
+                          <span className={`text-[0.6rem] tracking-wider ${diff < 0 ? "text-[#7eb8a0]" : diff > 0 ? "text-[#e07070]" : "text-[var(--t-text-20)]"}`}>
+                            {diff < 0 ? "▼" : diff > 0 ? "▲" : "—"}{Math.abs(diff)}%
+                          </span>
+                        )}
+                      </div>
+                      <button onClick={() => deleteBF(entry.id)} className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                       </button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 ml-4 shrink-0">
-                    <div className="text-right">
-                      {editingBFId === entry.id ? (
-                        <input type="number" min="1" max="60" step="0.1" autoFocus
-                          className="w-16 bg-[var(--t-bg)] border border-[#c9a84c]/40 rounded-xl text-[#c9a84c] text-center text-sm py-0.5 focus:outline-none"
-                          value={editingBFVal} onChange={e => setEditingBFVal(e.target.value)}
-                          onBlur={() => saveBFEdit(entry.id)}
-                          onKeyDown={e => { if (e.key === "Enter") saveBFEdit(entry.id); if (e.key === "Escape") setEditingBFId(null); }}
-                        />
-                      ) : (
-                        <div className="flex items-baseline gap-1 justify-end cursor-pointer"
-                          onClick={() => { setEditingBFId(entry.id); setEditingBFVal(entry.body_fat.toString()); }}>
-                          <span style={{ fontFamily: "var(--font-bebas)" }} className={`text-2xl tracking-wide leading-none ${i === 0 ? "text-[var(--t-text)]" : "text-[var(--t-text-40)]"}`}>{entry.body_fat}</span>
-                          <span className="text-[0.62rem] text-[var(--t-text-25)]">%</span>
-                        </div>
-                      )}
-                      {diff !== null && editingBFId !== entry.id && (
-                        <span className={`text-[0.6rem] tracking-wider ${diff < 0 ? "text-[#7eb8a0]" : diff > 0 ? "text-[#e07070]" : "text-[var(--t-text-20)]"}`}>
-                          {diff < 0 ? "▼" : diff > 0 ? "▲" : "—"}{Math.abs(diff)}%
-                        </span>
-                      )}
+
+                  {/* Feedback IA sauvegardé */}
+                  {hasFeedback && (
+                    <div className="mx-5 mb-4 rounded-xl overflow-hidden border border-[var(--t-border-soft)] bg-[var(--t-bg)] divide-y divide-[var(--t-border-soft)]">
+                      {entry.points_forts   && <FeedbackRow color="#7eb8a0" label="Points forts" text={entry.points_forts}/>}
+                      {entry.points_faibles && <FeedbackRow color="#e07070" label="À travailler" text={entry.points_faibles}/>}
+                      {entry.conseils       && <FeedbackRow color="#c9a84c" label="Conseils"      text={entry.conseils}/>}
                     </div>
-                    <button onClick={() => deleteBF(entry.id)} className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                    </button>
-                  </div>
+                  )}
                 </div>
-
-                {/* Photos du check-in : évolution visuelle */}
-                {bfPhotos[entry.id]?.length > 0 && (
-                  <div className="flex gap-1.5 px-5 pb-3">
-                    {bfPhotos[entry.id].map((url, pi) => (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img key={pi} src={url} alt="" onClick={() => setViewingPhoto(url)}
-                        className="w-12 h-12 object-cover border border-[var(--t-border)] rounded cursor-pointer hover:border-[#c9a84c]/40 transition-colors"/>
-                    ))}
-                  </div>
-                )}
-
-                {/* Feedback IA sauvegardé */}
-                {hasFeedback && (
-                  <div className="mx-5 mb-3 rounded-xl overflow-hidden border border-[var(--t-border-soft)] bg-[var(--t-bg)] divide-y divide-[var(--t-border-soft)]">
-                    {entry.points_forts   && <FeedbackRow color="#7eb8a0" label="Points forts" text={entry.points_forts}/>}
-                    {entry.points_faibles && <FeedbackRow color="#e07070" label="À travailler" text={entry.points_faibles}/>}
-                    {entry.conseils       && <FeedbackRow color="#c9a84c" label="Conseils"      text={entry.conseils}/>}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       )}
 
