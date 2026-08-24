@@ -8,6 +8,7 @@ import { type ExerciceItem, serializeExercices, normalizeExercice } from "@/lib/
 import { serializeNotesLibres } from "@/lib/notesLibres";
 import ExerciceEditor from "@/components/ExerciceEditor";
 import { SeanceBody } from "@/components/SeancePreview";
+import { SeanceLoggedSummary } from "@/components/SeanceLoggedSummary";
 import { type LibraryEntry, listLibrary, addLibraryEntry, deleteLibraryEntry } from "@/lib/exerciceLibrary";
 import { type ProgrammeTemplate, listTemplates, saveTemplate, deleteTemplate, templateToExercices } from "@/lib/programmeTemplates";
 import { getMyCoachId } from "@/lib/coach";
@@ -309,7 +310,12 @@ export default function ProgrammesPage() {
                           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
                             className={`text-[var(--t-text-25)] shrink-0 transition-transform ${open ? "rotate-180" : ""}`}><polyline points="6 9 12 15 18 9"/></svg>
                         </button>
-                        {open && <div className="px-4 pb-4"><SeanceBody s={s} /></div>}
+                        {open && (
+                          <div className="px-4 pb-4 flex flex-col gap-3">
+                            <SeanceBody s={s} />
+                            <SeanceLoggedSummary seanceId={s.id} clientId={selected.id} exercicesRaw={s.exercices}/>
+                          </div>
+                        )}
                       </div>
                     );
                   })}

@@ -86,3 +86,41 @@ export async function loadBest1RM(clientId: string, exerciceNom: string, exclude
     .eq("client_id", clientId).eq("exercice_nom", exerciceNom).neq("seance_id", excludeSeanceId);
   return best1RM((data ?? []) as SeanceLogRow[]);
 }
+
+export type SetOutcome = "hit" | "under" | "unlogged";
+
+function parseTargetReps(text: string): number | null {
+  const m = (text || "").match(/(\d+(?:[.,]\d+)?)/);
+  if (!m) return null;
+  return parseFloat(m[1].replace(",", "."));
+}
+
+// "hit" = série cochée et (aucune cible de reps chiffrée à comparer, ou reps réelles ≥ cible).
+// "under" = cochée mais en dessous de la cible — un échec de série ne doit jamais se lire comme
+// une réussite, sans quoi une future suggestion de progression se baserait sur du faux positif.
+export function evaluateSet(targetReps: string, log: Pick<SeanceLogRow, "reps_reel"> | undefined): SetOutcome {
+  if (!log) return "unlogged";
+  const target = parseTargetReps(targetReps);
+  if (target == null || log.reps_reel == null) return "hit";
+  return log.reps_reel >= target ? "hit" : "under";
+}
+
+// Pour chaque exercice loggué dans une séance : son meilleur 1RM estimé *de cette séance*, et si
+// ce chiffre dépasse le record historique du client sur cet exercice (hors séance en cours).
+export async function computeExercicePRs(
+  clientId: string, seanceId: string, logs: SeanceLogRow[]
+): Promise<Record<string, { sessionBest1RM: number | null; isPR: boolean }>> {
+  const byNom = new Map<string, SeanceLogRow[]>();
+  for (const l of logs) {
+    if (!byNom.has(l.exercice_nom)) byNom.set(l.exercice_nom, []);
+    byNom.get(l.exercice_nom)!.push(l);
+  }
+  const noms = [...byNom.keys()];
+  const historicalBests = await Promise.all(noms.map(nom => loadBest1RM(clientId, nom, seanceId)));
+  const result: Record<string, { sessionBest1RM: number | null; isPR: boolean }> = {};
+  noms.forEach((nom, i) => {
+    const sessionBest = best1RM(byNom.get(nom)!);
+    result[nom] = { sessionBest1RM: sessionBest, isPR: isNewRecord(sessionBest, historicalBests[i]) };
+  });
+  return result;
+}

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { type ExerciceItem, type SetDetail, parseExercices, groupExerciceRuns } from "@/lib/exercices";
+import { type ExerciceItem, type SetDetail, parseExercices, groupExerciceRuns, targetSetsFor } from "@/lib/exercices";
 import { useWakeLock } from "@/lib/useWakeLock";
 import {
   estimate1RM, isNewRecord, parseRestSeconds,
@@ -10,18 +10,6 @@ import {
 
 type LiveSeance = { id: string; titre: string; exercices: string | null };
 type SetLogState = { poids: string; reps: string; rir: string; done: boolean };
-
-// Le mode "simple" ne décrit qu'une seule cible pour toutes les séries (series × repetitions
-// à tel poids) : on la déplie en N séries identiques pour la logguer une par une comme en mode
-// "avance". Le mode "libre" (texte seul) n'a rien de structuré à déplier.
-function targetSetsFor(ex: ExerciceItem): SetDetail[] {
-  if (ex.mode === "avance") return ex.sets;
-  if (ex.mode === "simple") {
-    const n = parseInt(ex.series) || 0;
-    return Array.from({ length: n }, () => ({ reps: ex.repetitions, poids: ex.poids, repos: ex.repos, rpe: "", tempo: "" }));
-  }
-  return [];
-}
 
 const numOr = (s: string): number | null => {
   const n = parseFloat(s.replace(",", "."));

@@ -99,6 +99,19 @@ export function hasLoggableSets(items: ExerciceItem[]): boolean {
   );
 }
 
+// Le mode "simple" ne décrit qu'une seule cible pour toutes les séries (series × repetitions
+// à tel poids) : on la déplie en N séries identiques pour la logguer/l'afficher une par une
+// comme en mode "avance". Le mode "libre" (texte seul) n'a rien de structuré à déplier.
+// Partagée entre la séance live (client) et son récapitulatif (coach) pour ne jamais diverger.
+export function targetSetsFor(ex: ExerciceItem): SetDetail[] {
+  if (ex.mode === "avance") return ex.sets;
+  if (ex.mode === "simple") {
+    const n = parseInt(ex.series) || 0;
+    return Array.from({ length: n }, () => ({ reps: ex.repetitions, poids: ex.poids, repos: ex.repos, rpe: "", tempo: "" }));
+  }
+  return [];
+}
+
 export function serializeExercices(items: ExerciceItem[]): string | null {
   const valid = items.filter(i => i.nom.trim());
   if (!valid.length) return null;
