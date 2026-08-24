@@ -1,6 +1,7 @@
 "use client";
 import { type ExerciceItem, type ExerciceMode, type SetDetail, type SimpleField, type ExerciceRun, EXERCICE_TYPES, emptyExercice, emptySet, groupExerciceRuns } from "@/lib/exercices";
 import { type LibraryEntry } from "@/lib/exerciceLibrary";
+import { type CatalogueEntry } from "@/lib/exercicesCatalogue";
 
 const inp = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
 const inpSm = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-2.5 py-2 text-center focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
@@ -36,7 +37,7 @@ const genId = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto
 
 const DATALIST_ID = "exercice-bibliotheque-list";
 
-export default function ExerciceEditor({ items, onChange, library = [] }: { items: ExerciceItem[]; onChange: (items: ExerciceItem[]) => void; library?: LibraryEntry[] }) {
+export default function ExerciceEditor({ items, onChange, library = [], catalogue = [] }: { items: ExerciceItem[]; onChange: (items: ExerciceItem[]) => void; library?: LibraryEntry[]; catalogue?: CatalogueEntry[] }) {
   const update = (i: number, patch: Partial<ExerciceItem>) => onChange(items.map((it, j) => (j === i ? { ...it, ...patch } : it)));
   const remove = (i: number) => onChange(items.filter((_, j) => j !== i));
   const add = () => onChange([...items, emptyExercice()]);
@@ -281,7 +282,8 @@ export default function ExerciceEditor({ items, onChange, library = [] }: { item
   return (
     <div className="flex flex-col gap-2.5">
       <datalist id={DATALIST_ID}>
-        {library.map(l => <option key={l.id} value={l.nom} />)}
+        {library.map(l => <option key={`lib-${l.id}`} value={l.nom} />)}
+        {catalogue.map(c => <option key={`cat-${c.id}`} value={c.nom} />)}
       </datalist>
       {nodes}
       <button type="button" onClick={add} className="border border-[var(--t-border)] text-[var(--t-text-30)] text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-xl hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">

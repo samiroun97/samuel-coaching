@@ -11,6 +11,7 @@ import { SeanceBody } from "@/components/SeancePreview";
 import { SeanceLoggedSummary } from "@/components/SeanceLoggedSummary";
 import { ProgressionSuggestions } from "@/components/ProgressionSuggestions";
 import { type LibraryEntry, listLibrary, addLibraryEntry, deleteLibraryEntry } from "@/lib/exerciceLibrary";
+import { type CatalogueEntry, loadCatalogue } from "@/lib/exercicesCatalogue";
 import { type ProgrammeTemplate, listTemplates, saveTemplate, deleteTemplate, templateToExercices } from "@/lib/programmeTemplates";
 import { getMyCoachId } from "@/lib/coach";
 
@@ -53,6 +54,7 @@ export default function ProgrammesPage() {
   const [sentSeances,  setSentSeances]  = useState<SentSeance[]>([]);
   const [openSentId,   setOpenSentId]   = useState<string | null>(null);
   const [myCoachId,    setMyCoachId]    = useState<string | null>(null);
+  const [catalogue,    setCatalogue]    = useState<CatalogueEntry[]>([]);
 
   // Séances déjà envoyées à ce client — pour que le coach ait un aperçu visuel de
   // ce qui a été effectivement reçu, pas juste un message "envoyé ✓".
@@ -66,6 +68,7 @@ export default function ProgrammesPage() {
   const loadTemplates = async () => { try { setTemplates(await listTemplates()); } catch { /* table pas encore créée */ } };
   useEffect(() => {
     loadLibrary(); loadTemplates();
+    loadCatalogue().then(setCatalogue).catch(() => {});
     supabase.auth.getUser().then(({ data }) => { if (data.user) getMyCoachId(data.user.id).then(setMyCoachId); });
   }, []);
 
@@ -450,7 +453,7 @@ export default function ProgrammesPage() {
                       <div><label className={lbl}>Description</label><textarea className={`${inp} resize-none`} rows={2} value={d.description} onChange={e => setDraft(i, { description: e.target.value })}/></div>
                       <div>
                         <label className={lbl}>Exercices</label>
-                        <ExerciceEditor items={d.exercices} onChange={items => setDraft(i, { exercices: items })} library={library}/>
+                        <ExerciceEditor items={d.exercices} onChange={items => setDraft(i, { exercices: items })} library={library} catalogue={catalogue}/>
                       </div>
                       <div>
                         <label className={lbl}>Notes libres (optionnel)</label>
