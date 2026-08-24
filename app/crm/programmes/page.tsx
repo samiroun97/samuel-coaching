@@ -9,6 +9,7 @@ import { serializeNotesLibres } from "@/lib/notesLibres";
 import ExerciceEditor from "@/components/ExerciceEditor";
 import { SeanceBody } from "@/components/SeancePreview";
 import { SeanceLoggedSummary } from "@/components/SeanceLoggedSummary";
+import { Select } from "@/components/Select";
 import { ProgressionSuggestions } from "@/components/ProgressionSuggestions";
 import { type LibraryEntry, listLibrary, addLibraryEntry, deleteLibraryEntry } from "@/lib/exerciceLibrary";
 import { type CatalogueEntry, loadCatalogue } from "@/lib/exercicesCatalogue";
@@ -446,9 +447,8 @@ export default function ProgrammesPage() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div><label className={lbl}>Titre *</label><input className={inp} value={d.titre} onChange={e => setDraft(i, { titre: e.target.value })}/></div>
                         <div><label className={lbl}>Type</label>
-                          <select className={`${inp} cursor-pointer`} value={d.type_seance} onChange={e => setDraft(i, { type_seance: e.target.value })}>
-                            <option value="">Choisir…</option>{SEANCE_TYPES.map(t => <option key={t}>{t}</option>)}
-                          </select>
+                          <Select value={d.type_seance} onChange={v => setDraft(i, { type_seance: v })} placeholder="Choisir…"
+                            options={SEANCE_TYPES.map(t => ({ value: t, label: t }))} triggerClassName={inp}/>
                         </div>
                       </div>
                       <div><label className={lbl}>Description</label><textarea className={`${inp} resize-none`} rows={2} value={d.description} onChange={e => setDraft(i, { description: e.target.value })}/></div>

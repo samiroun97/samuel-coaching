@@ -4,6 +4,7 @@ import { type ExerciceItem, type ExerciceMode, type SetDetail, type SimpleField,
 import { type LibraryEntry } from "@/lib/exerciceLibrary";
 import { type CatalogueEntry } from "@/lib/exercicesCatalogue";
 import { ExerciceLibraryBrowser } from "@/components/ExerciceLibraryBrowser";
+import { Select } from "@/components/Select";
 
 const inp = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
 const inpSm = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-2.5 py-2 text-center focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
@@ -153,10 +154,9 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
         </div>
 
         <div className="pl-8 flex flex-wrap items-center gap-2">
-          <select className={`${inpSm} w-auto cursor-pointer text-left`} value={ex.type} onChange={e => update(i, { type: e.target.value })}>
-            <option value="">Type d&apos;exercice…</option>
-            {EXERCICE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-          </select>
+          <Select value={ex.type} onChange={v => update(i, { type: v })} placeholder="Type d'exercice…"
+            options={EXERCICE_TYPES.map(t => ({ value: t, label: t }))}
+            triggerClassName={`${inpSm} w-auto text-left`}/>
           <div className="flex border border-[var(--t-border)] rounded-xl overflow-hidden">
             {MODES.map(m => (
               <button key={m.key} type="button" onClick={() => setMode(i, m.key)}
@@ -249,14 +249,9 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
     run.groupId ? (
       <div key={`group-${run.indices[0]}`} className="border border-[#c9a84c]/25 bg-[#c9a84c]/[0.03] rounded-xl p-2.5 flex flex-col gap-2.5">
         <div className="flex items-center justify-between px-1 gap-2">
-          <div className="relative shrink-0">
-            <select className="appearance-none bg-[#0c0a05] border border-[#c9a84c]/40 rounded-md text-[0.6rem] font-bold tracking-[0.1em] uppercase text-[#c9a84c] focus:outline-none focus:border-[#c9a84c] cursor-pointer pl-2.5 pr-6 py-1.5"
-              value={run.groupLabel || "Superset"} onChange={e => renameGroup(run.groupId!, e.target.value)}>
-              {GROUP_LABELS.map(l => <option key={l} value={l} className="bg-[var(--t-surface)] text-[var(--t-text)] normal-case tracking-normal">{l}</option>)}
-            </select>
-            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-              className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[#c9a84c]"><polyline points="6 9 12 15 18 9"/></svg>
-          </div>
+          <Select value={run.groupLabel || "Superset"} onChange={v => renameGroup(run.groupId!, v)}
+            options={GROUP_LABELS.map(l => ({ value: l, label: l }))}
+            triggerClassName="bg-[#0c0a05] border border-[#c9a84c]/40 rounded-md text-[0.6rem] font-bold tracking-[0.1em] uppercase text-[#c9a84c] pl-2.5 pr-2 py-1.5"/>
           <div className="flex items-center gap-2 shrink-0">
             <div className="flex border border-[var(--t-border)] rounded-md overflow-hidden">
               <button type="button" onClick={() => moveRun(runPos, -1)} disabled={runPos === 0} title="Monter le groupe"

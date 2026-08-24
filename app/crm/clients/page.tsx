@@ -5,6 +5,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
 import { CalendarPicker } from "@/components/CalendarPicker";
+import { Select } from "@/components/Select";
 
 const STATUS_CFG = {
   actif:   { label: "Actif",   color: "#7eb8a0" },
@@ -201,16 +202,12 @@ export default function ClientsPage() {
           <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-[var(--t-text)] tracking-wide mb-3">CLIENTS</h1>
           <input className={`${inp} mb-3`} placeholder="Rechercher un client…" value={search} onChange={e => setSearch(e.target.value)}/>
           <div className="flex gap-2 flex-wrap">
-            <select className="bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text-50)] text-[0.5rem] px-2 py-1.5 focus:outline-none cursor-pointer"
-              value={filterStage} onChange={e => setFilterStage(e.target.value)}>
-              <option value="all">Tous stages</option>
-              {Object.entries(STAGE_CFG).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-            </select>
-            <select className="bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text-50)] text-[0.5rem] px-2 py-1.5 focus:outline-none cursor-pointer"
-              value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
-              <option value="all">Tous statuts</option>
-              {Object.entries(STATUS_CFG).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-            </select>
+            <Select value={filterStage} onChange={setFilterStage}
+              options={[{ value: "all", label: "Tous stages" }, ...Object.entries(STAGE_CFG).map(([k, v]) => ({ value: k, label: v.label }))]}
+              triggerClassName="bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text-50)] text-[0.5rem] px-2 py-1.5"/>
+            <Select value={filterStatus} onChange={setFilterStatus}
+              options={[{ value: "all", label: "Tous statuts" }, ...Object.entries(STATUS_CFG).map(([k, v]) => ({ value: k, label: v.label }))]}
+              triggerClassName="bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text-50)] text-[0.5rem] px-2 py-1.5"/>
           </div>
           <p className="text-[0.45rem] text-[var(--t-text-20)] mt-2">{filtered.length} client{filtered.length !== 1 ? "s" : ""}</p>
         </div>
@@ -307,11 +304,10 @@ export default function ClientsPage() {
             {/* Controls row */}
             <div className="flex flex-wrap items-center gap-2">
               {/* Stage */}
-              <select disabled={statusSaving} value={selected.pipeline_stage ?? "actif"}
-                onChange={e => updateField({ pipeline_stage: e.target.value })}
-                className="bg-transparent border border-[var(--t-border-15)] rounded-xl text-[var(--t-text-50)] text-[0.5rem] tracking-wider uppercase px-2 py-1.5 focus:outline-none cursor-pointer">
-                {Object.entries(STAGE_CFG).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-              </select>
+              <Select disabled={statusSaving} value={selected.pipeline_stage ?? "actif"}
+                onChange={v => updateField({ pipeline_stage: v })}
+                options={Object.entries(STAGE_CFG).map(([k, v]) => ({ value: k, label: v.label }))}
+                triggerClassName="bg-transparent border border-[var(--t-border-15)] rounded-xl text-[var(--t-text-50)] text-[0.5rem] tracking-wider uppercase px-2 py-1.5"/>
               {/* Status pills */}
               {(Object.keys(STATUS_CFG) as StatusKey[]).map(s => {
                 const cfg = STATUS_CFG[s];
@@ -520,7 +516,8 @@ export default function ClientsPage() {
                   <div className="border border-[var(--t-text-8)] bg-[var(--t-surface)] rounded-xl p-5 flex flex-col gap-4">
                     <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c]">Ajouter un repas</p>
                     <div className="grid grid-cols-2 gap-3">
-                      <div><label className={lbl}>Type</label><select className={`${inp} cursor-pointer`} value={itemForm.meal_type} onChange={e => setItemForm(f => ({ ...f, meal_type: e.target.value }))}>{["Petit-déjeuner","Déjeuner","Dîner","Collation"].map(t => <option key={t}>{t}</option>)}</select></div>
+                      <div><label className={lbl}>Type</label><Select value={itemForm.meal_type} onChange={v => setItemForm(f => ({ ...f, meal_type: v }))}
+                        options={["Petit-déjeuner","Déjeuner","Dîner","Collation"].map(t => ({ value: t, label: t }))} triggerClassName={inp}/></div>
                       <div><label className={lbl}>Nom *</label><input className={inp} placeholder="Riz + poulet grillé" value={itemForm.name} onChange={e => setItemForm(f => ({ ...f, name: e.target.value }))}/></div>
                     </div>
                     <div className="grid grid-cols-4 gap-2">

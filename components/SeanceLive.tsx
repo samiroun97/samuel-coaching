@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { type ExerciceItem, type SetDetail, parseExercices, groupExerciceRuns, targetSetsFor } from "@/lib/exercices";
 import { useWakeLock } from "@/lib/useWakeLock";
+import { Select } from "@/components/Select";
 import {
   estimate1RM, isNewRecord, parseRestSeconds,
   loadSeanceLogs, saveSetLog, deleteSetLog, loadBest1RM,
@@ -37,11 +38,10 @@ function SetRow({ target, idx, log, onToggle, onChange }: {
       <input type="number" inputMode="numeric" placeholder={target.reps || "reps"} value={log?.reps ?? ""}
         onChange={e => onChange("reps", e.target.value)}
         className="w-14 bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg text-center text-xs py-1 text-[var(--t-text)] placeholder-[var(--t-text-20)] focus:outline-none focus:border-[#c9a84c]/40"/>
-      <select value={log?.rir ?? ""} onChange={e => onChange("rir", e.target.value)}
-        className="bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg text-[0.6rem] text-[var(--t-text-40)] px-1 py-1.5 shrink-0 focus:outline-none">
-        <option value="">RIR</option>
-        {[0, 1, 2, 3, 4].map(n => <option key={n} value={n}>{n}{n === 4 ? "+" : ""}</option>)}
-      </select>
+      <Select value={log?.rir ?? ""} onChange={v => onChange("rir", v)} placeholder="RIR"
+        options={[0, 1, 2, 3, 4].map(n => ({ value: String(n), label: `${n}${n === 4 ? "+" : ""}` }))}
+        triggerClassName="bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg text-[0.6rem] text-[var(--t-text-40)] px-1.5 py-1.5 shrink-0 w-14"
+        panelClassName="w-20"/>
       {targetText && <span className="text-[0.55rem] text-[var(--t-text-20)] truncate flex-1 text-right hidden sm:block">{targetText}</span>}
     </div>
   );
