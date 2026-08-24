@@ -875,10 +875,10 @@ export default function SuiviPage() {
 
               {/* Feedback IA */}
               {(result.points_forts || result.points_faibles || result.conseils) && (
-                <div className="border border-[var(--t-border)] bg-[var(--t-bg)] rounded-xl divide-y divide-[var(--t-border-soft)]">
-                  {result.points_forts   && <FeedbackRow color="#7eb8a0" label="Points forts"  text={result.points_forts}/>}
-                  {result.points_faibles && <FeedbackRow color="#e07070" label="À travailler"  text={result.points_faibles}/>}
-                  {result.conseils       && <FeedbackRow color="#c9a84c" label="Conseils"       text={result.conseils}/>}
+                <div className="flex flex-col gap-1.5">
+                  {result.points_forts   && <FeedbackRow type="fort"    text={result.points_forts}/>}
+                  {result.points_faibles && <FeedbackRow type="faible" text={result.points_faibles}/>}
+                  {result.conseils       && <FeedbackRow type="conseil" text={result.conseils}/>}
                 </div>
               )}
 
@@ -1062,10 +1062,10 @@ export default function SuiviPage() {
 
                   {/* Feedback IA sauvegardé */}
                   {hasFeedback && (
-                    <div className="mx-5 mb-4 rounded-xl overflow-hidden border border-[var(--t-border-soft)] bg-[var(--t-bg)] divide-y divide-[var(--t-border-soft)]">
-                      {entry.points_forts   && <FeedbackRow color="#7eb8a0" label="Points forts" text={entry.points_forts}/>}
-                      {entry.points_faibles && <FeedbackRow color="#e07070" label="À travailler" text={entry.points_faibles}/>}
-                      {entry.conseils       && <FeedbackRow color="#c9a84c" label="Conseils"      text={entry.conseils}/>}
+                    <div className="mx-5 mb-4 flex flex-col gap-1.5">
+                      {entry.points_forts   && <FeedbackRow type="fort"    text={entry.points_forts}/>}
+                      {entry.points_faibles && <FeedbackRow type="faible" text={entry.points_faibles}/>}
+                      {entry.conseils       && <FeedbackRow type="conseil" text={entry.conseils}/>}
                     </div>
                   )}
                 </div>
