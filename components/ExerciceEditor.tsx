@@ -1,7 +1,9 @@
 "use client";
+import { useState } from "react";
 import { type ExerciceItem, type ExerciceMode, type SetDetail, type SimpleField, type ExerciceRun, EXERCICE_TYPES, emptyExercice, emptySet, groupExerciceRuns } from "@/lib/exercices";
 import { type LibraryEntry } from "@/lib/exerciceLibrary";
 import { type CatalogueEntry } from "@/lib/exercicesCatalogue";
+import { ExerciceLibraryBrowser } from "@/components/ExerciceLibraryBrowser";
 
 const inp = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
 const inpSm = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-2.5 py-2 text-center focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
@@ -38,9 +40,14 @@ const genId = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto
 const DATALIST_ID = "exercice-bibliotheque-list";
 
 export default function ExerciceEditor({ items, onChange, library = [], catalogue = [] }: { items: ExerciceItem[]; onChange: (items: ExerciceItem[]) => void; library?: LibraryEntry[]; catalogue?: CatalogueEntry[] }) {
+  const [showLibraryBrowser, setShowLibraryBrowser] = useState(false);
   const update = (i: number, patch: Partial<ExerciceItem>) => onChange(items.map((it, j) => (j === i ? { ...it, ...patch } : it)));
   const remove = (i: number) => onChange(items.filter((_, j) => j !== i));
   const add = () => onChange([...items, emptyExercice()]);
+  const addFromCatalogue = (entry: CatalogueEntry) => {
+    onChange([...items, { ...emptyExercice(), nom: entry.nom }]);
+    setShowLibraryBrowser(false);
+  };
 
   // Retire un champ (Séries/Reps/Poids/Repos) de cet exercice précis — ex: "Poids"
   // n'a pas de sens pour de la corde à sauter dans une séance de boxe. On vide aussi
@@ -286,9 +293,20 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
         {catalogue.map(c => <option key={`cat-${c.id}`} value={c.nom} />)}
       </datalist>
       {nodes}
-      <button type="button" onClick={add} className="border border-[var(--t-border)] text-[var(--t-text-30)] text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-xl hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">
-        + Ajouter un exercice
-      </button>
+      <div className="flex gap-2">
+        <button type="button" onClick={add} className="flex-1 border border-[var(--t-border)] text-[var(--t-text-30)] text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-xl hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">
+          + Ajouter un exercice
+        </button>
+        {catalogue.length > 0 && (
+          <button type="button" onClick={() => setShowLibraryBrowser(true)}
+            className="flex-1 border border-[#c9a84c]/30 text-[#c9a84c] text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-xl hover:bg-[#c9a84c]/10 transition-colors">
+            Depuis la bibliothèque
+          </button>
+        )}
+      </div>
+      {showLibraryBrowser && (
+        <ExerciceLibraryBrowser catalogue={catalogue} onPick={addFromCatalogue} onClose={() => setShowLibraryBrowser(false)}/>
+      )}
     </div>
   );
 }
