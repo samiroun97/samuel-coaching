@@ -5,10 +5,12 @@ import { apiPost } from "@/lib/apiClient";
 import { getMyCoachEmail } from "@/lib/coach";
 import { SeanceBody } from "@/components/SeancePreview";
 import { SeanceLive } from "@/components/SeanceLive";
+import ExerciceEditor from "@/components/ExerciceEditor";
 import { DateNav } from "@/components/DateNav";
 import { useSelectedDate, todayStr } from "@/lib/useSelectedDate";
 import { syncSteps } from "@/lib/steps";
-import { parseExercices, hasLoggableSets } from "@/lib/exercices";
+import { parseExercices, serializeExercices, hasLoggableSets, emptyExercice, type ExerciceItem } from "@/lib/exercices";
+import { loadCatalogue, type CatalogueEntry } from "@/lib/exercicesCatalogue";
 
 type Profile = { prenom: string; poids: number; taille: number; age: number; sexe: string };
 type LoggedWorkout = {
@@ -18,7 +20,7 @@ type LoggedWorkout = {
 };
 type PerfRecord = { date: string; calories: number; duration: number; description: string };
 type PerfHistory = Record<string, PerfRecord[]>;
-type CoachSeance = { id: string; titre: string; type_seance: string | null; date_prevue: string | null; semaine: number | null; description: string | null; exercices: string | null; notes_libres: string | null; completed_at: string | null };
+type CoachSeance = { id: string; titre: string; type_seance: string | null; date_prevue: string | null; semaine: number | null; description: string | null; exercices: string | null; notes_libres: string | null; completed_at: string | null; created_by_client?: boolean };
 
 const DURATIONS = [
   { label: "15 min", min: 15 }, { label: "30 min", min: 30 }, { label: "45 min", min: 45 },
@@ -84,6 +86,15 @@ export default function ProgrammePage() {
   const [coachSeances, setCoachSeances] = useState<CoachSeance[]>([]);
   const [openSeance,   setOpenSeance]   = useState<string | null>(null);
   const [liveSeance,   setLiveSeance]   = useState<CoachSeance | null>(null);
+
+  // Séance libre composée par le client lui-même (freestyle) — mêmes tables/policies que
+  // les séances assignées par Samuel (RLS déjà ouverte à auth.uid() = client_id), juste
+  // marquée created_by_client pour la distinguer dans les deux vues.
+  const [showFreestyle,   setShowFreestyle]   = useState(false);
+  const [freestyleTitre,  setFreestyleTitre]  = useState("");
+  const [freestyleItems,  setFreestyleItems]  = useState<ExerciceItem[]>([emptyExercice()]);
+  const [savingFreestyle, setSavingFreestyle]  = useState(false);
+  const [catalogue,       setCatalogue]        = useState<CatalogueEntry[]>([]);
   const [seancesJourOpen, setSeancesJourOpen] = useState(false);
   const [histSectionOpen, setHistSectionOpen] = useState(false);
   const [openHistDates,   setOpenHistDates]   = useState<Set<string>>(new Set());
@@ -93,6 +104,29 @@ export default function ProgrammePage() {
     const done = s.completed_at ? null : new Date().toISOString();
     setCoachSeances(prev => prev.map(x => x.id === s.id ? { ...x, completed_at: done } : x));
     await supabase.from("programme_seances").update({ completed_at: done }).eq("id", s.id);
+  };
+
+  const saveFreestyle = async (startNow: boolean) => {
+    if (!userId || savingFreestyle) return;
+    const validItems = freestyleItems.filter(it => it.nom.trim());
+    if (validItems.length === 0) return;
+    setSavingFreestyle(true);
+    const { data, error } = await supabase.from("programme_seances").insert({
+      client_id: userId,
+      assigned_to_email: userEmailRef.current,
+      titre: freestyleTitre.trim() || "Séance libre",
+      date_prevue: selectedDate,
+      exercices: serializeExercices(validItems),
+      created_by_client: true,
+    }).select("*").single();
+    setSavingFreestyle(false);
+    if (error || !data) return;
+    const created = data as CoachSeance;
+    setCoachSeances(prev => [...prev, created]);
+    setShowFreestyle(false);
+    setFreestyleTitre("");
+    setFreestyleItems([emptyExercice()]);
+    if (startNow) setLiveSeance(created); else setOpenSeance(created.id);
   };
 
   const downloadPdf = async () => {
@@ -148,6 +182,7 @@ export default function ProgrammePage() {
           .eq("assigned_to_email", user.email).order("created_at", { ascending: true });
         setCoachSeances((cs ?? []) as CoachSeance[]);
       }
+      loadCatalogue().then(setCatalogue).catch(() => {});
     })();
     const saved  = localStorage.getItem("programme_logs");
     const savedG = localStorage.getItem("steps_goal");
@@ -642,13 +677,41 @@ export default function ProgrammePage() {
         </div>
       )}
 
-      {/* ── Mon programme (séances envoyées par Samuel) ── */}
+      {/* ── Séance libre : le client compose et logue sa propre séance ── */}
+      <div className="mb-4 mt-6">
+        {!showFreestyle ? (
+          <button onClick={() => setShowFreestyle(true)}
+            className="w-full flex items-center justify-center gap-2 border border-dashed border-[var(--t-border)] text-[var(--t-text-35)] text-[0.65rem] tracking-[0.12em] uppercase py-3 rounded-xl hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Créer ma propre séance
+          </button>
+        ) : (
+          <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-4">
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[var(--t-text)] mb-3">Séance libre</p>
+            <input className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 mb-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
+              placeholder="Titre (ex : Push du jour)" value={freestyleTitre} onChange={e => setFreestyleTitre(e.target.value)}/>
+            <ExerciceEditor items={freestyleItems} onChange={setFreestyleItems} catalogue={catalogue}/>
+            <div className="flex gap-2 mt-3">
+              <button onClick={() => { setShowFreestyle(false); setFreestyleItems([emptyExercice()]); setFreestyleTitre(""); }}
+                className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-xl text-[0.6rem] tracking-[0.1em] uppercase py-2.5 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors">
+                Annuler
+              </button>
+              <button onClick={() => saveFreestyle(true)} disabled={savingFreestyle}
+                className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.1em] uppercase py-2.5 rounded-xl disabled:opacity-50 hover:-translate-y-0.5 active:translate-y-0 transition-all">
+                {savingFreestyle ? "…" : "Enregistrer et démarrer →"}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Mon programme (séances envoyées par Samuel + séances libres) ── */}
       {coachSeances.length > 0 && (
-        <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-xl mb-6 mt-6">
+        <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-xl mb-6">
           <div className="px-5 py-3 border-b border-[#c9a84c]/10 flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[#c9a84c]">Mon programme</p>
-              <span className="text-[0.62rem] text-[var(--t-text-25)] uppercase tracking-wider">{coachSeances.length} séance{coachSeances.length > 1 ? "s" : ""} · par Samuel</span>
+              <span className="text-[0.62rem] text-[var(--t-text-25)] uppercase tracking-wider">{coachSeances.length} séance{coachSeances.length > 1 ? "s" : ""}</span>
             </div>
             <button onClick={downloadPdf} disabled={exportingPdf}
               className="shrink-0 flex items-center gap-1.5 border border-[#c9a84c]/30 text-[#c9a84c] rounded-xl text-[0.6rem] font-bold tracking-[0.12em] uppercase px-2.5 py-2 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-40">
@@ -670,6 +733,9 @@ export default function ProgrammePage() {
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       {done && <span className="text-[0.7rem] text-[#7eb8a0] shrink-0">✓</span>}
+                      {s.created_by_client
+                        ? <span className="text-[0.68rem] tracking-wider uppercase text-[var(--t-text-30)] rounded-full border border-[var(--t-border)] px-1.5 py-0.5 shrink-0">Toi</span>
+                        : <span className="text-[0.68rem] tracking-wider uppercase text-[#c9a84c] rounded-full border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">Samuel</span>}
                       {s.type_seance && <span className="text-[0.68rem] tracking-wider uppercase text-[#c9a84c] rounded-full border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">{s.type_seance}</span>}
                       {s.semaine && <span className="text-[0.68rem] tracking-wider uppercase text-[var(--t-text-30)] rounded-full border border-[var(--t-border)] px-1.5 py-0.5 shrink-0">Sem. {s.semaine}</span>}
                       <p className={`text-xs truncate ${done ? "text-[var(--t-text-35)] line-through" : "text-[var(--t-text-70)]"}`}>{s.titre}</p>
