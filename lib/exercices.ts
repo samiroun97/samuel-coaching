@@ -90,6 +90,15 @@ export function groupExerciceRuns(items: ExerciceItem[]): ExerciceRun[] {
   return runs;
 }
 
+// Une séance ne peut être "démarrée" en mode live (logging série par série) que si au moins
+// un exercice a des séries structurées à cocher — un mode "libre" pur (texte seul) n'a rien à logger.
+export function hasLoggableSets(items: ExerciceItem[]): boolean {
+  return items.some(ex =>
+    (ex.mode === "avance" && ex.sets.length > 0) ||
+    (ex.mode === "simple" && (parseInt(ex.series) || 0) > 0)
+  );
+}
+
 export function serializeExercices(items: ExerciceItem[]): string | null {
   const valid = items.filter(i => i.nom.trim());
   if (!valid.length) return null;

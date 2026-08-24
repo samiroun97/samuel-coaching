@@ -4,9 +4,11 @@ import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
 import { getMyCoachEmail } from "@/lib/coach";
 import { SeanceBody } from "@/components/SeancePreview";
+import { SeanceLive } from "@/components/SeanceLive";
 import { DateNav } from "@/components/DateNav";
 import { useSelectedDate, todayStr } from "@/lib/useSelectedDate";
 import { syncSteps } from "@/lib/steps";
+import { parseExercices, hasLoggableSets } from "@/lib/exercices";
 
 type Profile = { prenom: string; poids: number; taille: number; age: number; sexe: string };
 type LoggedWorkout = {
@@ -81,6 +83,7 @@ export default function ProgrammePage() {
   const [editingGoal,  setEditingGoal]  = useState(false);
   const [coachSeances, setCoachSeances] = useState<CoachSeance[]>([]);
   const [openSeance,   setOpenSeance]   = useState<string | null>(null);
+  const [liveSeance,   setLiveSeance]   = useState<CoachSeance | null>(null);
   const [seancesJourOpen, setSeancesJourOpen] = useState(false);
   const [histSectionOpen, setHistSectionOpen] = useState(false);
   const [openHistDates,   setOpenHistDates]   = useState<Set<string>>(new Set());
@@ -681,11 +684,17 @@ export default function ProgrammePage() {
                 {open && (
                   <div className="px-5 pb-4">
                     <SeanceBody s={s} />
+                    {!done && hasLoggableSets(parseExercices(s.exercices)) && (
+                      <button onClick={() => setLiveSeance(s)}
+                        className="w-full py-2.5 rounded-xl text-[0.7rem] font-bold tracking-[0.15em] uppercase transition-all duration-200 mb-2 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black shadow-[0_4px_16px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_20px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0">
+                        ▶ Démarrer la séance
+                      </button>
+                    )}
                     <button onClick={() => toggleSeanceDone(s)}
                       className={`w-full py-2.5 rounded-xl text-[0.7rem] font-bold tracking-[0.15em] uppercase transition-all duration-200 ${
                         done ? "border border-[#7eb8a0]/40 text-[#7eb8a0] bg-[#7eb8a0]/5 hover:bg-[#7eb8a0]/10"
-                             : "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black shadow-[0_4px_16px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_20px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0"}`}>
-                      {done ? "✓ Séance terminée — annuler" : "Marquer comme terminée"}
+                             : "border border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)]"}`}>
+                      {done ? "✓ Séance terminée — annuler" : "Marquer comme terminée sans logger"}
                     </button>
 
                     {/* Signalement d'un problème sur cette séance (exercice inadapté, charge
@@ -720,6 +729,18 @@ export default function ProgrammePage() {
             );
           })}
         </div>
+      )}
+
+      {liveSeance && userId && (
+        <SeanceLive
+          seance={liveSeance}
+          clientId={userId}
+          onClose={() => setLiveSeance(null)}
+          onFinish={() => {
+            setCoachSeances(prev => prev.map(x => x.id === liveSeance.id ? { ...x, completed_at: new Date().toISOString() } : x));
+            setLiveSeance(null);
+          }}
+        />
       )}
     </div>
   );
