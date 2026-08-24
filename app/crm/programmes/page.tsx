@@ -9,6 +9,7 @@ import { serializeNotesLibres } from "@/lib/notesLibres";
 import ExerciceEditor from "@/components/ExerciceEditor";
 import { SeanceBody } from "@/components/SeancePreview";
 import { SeanceLoggedSummary } from "@/components/SeanceLoggedSummary";
+import { ProgressionSuggestions } from "@/components/ProgressionSuggestions";
 import { type LibraryEntry, listLibrary, addLibraryEntry, deleteLibraryEntry } from "@/lib/exerciceLibrary";
 import { type ProgrammeTemplate, listTemplates, saveTemplate, deleteTemplate, templateToExercices } from "@/lib/programmeTemplates";
 import { getMyCoachId } from "@/lib/coach";
@@ -285,6 +286,8 @@ export default function ProgrammesPage() {
                   <p className="text-xs text-[#7eb8a0]">Programme envoyé à {selected.prenom} ✓ — aperçu ci-dessous</p>
                 </div>
               )}
+
+              <ProgressionSuggestions clientId={selected.id} />
 
               {/* Séances déjà envoyées — aperçu visuel identique à ce que le client voit */}
               {sentSeances.length > 0 && (
