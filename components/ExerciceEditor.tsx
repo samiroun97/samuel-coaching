@@ -292,10 +292,15 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
       <div className="flex flex-col gap-2">
         {catalogue.length > 0 && (
           <button type="button" onClick={() => setShowLibraryBrowser(true)}
-            className="flex items-center justify-center gap-2 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.15em] uppercase py-3 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200">
-            <IconLibrary/>
-            Choisir dans la bibliothèque
-            <span className="opacity-60 font-normal normal-case tracking-normal">· {catalogue.length} exercices</span>
+            className="group flex items-center gap-3 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black px-4 py-3.5 rounded-2xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_8px_30px_-4px_rgba(201,168,76,0.85)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200">
+            <span className="shrink-0 w-9 h-9 rounded-xl bg-black/10 flex items-center justify-center">
+              <IconLibrary/>
+            </span>
+            <span className="flex-1 text-left">
+              <span className="block text-[0.68rem] font-bold tracking-[0.1em] uppercase leading-tight">Choisir dans la bibliothèque</span>
+              <span className="block text-[0.58rem] font-medium opacity-70 tracking-wide leading-tight mt-0.5">{catalogue.length} exercices classés par muscle</span>
+            </span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 opacity-60 transition-transform group-hover:translate-x-0.5"><path d="M9 6l6 6-6 6"/></svg>
           </button>
         )}
         <button type="button" onClick={add} className="border border-[var(--t-border)] text-[var(--t-text-25)] text-[0.5rem] tracking-[0.1em] uppercase py-2 rounded-xl hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">
