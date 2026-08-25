@@ -1,6 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import { type CatalogueEntry } from "@/lib/exercicesCatalogue";
+import { MuscleFigure } from "@/components/MuscleFigure";
 
 // Ordre d'affichage des catégories — du plus gros groupe musculaire au plus
 // spécifique, plutôt que l'ordre alphabétique.
@@ -13,6 +14,8 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
 }) {
   const [category, setCategory] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const [viewMode, setViewMode] = useState<"liste" | "silhouette">("silhouette");
+  const [bodyView, setBodyView] = useState<"face" | "dos">("face");
 
   const categories = useMemo(() => {
     const present = new Set(catalogue.map(e => e.partie_corps).filter(Boolean) as string[]);
@@ -39,22 +42,56 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
         </div>
 
         <div className="px-5 py-3 border-b border-[var(--t-border-soft)] shrink-0">
-          <input
-            className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 mb-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
-            placeholder="Rechercher un exercice…" value={query} onChange={e => setQuery(e.target.value)} autoFocus
-          />
-          <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
-            <button type="button" onClick={() => setCategory(null)}
-              className={`shrink-0 text-[0.62rem] tracking-wider uppercase px-3 py-1.5 rounded-full border transition-colors ${!category ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
-              Tout
-            </button>
-            {categories.map(c => (
-              <button key={c} type="button" onClick={() => setCategory(c)}
-                className={`shrink-0 text-[0.62rem] tracking-wider uppercase px-3 py-1.5 rounded-full border capitalize transition-colors ${category === c ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
-                {c}
+          <div className="flex items-center gap-2 mb-3">
+            <input
+              className="flex-1 bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
+              placeholder="Rechercher un exercice…" value={query} onChange={e => setQuery(e.target.value)} autoFocus
+            />
+            <div className="flex border border-[var(--t-border)] rounded-xl overflow-hidden shrink-0">
+              <button type="button" onClick={() => setViewMode("silhouette")} title="Silhouette"
+                className={`px-2.5 py-2.5 transition-colors ${viewMode === "silhouette" ? "bg-[#c9a84c]/15 text-[#c9a84c]" : "text-[var(--t-text-30)] hover:text-[var(--t-text-60)]"}`}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="6" r="3"/><path d="M6 21v-6a3 3 0 013-3h6a3 3 0 013 3v6"/><path d="M9 21v-4M15 21v-4"/></svg>
               </button>
-            ))}
+              <button type="button" onClick={() => setViewMode("liste")} title="Liste"
+                className={`px-2.5 py-2.5 border-l border-[var(--t-border)] transition-colors ${viewMode === "liste" ? "bg-[#c9a84c]/15 text-[#c9a84c]" : "text-[var(--t-text-30)] hover:text-[var(--t-text-60)]"}`}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+              </button>
+            </div>
           </div>
+
+          {viewMode === "silhouette" ? (
+            <div className="flex flex-col items-center gap-3">
+              <MuscleFigure view={bodyView} onViewChange={setBodyView} active={category} onSelect={c => setCategory(category === c ? null : c)} available={new Set(categories)}/>
+              {categories.some(c => c === "cardio" || c === "cou") && (
+                <div className="flex gap-1.5">
+                  {categories.filter(c => c === "cardio" || c === "cou").map(c => (
+                    <button key={c} type="button" onClick={() => setCategory(category === c ? null : c)}
+                      className={`text-[0.6rem] tracking-wider uppercase px-3 py-1.5 rounded-full border capitalize transition-colors ${category === c ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {category && (
+                <button type="button" onClick={() => setCategory(null)} className="text-[0.58rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">
+                  ✕ Effacer le filtre ({category})
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+              <button type="button" onClick={() => setCategory(null)}
+                className={`shrink-0 text-[0.62rem] tracking-wider uppercase px-3 py-1.5 rounded-full border transition-colors ${!category ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
+                Tout
+              </button>
+              {categories.map(c => (
+                <button key={c} type="button" onClick={() => setCategory(c)}
+                  className={`shrink-0 text-[0.62rem] tracking-wider uppercase px-3 py-1.5 rounded-full border capitalize transition-colors ${category === c ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
+                  {c}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="flex-1 overflow-y-auto px-2 py-2">
