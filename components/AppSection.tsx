@@ -51,7 +51,7 @@ export default function AppSection() {
           </p>
 
           <Link
-            href="/login"
+            href="/login?invite=E14D03&mode=register"
             className="group relative inline-flex items-center gap-4 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-xs font-bold tracking-[0.25em] uppercase px-10 py-4 overflow-hidden rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300"
           >
             CRÉER MON COMPTE
