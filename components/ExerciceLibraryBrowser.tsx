@@ -1,11 +1,39 @@
 "use client";
 import { useMemo, useState } from "react";
+import Model, { type IExerciseData, type Muscle } from "react-body-highlighter";
 import { type CatalogueEntry } from "@/lib/exercicesCatalogue";
-import { MuscleFigure } from "@/components/MuscleFigure";
 
-// Ordre d'affichage des catégories — du plus gros groupe musculaire au plus
-// spécifique, plutôt que l'ordre alphabétique.
-const CATEGORY_ORDER = ["pectoraux", "dos", "épaules", "bras", "avant-bras", "cuisses", "bas des jambes", "abdominaux", "cardio", "cou"];
+// On filtre par muscle_cible (plus précis que partie_corps, ~19 valeurs) plutôt que par
+// partie_corps (~10, trop large pour une silhouette détaillée) — voir supabase/exercices_catalogue_migration.sql.
+// Correspondance avec les clés de react-body-highlighter (licence MIT, github.com/giavinh79/react-body-highlighter) :
+// certains muscle_cible n'ont pas d'équivalent sur la silhouette (colonne vertébrale, élévateur de
+// la scapula, grand dentelé, système cardiovasculaire) — ils restent accessibles via des puces à part.
+const CIBLE_TO_LIB: Record<string, Muscle[]> = {
+  "pectoraux": ["chest"],
+  "haut du dos": ["upper-back"],
+  "grand dorsal": ["lower-back"],
+  "trapèzes": ["trapezius"],
+  "deltoïdes": ["front-deltoids", "back-deltoids"],
+  "biceps": ["biceps"],
+  "triceps": ["triceps"],
+  "avant-bras": ["forearm"],
+  "abdominaux": ["abs", "obliques"],
+  "quadriceps": ["quadriceps"],
+  "ischio-jambiers": ["hamstring"],
+  "adducteurs": ["adductor"],
+  "abducteurs": ["abductors"],
+  "fessiers": ["gluteal"],
+  "mollets": ["calves", "left-soleus", "right-soleus"],
+};
+const LIB_TO_CIBLE: Record<string, string> = Object.fromEntries(
+  Object.entries(CIBLE_TO_LIB).flatMap(([cible, libs]) => libs.map(l => [l, cible]))
+);
+// Ordre d'affichage des puces — du plus gros groupe musculaire au plus spécifique.
+const CATEGORY_ORDER = [
+  "pectoraux", "haut du dos", "grand dorsal", "trapèzes", "deltoïdes", "biceps", "triceps", "avant-bras",
+  "abdominaux", "quadriceps", "ischio-jambiers", "adducteurs", "abducteurs", "fessiers", "mollets",
+  "colonne vertébrale", "élévateur de la scapula", "grand dentelé", "système cardiovasculaire",
+];
 
 export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
   catalogue: CatalogueEntry[];
@@ -18,18 +46,24 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
   const [bodyView, setBodyView] = useState<"face" | "dos">("face");
 
   const categories = useMemo(() => {
-    const present = new Set(catalogue.map(e => e.partie_corps).filter(Boolean) as string[]);
+    const present = new Set(catalogue.map(e => e.muscle_cible).filter(Boolean) as string[]);
     const ordered = CATEGORY_ORDER.filter(c => present.has(c));
     const rest = [...present].filter(c => !CATEGORY_ORDER.includes(c)).sort();
     return [...ordered, ...rest];
   }, [catalogue]);
 
+  const offBody = useMemo(() => categories.filter(c => !CIBLE_TO_LIB[c]), [categories]);
+
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
     return catalogue
-      .filter(e => (!category || e.partie_corps === category) && (!q || e.nom.toLowerCase().includes(q)))
+      .filter(e => (!category || e.muscle_cible === category) && (!q || e.nom.toLowerCase().includes(q)))
       .slice(0, 200);
   }, [catalogue, category, query]);
+
+  const modelData: IExerciseData[] = category && CIBLE_TO_LIB[category]
+    ? [{ name: "sélection", muscles: CIBLE_TO_LIB[category] }]
+    : [];
 
   return (
     <div className="fixed inset-0 bg-black/70 z-50 flex items-end sm:items-center justify-center" onClick={onClose}>
@@ -61,12 +95,33 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
 
           {viewMode === "silhouette" ? (
             <div className="flex flex-col items-center gap-3">
-              <MuscleFigure view={bodyView} onViewChange={setBodyView} active={category} onSelect={c => setCategory(category === c ? null : c)} available={new Set(categories)}/>
-              {categories.some(c => c === "cardio" || c === "cou") && (
-                <div className="flex gap-1.5">
-                  {categories.filter(c => c === "cardio" || c === "cou").map(c => (
-                    <button key={c} type="button" onClick={() => setCategory(category === c ? null : c)}
-                      className={`text-[0.6rem] tracking-wider uppercase px-3 py-1.5 rounded-full border capitalize transition-colors ${category === c ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
+              <div className="flex border border-[var(--t-border)] rounded-full p-0.5">
+                {(["face", "dos"] as const).map(v => (
+                  <button key={v} type="button" onClick={() => setBodyView(v)}
+                    className={`text-[0.55rem] tracking-[0.15em] uppercase px-4 py-1.5 rounded-full transition-colors ${bodyView === v ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-[var(--t-text-40)]"}`}>
+                    {v}
+                  </button>
+                ))}
+              </div>
+
+              <Model
+                type={bodyView === "face" ? "anterior" : "posterior"}
+                data={modelData}
+                bodyColor="var(--t-glass-bg)"
+                highlightedColors={["#c9a84c"]}
+                onClick={({ muscle }) => {
+                  const cible = LIB_TO_CIBLE[muscle];
+                  if (cible) setCategory(prev => (prev === cible ? null : cible));
+                }}
+                style={{ width: "170px" }}
+                svgStyle={{ filter: "drop-shadow(0 0 0 transparent)" }}
+              />
+
+              {offBody.length > 0 && (
+                <div className="flex flex-wrap justify-center gap-1.5">
+                  {offBody.map(c => (
+                    <button key={c} type="button" onClick={() => setCategory(prev => (prev === c ? null : c))}
+                      className={`text-[0.58rem] tracking-wider uppercase px-3 py-1.5 rounded-full border capitalize transition-colors ${category === c ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
                       {c}
                     </button>
                   ))}
