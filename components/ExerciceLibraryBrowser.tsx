@@ -43,7 +43,7 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
             className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 mb-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
             placeholder="Rechercher un exercice…" value={query} onChange={e => setQuery(e.target.value)} autoFocus
           />
-          <div className="flex gap-1.5 overflow-x-auto pb-1">
+          <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
             <button type="button" onClick={() => setCategory(null)}
               className={`shrink-0 text-[0.62rem] tracking-wider uppercase px-3 py-1.5 rounded-full border transition-colors ${!category ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
               Tout

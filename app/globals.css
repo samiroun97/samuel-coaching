@@ -175,12 +175,17 @@ body {
   background-clip: text;
 }
 
-/* Scrollbar — width pour le défilement vertical, height pour l'horizontal (ex :
-   catégories de la bibliothèque d'exercices, carrousel photos) : sans ça, le
-   scroll horizontal retombe sur la grosse barre par défaut du navigateur. */
-::-webkit-scrollbar { width: 4px; height: 4px; }
+/* Scrollbar verticale de l'app */
+::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: #0a0a0a; }
 ::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 2px; }
+
+/* Rangées à défilement horizontal courtes (puces de catégories, carrousel photos) :
+   même une barre fine reste disgracieuse quand elle occupe presque toute la largeur
+   (le contenu déborde à peine). On la masque entièrement — le scroll au doigt/à la
+   molette reste actif, seul le rendu visuel de la barre disparaît. */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
 
 /* Mobile menu */
 .mobile-menu-open { overflow: hidden; }

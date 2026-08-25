@@ -990,7 +990,7 @@ export default function SuiviPage() {
                 <div key={entry.id} className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-2xl overflow-hidden">
                   {/* Photos du check-in : évolution visuelle, en grand */}
                   {entryPhotos.length > 0 && (
-                    <div className="flex gap-1.5 p-2 overflow-x-auto snap-x snap-mandatory">
+                    <div className="flex gap-1.5 p-2 overflow-x-auto snap-x snap-mandatory no-scrollbar">
                       {entryPhotos.map((url, pi) => (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img key={pi} src={url} alt="" onClick={() => setViewingPhoto(url)}
