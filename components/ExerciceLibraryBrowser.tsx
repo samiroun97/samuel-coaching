@@ -155,8 +155,20 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
           ) : (
             results.map(e => (
               <button key={e.id} type="button" onClick={() => onPick(e)}
-                className="w-full flex items-center justify-between gap-3 text-left px-3.5 py-3 rounded-xl border border-[var(--t-text-8)] bg-[var(--t-glass-bg)] hover:border-[#c9a84c]/30 hover:bg-[#c9a84c]/5 transition-colors">
-                <span className="text-xs text-[var(--t-text-70)] capitalize">{e.nom}</span>
+                className="w-full flex items-center gap-3 text-left px-3.5 py-3 rounded-xl border border-[var(--t-text-8)] bg-[var(--t-glass-bg)] hover:border-[#c9a84c]/30 hover:bg-[#c9a84c]/5 transition-colors">
+                {e.image_url && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={e.image_url} alt="" loading="lazy"
+                    className="w-11 h-11 rounded-lg object-cover shrink-0 border border-[var(--t-border)]"/>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-[var(--t-text-70)] capitalize truncate">{e.nom}</p>
+                  {e.image_url && (
+                    <p className="text-[0.5rem] text-[var(--t-text-15)] mt-0.5 truncate">
+                      Photo : {e.image_license_author || "wger.de"} · {e.image_license}
+                    </p>
+                  )}
+                </div>
                 {e.muscle_cible && <span className="text-[0.58rem] tracking-wider uppercase text-[#c9a84c]/70 shrink-0 capitalize border border-[#c9a84c]/20 rounded-full px-2 py-0.5">{e.muscle_cible}</span>}
               </button>
             ))

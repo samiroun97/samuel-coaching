@@ -10,6 +10,12 @@ export type CatalogueEntry = {
   equipement: string | null;
   muscle_cible: string | null;
   muscles_secondaires: string[] | null;
+  // Photo pour un sous-ensemble curé d'exercices (voir supabase/exercices_catalogue_images_migration.sql) —
+  // hébergée et servie directement par wger.de (jamais copiée ici), licence CC-BY-SA par image,
+  // attribution obligatoire : image_license_author + image_license doivent rester affichés avec la photo.
+  image_url: string | null;
+  image_license: string | null;
+  image_license_author: string | null;
 };
 
 let cache: CatalogueEntry[] | null = null;
@@ -19,7 +25,7 @@ let cache: CatalogueEntry[] | null = null;
 export async function loadCatalogue(): Promise<CatalogueEntry[]> {
   if (cache) return cache;
   const { data } = await supabase.from("exercices_catalogue")
-    .select("id,nom,partie_corps,equipement,muscle_cible,muscles_secondaires")
+    .select("id,nom,partie_corps,equipement,muscle_cible,muscles_secondaires,image_url,image_license,image_license_author")
     .order("nom", { ascending: true });
   cache = (data ?? []) as CatalogueEntry[];
   return cache;
