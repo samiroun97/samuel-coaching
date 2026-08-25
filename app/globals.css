@@ -175,8 +175,10 @@ body {
   background-clip: text;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 4px; }
+/* Scrollbar — width pour le défilement vertical, height pour l'horizontal (ex :
+   catégories de la bibliothèque d'exercices, carrousel photos) : sans ça, le
+   scroll horizontal retombe sur la grosse barre par défaut du navigateur. */
+::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: #0a0a0a; }
 ::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 2px; }
 
