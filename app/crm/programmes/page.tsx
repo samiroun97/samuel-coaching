@@ -330,6 +330,12 @@ export default function ProgrammesPage() {
                 </div>
               )}
 
+              {/* ── Nouveau programme : rupture visuelle avec le bloc aperçu client ci-dessus ── */}
+              <div className="flex items-center gap-3 mt-2">
+                <span className="text-[0.55rem] tracking-[0.25em] uppercase text-[#c9a84c]/70 shrink-0">Nouveau programme</span>
+                <div className="flex-1 h-px bg-[#c9a84c]/15"/>
+              </div>
+
               {/* Bibliothèque d'exercices */}
               <div className="border border-[var(--t-text-8)] bg-[var(--t-bg)] rounded-xl">
                 <button onClick={() => setShowLibrary(v => !v)} className="w-full flex items-center justify-between px-4 py-2.5 text-left">
