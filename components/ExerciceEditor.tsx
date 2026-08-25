@@ -16,6 +16,7 @@ const IconReps = () => <svg width="9" height="9" viewBox="0 0 24 24" fill="none"
 const IconPoids = () => <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M6.5 6.5h11a2 2 0 012 2v7a2 2 0 01-2 2h-11a2 2 0 01-2-2v-7a2 2 0 012-2zM2 9v6M22 9v6"/></svg>;
 const IconRepos = () => <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>;
 const IconUp = () => <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 15 12 9 6 15"/></svg>;
+const IconLibrary = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>;
 const IconDown = () => <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>;
 
 const MODES: { key: ExerciceMode; label: string }[] = [
@@ -288,16 +289,18 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
         {catalogue.map(c => <option key={`cat-${c.id}`} value={c.nom} />)}
       </datalist>
       {nodes}
-      <div className="flex gap-2">
-        <button type="button" onClick={add} className="flex-1 border border-[var(--t-border)] text-[var(--t-text-30)] text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-xl hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">
-          + Ajouter un exercice
-        </button>
+      <div className="flex flex-col gap-2">
         {catalogue.length > 0 && (
           <button type="button" onClick={() => setShowLibraryBrowser(true)}
-            className="flex-1 border border-[#c9a84c]/30 text-[#c9a84c] text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-xl hover:bg-[#c9a84c]/10 transition-colors">
-            Depuis la bibliothèque
+            className="flex items-center justify-center gap-2 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.15em] uppercase py-3 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200">
+            <IconLibrary/>
+            Choisir dans la bibliothèque
+            <span className="opacity-60 font-normal normal-case tracking-normal">· {catalogue.length} exercices</span>
           </button>
         )}
+        <button type="button" onClick={add} className="border border-[var(--t-border)] text-[var(--t-text-25)] text-[0.5rem] tracking-[0.1em] uppercase py-2 rounded-xl hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">
+          + Ajouter un exercice vide
+        </button>
       </div>
       {showLibraryBrowser && (
         <ExerciceLibraryBrowser catalogue={catalogue} onPick={addFromCatalogue} onClose={() => setShowLibraryBrowser(false)}/>
