@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
-import { getMyCoachEmail } from "@/lib/coach";
+import { getMyCoachEmail, getMyCoachBusinessName } from "@/lib/coach";
 import { SeanceBody } from "@/components/SeancePreview";
 import { SeanceLive } from "@/components/SeanceLive";
 import ExerciceEditor from "@/components/ExerciceEditor";
@@ -134,7 +134,7 @@ export default function ProgrammePage() {
     setExportingPdf(true);
     try {
       const { generateProgrammePdf } = await import("@/lib/pdf");
-      generateProgrammePdf(coachSeances, profile?.prenom);
+      generateProgrammePdf(coachSeances, profile?.prenom, coachBusinessNameRef.current ?? undefined);
     } finally {
       setExportingPdf(false);
     }
@@ -153,6 +153,7 @@ export default function ProgrammePage() {
   const recognitionRef = useRef<{ start(): void; stop(): void } | null>(null);
   const userEmailRef = useRef("");
   const coachEmailRef = useRef<string | null>(null);
+  const coachBusinessNameRef = useRef<string | null>(null);
 
   // Signalement d'une estimation d'activité qui semble fausse — envoyée à Samuel via
   // l'Inbox, pour recalibrer l'IA depuis la rubrique IA du CRM (cf. app/crm/ia).
@@ -175,6 +176,7 @@ export default function ProgrammePage() {
       setUserId(user.id);
       userEmailRef.current = user.email ?? "";
       getMyCoachEmail(user.id).then(email => { coachEmailRef.current = email; });
+      getMyCoachBusinessName(user.id).then(name => { coachBusinessNameRef.current = name; });
       const { data: p } = await supabase.from("profiles").select("prenom,poids,taille,age,sexe").eq("id", user.id).single();
       if (p) setProfile(p as Profile);
       if (user.email) {

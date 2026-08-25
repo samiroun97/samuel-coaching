@@ -31,9 +31,11 @@ export async function GET(req: NextRequest) {
   const admin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceKey);
 
   const today = new Date().toISOString().split("T")[0];
-  const [{ data: subs }, { data: todaySummaries }] = await Promise.all([
+  const [{ data: subs }, { data: todaySummaries }, { data: links }, { data: coaches }] = await Promise.all([
     admin.from("push_subscriptions").select("id,user_id,endpoint,p256dh,auth"),
     admin.from("daily_summaries").select("user_id,foods").eq("date", today),
+    admin.from("coach_clients").select("client_id,coach_id"),
+    admin.from("coaches").select("id,business_name"),
   ]);
 
   const alreadyLogged = new Set(
@@ -42,13 +44,18 @@ export async function GET(req: NextRequest) {
       .map((row) => row.user_id)
   );
 
+  // Nom du coach par utilisateur (pour le titre de la notif) — jointure faite ici plutôt
+  // qu'en base pour rester sur une seule requête par table (peu de lignes au total).
+  const coachNameById = new Map((coaches ?? []).map(c => [c.id, c.business_name as string | null]));
+  const coachNameByUser = new Map((links ?? []).map(l => [l.client_id, coachNameById.get(l.coach_id) ?? null]));
+
   let sent = 0, removed = 0;
   await Promise.all((subs ?? []).map(async (s) => {
     if (alreadyLogged.has(s.user_id)) return;
     try {
       await webpush.sendNotification(
         { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
-        JSON.stringify({ title: "Samuel Coaching", body: MEAL_MESSAGES[meal], url: "/dashboard/nutrition" })
+        JSON.stringify({ title: coachNameByUser.get(s.user_id) ?? "Rappel repas", body: MEAL_MESSAGES[meal], url: "/dashboard/nutrition" })
       );
       sent++;
     } catch (err: unknown) {

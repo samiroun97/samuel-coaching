@@ -209,7 +209,7 @@ export default function LoginPage() {
             {mode === "login" ? "Connexion" : mode === "register" ? "Créer un compte" : "Mot de passe oublié"}
           </h1>
           <p className="text-white/40 text-xs mb-8">
-            {mode === "login" ? "Accède à ton espace client" : mode === "register" ? "Rejoins l'espace client Samuel Coaching" : "On t'envoie un lien par email pour en choisir un nouveau"}
+            {mode === "login" ? "Accède à ton espace client" : mode === "register" ? "Crée ton compte pour rejoindre ton espace coaching" : "On t'envoie un lien par email pour en choisir un nouveau"}
           </p>
 
           {mode !== "forgot" && (

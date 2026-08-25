@@ -44,8 +44,8 @@ const STAGE_CFG: Record<string, { label: string; color: string }> = {
   reactive:   { label: "Réactivé",   color: "#a08ec9" },
 };
 
-const TEMPLATES = [
-  { label: "Bienvenue",         text: "Bonjour ! Bienvenue dans l'espace Samuel Coaching. Je suis disponible ici pour répondre à toutes tes questions. N'hésite pas !" },
+const buildTemplates = (businessName: string | null) => [
+  { label: "Bienvenue",         text: `Bonjour ! Bienvenue dans l'espace ${businessName ?? "coaching"}. Je suis disponible ici pour répondre à toutes tes questions. N'hésite pas !` },
   { label: "Rappel suivi",      text: "Bonjour ! Je voulais juste faire un point avec toi — comment ça se passe cette semaine côté nutrition et entraînements ?" },
   { label: "Relance inactivité",text: "Salut ! Je n'ai pas eu de tes nouvelles depuis quelques jours. Tout va bien ? Je suis là si tu as des questions ou besoin d'ajustements." },
   { label: "Félicitations",     text: "Excellent travail cette semaine ! Tes efforts paient vraiment, continue comme ça 💪" },
@@ -68,6 +68,7 @@ export default function InboxPage() {
   const [correctionSaving,  setCorrectionSaving]  = useState(false);
   const [myEmail,     setMyEmail]     = useState("");
   const [myCoachId,   setMyCoachId]   = useState<string | null>(null);
+  const [myBusinessName, setMyBusinessName] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -79,7 +80,11 @@ export default function InboxPage() {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setMyEmail(user?.email ?? "");
-      if (user) getMyCoachId(user.id).then(setMyCoachId);
+      if (user) {
+        getMyCoachId(user.id).then(setMyCoachId);
+        supabase.from("coaches").select("business_name").eq("profile_id", user.id).single()
+          .then(({ data }) => setMyBusinessName(data?.business_name ?? null));
+      }
       const [{ data: c }, { data: m }, { data: bfc }] = await Promise.all([
         supabase.from("profiles").select("id,email,prenom,nom,poids,pipeline_stage,subscription_end,objectifs").order("updated_at", { ascending: false }),
         supabase.from("messages").select("*").order("created_at", { ascending: true }),
@@ -427,7 +432,7 @@ export default function InboxPage() {
           <div className="border-t border-[var(--t-border-soft)] px-3 md:px-8 py-3 md:py-4 shrink-0">
             {showTpls && (
               <div className="mb-3 flex flex-wrap gap-2">
-                {TEMPLATES.map(t => (
+                {buildTemplates(myBusinessName).map(t => (
                   <button key={t.label} onClick={() => { setInput(t.text); setShowTpls(false); }}
                     className="text-[0.48rem] tracking-wider uppercase px-3 py-1.5 border border-[#c9a84c]/25 rounded-xl text-[#c9a84c]/70 hover:border-[#c9a84c]/50 hover:text-[#c9a84c] transition-colors">
                     {t.label}

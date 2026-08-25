@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
 import { OBJECTIF_TYPES } from "@/lib/objectifTypes";
+import { getMyCoachBusinessName } from "@/lib/coach";
 
 const steps = ["Identité", "Entraînement", "Santé", "Objectifs"];
 
@@ -61,10 +62,16 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState(initialForm);
+  const [coachName, setCoachName] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
       if (!data.user) { router.push("/login"); return; }
+      // Pas encore lié à un coach à ce stade pour un nouveau compte (le lien
+      // d'invitation n'est consommé qu'au chargement suivant de /dashboard) —
+      // reste null la plupart du temps, sauf pour un client existant qui modifie
+      // son profil après coup.
+      getMyCoachBusinessName(data.user.id).then(setCoachName);
       const { data: profile } = await supabase
         .from("profiles").select("*").eq("id", data.user.id).single();
       if (profile?.prenom) {
@@ -137,7 +144,7 @@ export default function OnboardingPage() {
       <div className="w-full max-w-lg">
 
         <div style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl tracking-[0.2em] text-[var(--t-text)] text-center mb-2">
-          SAMUEL<span style={{ color: "#c9a84c" }}>.</span><span style={{ color: "#c9a84c" }}>COACHING</span>
+          {coachName ?? "BIENVENUE"}
         </div>
         <p className="text-center text-[0.68rem] tracking-[0.2em] uppercase text-[var(--t-text-30)] mb-10">
           {isEditing ? "Modifier mon profil" : "Compléter mon profil"}

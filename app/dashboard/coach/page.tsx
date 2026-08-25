@@ -2,15 +2,15 @@
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
-import { getMyCoachEmail } from "@/lib/coach";
+import { getMyCoachEmail, getMyCoachBusinessName } from "@/lib/coach";
 
 type AiMessage  = { role: "user" | "assistant"; content: string };
 type DirectMsg  = { id: string; from_email: string; to_email: string; content: string; created_at: string };
 
-const WELCOME: AiMessage = {
+const welcomeMessage = (coachName: string | null): AiMessage => ({
   role: "assistant",
-  content: "Bonjour ! Je suis l'assistant IA de Samuel Coaching.\n\nJe peux répondre à tes questions sur ton alimentation, tes entraînements, ta composition corporelle ou l'utilisation de l'application.\n\nAttention : je suis programmé exclusivement pour le sport et la nutrition — je ne répondrai pas à des sujets hors de ce cadre.",
-};
+  content: `Bonjour ! Je suis l'assistant IA de ${coachName ?? "ton coach"}.\n\nJe peux répondre à tes questions sur ton alimentation, tes entraînements, ta composition corporelle ou l'utilisation de l'application.\n\nAttention : je suis programmé exclusivement pour le sport et la nutrition — je ne répondrai pas à des sujets hors de ce cadre.`,
+});
 
 export default function CoachPage() {
   const [tab,       setTab]       = useState<"ia" | "samuel">("ia");
@@ -18,7 +18,7 @@ export default function CoachPage() {
   const [coachEmail, setCoachEmail] = useState<string | null>(null);
 
   // IA chat
-  const [aiMessages, setAiMessages] = useState<AiMessage[]>([WELCOME]);
+  const [aiMessages, setAiMessages] = useState<AiMessage[]>([welcomeMessage(null)]);
   const [aiInput,    setAiInput]    = useState("");
   const [aiLoading,  setAiLoading]  = useState(false);
   const aiBottom  = useRef<HTMLDivElement>(null);
@@ -38,6 +38,9 @@ export default function CoachPage() {
       setUserEmail(user.email);
       loadDirectMessages(user.email);
       getMyCoachEmail(user.id).then(setCoachEmail);
+      getMyCoachBusinessName(user.id).then(name => {
+        setAiMessages(prev => (prev.length === 1 && prev[0].role === "assistant" ? [welcomeMessage(name)] : prev));
+      });
     })();
   }, []);
 

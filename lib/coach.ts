@@ -24,3 +24,15 @@ export async function getMyCoachEmail(clientId: string): Promise<string | null> 
   const { data: profile } = await supabase.from("profiles").select("email").eq("id", coach.profile_id).single();
   return profile?.email ?? null;
 }
+
+// Nom d'activité du coach rattaché à ce client, ou null si aucun coach assigné —
+// pour afficher le bon nom (au lieu d'un texte en dur) dans les écrans que le
+// client voit : intro IA, notifications, PDF... business_name vit directement
+// sur coaches, pas besoin de passer par profiles comme pour l'email.
+export async function getMyCoachBusinessName(clientId: string): Promise<string | null> {
+  const { data: link } = await supabase
+    .from("coach_clients").select("coach_id").eq("client_id", clientId).limit(1).maybeSingle();
+  if (!link) return null;
+  const { data: coach } = await supabase.from("coaches").select("business_name").eq("id", link.coach_id).single();
+  return coach?.business_name ?? null;
+}

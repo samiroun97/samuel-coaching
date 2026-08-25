@@ -17,10 +17,11 @@ const CARD_BORDER = { r: 42, g: 42, b: 42 };
 // cassé dans le PDF) ni le caractère flèche "→" : on formate donc les nombres nous-mêmes.
 const fmtInt = (n: number) => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "'");
 
-export function generateProgrammePdf(seances: CoachSeance[], clientName?: string) {
+export function generateProgrammePdf(seances: CoachSeance[], clientName?: string, coachBusinessName?: string) {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const pageW = 210, pageH = 297, margin = 16;
   let y = margin;
+  const footerLabel = (coachBusinessName ?? "COACHING").toUpperCase();
 
   const fillBg = () => {
     doc.setFillColor(10, 10, 10);
@@ -34,7 +35,7 @@ export function generateProgrammePdf(seances: CoachSeance[], clientName?: string
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
     doc.setTextColor(GOLD.r, GOLD.g, GOLD.b);
-    doc.text("SAMUEL.COACHING", margin, pageH - 9);
+    doc.text(footerLabel, margin, pageH - 9);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(GRAY_DIM.r, GRAY_DIM.g, GRAY_DIM.b);
     doc.text(`Page ${doc.getCurrentPageInfo().pageNumber}`, pageW - margin, pageH - 9, { align: "right" });
