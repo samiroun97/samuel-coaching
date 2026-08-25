@@ -74,6 +74,8 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [nom, setNom] = useState("");
+  const [isCoachSignup, setIsCoachSignup] = useState(false);
+  const [businessName, setBusinessName] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
@@ -130,6 +132,7 @@ export default function LoginPage() {
     }
 
     if (mode === "register" && !nom.trim()) { setError("Merci d'indiquer ton prénom."); return; }
+    if (mode === "register" && isCoachSignup && !businessName.trim()) { setError("Merci d'indiquer le nom de ton activité."); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setError("Cette adresse email n'est pas valide (ex : ton@email.com)."); return; }
     if (password.length < 6) { setError("Le mot de passe doit contenir au moins 6 caractères."); return; }
 
@@ -156,6 +159,13 @@ export default function LoginPage() {
         setError(translateError(error.message));
         setLoading(false);
       } else {
+        // Le compte auth existe mais aucune session n'est active tant que l'email
+        // n'est pas confirmé — on ne peut pas encore appeler une route authentifiée.
+        // Consommé au premier login dans app/dashboard/layout.tsx, même mécanisme
+        // que pending_invite_code.
+        if (isCoachSignup) {
+          try { localStorage.setItem("pending_coach_signup", businessName.trim()); } catch { /* ignore */ }
+        }
         setSuccess("Compte créé ! Vérifie ton email pour confirmer ton inscription.");
         setLoading(false);
       }
@@ -237,6 +247,27 @@ export default function LoginPage() {
                   onChange={(e) => setNom(e.target.value)}
                   className="w-full bg-[#0a0a0a] border border-white/10 text-white placeholder-white/20 text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/50"
                 />
+              </div>
+            )}
+
+            {mode === "register" && (
+              <div>
+                <button type="button" onClick={() => setIsCoachSignup(v => !v)}
+                  className="w-full flex items-center gap-3 text-left">
+                  <span className={`shrink-0 w-4 h-4 border flex items-center justify-center transition-colors ${isCoachSignup ? "bg-[#c9a84c] border-[#c9a84c]" : "border-white/20"}`}>
+                    {isCoachSignup && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7"/></svg>}
+                  </span>
+                  <span className="text-xs text-white/60">Je suis un coach professionnel</span>
+                </button>
+                {isCoachSignup && (
+                  <input
+                    type="text"
+                    placeholder="Nom de mon activité"
+                    value={businessName}
+                    onChange={(e) => setBusinessName(e.target.value)}
+                    className="w-full mt-3 bg-[#0a0a0a] border border-white/10 text-white placeholder-white/20 text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/50"
+                  />
+                )}
               </div>
             )}
             <div>

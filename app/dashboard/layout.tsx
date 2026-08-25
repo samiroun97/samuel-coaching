@@ -66,6 +66,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     supabase.auth.getUser().then(async ({ data }) => {
       if (!data.user) { router.push("/login"); return; }
       const email = data.user.email ?? "";
+
+      // Inscription coach déposée sur /login (pending_coach_signup) : consommée une
+      // seule fois au premier login (email confirmé) — voir app/api/coach/register.
+      // Même schéma que pending_invite_code ci-dessous, mais un nouveau coach n'a
+      // encore aucune ligne coaches/is_coach tant que cet appel n'a pas eu lieu.
+      const pendingCoachSignup = localStorage.getItem("pending_coach_signup");
+      if (pendingCoachSignup) {
+        localStorage.removeItem("pending_coach_signup");
+        try { await apiPost("/api/coach/register", { businessName: pendingCoachSignup }); } catch { /* ignore */ }
+        router.push("/crm");
+        return;
+      }
+
       const coach = await isCoachUser(data.user.id);
       setIsCoach(coach);
       setCurrentEmail(email);
