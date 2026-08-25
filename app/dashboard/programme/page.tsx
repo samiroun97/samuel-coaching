@@ -683,9 +683,15 @@ export default function ProgrammePage() {
       <div className="mb-4 mt-6">
         {!showFreestyle ? (
           <button onClick={() => setShowFreestyle(true)}
-            className="w-full flex items-center justify-center gap-2 border border-dashed border-[var(--t-border)] text-[var(--t-text-35)] text-[0.65rem] tracking-[0.12em] uppercase py-3 rounded-xl hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
-            Créer ma propre séance
+            className="group w-full flex items-center gap-3 border border-[#c9a84c]/25 bg-[var(--t-surface-gold)] rounded-2xl px-4 py-3.5 hover:border-[#c9a84c]/50 transition-colors">
+            <span className="shrink-0 w-10 h-10 rounded-xl bg-[#c9a84c]/10 flex items-center justify-center text-[#c9a84c]">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 10v4M5 8v8M8 11h8M19 8v8M22 10v4"/><rect x="5" y="8" width="3" height="8" rx="1"/><rect x="16" y="8" width="3" height="8" rx="1"/></svg>
+            </span>
+            <span className="flex-1 text-left">
+              <span style={{ fontFamily: "var(--font-bebas)" }} className="block text-sm tracking-wide text-[var(--t-text)] leading-tight">Créer ma propre séance</span>
+              <span className="block text-[0.6rem] text-[var(--t-text-30)] tracking-wide mt-0.5 leading-tight">Compose tes exercices et logue-la en direct</span>
+            </span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-[#c9a84c]/60 transition-transform group-hover:translate-x-0.5"><path d="M9 6l6 6-6 6"/></svg>
           </button>
         ) : (
           <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-4">
