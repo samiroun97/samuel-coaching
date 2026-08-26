@@ -133,65 +133,72 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
   const renderExercice = (i: number, isGrouped: boolean, onMoveUp?: () => void, onMoveDown?: () => void) => {
     const ex = items[i];
     return (
-      <div key={i} className="border border-[var(--t-text-8)] bg-[var(--t-bg)] rounded-xl p-3.5 flex flex-col gap-3">
-        <div className="flex items-center gap-2">
-          <span className="shrink-0 w-6 h-6 flex items-center justify-center text-[0.6rem] font-bold text-[#c9a84c] border border-[#c9a84c]/25 bg-[#c9a84c]/5 rounded-lg">{i + 1}</span>
-          <div className="shrink-0 flex flex-col border border-[var(--t-border)] rounded-lg overflow-hidden">
-            <button type="button" onClick={onMoveUp} disabled={!onMoveUp} title="Monter"
-              className="w-5 h-4 flex items-center justify-center text-[var(--t-text-30)] hover:text-[#c9a84c] hover:bg-[var(--t-track)] transition-colors disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-[var(--t-text-30)] border-b border-[var(--t-border)]">
-              <IconUp/>
-            </button>
-            <button type="button" onClick={onMoveDown} disabled={!onMoveDown} title="Descendre"
-              className="w-5 h-4 flex items-center justify-center text-[var(--t-text-30)] hover:text-[#c9a84c] hover:bg-[var(--t-track)] transition-colors disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-[var(--t-text-30)]">
-              <IconDown/>
-            </button>
+      <div key={i} className="border border-[var(--t-border-soft)] bg-[var(--t-surface)] rounded-2xl p-4 sm:p-5 flex flex-col gap-4 shadow-[0_2px_14px_-6px_rgba(0,0,0,0.18)]">
+        <div className="flex items-start gap-2.5">
+          <div className="shrink-0 flex flex-col items-center gap-1 pt-0.5">
+            <span className="text-[0.62rem] font-bold text-[var(--t-text-25)]">{i + 1}</span>
+            <div className="flex flex-col">
+              <button type="button" onClick={onMoveUp} disabled={!onMoveUp} title="Monter"
+                className="w-5 h-4 flex items-center justify-center text-[var(--t-text-20)] hover:text-[#c9a84c] transition-colors disabled:opacity-20 disabled:hover:text-[var(--t-text-20)]">
+                <IconUp/>
+              </button>
+              <button type="button" onClick={onMoveDown} disabled={!onMoveDown} title="Descendre"
+                className="w-5 h-4 flex items-center justify-center text-[var(--t-text-20)] hover:text-[#c9a84c] transition-colors disabled:opacity-20 disabled:hover:text-[var(--t-text-20)]">
+                <IconDown/>
+              </button>
+            </div>
           </div>
-          <input className={inp} list={DATALIST_ID} placeholder="Nom de l'exercice" value={ex.nom}
-            onChange={e => update(i, { nom: e.target.value })} onBlur={e => applyFromLibrary(i, e.target.value)} />
-          <button type="button" onClick={() => remove(i)} className="shrink-0 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+
+          <div className="flex-1 min-w-0">
+            <input list={DATALIST_ID} placeholder="Nom de l'exercice" value={ex.nom}
+              onChange={e => update(i, { nom: e.target.value })} onBlur={e => applyFromLibrary(i, e.target.value)}
+              style={{ fontFamily: "var(--font-bebas)" }}
+              className="w-full bg-transparent border-0 border-b border-[var(--t-border-soft)] focus:border-[#c9a84c]/50 outline-none text-lg tracking-wide text-[var(--t-text)] placeholder-[var(--t-text-20)] pb-1.5 transition-colors"/>
+
+            <div className="flex flex-wrap items-center gap-2 mt-2.5">
+              <div className="inline-flex bg-[var(--t-surface-2)] rounded-full p-0.5">
+                {MODES.map(m => (
+                  <button key={m.key} type="button" onClick={() => setMode(i, m.key)}
+                    className={`px-2.5 py-1 rounded-full text-[0.56rem] tracking-[0.08em] uppercase transition-colors ${ex.mode === m.key ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-[var(--t-text-35)] hover:text-[var(--t-text-60)]"}`}>
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+              <Select value={ex.type} onChange={v => update(i, { type: v })} placeholder="Type d'exercice…"
+                options={EXERCICE_TYPES.map(t => ({ value: t, label: t }))}
+                triggerClassName="text-[0.62rem] text-[var(--t-text-30)] hover:text-[var(--t-text-60)] transition-colors"/>
+              {i > 0 && !isGrouped && (
+                <button type="button" onClick={() => linkWithPrevious(i)}
+                  className="text-[0.58rem] tracking-[0.05em] text-[var(--t-text-25)] hover:text-[#c9a84c] transition-colors">
+                  + Lier au précédent
+                </button>
+              )}
+            </div>
+          </div>
+
+          <button type="button" onClick={() => remove(i)} className="shrink-0 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors p-1 -m-1">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
           </button>
         </div>
 
-        <div className="pl-8 flex flex-wrap items-center gap-2">
-          <Select value={ex.type} onChange={v => update(i, { type: v })} placeholder="Type d'exercice…"
-            options={EXERCICE_TYPES.map(t => ({ value: t, label: t }))}
-            triggerClassName={`${inpSm} w-auto text-left`}/>
-          <div className="flex border border-[var(--t-border)] rounded-xl overflow-hidden">
-            {MODES.map(m => (
-              <button key={m.key} type="button" onClick={() => setMode(i, m.key)}
-                className={`px-2.5 py-2 text-[0.55rem] tracking-[0.1em] uppercase transition-colors ${ex.mode === m.key ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-[var(--t-text-35)] hover:text-[var(--t-text-60)]"}`}>
-                {m.label}
-              </button>
-            ))}
-          </div>
-          {i > 0 && !isGrouped && (
-            <button type="button" onClick={() => linkWithPrevious(i)}
-              className="text-[0.5rem] tracking-[0.1em] uppercase text-[var(--t-text-25)] rounded-xl border border-[var(--t-border)] px-2 py-2 hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors">
-              Lier au précédent
-            </button>
-          )}
-        </div>
-
         {ex.mode === "simple" && (
-          <div className="flex flex-wrap items-end gap-2 pl-8">
+          <div className="flex flex-wrap gap-2">
             {SIMPLE_FIELDS.filter(f => !ex.hiddenFields.includes(f.key)).map(f => (
-              <div key={f.key} className="w-24">
-                <div className="flex items-center justify-center gap-1 mb-1">
-                  <span className="flex items-center gap-1 text-[0.42rem] tracking-[0.18em] uppercase text-[var(--t-text-30)] whitespace-nowrap">
-                    <f.icon />{f.label}
-                  </span>
-                  <button type="button" onClick={() => hideField(i, f.key)} title={`Retirer le champ ${f.label}`}
-                    className="text-[var(--t-text-25)] hover:text-[#e07070] transition-colors p-1.5 -m-1.5">
-                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                  </button>
+              <div key={f.key} className="relative flex-1 min-w-[5.5rem]">
+                <div className="bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-2xl px-3 py-2.5 text-center focus-within:border-[#c9a84c]/40 transition-colors">
+                  <p className="text-[0.5rem] tracking-[0.14em] uppercase text-[var(--t-text-25)] mb-1">{f.label}</p>
+                  <input className="w-full bg-transparent text-center text-[0.85rem] text-[var(--t-text)] placeholder-[var(--t-text-15)] outline-none"
+                    placeholder={f.placeholder} value={ex[f.key]} onChange={e => update(i, { [f.key]: e.target.value })} />
                 </div>
-                <input className={inpSm} placeholder={f.placeholder} value={ex[f.key]} onChange={e => update(i, { [f.key]: e.target.value })} />
+                <button type="button" onClick={() => hideField(i, f.key)} title={`Retirer le champ ${f.label}`}
+                  className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[var(--t-surface)] border border-[var(--t-border)] flex items-center justify-center text-[var(--t-text-25)] hover:text-[#e07070] hover:border-[#e07070]/40 transition-colors">
+                  <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
               </div>
             ))}
             {SIMPLE_FIELDS.filter(f => ex.hiddenFields.includes(f.key)).map(f => (
               <button key={f.key} type="button" onClick={() => showField(i, f.key)}
-                className="flex items-center gap-1 text-[0.5rem] tracking-[0.1em] uppercase text-[var(--t-text-25)] border border-dashed border-[var(--t-border-15)] rounded-xl px-2 py-1.5 hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors">
+                className="flex items-center gap-1 text-[0.5rem] tracking-[0.1em] uppercase text-[var(--t-text-25)] border border-dashed border-[var(--t-border-15)] rounded-2xl px-2.5 py-1.5 hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors">
                 + {f.label}
               </button>
             ))}
@@ -199,7 +206,7 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
         )}
 
         {ex.mode === "avance" && (
-          <div className="pl-8 flex flex-col gap-2">
+          <div className="flex flex-col gap-2">
             {ex.sets.length > 0 && (
               <div className="grid grid-cols-[1fr_1fr_1fr_1fr_1fr_auto] gap-1.5 text-[0.4rem] tracking-[0.15em] uppercase text-[var(--t-text-25)] px-0.5">
                 <span>Reps</span><span>Poids</span><span>Repos</span><span>RPE</span><span>Tempo</span><span></span>
@@ -223,21 +230,19 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
               </div>
             ))}
             <button type="button" onClick={() => addSet(i)}
-              className="border border-[var(--t-border)] text-[var(--t-text-30)] text-[0.5rem] tracking-[0.12em] uppercase py-2 rounded-xl hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">
+              className="border border-[var(--t-border)] text-[var(--t-text-30)] text-[0.5rem] tracking-[0.12em] uppercase py-2 rounded-2xl hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">
               + Ajouter une série
             </button>
           </div>
         )}
 
         {ex.mode === "libre" && (
-          <div className="pl-8">
-            <textarea className={`${inp} resize-none`} rows={4} placeholder="Décris librement cet exercice : consignes, variantes, protocole spécifique…"
-              value={ex.texteLibre} onChange={e => update(i, { texteLibre: e.target.value })} />
-          </div>
+          <textarea className={`${inp} resize-none`} rows={4} placeholder="Décris librement cet exercice : consignes, variantes, protocole spécifique…"
+            value={ex.texteLibre} onChange={e => update(i, { texteLibre: e.target.value })} />
         )}
 
-        <div className="pl-8 flex flex-col gap-2">
-          <textarea className={`${inpSm} text-left resize-none`} rows={2} placeholder="Note libre sur cet exercice (optionnel) : consigne, précision, variante…"
+        <div className="flex flex-col gap-2 pt-1 border-t border-[var(--t-border-soft)]">
+          <textarea className={`${inpSm} text-left resize-none mt-2`} rows={2} placeholder="Note libre sur cet exercice (optionnel) : consigne, précision, variante…"
             value={ex.note} onChange={e => update(i, { note: e.target.value })} />
           <input className={`${inpSm} text-left`} placeholder="Lien vidéo (optionnel)" value={ex.videoUrl} onChange={e => update(i, { videoUrl: e.target.value })} />
         </div>
@@ -247,7 +252,7 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
 
   const nodes: React.ReactNode[] = runs.map((run, runPos) =>
     run.groupId ? (
-      <div key={`group-${run.indices[0]}`} className="border border-[#c9a84c]/25 bg-[#c9a84c]/[0.03] rounded-xl p-2.5 flex flex-col gap-2.5">
+      <div key={`group-${run.indices[0]}`} className="border border-[#c9a84c]/25 bg-[#c9a84c]/[0.03] rounded-2xl p-2.5 flex flex-col gap-2.5">
         <div className="flex items-center justify-between px-1 gap-2">
           <Select value={run.groupLabel || "Superset"} onChange={v => renameGroup(run.groupId!, v)}
             options={GROUP_LABELS.map(l => ({ value: l, label: l }))}
