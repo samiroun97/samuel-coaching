@@ -44,3 +44,10 @@ next-env.d.ts
 
 # supabase
 /supabase/.temp/
+
+# downloaded exercise gifs (regenerate via `npm run download-exercise-gifs`)
+/data/exercises/
+
+# MoveKit purchased assets (licensed, not sold — contains our private license/order ID,
+# repo is public — never commit; assets live in Supabase Storage instead)
+/data/movekit/

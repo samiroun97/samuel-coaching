@@ -163,9 +163,9 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-[var(--t-text-70)] capitalize truncate">{e.nom}</p>
-                  {e.image_url && (
+                  {e.image_license && (
                     <p className="text-[0.5rem] text-[var(--t-text-15)] mt-0.5 truncate">
-                      Photo : {e.image_license_author || "wger.de"} · {e.image_license}
+                      Photo : {e.image_license_author || "?"} · {e.image_license}
                     </p>
                   )}
                 </div>
