@@ -11,6 +11,7 @@ import { useSelectedDate, todayStr } from "@/lib/useSelectedDate";
 import { syncSteps } from "@/lib/steps";
 import { parseExercices, serializeExercices, hasLoggableSets, emptyExercice, type ExerciceItem } from "@/lib/exercices";
 import { loadCatalogue, type CatalogueEntry } from "@/lib/exercicesCatalogue";
+import { TdeeIcon } from "@/components/CalRefToggle";
 
 type Profile = { prenom: string; poids: number; taille: number; age: number; sexe: string };
 type LoggedWorkout = {
@@ -394,9 +395,44 @@ export default function ProgrammePage() {
         </div>
       </div>
 
+      {/* ── Créer ma propre séance ── */}
+      <div className="mb-6">
+        {!showFreestyle ? (
+          <button onClick={() => setShowFreestyle(true)}
+            className="group w-full flex items-center gap-3 border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 hover:border-[var(--t-border-15)] transition-colors">
+            <span className="shrink-0 w-10 h-10 flex items-center justify-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/icons/entrainement.svg" alt="" width={40} height={40} className="w-full h-full object-contain"/>
+            </span>
+            <span className="flex-1 text-left">
+              <span style={{ fontFamily: "var(--font-bebas)" }} className="block text-sm tracking-wide text-[var(--t-text)] leading-tight">Créer ma propre séance</span>
+              <span className="block text-[0.6rem] text-[var(--t-text-30)] tracking-wide mt-0.5 leading-tight">Compose tes exercices et logue-la en direct</span>
+            </span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-[var(--t-text-20)] transition-transform group-hover:translate-x-0.5"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+        ) : (
+          <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-4">
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[var(--t-text)] mb-3">Séance libre</p>
+            <input className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 mb-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
+              placeholder="Titre (ex : Push du jour)" value={freestyleTitre} onChange={e => setFreestyleTitre(e.target.value)}/>
+            <ExerciceEditor items={freestyleItems} onChange={setFreestyleItems} catalogue={catalogue}/>
+            <div className="flex gap-2 mt-3">
+              <button onClick={() => { setShowFreestyle(false); setFreestyleItems([emptyExercice()]); setFreestyleTitre(""); }}
+                className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-xl text-[0.6rem] tracking-[0.1em] uppercase py-2.5 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors">
+                Annuler
+              </button>
+              <button onClick={() => saveFreestyle(true)} disabled={savingFreestyle}
+                className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.1em] uppercase py-2.5 rounded-xl disabled:opacity-50 hover:-translate-y-0.5 active:translate-y-0 transition-all">
+                {savingFreestyle ? "…" : "Enregistrer et démarrer →"}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* ── Formulaire séance ── */}
       <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-6 mb-6 flex flex-col gap-5">
-        <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Enregistrer une séance</p>
+        <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Estimer la dépense de mon entraînement</p>
 
         <div>
           <label className="text-[0.7rem] tracking-[0.2em] uppercase text-[var(--t-text-40)] block mb-1.5">Activité</label>
@@ -528,10 +564,10 @@ export default function ProgrammePage() {
           </div>
         ) : (
           <button onClick={estimate} disabled={!activity.trim() || estimating}
-            className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            className="border border-[var(--t-border)] text-[var(--t-text-40)] rounded-xl text-[0.7rem] tracking-[0.15em] uppercase py-3 hover:border-[#e0672f]/40 hover:text-[#e0672f] transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             {estimating
-              ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Estimation en cours…</>
-              : "Estimer les calories brûlées"}
+              ? <><div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"/>Estimation en cours…</>
+              : <><TdeeIcon size={14}/>Estimer les calories brûlées</>}
           </button>
         )}
       </div>
@@ -678,40 +714,6 @@ export default function ProgrammePage() {
           })}
         </div>
       )}
-
-      {/* ── Séance libre : le client compose et logue sa propre séance ── */}
-      <div className="mb-4 mt-6">
-        {!showFreestyle ? (
-          <button onClick={() => setShowFreestyle(true)}
-            className="group w-full flex items-center gap-3 border border-[#c9a84c]/25 bg-[var(--t-surface-gold)] rounded-2xl px-4 py-3.5 hover:border-[#c9a84c]/50 transition-colors">
-            <span className="shrink-0 w-10 h-10 rounded-xl bg-[#c9a84c]/10 flex items-center justify-center text-[#c9a84c]">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 10v4M5 8v8M8 11h8M19 8v8M22 10v4"/><rect x="5" y="8" width="3" height="8" rx="1"/><rect x="16" y="8" width="3" height="8" rx="1"/></svg>
-            </span>
-            <span className="flex-1 text-left">
-              <span style={{ fontFamily: "var(--font-bebas)" }} className="block text-sm tracking-wide text-[var(--t-text)] leading-tight">Créer ma propre séance</span>
-              <span className="block text-[0.6rem] text-[var(--t-text-30)] tracking-wide mt-0.5 leading-tight">Compose tes exercices et logue-la en direct</span>
-            </span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-[#c9a84c]/60 transition-transform group-hover:translate-x-0.5"><path d="M9 6l6 6-6 6"/></svg>
-          </button>
-        ) : (
-          <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-4">
-            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[var(--t-text)] mb-3">Séance libre</p>
-            <input className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 mb-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
-              placeholder="Titre (ex : Push du jour)" value={freestyleTitre} onChange={e => setFreestyleTitre(e.target.value)}/>
-            <ExerciceEditor items={freestyleItems} onChange={setFreestyleItems} catalogue={catalogue}/>
-            <div className="flex gap-2 mt-3">
-              <button onClick={() => { setShowFreestyle(false); setFreestyleItems([emptyExercice()]); setFreestyleTitre(""); }}
-                className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-xl text-[0.6rem] tracking-[0.1em] uppercase py-2.5 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors">
-                Annuler
-              </button>
-              <button onClick={() => saveFreestyle(true)} disabled={savingFreestyle}
-                className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.1em] uppercase py-2.5 rounded-xl disabled:opacity-50 hover:-translate-y-0.5 active:translate-y-0 transition-all">
-                {savingFreestyle ? "…" : "Enregistrer et démarrer →"}
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
 
       {/* ── Mon programme (séances envoyées par Samuel + séances libres) ── */}
       {coachSeances.length > 0 && (
