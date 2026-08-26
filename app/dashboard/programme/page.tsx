@@ -9,7 +9,7 @@ import ExerciceEditor from "@/components/ExerciceEditor";
 import { DateNav } from "@/components/DateNav";
 import { useSelectedDate, todayStr } from "@/lib/useSelectedDate";
 import { syncSteps } from "@/lib/steps";
-import { parseExercices, serializeExercices, hasLoggableSets, emptyExercice, type ExerciceItem } from "@/lib/exercices";
+import { parseExercices, serializeExercices, hasLoggableSets, type ExerciceItem } from "@/lib/exercices";
 import { loadCatalogue, type CatalogueEntry } from "@/lib/exercicesCatalogue";
 import { TdeeIcon } from "@/components/CalRefToggle";
 
@@ -93,7 +93,7 @@ export default function ProgrammePage() {
   // marquée created_by_client pour la distinguer dans les deux vues.
   const [showFreestyle,   setShowFreestyle]   = useState(false);
   const [freestyleTitre,  setFreestyleTitre]  = useState("");
-  const [freestyleItems,  setFreestyleItems]  = useState<ExerciceItem[]>([emptyExercice()]);
+  const [freestyleItems,  setFreestyleItems]  = useState<ExerciceItem[]>([]);
   const [savingFreestyle, setSavingFreestyle]  = useState(false);
   const [catalogue,       setCatalogue]        = useState<CatalogueEntry[]>([]);
   const [seancesJourOpen, setSeancesJourOpen] = useState(false);
@@ -126,7 +126,7 @@ export default function ProgrammePage() {
     setCoachSeances(prev => [...prev, created]);
     setShowFreestyle(false);
     setFreestyleTitre("");
-    setFreestyleItems([emptyExercice()]);
+    setFreestyleItems([]);
     if (startNow) setLiveSeance(created); else setOpenSeance(created.id);
   };
 
@@ -417,7 +417,7 @@ export default function ProgrammePage() {
               placeholder="Titre (ex : Push du jour)" value={freestyleTitre} onChange={e => setFreestyleTitre(e.target.value)}/>
             <ExerciceEditor items={freestyleItems} onChange={setFreestyleItems} catalogue={catalogue}/>
             <div className="flex gap-2 mt-3">
-              <button onClick={() => { setShowFreestyle(false); setFreestyleItems([emptyExercice()]); setFreestyleTitre(""); }}
+              <button onClick={() => { setShowFreestyle(false); setFreestyleItems([]); setFreestyleTitre(""); }}
                 className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-xl text-[0.6rem] tracking-[0.1em] uppercase py-2.5 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors">
                 Annuler
               </button>

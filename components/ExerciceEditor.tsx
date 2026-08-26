@@ -7,8 +7,8 @@ import { ExerciceLibraryBrowser } from "@/components/ExerciceLibraryBrowser";
 import { Select } from "@/components/Select";
 
 const inp = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
-const inpSm = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-2.5 py-2 text-center focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
-const inpXs = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] text-[var(--t-text)] placeholder-[var(--t-text-20)] text-[0.65rem] px-2 py-1.5 text-center focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
+const inpSm = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-2.5 py-2 text-center focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
+const inpXs = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-[0.65rem] px-2 py-1.5 text-center focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
 const lblSm = "flex items-center justify-center gap-1 text-[0.42rem] tracking-[0.18em] uppercase text-[var(--t-text-30)] mb-1";
 
 const IconSeries = () => <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M17 2v4M7 2v4M3 10h18M5 22h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>;
@@ -135,8 +135,8 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
     return (
       <div key={i} className="border border-[var(--t-text-8)] bg-[var(--t-bg)] rounded-xl p-3.5 flex flex-col gap-3">
         <div className="flex items-center gap-2">
-          <span className="shrink-0 w-6 h-6 flex items-center justify-center text-[0.6rem] font-bold text-[#c9a84c] border border-[#c9a84c]/25 bg-[#c9a84c]/5 rounded-md">{i + 1}</span>
-          <div className="shrink-0 flex flex-col border border-[var(--t-border)] rounded-md overflow-hidden">
+          <span className="shrink-0 w-6 h-6 flex items-center justify-center text-[0.6rem] font-bold text-[#c9a84c] border border-[#c9a84c]/25 bg-[#c9a84c]/5 rounded-lg">{i + 1}</span>
+          <div className="shrink-0 flex flex-col border border-[var(--t-border)] rounded-lg overflow-hidden">
             <button type="button" onClick={onMoveUp} disabled={!onMoveUp} title="Monter"
               className="w-5 h-4 flex items-center justify-center text-[var(--t-text-30)] hover:text-[#c9a84c] hover:bg-[var(--t-track)] transition-colors disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-[var(--t-text-30)] border-b border-[var(--t-border)]">
               <IconUp/>
@@ -251,9 +251,9 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
         <div className="flex items-center justify-between px-1 gap-2">
           <Select value={run.groupLabel || "Superset"} onChange={v => renameGroup(run.groupId!, v)}
             options={GROUP_LABELS.map(l => ({ value: l, label: l }))}
-            triggerClassName="bg-[#0c0a05] border border-[#c9a84c]/40 rounded-md text-[0.6rem] font-bold tracking-[0.1em] uppercase text-[#c9a84c] pl-2.5 pr-2 py-1.5"/>
+            triggerClassName="bg-[#0c0a05] border border-[#c9a84c]/40 rounded-lg text-[0.6rem] font-bold tracking-[0.1em] uppercase text-[#c9a84c] pl-2.5 pr-2 py-1.5"/>
           <div className="flex items-center gap-2 shrink-0">
-            <div className="flex border border-[var(--t-border)] rounded-md overflow-hidden">
+            <div className="flex border border-[var(--t-border)] rounded-lg overflow-hidden">
               <button type="button" onClick={() => moveRun(runPos, -1)} disabled={runPos === 0} title="Monter le groupe"
                 className="w-5 h-5 flex items-center justify-center text-[var(--t-text-30)] hover:text-[#c9a84c] hover:bg-[var(--t-track)] transition-colors disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-[var(--t-text-30)] border-r border-[var(--t-border)]">
                 <IconUp/>
