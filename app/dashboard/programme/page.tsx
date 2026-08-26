@@ -400,9 +400,9 @@ export default function ProgrammePage() {
         {!showFreestyle ? (
           <button onClick={() => setShowFreestyle(true)}
             className="group w-full flex items-center gap-3 border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 hover:border-[var(--t-border-15)] transition-colors">
-            <span className="shrink-0 w-8 h-8 flex items-center justify-center">
+            <span className="shrink-0 w-10 h-10 flex items-center justify-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/icons/entrainement.svg" alt="" width={32} height={32} className="w-full h-full object-contain"/>
+              <img src="/icons/entrainement.svg" alt="" width={40} height={40} className="w-full h-full object-contain"/>
             </span>
             <span className="flex-1 text-left">
               <span style={{ fontFamily: "var(--font-bebas)" }} className="block text-sm tracking-wide text-[var(--t-text)] leading-tight">Créer ma propre séance</span>
@@ -575,7 +575,7 @@ export default function ProgrammePage() {
       {/* ── Pas ── */}
       <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 mb-6">
         <div className="flex items-center gap-3 mb-5">
-          <img src="/icons/steps.svg" alt="" width={48} height={48} className="shrink-0"/>
+          <img src="/icons/steps.svg" alt="" width={40} height={40} className="shrink-0"/>
           <div className="flex-1 min-w-0">
             <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">
               {selectedDate === todayStr() ? "Pas aujourd'hui" : `Pas · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
