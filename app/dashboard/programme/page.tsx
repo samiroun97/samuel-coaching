@@ -400,9 +400,9 @@ export default function ProgrammePage() {
         {!showFreestyle ? (
           <button onClick={() => setShowFreestyle(true)}
             className="group w-full flex items-center gap-3 border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 hover:border-[var(--t-border-15)] transition-colors">
-            <span className="shrink-0 w-20 h-20 flex items-center justify-center">
+            <span className="shrink-0 w-12 h-12 flex items-center justify-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/icons/entrainement.svg" alt="" width={80} height={80} className="w-full h-full object-contain"/>
+              <img src="/icons/entrainement.svg" alt="" width={48} height={48} className="w-full h-full object-contain"/>
             </span>
             <span className="flex-1 text-left">
               <span style={{ fontFamily: "var(--font-bebas)" }} className="block text-sm tracking-wide text-[var(--t-text)] leading-tight">Créer ma propre séance</span>
