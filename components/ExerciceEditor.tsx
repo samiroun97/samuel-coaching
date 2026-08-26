@@ -17,6 +17,7 @@ const IconPoids = () => <svg width="9" height="9" viewBox="0 0 24 24" fill="none
 const IconRepos = () => <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>;
 const IconUp = () => <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 15 12 9 6 15"/></svg>;
 const IconLibrary = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>;
+const IconFreeExercice = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>;
 const IconDown = () => <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>;
 
 const MODES: { key: ExerciceMode; label: string }[] = [
@@ -292,19 +293,27 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
       <div className="flex flex-col gap-2">
         {catalogue.length > 0 && (
           <button type="button" onClick={() => setShowLibraryBrowser(true)}
-            className="group flex items-center gap-3 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black px-4 py-3.5 rounded-2xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_8px_30px_-4px_rgba(201,168,76,0.85)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200">
-            <span className="shrink-0 w-9 h-9 rounded-xl bg-black/10 flex items-center justify-center">
+            className="group flex items-center gap-3 border border-[var(--t-border)] bg-[var(--t-surface)] px-4 py-3.5 rounded-2xl hover:border-[var(--t-border-15)] transition-colors">
+            <span className="shrink-0 w-9 h-9 rounded-xl bg-[#c9a84c]/10 text-[#c9a84c] flex items-center justify-center">
               <IconLibrary/>
             </span>
             <span className="flex-1 text-left">
-              <span className="block text-[0.68rem] font-bold tracking-[0.1em] uppercase leading-tight">Choisir dans la bibliothèque</span>
-              <span className="block text-[0.58rem] font-medium opacity-70 tracking-wide leading-tight mt-0.5">{catalogue.length} exercices classés par muscle</span>
+              <span className="block text-[0.68rem] font-bold tracking-[0.1em] uppercase leading-tight text-[var(--t-text)]">Choisir dans la bibliothèque</span>
+              <span className="block text-[0.58rem] font-medium text-[var(--t-text-30)] tracking-wide leading-tight mt-0.5">{catalogue.length} exercices classés par muscle</span>
             </span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 opacity-60 transition-transform group-hover:translate-x-0.5"><path d="M9 6l6 6-6 6"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-[var(--t-text-20)] transition-transform group-hover:translate-x-0.5"><path d="M9 6l6 6-6 6"/></svg>
           </button>
         )}
-        <button type="button" onClick={add} className="border border-[var(--t-border)] text-[var(--t-text-25)] text-[0.5rem] tracking-[0.1em] uppercase py-2 rounded-xl hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">
-          + Ajouter un exercice vide
+        <button type="button" onClick={add}
+          className="group flex items-center gap-3 border border-[var(--t-border)] bg-[var(--t-surface)] px-4 py-3.5 rounded-2xl hover:border-[var(--t-border-15)] transition-colors">
+          <span className="shrink-0 w-9 h-9 rounded-xl bg-[#c9a84c]/10 text-[#c9a84c] flex items-center justify-center">
+            <IconFreeExercice/>
+          </span>
+          <span className="flex-1 text-left">
+            <span className="block text-[0.68rem] font-bold tracking-[0.1em] uppercase leading-tight text-[var(--t-text)]">Exercice libre</span>
+            <span className="block text-[0.58rem] font-medium text-[var(--t-text-30)] tracking-wide leading-tight mt-0.5">Ajoute un exercice vierge à compléter toi-même</span>
+          </span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-[var(--t-text-20)] transition-transform group-hover:translate-x-0.5"><path d="M9 6l6 6-6 6"/></svg>
         </button>
       </div>
       {showLibraryBrowser && (
