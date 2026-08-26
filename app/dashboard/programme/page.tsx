@@ -400,13 +400,13 @@ export default function ProgrammePage() {
         {!showFreestyle ? (
           <button onClick={() => setShowFreestyle(true)}
             className="group w-full flex items-center gap-3 border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 hover:border-[var(--t-border-15)] transition-colors">
-            <span className="shrink-0 w-10 h-10 flex items-center justify-center">
+            <span className="shrink-0 w-16 h-16 flex items-center justify-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/icons/entrainement.svg" alt="" width={40} height={40} className="w-full h-full object-contain"/>
+              <img src="/icons/entrainement.svg" alt="" width={64} height={64} className="w-full h-full object-contain"/>
             </span>
             <span className="flex-1 text-left">
               <span style={{ fontFamily: "var(--font-bebas)" }} className="block text-sm tracking-wide text-[var(--t-text)] leading-tight">Créer ma propre séance</span>
-              <span className="block text-[0.6rem] text-[var(--t-text-30)] tracking-wide mt-0.5 leading-tight">Compose tes exercices et logue-la en direct</span>
+              <span className="block text-[0.6rem] text-[var(--t-text-30)] tracking-wide mt-1 leading-relaxed">Crée la séance de ton choix avec les exercices de ton choix — chacun accompagné d&apos;une vidéo de démonstration pour une exécution parfaite.</span>
             </span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-[var(--t-text-20)] transition-transform group-hover:translate-x-0.5"><path d="M9 6l6 6-6 6"/></svg>
           </button>
