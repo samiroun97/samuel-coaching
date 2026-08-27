@@ -42,6 +42,9 @@ const HIDDEN_CHIPS = new Set(["système cardiovasculaire", "cou", "tibial antér
 // équipements ("poulie + élastique" en base) : on découpe sur " + " pour que la puce
 // corresponde à chacun d'entre eux, pas seulement à la valeur exacte du champ.
 const EQUIPMENT_ORDER = ["poids du corps", "haltère", "barre", "machine à levier", "poulie", "kettlebell", "élastique"];
+// "swiss ball" n'a qu'un seul exercice, déjà regroupé dans la catégorie musculaire à part
+// "étirement" (voir muscle_cible en base) — pas besoin d'une puce équipement dédiée en plus.
+const HIDDEN_EQUIPMENT = new Set(["swiss ball"]);
 
 export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
   catalogue: CatalogueEntry[];
@@ -66,8 +69,8 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
   const equipements = useMemo(() => {
     const present = new Set<string>();
     catalogue.forEach(e => e.equipement?.split(" + ").forEach(x => present.add(x)));
-    const ordered = EQUIPMENT_ORDER.filter(x => present.has(x));
-    const rest = [...present].filter(x => !EQUIPMENT_ORDER.includes(x)).sort();
+    const ordered = EQUIPMENT_ORDER.filter(x => present.has(x) && !HIDDEN_EQUIPMENT.has(x));
+    const rest = [...present].filter(x => !EQUIPMENT_ORDER.includes(x) && !HIDDEN_EQUIPMENT.has(x)).sort();
     return [...ordered, ...rest];
   }, [catalogue]);
 
