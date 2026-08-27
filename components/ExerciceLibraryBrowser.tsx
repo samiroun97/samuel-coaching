@@ -46,7 +46,10 @@ const EQUIPMENT_ORDER = ["poids du corps", "haltère", "barre", "machine", "poul
 // "swiss ball" n'a qu'un seul exercice, déjà regroupé dans la catégorie musculaire à part
 // "étirement". "corde ondulatoire", "traîneau" et "vélo" sont déjà tous classés en
 // muscle_cible = "cardio" en base — inutile de les dupliquer en puces équipement à part.
-const HIDDEN_EQUIPMENT = new Set(["swiss ball", "corde ondulatoire", "traîneau", "vélo"]);
+// "cardio" et "étirement" comme valeurs d'équipement (exercices au poids du corps
+// reclassés pour sortir de la puce "poids du corps") sont déjà couverts par les
+// puces dédiées Cardio/Étirement ci-dessous — même logique, pas de doublon de puce.
+const HIDDEN_EQUIPMENT = new Set(["swiss ball", "corde ondulatoire", "traîneau", "vélo", "cardio", "étirement"]);
 
 export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
   catalogue: CatalogueEntry[];
