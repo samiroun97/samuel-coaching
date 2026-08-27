@@ -104,16 +104,19 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
           </button>
         </div>
 
-        <div className="flex-1 flex flex-col-reverse sm:flex-row overflow-hidden">
-          {/* Colonne de gauche : petit moteur de recherche + liste défilante de tous les exercices */}
-          <div className="w-full sm:w-56 shrink-0 border-t sm:border-t-0 sm:border-r border-[var(--t-border-soft)] flex flex-col overflow-hidden">
+        <div className="flex-1 min-h-0 flex flex-col-reverse sm:flex-row overflow-hidden">
+          {/* Colonne de gauche : petit moteur de recherche + liste défilante de tous les exercices.
+              Hauteur bornée sur mobile (h-[45vh]) : sans ça, cette colonne n'a pas de hauteur
+              propre dans le flex-col-reverse et grandit avec tout son contenu (jusqu'à 200
+              résultats), poussant la colonne principale (silhouette) hors de l'écran. */}
+          <div className="w-full h-[45vh] sm:h-auto sm:w-56 shrink-0 border-t sm:border-t-0 sm:border-r border-[var(--t-border-soft)] flex flex-col overflow-hidden">
             <div className="p-3 border-b border-[var(--t-border-soft)] shrink-0">
               <input
                 className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
                 placeholder="Rechercher…" value={query} onChange={e => setQuery(e.target.value)}
               />
             </div>
-            <div className="flex-1 overflow-y-auto p-2 flex flex-col gap-1.5 min-h-[8rem]">
+            <div className="flex-1 min-h-0 overflow-y-auto p-2 flex flex-col gap-1.5">
               {results.length === 0 ? (
                 <p className="text-xs text-[var(--t-text-25)] text-center py-8">Aucun exercice trouvé.</p>
               ) : (
@@ -134,7 +137,7 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
           </div>
 
           {/* Colonne principale : detail de l'exercice selectionne, ou filtres (silhouette/liste) */}
-          <div className="flex-1 overflow-y-auto p-5">
+          <div className="flex-1 min-h-0 overflow-y-auto p-5">
             {detailEntry ? (
               <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between">
