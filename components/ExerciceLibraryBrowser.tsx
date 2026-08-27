@@ -42,7 +42,7 @@ const HIDDEN_CHIPS = new Set(["cou", "tibial antérieur", "étirement", "cardio"
 // Filtre par équipement (repris du schéma MoveKit) — un exercice peut cumuler plusieurs
 // équipements ("poulie + élastique" en base) : on découpe sur " + " pour que la puce
 // corresponde à chacun d'entre eux, pas seulement à la valeur exacte du champ.
-const EQUIPMENT_ORDER = ["poids du corps", "haltère", "barre", "machine à levier", "poulie", "kettlebell", "élastique"];
+const EQUIPMENT_ORDER = ["poids du corps", "haltère", "barre", "machine", "poulie", "kettlebell", "élastique"];
 // "swiss ball" n'a qu'un seul exercice, déjà regroupé dans la catégorie musculaire à part
 // "étirement". "corde ondulatoire", "traîneau" et "vélo" sont déjà tous classés en
 // muscle_cible = "cardio" en base — inutile de les dupliquer en puces équipement à part.
