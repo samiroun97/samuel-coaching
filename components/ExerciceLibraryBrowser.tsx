@@ -102,6 +102,12 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
   return (
     <div className="fixed inset-0 bg-black/70 z-50 flex items-end sm:items-center justify-center" onClick={onClose}>
       <div className="bg-[var(--t-bg)] border border-[var(--t-border)] sm:rounded-2xl w-full sm:w-[720px] sm:max-w-[92vw] h-[100dvh] sm:h-[620px] sm:max-h-[85vh] flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
+        <div className="p-3 pb-0 shrink-0">
+          <input
+            className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
+            placeholder="Rechercher…" value={query} onChange={e => setQuery(e.target.value)}
+          />
+        </div>
         <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--t-border-soft)] shrink-0">
           <p style={{ fontFamily: "var(--font-bebas)" }} className="text-lg tracking-wider text-[var(--t-text)]">Bibliothèque d&apos;exercices</p>
           <button onClick={onClose} className="shrink-0 text-[var(--t-text-30)] hover:text-[var(--t-text)] transition-colors">
@@ -110,19 +116,13 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
         </div>
 
         <div className="flex-1 min-h-0 flex flex-col-reverse sm:flex-row overflow-hidden">
-          {/* Colonne de gauche : petit moteur de recherche + liste défilante de tous les exercices.
-              Hauteur bornée quand ouverte (h-[45vh]) : sans ça, cette colonne n'a pas de hauteur
-              propre dans le flex-col-reverse et grandit avec tout son contenu (jusqu'à 200
-              résultats), poussant la colonne principale (silhouette) hors de l'écran.
-              Sur mobile, la liste (pas la recherche) reste masquée tant qu'aucun filtre/recherche
-              n'est actif — toujours visible sur desktop. */}
-          <div className={`w-full ${hasActiveFilter ? "h-[45vh]" : "h-auto"} sm:h-auto sm:w-56 shrink-0 border-t sm:border-t-0 sm:border-r border-[var(--t-border-soft)] flex flex-col overflow-hidden`}>
-            <div className="p-3 border-b border-[var(--t-border-soft)] shrink-0">
-              <input
-                className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
-                placeholder="Rechercher…" value={query} onChange={e => setQuery(e.target.value)}
-              />
-            </div>
+          {/* Colonne de gauche : liste défilante de tous les exercices (recherche déplacée
+              en haut, avant le titre). Hauteur bornée quand ouverte (h-[45vh]) : sans ça,
+              cette colonne n'a pas de hauteur propre dans le flex-col-reverse et grandit avec
+              tout son contenu (jusqu'à 200 résultats), poussant la colonne principale
+              (silhouette) hors de l'écran. Sur mobile, la liste reste masquée tant qu'aucun
+              filtre/recherche n'est actif — toujours visible sur desktop. */}
+          <div className={`w-full ${hasActiveFilter ? "h-[45vh]" : "h-0"} sm:h-auto sm:w-56 shrink-0 border-t sm:border-t-0 sm:border-r border-[var(--t-border-soft)] flex flex-col overflow-hidden`}>
             <div className={`${hasActiveFilter ? "flex" : "hidden"} sm:flex flex-1 min-h-0 overflow-y-auto p-2 flex-col gap-1.5`}>
               {results.length === 0 ? (
                 <p className="text-xs text-[var(--t-text-25)] text-center py-8">Aucun exercice trouvé.</p>
