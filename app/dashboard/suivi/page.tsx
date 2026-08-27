@@ -627,7 +627,7 @@ export default function SuiviPage() {
       )}
 
       {/* ── Bilan hebdomadaire PDF ── */}
-      <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-xl overflow-hidden mb-4 shadow-[0_4px_20px_rgba(0,0,0,0.06)]">
+      <div className="border border-[#c9a84c]/20 bg-[var(--t-surface)] rounded-xl overflow-hidden mb-4 shadow-[0_4px_20px_rgba(0,0,0,0.06)]">
         <div className="flex items-center gap-3 px-5 py-4 border-b border-[#c9a84c]/10">
           <div className="w-14 h-14 flex items-center justify-center shrink-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
