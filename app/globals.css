@@ -181,10 +181,21 @@ body {
   background-clip: text;
 }
 
-/* Scrollbar verticale de l'app */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: #0a0a0a; }
-::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 2px; }
+/* Scrollbar verticale de l'app — fine, arrondie, piste transparente, couleur
+   liée aux tokens de thème (pas de couleur figée : suit le dark/light mode,
+   contrairement à l'ancienne piste noire codée en dur qui tranchait en thème clair). */
+/* scrollbar-width ne s'hérite pas (propriété non-inheritée) : on l'applique
+   à tous les éléments, pas juste html, sinon les <div> à scroll interne
+   (listes, panneaux) gardent la barre épaisse par défaut du navigateur. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--t-border-15) transparent;
+}
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--t-border-15); border-radius: 999px; }
+::-webkit-scrollbar-button { display: none; }
+::-webkit-scrollbar-thumb:hover { background: var(--t-text-25); }
 
 /* Rangées à défilement horizontal courtes (puces de catégories, carrousel photos) :
    même une barre fine reste disgracieuse quand elle occupe presque toute la largeur
