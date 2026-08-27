@@ -44,8 +44,9 @@ const HIDDEN_CHIPS = new Set(["cou", "tibial antérieur", "étirement", "cardio"
 // corresponde à chacun d'entre eux, pas seulement à la valeur exacte du champ.
 const EQUIPMENT_ORDER = ["poids du corps", "haltère", "barre", "machine à levier", "poulie", "kettlebell", "élastique"];
 // "swiss ball" n'a qu'un seul exercice, déjà regroupé dans la catégorie musculaire à part
-// "étirement" (voir muscle_cible en base) — pas besoin d'une puce équipement dédiée en plus.
-const HIDDEN_EQUIPMENT = new Set(["swiss ball"]);
+// "étirement". "corde ondulatoire", "traîneau" et "vélo" sont déjà tous classés en
+// muscle_cible = "cardio" en base — inutile de les dupliquer en puces équipement à part.
+const HIDDEN_EQUIPMENT = new Set(["swiss ball", "corde ondulatoire", "traîneau", "vélo"]);
 
 export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
   catalogue: CatalogueEntry[];
