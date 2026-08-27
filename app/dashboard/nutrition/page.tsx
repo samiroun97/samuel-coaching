@@ -1037,6 +1037,14 @@ export default function NutritionPage() {
         <CalorieRow consumed={totals.calories} target={calTarget} expended={tdee} goalDefined={useTdee || goalsSet}/>
       </button>
 
+      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-6 mb-6 mt-6">
+        <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Macronutriments</p>
+        <div className="flex items-start justify-around">
+          {macroConfig.map(m => <MacroBar key={m.key} label={m.label} consumed={totals[m.key]} goal={goals[m.key]} color={m.color}/>)}
+          <MacroBar label="Fibres" consumed={totals.fibres} goal={goals.fibres} color="#b6a186"/>
+        </div>
+      </div>
+
       {/* Dépense totale — fluide, monochrome */}
       <div className="mt-6 pt-5 border-t border-[var(--t-border-soft)]">
         <p className="text-[0.6rem] tracking-[0.18em] uppercase text-[var(--t-text-20)] mb-3 text-center">Dépense totale</p>
@@ -1058,14 +1066,6 @@ export default function NutritionPage() {
         className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.72rem] font-bold tracking-[0.22em] uppercase py-4 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl mt-6 flex items-center justify-center">
         Ajouter un repas
       </button>
-
-      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-6 mb-6 mt-6">
-        <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Macronutriments</p>
-        <div className="flex items-start justify-around">
-          {macroConfig.map(m => <MacroBar key={m.key} label={m.label} consumed={totals[m.key]} goal={goals[m.key]} color={m.color}/>)}
-          <MacroBar label="Fibres" consumed={totals.fibres} goal={goals.fibres} color="#b6a186"/>
-        </div>
-      </div>
 
       <WaterTracker water={water} goal={WATER_GOAL}
         onAdd={() => setWater(w => Math.min(w+1, WATER_GOAL))}
