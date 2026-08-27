@@ -124,8 +124,8 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
           </>
         ) : (
         <>
-        <div className="px-5 py-3 border-b border-[var(--t-border-soft)] shrink-0">
-          <div className="flex items-center gap-2 mb-3">
+        <div className="px-5 py-2.5 border-b border-[var(--t-border-soft)] shrink-0">
+          <div className="flex items-center gap-2 mb-2.5">
             <input
               className="flex-1 bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
               placeholder="Rechercher un exercice…" value={query} onChange={e => setQuery(e.target.value)} autoFocus
@@ -143,8 +143,8 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
           </div>
 
           {viewMode === "silhouette" ? (
-            <div className="flex flex-col items-center gap-3">
-              <p className="text-[0.68rem] text-[var(--t-text-40)] text-center">Quel groupe musculaire veux-tu travailler ?</p>
+            <div className="flex flex-col items-center gap-2">
+              <p className="text-[0.65rem] text-[var(--t-text-40)] text-center">Quel groupe musculaire veux-tu travailler ?</p>
               <div className="flex border border-[var(--t-border)] rounded-full p-0.5">
                 {(["face", "dos"] as const).map(v => (
                   <button key={v} type="button" onClick={() => setBodyView(v)}
@@ -199,27 +199,27 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
           )}
         </div>
 
-        <div className="flex-1 overflow-y-auto px-3 py-3 flex flex-col gap-1.5">
+        <div className="flex-1 overflow-y-auto px-3 py-3 flex flex-col gap-2">
           {results.length === 0 ? (
             <p className="text-xs text-[var(--t-text-25)] text-center py-8">Aucun exercice trouvé.</p>
           ) : (
             results.map(e => (
               <button key={e.id} type="button" onClick={() => setDetailEntry(e)}
-                className="w-full flex items-center gap-3 text-left px-3.5 py-3 rounded-xl border border-[var(--t-text-8)] bg-[var(--t-glass-bg)] hover:border-[#c9a84c]/30 hover:bg-[#c9a84c]/5 transition-colors">
-                {e.image_url && (
+                className="w-full flex items-center gap-3 text-left p-2.5 rounded-2xl border border-[var(--t-border-soft)] bg-[var(--t-surface)] hover:border-[#c9a84c]/30 hover:bg-[#c9a84c]/5 transition-colors shadow-[0_2px_10px_-6px_rgba(0,0,0,0.15)]">
+                {e.image_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={e.image_url} alt="" loading="lazy"
-                    className="w-11 h-11 rounded-lg object-cover shrink-0 border border-[var(--t-border)]"/>
+                    className="w-14 h-14 rounded-xl object-cover shrink-0 bg-[var(--t-surface-2)]"/>
+                ) : (
+                  <div className="w-14 h-14 rounded-xl shrink-0 bg-[var(--t-surface-2)]"/>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs text-[var(--t-text-70)] capitalize truncate">{e.nom}</p>
-                  {e.image_license && (
-                    <p className="text-[0.5rem] text-[var(--t-text-15)] mt-0.5 truncate">
-                      Photo : {e.image_license_author || "?"} · {e.image_license}
-                    </p>
+                  <p className="text-sm text-[var(--t-text-70)] capitalize truncate">{e.nom}</p>
+                  {!category && e.muscle_cible && (
+                    <p className="text-[0.58rem] tracking-wider uppercase text-[#c9a84c]/70 capitalize mt-1">{e.muscle_cible}</p>
                   )}
                 </div>
-                {e.muscle_cible && <span className="text-[0.58rem] tracking-wider uppercase text-[#c9a84c]/70 shrink-0 capitalize border border-[#c9a84c]/20 rounded-full px-2 py-0.5">{e.muscle_cible}</span>}
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-[var(--t-text-15)]"><path d="M9 6l6 6-6 6"/></svg>
               </button>
             ))
           )}
