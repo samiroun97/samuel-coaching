@@ -34,6 +34,9 @@ const CATEGORY_ORDER = [
   "abdominaux", "quadriceps", "ischio-jambiers", "adducteurs", "abducteurs", "fessiers", "mollets",
   "colonne vertébrale", "élévateur de la scapula", "grand dentelé", "système cardiovasculaire",
 ];
+// Catégories volontairement masquées sous l'écorché (trop marginales comme filtre) — les
+// exercices concernés restent trouvables via la recherche/liste, juste sans puce dédiée.
+const HIDDEN_CHIPS = new Set(["système cardiovasculaire", "cou", "tibial antérieur"]);
 
 export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
   catalogue: CatalogueEntry[];
@@ -47,8 +50,8 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
 
   const categories = useMemo(() => {
     const present = new Set(catalogue.map(e => e.muscle_cible).filter(Boolean) as string[]);
-    const ordered = CATEGORY_ORDER.filter(c => present.has(c));
-    const rest = [...present].filter(c => !CATEGORY_ORDER.includes(c)).sort();
+    const ordered = CATEGORY_ORDER.filter(c => present.has(c) && !HIDDEN_CHIPS.has(c));
+    const rest = [...present].filter(c => !CATEGORY_ORDER.includes(c) && !HIDDEN_CHIPS.has(c)).sort();
     return [...ordered, ...rest];
   }, [catalogue]);
 
