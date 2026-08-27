@@ -70,8 +70,8 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
     : [];
 
   return (
-    <div className="fixed inset-0 bg-black/70 z-50 flex items-end sm:items-center justify-center" onClick={onClose}>
-      <div className="bg-[var(--t-bg)] border border-[var(--t-border)] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg h-[92dvh] sm:h-auto max-h-[92dvh] sm:max-h-[85vh] flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/70 z-50 flex justify-end" onClick={onClose}>
+      <div className="bg-[var(--t-bg)] border-l border-[var(--t-border)] w-full sm:w-[440px] sm:max-w-[90vw] h-full flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--t-border-soft)] shrink-0">
           {detailEntry ? (
             <button onClick={() => setDetailEntry(null)} className="flex items-center gap-2 text-[var(--t-text-40)] hover:text-[var(--t-text)] transition-colors">
