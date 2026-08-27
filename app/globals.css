@@ -197,6 +197,11 @@ body {
 ::-webkit-scrollbar-button { display: none; }
 ::-webkit-scrollbar-thumb:hover { background: var(--t-text-25); }
 
+/* Noms d'exercices multi-mots (ex. "développé couché à la barre") : `capitalize`
+   met une majuscule à CHAQUE mot, alors qu'on veut juste la première lettre du nom
+   en majuscule, le reste tel qu'il est stocké en base (minuscules). */
+.cap-first::first-letter { text-transform: uppercase; }
+
 /* Rangées à défilement horizontal courtes (puces de catégories, carrousel photos) :
    même une barre fine reste disgracieuse quand elle occupe presque toute la largeur
    (le contenu déborde à peine). On la masque entièrement — le scroll au doigt/à la

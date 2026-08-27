@@ -139,7 +139,7 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                     ) : (
                       <div className="w-8 h-8 rounded-lg shrink-0 bg-[var(--t-surface-2)]"/>
                     )}
-                    <p className="text-xs capitalize truncate flex-1 min-w-0">{e.nom}</p>
+                    <p className="text-xs cap-first truncate flex-1 min-w-0">{e.nom}</p>
                   </button>
                 ))
               )}
@@ -151,7 +151,7 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
             {detailEntry ? (
               <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between">
-                  <p style={{ fontFamily: "var(--font-bebas)" }} className="text-xl tracking-wide text-[var(--t-text)] capitalize">{detailEntry.nom}</p>
+                  <p style={{ fontFamily: "var(--font-bebas)" }} className="text-xl tracking-wide text-[var(--t-text)] cap-first">{detailEntry.nom}</p>
                   <button onClick={() => setDetailEntry(null)} className="shrink-0 text-[var(--t-text-25)] hover:text-[var(--t-text)] transition-colors">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                   </button>
