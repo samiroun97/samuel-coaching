@@ -165,7 +165,7 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
                 ))}
               </div>
               <Select value={ex.type} onChange={v => update(i, { type: v })} placeholder="Type d'exercice…"
-                options={EXERCICE_TYPES.map(t => ({ value: t, label: t }))}
+                options={EXERCICE_TYPES.map(t => ({ value: t, label: t }))} align="right"
                 triggerClassName="text-[0.62rem] text-[var(--t-text-30)] hover:text-[var(--t-text-60)] transition-colors"/>
               {i > 0 && !isGrouped && (
                 <button type="button" onClick={() => linkWithPrevious(i)}
