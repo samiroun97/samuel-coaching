@@ -20,6 +20,13 @@ export type CatalogueEntry = {
   // et exercices_catalogue_movekit_descriptions.sql) — null pour les exercices sans vidéo/description.
   video_url: string | null;
   description: string | null;
+  // Fiche détaillée enrichie exercice par exercice (voir supabase/exercices_catalogue_rich_content_pass.sql) —
+  // prime sur `description` quand renseignée. Encore null pour la grande majorité du catalogue.
+  muscle_travaille: string | null;
+  execution: string | null;
+  utilite: string | null;
+  a_noter: string | null;
+  tags: string[] | null;
 };
 
 let cache: CatalogueEntry[] | null = null;
@@ -29,7 +36,7 @@ let cache: CatalogueEntry[] | null = null;
 export async function loadCatalogue(): Promise<CatalogueEntry[]> {
   if (cache) return cache;
   const { data } = await supabase.from("exercices_catalogue")
-    .select("id,nom,partie_corps,equipement,muscle_cible,muscles_secondaires,image_url,image_license,image_license_author,video_url,description")
+    .select("id,nom,partie_corps,equipement,muscle_cible,muscles_secondaires,image_url,image_license,image_license_author,video_url,description,muscle_travaille,execution,utilite,a_noter,tags")
     .order("nom", { ascending: true });
   cache = (data ?? []) as CatalogueEntry[];
   return cache;

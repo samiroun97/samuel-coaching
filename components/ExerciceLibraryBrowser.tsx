@@ -175,8 +175,47 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                   )}
                 </div>
 
-                {detailEntry.description && (
-                  <p className="text-sm text-[var(--t-text-50)] leading-relaxed">{detailEntry.description}</p>
+                {detailEntry.muscle_travaille || detailEntry.execution || detailEntry.utilite || detailEntry.a_noter || (detailEntry.tags && detailEntry.tags.length > 0) ? (
+                  <div className="flex flex-col gap-4">
+                    {detailEntry.muscle_travaille && (
+                      <div className="flex flex-col gap-1.5">
+                        <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80"><span>💪</span> Muscle travaillé</p>
+                        <p className="text-sm text-[var(--t-text-50)] leading-relaxed">{detailEntry.muscle_travaille}</p>
+                      </div>
+                    )}
+                    {detailEntry.execution && (
+                      <div className="flex flex-col gap-1.5">
+                        <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80"><span>🔁</span> Exécution</p>
+                        <p className="text-sm text-[var(--t-text-50)] leading-relaxed">{detailEntry.execution}</p>
+                      </div>
+                    )}
+                    {detailEntry.utilite && (
+                      <div className="flex flex-col gap-1.5">
+                        <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80"><span>💡</span> Utilité</p>
+                        <p className="text-sm text-[var(--t-text-50)] leading-relaxed">{detailEntry.utilite}</p>
+                      </div>
+                    )}
+                    {detailEntry.a_noter && (
+                      <div className="flex flex-col gap-1.5">
+                        <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80"><span>⚠️</span> À noter</p>
+                        <p className="text-sm text-[var(--t-text-50)] leading-relaxed">{detailEntry.a_noter}</p>
+                      </div>
+                    )}
+                    {detailEntry.tags && detailEntry.tags.length > 0 && (
+                      <div className="flex flex-col gap-1.5">
+                        <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80"><span>🏷️</span> Tags</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {detailEntry.tags.map(tag => (
+                            <span key={tag} className="text-[0.58rem] tracking-wider uppercase px-2.5 py-1 rounded-full border border-[var(--t-border)] text-[var(--t-text-40)] capitalize">{tag}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  detailEntry.description && (
+                    <p className="text-sm text-[var(--t-text-50)] leading-relaxed">{detailEntry.description}</p>
+                  )
                 )}
 
                 {detailEntry.image_license && (
