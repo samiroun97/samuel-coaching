@@ -416,6 +416,7 @@ export default function NutritionPage() {
   const [ideaLoading, setIdeaLoading] = useState(false);
   const [ideaError,   setIdeaError]   = useState("");
   const [respectBudget, setRespectBudget] = useState(true);
+  const [dietaryPrefs, setDietaryPrefs] = useState("");
   const [mealPlan,    setMealPlan]    = useState<MealPlan | null>(null);
   const [description, setDescription] = useState("");
   const [showFoods,   setShowFoods]   = useState(true);
@@ -539,6 +540,7 @@ export default function NutritionPage() {
     const g = localStorage.getItem("nutrition_goals");
     const s = localStorage.getItem("nutrition_saved_meals");
     const r = localStorage.getItem("nutrition_cal_ref");
+    const dp = localStorage.getItem("nutrition_dietary_prefs");
     if (g) {
       const parsed = JSON.parse(g);
       // Anciens objectifs sauvegardés avant l'ajout des fibres : on complète avec la valeur par défaut.
@@ -547,6 +549,7 @@ export default function NutritionPage() {
     }
     if (s) setSavedMeals(JSON.parse(s));
     if (r === "tdee" || r === "objectif") setCalRef(r);
+    if (dp) setDietaryPrefs(dp);
     const hist: DayHistory[] = [];
     for (let i = 6; i >= 1; i--) {
       const d = new Date(); d.setDate(d.getDate() - i);
@@ -568,6 +571,7 @@ export default function NutritionPage() {
 
   useEffect(() => { if (goalsSet) localStorage.setItem("nutrition_goals", JSON.stringify(goals)); }, [goals, goalsSet]);
   useEffect(() => { localStorage.setItem("nutrition_cal_ref", calRef); }, [calRef]);
+  useEffect(() => { localStorage.setItem("nutrition_dietary_prefs", dietaryPrefs); }, [dietaryPrefs]);
 
   // NEAT (pas) + EAT (entraînements) du jour sélectionné, comme sur l'accueil
   useEffect(() => {
@@ -643,6 +647,7 @@ export default function NutritionPage() {
       const res = await apiPost("/api/nutrition/meal-idea", {
         mealType: ideaMealType,
         remaining: respectBudget ? remaining : null,
+        restrictions: dietaryPrefs.trim() || null,
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
@@ -1140,6 +1145,9 @@ export default function NutritionPage() {
           ) : (
             <p className="text-[0.65rem] tracking-wider text-[var(--t-text-25)] mb-3">Idées libres, sans contrainte de budget</p>
           )}
+          <input type="text" value={dietaryPrefs} onChange={e => setDietaryPrefs(e.target.value)}
+            placeholder="Allergies, intolérances, régime (ex: sans lactose, sans gluten, pas de porc, végétarien…)"
+            className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-[0.7rem] px-3.5 py-2.5 mb-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"/>
           <button onClick={generateIdeas} disabled={ideaLoading || !canGenerateIdeas}
             className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.72rem] font-bold tracking-[0.18em] uppercase py-3.5 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40 disabled:hover:translate-y-0 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             {ideaLoading

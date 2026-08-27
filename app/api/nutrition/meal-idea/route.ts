@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) return NextResponse.json({ error: "Clé API manquante" }, { status: 500 });
 
-    const { remaining, mealType }: { remaining: Remaining | null; mealType?: string } = await req.json();
+    const { remaining, mealType, restrictions }: { remaining: Remaining | null; mealType?: string; restrictions?: string | null } = await req.json();
 
     if (remaining && remaining.calories <= 0) {
       return NextResponse.json({ ideas: [] });
@@ -33,6 +33,7 @@ Adapte chaque repas au budget (si le budget est faible, propose quelque chose de
 
     const prompt = `Tu es un expert en nutrition sportive. Je cherche des idées de repas pour compléter ma journée alimentaire.
 ${mealType ? `\nType de repas visé : ${mealType}. Propose exclusivement des idées adaptées à ce moment de la journée (ex: pas de plat en sauce lourd pour un petit-déjeuner, pas de céréales sucrées pour un dîner).\n` : ""}
+${restrictions?.trim() ? `\nContraintes alimentaires à respecter strictement (allergies, intolérances, régime) : ${restrictions.trim()}. Aucune idée ne doit enfreindre ces contraintes.\n` : ""}
 ${budgetSection}
 
 Réponds UNIQUEMENT avec un JSON valide, sans texte avant ni après, dans ce format exact :
