@@ -36,7 +36,9 @@ const CATEGORY_ORDER = [
 ];
 // Catégories volontairement masquées sous l'écorché (trop marginales comme filtre) — les
 // exercices concernés restent trouvables via la recherche/liste, juste sans puce dédiée.
-const HIDDEN_CHIPS = new Set(["système cardiovasculaire", "cou", "tibial antérieur"]);
+// "étirement" est masquée ici aussi : elle a sa propre puce, mise en avant en haut avec
+// l'équipement plutôt que noyée dans les puces hors-corps sous le squelette.
+const HIDDEN_CHIPS = new Set(["système cardiovasculaire", "cou", "tibial antérieur", "étirement"]);
 
 // Filtre par équipement (repris du schéma MoveKit) — un exercice peut cumuler plusieurs
 // équipements ("poulie + élastique" en base) : on découpe sur " + " pour que la puce
@@ -65,6 +67,8 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
   }, [catalogue]);
 
   const offBody = useMemo(() => categories.filter(c => !CIBLE_TO_LIB[c]), [categories]);
+
+  const hasStretch = useMemo(() => catalogue.some(e => e.muscle_cible === "étirement"), [catalogue]);
 
   const equipements = useMemo(() => {
     const present = new Set<string>();
@@ -172,7 +176,7 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
               </div>
             ) : (
               <div className="flex flex-col items-center gap-2">
-                {equipements.length > 0 && (
+                {(equipements.length > 0 || hasStretch) && (
                   <div className="w-full flex flex-col items-center gap-1.5 pb-3 mb-1 border-b border-[var(--t-border-soft)]">
                     <p className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-25)]">Équipement</p>
                     <div className="flex flex-wrap justify-center gap-1.5">
@@ -182,6 +186,12 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                           {eq}
                         </button>
                       ))}
+                      {hasStretch && (
+                        <button type="button" onClick={() => setCategory(prev => (prev === "étirement" ? null : "étirement"))}
+                          className={`text-[0.58rem] tracking-wider uppercase px-3 py-1.5 rounded-full border capitalize transition-colors ${category === "étirement" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
+                          Étirement
+                        </button>
+                      )}
                     </div>
                   </div>
                 )}
