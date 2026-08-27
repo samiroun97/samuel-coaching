@@ -45,7 +45,6 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
 }) {
   const [category, setCategory] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const [viewMode, setViewMode] = useState<"liste" | "silhouette">("silhouette");
   const [bodyView, setBodyView] = useState<"face" | "dos">("face");
   const [detailEntry, setDetailEntry] = useState<CatalogueEntry | null>(null);
 
@@ -151,74 +150,44 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                 </button>
               </div>
             ) : (
-              <div className="flex flex-col gap-3">
-                <div className="flex justify-center">
-                  <div className="flex border border-[var(--t-border)] rounded-full p-0.5 shrink-0">
-                    <button type="button" onClick={() => setViewMode("silhouette")} title="Silhouette"
-                      className={`flex items-center justify-center w-8 h-8 rounded-full transition-colors ${viewMode === "silhouette" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-[var(--t-text-30)] hover:text-[var(--t-text-60)]"}`}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="6" r="3"/><path d="M6 21v-6a3 3 0 013-3h6a3 3 0 013 3v6"/><path d="M9 21v-4M15 21v-4"/></svg>
+              <div className="flex flex-col items-center gap-2">
+                <p className="text-[0.65rem] text-[var(--t-text-40)] text-center">Quel groupe musculaire veux-tu travailler ?</p>
+                <div className="flex border border-[var(--t-border)] rounded-full p-0.5">
+                  {(["face", "dos"] as const).map(v => (
+                    <button key={v} type="button" onClick={() => setBodyView(v)}
+                      className={`text-[0.55rem] tracking-[0.15em] uppercase px-4 py-1.5 rounded-full transition-colors ${bodyView === v ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-[var(--t-text-40)]"}`}>
+                      {v}
                     </button>
-                    <button type="button" onClick={() => setViewMode("liste")} title="Liste"
-                      className={`flex items-center justify-center w-8 h-8 rounded-full transition-colors ${viewMode === "liste" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-[var(--t-text-30)] hover:text-[var(--t-text-60)]"}`}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
-                    </button>
-                  </div>
+                  ))}
                 </div>
 
-                {viewMode === "silhouette" ? (
-                  <div className="flex flex-col items-center gap-2">
-                    <p className="text-[0.65rem] text-[var(--t-text-40)] text-center">Quel groupe musculaire veux-tu travailler ?</p>
-                    <div className="flex border border-[var(--t-border)] rounded-full p-0.5">
-                      {(["face", "dos"] as const).map(v => (
-                        <button key={v} type="button" onClick={() => setBodyView(v)}
-                          className={`text-[0.55rem] tracking-[0.15em] uppercase px-4 py-1.5 rounded-full transition-colors ${bodyView === v ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-[var(--t-text-40)]"}`}>
-                          {v}
-                        </button>
-                      ))}
-                    </div>
+                <Model
+                  type={bodyView === "face" ? "anterior" : "posterior"}
+                  data={modelData}
+                  bodyColor="var(--t-glass-bg)"
+                  highlightedColors={["#c9a84c"]}
+                  onClick={({ muscle }) => {
+                    const cible = LIB_TO_CIBLE[muscle];
+                    if (cible) setCategory(prev => (prev === cible ? null : cible));
+                  }}
+                  style={{ width: "190px" }}
+                  svgStyle={{ filter: "drop-shadow(0 0 0 transparent)" }}
+                />
 
-                    <Model
-                      type={bodyView === "face" ? "anterior" : "posterior"}
-                      data={modelData}
-                      bodyColor="var(--t-glass-bg)"
-                      highlightedColors={["#c9a84c"]}
-                      onClick={({ muscle }) => {
-                        const cible = LIB_TO_CIBLE[muscle];
-                        if (cible) setCategory(prev => (prev === cible ? null : cible));
-                      }}
-                      style={{ width: "190px" }}
-                      svgStyle={{ filter: "drop-shadow(0 0 0 transparent)" }}
-                    />
-
-                    {offBody.length > 0 && (
-                      <div className="flex flex-wrap justify-center gap-1.5">
-                        {offBody.map(c => (
-                          <button key={c} type="button" onClick={() => setCategory(prev => (prev === c ? null : c))}
-                            className={`text-[0.58rem] tracking-wider uppercase px-3 py-1.5 rounded-full border capitalize transition-colors ${category === c ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
-                            {c}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                    {category && (
-                      <button type="button" onClick={() => setCategory(null)} className="text-[0.58rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">
-                        ✕ Effacer le filtre ({category})
-                      </button>
-                    )}
-                  </div>
-                ) : (
+                {offBody.length > 0 && (
                   <div className="flex flex-wrap justify-center gap-1.5">
-                    <button type="button" onClick={() => setCategory(null)}
-                      className={`shrink-0 text-[0.62rem] tracking-wider uppercase px-3 py-1.5 rounded-full border transition-colors ${!category ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
-                      Tout
-                    </button>
-                    {categories.map(c => (
-                      <button key={c} type="button" onClick={() => setCategory(c)}
-                        className={`shrink-0 text-[0.62rem] tracking-wider uppercase px-3 py-1.5 rounded-full border capitalize transition-colors ${category === c ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
+                    {offBody.map(c => (
+                      <button key={c} type="button" onClick={() => setCategory(prev => (prev === c ? null : c))}
+                        className={`text-[0.58rem] tracking-wider uppercase px-3 py-1.5 rounded-full border capitalize transition-colors ${category === c ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
                         {c}
                       </button>
                     ))}
                   </div>
+                )}
+                {category && (
+                  <button type="button" onClick={() => setCategory(null)} className="text-[0.58rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">
+                    ✕ Effacer le filtre ({category})
+                  </button>
                 )}
               </div>
             )}
