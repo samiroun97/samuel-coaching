@@ -98,6 +98,7 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
 
           {viewMode === "silhouette" ? (
             <div className="flex flex-col items-center gap-3">
+              <p className="text-[0.68rem] text-[var(--t-text-40)] text-center">Quel groupe musculaire veux-tu travailler ?</p>
               <div className="flex border border-[var(--t-border)] rounded-full p-0.5">
                 {(["face", "dos"] as const).map(v => (
                   <button key={v} type="button" onClick={() => setBodyView(v)}
