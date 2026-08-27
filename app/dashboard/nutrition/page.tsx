@@ -1121,29 +1121,30 @@ export default function NutritionPage() {
 
       {/* ── Idée repas ── */}
       <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl mb-6">
-        <div className="flex items-start justify-between px-5 py-4 border-b border-[var(--t-border-soft)]">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <img src={LIGHTBULB_ICON} alt="" width={18} height={18} className="shrink-0"/>
-              <span style={{ fontFamily:"var(--font-bebas)" }} className="text-sm tracking-wider text-[var(--t-text)]">Idée repas</span>
-            </div>
-            {respectBudget ? (
-              remaining.calories > 0 ? (
-                <p className="text-[0.65rem] tracking-wider text-[var(--t-text-25)]">
-                  Budget · {remaining.calories} kcal · P {remaining.proteines}g · G {remaining.glucides}g · L {remaining.lipides}g · F {remaining.fibres}g
-                </p>
-              ) : (
-                <p className="text-[0.65rem] tracking-wider text-[#7eb8a0]/60">Objectif calorique atteint</p>
-              )
-            ) : (
-              <p className="text-[0.65rem] tracking-wider text-[var(--t-text-25)]">Idées libres, sans contrainte de budget</p>
-            )}
+        <div className="px-5 py-4 border-b border-[var(--t-border-soft)]">
+          <div className="flex items-center gap-2 mb-1.5">
+            <img src={LIGHTBULB_ICON} alt="" width={18} height={18} className="shrink-0"/>
+            <span style={{ fontFamily:"var(--font-bebas)" }} className="text-sm tracking-wider text-[var(--t-text)]">Idée repas</span>
           </div>
+          <p className="text-[0.78rem] text-[var(--t-text-60)] leading-snug mb-2">
+            Tu ne sais pas quoi manger ? Laisse-moi te proposer quelque chose !
+          </p>
+          {respectBudget ? (
+            remaining.calories > 0 ? (
+              <p className="text-[0.65rem] tracking-wider text-[var(--t-text-25)] mb-3">
+                Budget · {remaining.calories} kcal · P {remaining.proteines}g · G {remaining.glucides}g · L {remaining.lipides}g · F {remaining.fibres}g
+              </p>
+            ) : (
+              <p className="text-[0.65rem] tracking-wider text-[#7eb8a0]/60 mb-3">Objectif calorique atteint</p>
+            )
+          ) : (
+            <p className="text-[0.65rem] tracking-wider text-[var(--t-text-25)] mb-3">Idées libres, sans contrainte de budget</p>
+          )}
           <button onClick={generateIdeas} disabled={ideaLoading || !canGenerateIdeas}
-            className="shrink-0 ml-3 border border-[#c9a84c]/30 text-[#c9a84c] rounded-xl text-[0.7rem] tracking-[0.15em] uppercase px-3.5 py-2 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5">
+            className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.72rem] font-bold tracking-[0.18em] uppercase py-3.5 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40 disabled:hover:translate-y-0 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             {ideaLoading
-              ? <><div className="w-2.5 h-2.5 border border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>Génération…</>
-              : "Générer"}
+              ? <><div className="w-2.5 h-2.5 border border-black/50 border-t-transparent rounded-full animate-spin"/>Génération…</>
+              : <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>Générer une idée repas</>}
           </button>
         </div>
 
@@ -1178,7 +1179,7 @@ export default function NutritionPage() {
 
         {!ideaLoading && ideas.length === 0 && !ideaError && canGenerateIdeas && (
           <p className="px-5 py-4 text-[0.7rem] tracking-wider text-[var(--t-text-20)] uppercase">
-            Clique sur &ldquo;Générer&rdquo; pour des idées {respectBudget ? "adaptées à ton budget" : "de repas"}
+            Clique sur &ldquo;Générer une idée repas&rdquo; pour des idées {respectBudget ? "adaptées à ton budget" : "de repas"}
           </p>
         )}
 
