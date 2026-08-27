@@ -32,13 +32,12 @@ const LIB_TO_CIBLE: Record<string, string> = Object.fromEntries(
 const CATEGORY_ORDER = [
   "pectoraux", "haut du dos", "grand dorsal", "trapèzes", "deltoïdes", "biceps", "triceps", "avant-bras",
   "abdominaux", "quadriceps", "ischio-jambiers", "adducteurs", "abducteurs", "fessiers", "mollets",
-  "colonne vertébrale", "élévateur de la scapula", "grand dentelé", "système cardiovasculaire",
 ];
 // Catégories volontairement masquées sous l'écorché (trop marginales comme filtre) — les
 // exercices concernés restent trouvables via la recherche/liste, juste sans puce dédiée.
-// "étirement" est masquée ici aussi : elle a sa propre puce, mise en avant en haut avec
-// l'équipement plutôt que noyée dans les puces hors-corps sous le squelette.
-const HIDDEN_CHIPS = new Set(["système cardiovasculaire", "cou", "tibial antérieur", "étirement"]);
+// "étirement" et "cardio" sont masquées ici aussi : elles ont leur propre puce, mise en
+// avant en haut avec l'équipement plutôt que noyées dans les puces hors-corps sous le squelette.
+const HIDDEN_CHIPS = new Set(["cou", "tibial antérieur", "étirement", "cardio"]);
 
 // Filtre par équipement (repris du schéma MoveKit) — un exercice peut cumuler plusieurs
 // équipements ("poulie + élastique" en base) : on découpe sur " + " pour que la puce
@@ -69,6 +68,7 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
   const offBody = useMemo(() => categories.filter(c => !CIBLE_TO_LIB[c]), [categories]);
 
   const hasStretch = useMemo(() => catalogue.some(e => e.muscle_cible === "étirement"), [catalogue]);
+  const hasCardio = useMemo(() => catalogue.some(e => e.muscle_cible === "cardio"), [catalogue]);
 
   const equipements = useMemo(() => {
     const present = new Set<string>();
@@ -176,7 +176,7 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
               </div>
             ) : (
               <div className="flex flex-col items-center gap-2">
-                {(equipements.length > 0 || hasStretch) && (
+                {(equipements.length > 0 || hasStretch || hasCardio) && (
                   <div className="w-full flex flex-col items-center gap-1.5 pb-3 mb-1 border-b border-[var(--t-border-soft)]">
                     <p className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-25)]">Équipement</p>
                     <div className="flex flex-wrap justify-center gap-1.5">
@@ -190,6 +190,12 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                         <button type="button" onClick={() => setCategory(prev => (prev === "étirement" ? null : "étirement"))}
                           className={`text-[0.58rem] tracking-wider uppercase px-3 py-1.5 rounded-full border capitalize transition-colors ${category === "étirement" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
                           Étirement
+                        </button>
+                      )}
+                      {hasCardio && (
+                        <button type="button" onClick={() => setCategory(prev => (prev === "cardio" ? null : "cardio"))}
+                          className={`text-[0.58rem] tracking-wider uppercase px-3 py-1.5 rounded-full border capitalize transition-colors ${category === "cardio" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
+                          Cardio
                         </button>
                       )}
                     </div>
