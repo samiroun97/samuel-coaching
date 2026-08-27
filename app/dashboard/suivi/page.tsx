@@ -567,6 +567,8 @@ export default function SuiviPage() {
         <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl sm:text-5xl text-[var(--t-text)] tracking-wide">SUIVI</h1>
       </div>
 
+      <DateNav date={selectedDate} onChange={setSelectedDate} />
+
       {/* ── Check-in hebdomadaire (client → coach) ── */}
       {!isCoach && (
         <div className={`border rounded-xl mb-6 ${ckDoneThisWeek && !ckOpen ? "border-[#7eb8a0]/25 bg-[#7eb8a0]/5" : "border-[#c9a84c]/25 bg-[#c9a84c]/5"}`}>
@@ -674,8 +676,6 @@ export default function SuiviPage() {
         </button>
       </div>
       {reportError && <p className="text-xs text-[#e07070] rounded-xl border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2 mb-4">{reportError}</p>}
-
-      <DateNav date={selectedDate} onChange={setSelectedDate} />
 
       {/* ── Pesée ── */}
       <div className={`rounded-xl border p-4 mb-4 flex items-center gap-4 ${alreadySelected ? "border-[var(--t-border-soft)] bg-[var(--t-surface-2)]" : "border-[#c9a84c]/25 bg-[#c9a84c]/5"}`}>
