@@ -38,12 +38,18 @@ const CATEGORY_ORDER = [
 // exercices concernés restent trouvables via la recherche/liste, juste sans puce dédiée.
 const HIDDEN_CHIPS = new Set(["système cardiovasculaire", "cou", "tibial antérieur"]);
 
+// Filtre par équipement (repris du schéma MoveKit) — un exercice peut cumuler plusieurs
+// équipements ("poulie + élastique" en base) : on découpe sur " + " pour que la puce
+// corresponde à chacun d'entre eux, pas seulement à la valeur exacte du champ.
+const EQUIPMENT_ORDER = ["poids du corps", "haltère", "barre", "machine à levier", "poulie", "kettlebell", "élastique"];
+
 export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
   catalogue: CatalogueEntry[];
   onPick: (entry: CatalogueEntry) => void;
   onClose: () => void;
 }) {
   const [category, setCategory] = useState<string | null>(null);
+  const [equipement, setEquipement] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [bodyView, setBodyView] = useState<"face" | "dos">("face");
   const [detailEntry, setDetailEntry] = useState<CatalogueEntry | null>(null);
@@ -57,12 +63,24 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
 
   const offBody = useMemo(() => categories.filter(c => !CIBLE_TO_LIB[c]), [categories]);
 
+  const equipements = useMemo(() => {
+    const present = new Set<string>();
+    catalogue.forEach(e => e.equipement?.split(" + ").forEach(x => present.add(x)));
+    const ordered = EQUIPMENT_ORDER.filter(x => present.has(x));
+    const rest = [...present].filter(x => !EQUIPMENT_ORDER.includes(x)).sort();
+    return [...ordered, ...rest];
+  }, [catalogue]);
+
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
     return catalogue
-      .filter(e => (!category || e.muscle_cible === category) && (!q || e.nom.toLowerCase().includes(q)))
+      .filter(e =>
+        (!category || e.muscle_cible === category) &&
+        (!equipement || (e.equipement?.split(" + ") ?? []).includes(equipement)) &&
+        (!q || e.nom.toLowerCase().includes(q))
+      )
       .slice(0, 200);
-  }, [catalogue, category, query]);
+  }, [catalogue, category, equipement, query]);
 
   const modelData: IExerciseData[] = category && CIBLE_TO_LIB[category]
     ? [{ name: "sélection", muscles: CIBLE_TO_LIB[category] }]
@@ -188,6 +206,20 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                   <button type="button" onClick={() => setCategory(null)} className="text-[0.58rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">
                     ✕ Effacer le filtre ({category})
                   </button>
+                )}
+
+                {equipements.length > 0 && (
+                  <div className="w-full flex flex-col items-center gap-1.5 mt-2 pt-3 border-t border-[var(--t-border-soft)]">
+                    <p className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-25)]">Équipement</p>
+                    <div className="flex flex-wrap justify-center gap-1.5">
+                      {equipements.map(eq => (
+                        <button key={eq} type="button" onClick={() => setEquipement(prev => (prev === eq ? null : eq))}
+                          className={`text-[0.58rem] tracking-wider uppercase px-3 py-1.5 rounded-full border capitalize transition-colors ${equipement === eq ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
+                          {eq}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
             )}
