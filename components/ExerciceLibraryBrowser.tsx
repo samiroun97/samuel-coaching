@@ -102,17 +102,17 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
   return (
     <div className="fixed inset-0 bg-black/70 z-50 flex items-end sm:items-center justify-center" onClick={onClose}>
       <div className="bg-[var(--t-bg)] border border-[var(--t-border)] sm:rounded-2xl w-full sm:w-[720px] sm:max-w-[92vw] h-[100dvh] sm:h-[620px] sm:max-h-[85vh] flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
-        <div className="p-3 pb-0 shrink-0">
-          <input
-            className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
-            placeholder="Rechercher…" value={query} onChange={e => setQuery(e.target.value)}
-          />
-        </div>
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--t-border-soft)] shrink-0">
+        <div className="flex items-center justify-between px-5 pt-4 pb-3 shrink-0">
           <p style={{ fontFamily: "var(--font-bebas)" }} className="text-lg tracking-wider text-[var(--t-text)]">Bibliothèque d&apos;exercices</p>
           <button onClick={onClose} className="shrink-0 text-[var(--t-text-30)] hover:text-[var(--t-text)] transition-colors">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
+        </div>
+        <div className="px-5 pb-3 border-b border-[var(--t-border-soft)] shrink-0">
+          <input
+            className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
+            placeholder="Rechercher…" value={query} onChange={e => setQuery(e.target.value)}
+          />
         </div>
 
         <div className="flex-1 min-h-0 flex flex-col-reverse sm:flex-row overflow-hidden">
