@@ -169,6 +169,20 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
               </div>
             ) : (
               <div className="flex flex-col items-center gap-2">
+                {equipements.length > 0 && (
+                  <div className="w-full flex flex-col items-center gap-1.5 pb-3 mb-1 border-b border-[var(--t-border-soft)]">
+                    <p className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-25)]">Équipement</p>
+                    <div className="flex flex-wrap justify-center gap-1.5">
+                      {equipements.map(eq => (
+                        <button key={eq} type="button" onClick={() => setEquipement(prev => (prev === eq ? null : eq))}
+                          className={`text-[0.58rem] tracking-wider uppercase px-3 py-1.5 rounded-full border capitalize transition-colors ${equipement === eq ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
+                          {eq}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <p className="text-[0.65rem] text-[var(--t-text-40)] text-center">Quel groupe musculaire veux-tu travailler ?</p>
                 <div className="flex border border-[var(--t-border)] rounded-full p-0.5">
                   {(["face", "dos"] as const).map(v => (
@@ -206,20 +220,6 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                   <button type="button" onClick={() => setCategory(null)} className="text-[0.58rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">
                     ✕ Effacer le filtre ({category})
                   </button>
-                )}
-
-                {equipements.length > 0 && (
-                  <div className="w-full flex flex-col items-center gap-1.5 mt-2 pt-3 border-t border-[var(--t-border-soft)]">
-                    <p className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-25)]">Équipement</p>
-                    <div className="flex flex-wrap justify-center gap-1.5">
-                      {equipements.map(eq => (
-                        <button key={eq} type="button" onClick={() => setEquipement(prev => (prev === eq ? null : eq))}
-                          className={`text-[0.58rem] tracking-wider uppercase px-3 py-1.5 rounded-full border capitalize transition-colors ${equipement === eq ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
-                          {eq}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
                 )}
               </div>
             )}
