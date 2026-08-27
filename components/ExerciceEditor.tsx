@@ -292,7 +292,6 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
         {library.map(l => <option key={`lib-${l.id}`} value={l.nom} />)}
         {catalogue.map(c => <option key={`cat-${c.id}`} value={c.nom} />)}
       </datalist>
-      {nodes}
       <div className="flex flex-col gap-2">
         {catalogue.length > 0 && (
           <button type="button" onClick={() => setShowLibraryBrowser(true)}
@@ -321,6 +320,7 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-[var(--t-text-20)] transition-transform group-hover:translate-x-0.5"><path d="M9 6l6 6-6 6"/></svg>
         </button>
       </div>
+      {nodes}
       {showLibraryBrowser && (
         <ExerciceLibraryBrowser catalogue={catalogue} onPick={addFromCatalogue} onClose={() => setShowLibraryBrowser(false)}/>
       )}
