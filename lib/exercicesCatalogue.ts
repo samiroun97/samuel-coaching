@@ -16,6 +16,10 @@ export type CatalogueEntry = {
   image_url: string | null;
   image_license: string | null;
   image_license_author: string | null;
+  // Ajoutés avec le pack MoveKit (voir supabase/exercices_catalogue_movekit_migration.sql
+  // et exercices_catalogue_movekit_descriptions.sql) — null pour les exercices sans vidéo/description.
+  video_url: string | null;
+  description: string | null;
 };
 
 let cache: CatalogueEntry[] | null = null;
@@ -25,7 +29,7 @@ let cache: CatalogueEntry[] | null = null;
 export async function loadCatalogue(): Promise<CatalogueEntry[]> {
   if (cache) return cache;
   const { data } = await supabase.from("exercices_catalogue")
-    .select("id,nom,partie_corps,equipement,muscle_cible,muscles_secondaires,image_url,image_license,image_license_author")
+    .select("id,nom,partie_corps,equipement,muscle_cible,muscles_secondaires,image_url,image_license,image_license_author,video_url,description")
     .order("nom", { ascending: true });
   cache = (data ?? []) as CatalogueEntry[];
   return cache;

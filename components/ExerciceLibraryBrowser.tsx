@@ -47,6 +47,7 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
   const [query, setQuery] = useState("");
   const [viewMode, setViewMode] = useState<"liste" | "silhouette">("silhouette");
   const [bodyView, setBodyView] = useState<"face" | "dos">("face");
+  const [detailEntry, setDetailEntry] = useState<CatalogueEntry | null>(null);
 
   const categories = useMemo(() => {
     const present = new Set(catalogue.map(e => e.muscle_cible).filter(Boolean) as string[]);
@@ -70,14 +71,59 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
 
   return (
     <div className="fixed inset-0 bg-black/70 z-50 flex items-end sm:items-center justify-center" onClick={onClose}>
-      <div className="bg-[var(--t-bg)] border border-[var(--t-border)] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[85vh] flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
+      <div className="bg-[var(--t-bg)] border border-[var(--t-border)] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg h-[92dvh] sm:h-auto max-h-[92dvh] sm:max-h-[85vh] flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--t-border-soft)] shrink-0">
-          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-lg tracking-wider text-[var(--t-text)]">Bibliothèque d&apos;exercices</p>
-          <button onClick={onClose} className="text-[var(--t-text-30)] hover:text-[var(--t-text)] transition-colors">
+          {detailEntry ? (
+            <button onClick={() => setDetailEntry(null)} className="flex items-center gap-2 text-[var(--t-text-40)] hover:text-[var(--t-text)] transition-colors">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              <span style={{ fontFamily: "var(--font-bebas)" }} className="text-lg tracking-wider text-[var(--t-text)] capitalize truncate">{detailEntry.nom}</span>
+            </button>
+          ) : (
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-lg tracking-wider text-[var(--t-text)]">Bibliothèque d&apos;exercices</p>
+          )}
+          <button onClick={onClose} className="shrink-0 text-[var(--t-text-30)] hover:text-[var(--t-text)] transition-colors">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
 
+        {detailEntry ? (
+          <>
+          <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-4">
+            {detailEntry.video_url ? (
+              // eslint-disable-next-line jsx-a11y/media-has-caption
+              <video key={detailEntry.id} src={detailEntry.video_url} poster={detailEntry.image_url ?? undefined}
+                controls loop playsInline className="w-full max-h-[45vh] rounded-2xl bg-black object-contain mx-auto"/>
+            ) : detailEntry.image_url && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={detailEntry.image_url} alt="" className="w-full max-h-[45vh] rounded-2xl object-contain mx-auto bg-[var(--t-surface-2)]"/>
+            )}
+
+            <div className="flex flex-wrap gap-1.5">
+              {detailEntry.muscle_cible && (
+                <span className="text-[0.58rem] tracking-wider uppercase text-[#c9a84c]/70 capitalize border border-[#c9a84c]/20 rounded-full px-2.5 py-1">{detailEntry.muscle_cible}</span>
+              )}
+              {detailEntry.equipement && (
+                <span className="text-[0.58rem] tracking-wider uppercase text-[var(--t-text-30)] capitalize border border-[var(--t-border)] rounded-full px-2.5 py-1">{detailEntry.equipement}</span>
+              )}
+            </div>
+
+            {detailEntry.description && (
+              <p className="text-sm text-[var(--t-text-50)] leading-relaxed">{detailEntry.description}</p>
+            )}
+
+            {detailEntry.image_license && (
+              <p className="text-[0.5rem] text-[var(--t-text-15)]">Photo : {detailEntry.image_license_author || "?"} · {detailEntry.image_license}</p>
+            )}
+          </div>
+          <div className="px-5 py-4 border-t border-[var(--t-border-soft)] shrink-0">
+            <button type="button" onClick={() => onPick(detailEntry)}
+              className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.15em] uppercase py-3 rounded-2xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200">
+              Ajouter à ma séance
+            </button>
+          </div>
+          </>
+        ) : (
+        <>
         <div className="px-5 py-3 border-b border-[var(--t-border-soft)] shrink-0">
           <div className="flex items-center gap-2 mb-3">
             <input
@@ -158,7 +204,7 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
             <p className="text-xs text-[var(--t-text-25)] text-center py-8">Aucun exercice trouvé.</p>
           ) : (
             results.map(e => (
-              <button key={e.id} type="button" onClick={() => onPick(e)}
+              <button key={e.id} type="button" onClick={() => setDetailEntry(e)}
                 className="w-full flex items-center gap-3 text-left px-3.5 py-3 rounded-xl border border-[var(--t-text-8)] bg-[var(--t-glass-bg)] hover:border-[#c9a84c]/30 hover:bg-[#c9a84c]/5 transition-colors">
                 {e.image_url && (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -178,6 +224,8 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
             ))
           )}
         </div>
+        </>
+        )}
       </div>
     </div>
   );
