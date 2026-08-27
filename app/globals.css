@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/* Les <button> n'ont pas cursor:pointer par défaut dans les navigateurs (juste la
+   flèche système) — on l'impose partout plutôt que de le répéter sur chaque bouton. */
+button:not(:disabled) {
+  cursor: pointer;
+}
+
 :root {
   --gold: #c9a84c;
   --gold-light: #e2c97e;
