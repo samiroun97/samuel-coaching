@@ -296,9 +296,9 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
         {catalogue.length > 0 && (
           <button type="button" onClick={() => setShowLibraryBrowser(true)}
             className="group flex items-center gap-3 border border-[var(--t-border)] bg-[var(--t-surface)] px-4 py-3.5 rounded-2xl hover:border-[var(--t-border-15)] transition-colors">
-            <span className="shrink-0 w-[3.25rem] h-[3.25rem] flex items-center justify-center">
+            <span className="shrink-0 w-12 h-12 flex items-center justify-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/icons/library.svg" alt="" width={52} height={52} className="w-full h-full object-contain"/>
+              <img src="/icons/library.svg" alt="" width={48} height={48} className="w-full h-full object-contain"/>
             </span>
             <span className="flex-1 text-left">
               <span className="block text-[0.68rem] font-bold tracking-[0.1em] uppercase leading-tight text-[var(--t-text)]">Choisir dans la bibliothèque</span>
@@ -309,9 +309,9 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
         )}
         <button type="button" onClick={add}
           className="group flex items-center gap-3 border border-[var(--t-border)] bg-[var(--t-surface)] px-4 py-3.5 rounded-2xl hover:border-[var(--t-border-15)] transition-colors">
-          <span className="shrink-0 w-[3.25rem] h-[3.25rem] flex items-center justify-center">
+          <span className="shrink-0 w-12 h-12 flex items-center justify-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icons/entrainement-libre.svg" alt="" width={52} height={52} className="w-full h-full object-contain"/>
+            <img src="/icons/entrainement-libre.svg" alt="" width={48} height={48} className="w-full h-full object-contain"/>
           </span>
           <span className="flex-1 text-left">
             <span className="block text-[0.68rem] font-bold tracking-[0.1em] uppercase leading-tight text-[var(--t-text)]">Exercice libre</span>
