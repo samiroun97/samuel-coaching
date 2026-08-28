@@ -157,8 +157,13 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
           <div className="flex-1 min-h-0 overflow-y-auto p-5">
             {detailEntry ? (
               <div className="flex flex-col gap-4">
-                <div className="flex items-center justify-between">
-                  <p style={{ fontFamily: "var(--font-bebas)" }} className="text-xl tracking-wide text-[var(--t-text)] cap-first">{detailEntry.nom}</p>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    {detailEntry.muscle_cible && (
+                      <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-0.5">{detailEntry.muscle_cible}</p>
+                    )}
+                    <p style={{ fontFamily: "var(--font-bebas)" }} className="text-xl font-bold tracking-wide text-[var(--t-text)] cap-first">{detailEntry.nom}</p>
+                  </div>
                   <button onClick={() => setDetailEntry(null)} className="shrink-0 text-[var(--t-text-25)] hover:text-[var(--t-text)] transition-colors">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                   </button>
