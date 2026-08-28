@@ -569,6 +569,22 @@ export default function SuiviPage() {
 
       <DateNav date={selectedDate} onChange={setSelectedDate} />
 
+      {/* ── Body fat — rappel ── */}
+      {needsBF && (
+        <div className="border border-[#c9a84c]/30 bg-[#c9a84c]/5 rounded-xl px-5 py-3 mb-4 flex items-center justify-between">
+          <div>
+            <p className="text-[0.7rem] tracking-[0.15em] uppercase text-[#c9a84c] font-bold">
+              {daysSinceBF === null ? "Premier check-in body fat" : `Check-in body fat · ${daysSinceBF}j depuis le dernier`}
+            </p>
+            <p className="text-[0.62rem] text-[var(--t-text-30)] mt-0.5 tracking-wider">Recommandé toutes les 2 semaines</p>
+          </div>
+          <button onClick={() => { setShowUpload(true); setShowManual(false); }}
+            className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.68rem] font-bold tracking-[0.15em] uppercase px-4 py-2 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl shrink-0 ml-4">
+            Estimer →
+          </button>
+        </div>
+      )}
+
       {/* ── Check-in hebdomadaire (client → coach) ── */}
       {!isCoach && (
         <div className={`border rounded-xl mb-6 ${ckDoneThisWeek && !ckOpen ? "border-[#7eb8a0]/25 bg-[#7eb8a0]/5" : "border-[#c9a84c]/25 bg-[#c9a84c]/5"}`}>
@@ -713,22 +729,6 @@ export default function SuiviPage() {
           </button>
         </div>
       </div>
-
-      {/* ── Body fat — rappel ── */}
-      {needsBF && (
-        <div className="border border-[#c9a84c]/30 bg-[#c9a84c]/5 rounded-xl px-5 py-3 mb-4 flex items-center justify-between">
-          <div>
-            <p className="text-[0.7rem] tracking-[0.15em] uppercase text-[#c9a84c] font-bold">
-              {daysSinceBF === null ? "Premier check-in body fat" : `Check-in body fat · ${daysSinceBF}j depuis le dernier`}
-            </p>
-            <p className="text-[0.62rem] text-[var(--t-text-30)] mt-0.5 tracking-wider">Recommandé toutes les 2 semaines</p>
-          </div>
-          <button onClick={() => { setShowUpload(true); setShowManual(false); }}
-            className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.68rem] font-bold tracking-[0.15em] uppercase px-4 py-2 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl shrink-0 ml-4">
-            Estimer →
-          </button>
-        </div>
-      )}
 
       {/* ── Carte Body fat + explication ── */}
       <div className={`border rounded-xl mb-4 ${!needsBF ? "border-[var(--t-border)] bg-[var(--t-surface)]" : "border-[var(--t-border-soft)] bg-[var(--t-surface-2)]"}`}>
