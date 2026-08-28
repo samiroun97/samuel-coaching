@@ -54,7 +54,10 @@ export function LineChart({ data, unit, color, glow, lowerIsBetter = true }: {
           <span className="text-[0.6rem] text-[var(--t-text-30)] tracking-wide">depuis le {fmtDate(first.date)}</span>
         </div>
       )}
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: H }}>
+      {/* aspectRatio plutôt qu'une hauteur fixe : la carte peut maintenant être plus large sur
+          desktop (voir suivi/page.tsx), et une hauteur figée aurait aplati le tracé au lieu de
+          l'agrandir proportionnellement. */}
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ aspectRatio: `${W} / ${H}` }}>
         {glow && (
           <defs>
             <filter id={filterId} x="-40%" y="-40%" width="180%" height="180%">

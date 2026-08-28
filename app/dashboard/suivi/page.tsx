@@ -966,8 +966,13 @@ export default function SuiviPage() {
       )}
 
       {/* ── Graphique évolution body fat ── */}
+      {/* Cette carte déborde volontairement de la colonne max-w-2xl sur grand écran (md:w-[...]) :
+          la sidebar fixe (13rem) + le padding (p-8 = 4rem) laissent beaucoup d'espace inutilisé à
+          droite de la colonne sur desktop large — le graphique en profite plutôt que de rester à
+          38rem alors qu'il y a la place. Le calc() reproduit la largeur réelle disponible dans
+          <main> pour ne jamais dépasser (donc jamais de scroll horizontal), plafonné à 56rem. */}
       {bfChartData.length > 1 && (
-        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-4 mb-4">
+        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-4 mb-4 md:w-[min(calc(100vw-17rem),56rem)]">
           <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-3">Évolution body fat</p>
           <LineChart data={bfChartData.map(e => ({ id: e.id, date: e.date, val: e.body_fat }))} unit="%" color="#c9a84c" glow/>
         </div>
