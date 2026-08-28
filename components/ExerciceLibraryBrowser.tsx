@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import Model, { type IExerciseData, type Muscle } from "react-body-highlighter";
 import { type CatalogueEntry } from "@/lib/exercicesCatalogue";
 
@@ -50,6 +50,47 @@ const EQUIPMENT_ORDER = ["poids du corps", "haltère", "barre", "machine", "poul
 // reclassés pour sortir de la puce "poids du corps") sont déjà couverts par les
 // puces dédiées Cardio/Étirement ci-dessous — même logique, pas de doublon de puce.
 const HIDDEN_EQUIPMENT = new Set(["swiss ball", "corde ondulatoire", "traîneau", "vélo", "cardio", "étirement"]);
+
+// Icônes de sections de la fiche exercice — même famille (traits, 2px, coins arrondis) que
+// les icônes de fermeture déjà utilisées dans ce composant, à la place des emojis.
+function IconSvg({ children }: { children: ReactNode }) {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      {children}
+    </svg>
+  );
+}
+const SECTION_ICONS: Record<"muscle" | "execution" | "utilite" | "aNoter" | "tags", ReactNode> = {
+  muscle: (
+    <IconSvg>
+      <rect x="2" y="9" width="4" height="6" rx="1"/>
+      <rect x="18" y="9" width="4" height="6" rx="1"/>
+      <line x1="6" y1="12" x2="18" y2="12"/>
+    </IconSvg>
+  ),
+  execution: (
+    <IconSvg>
+      <path d="M17 2l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 22l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3"/>
+    </IconSvg>
+  ),
+  utilite: (
+    <IconSvg>
+      <circle cx="12" cy="9" r="6"/>
+      <line x1="10" y1="19" x2="14" y2="19"/>
+      <line x1="10.5" y1="16" x2="13.5" y2="16"/>
+    </IconSvg>
+  ),
+  aNoter: (
+    <IconSvg>
+      <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0ZM12 9v4M12 17h.01"/>
+    </IconSvg>
+  ),
+  tags: (
+    <IconSvg>
+      <path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24L3 3v6.59a2 2 0 0 0 .59 1.41l9.58 9.58a2 2 0 0 0 2.82 0l6.59-6.59a2 2 0 0 0 0-2.82ZM7 7h.01"/>
+    </IconSvg>
+  ),
+};
 
 export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
   catalogue: CatalogueEntry[];
@@ -192,34 +233,34 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                 </div>
 
                 {detailEntry.muscle_travaille || detailEntry.execution || detailEntry.utilite || detailEntry.a_noter || (detailEntry.tags && detailEntry.tags.length > 0) ? (
-                  <div className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-3">
                     {detailEntry.muscle_travaille && (
-                      <div className="flex flex-col gap-1.5">
-                        <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80"><span>💪</span> Muscle travaillé</p>
+                      <div className="flex flex-col gap-1.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
+                        <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80">{SECTION_ICONS.muscle} Muscle travaillé</p>
                         <p className="text-sm text-[var(--t-text-50)] leading-relaxed">{detailEntry.muscle_travaille}</p>
                       </div>
                     )}
                     {detailEntry.execution && (
-                      <div className="flex flex-col gap-1.5">
-                        <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80"><span>🔁</span> Exécution</p>
+                      <div className="flex flex-col gap-1.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
+                        <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80">{SECTION_ICONS.execution} Exécution</p>
                         <p className="text-sm text-[var(--t-text-50)] leading-relaxed">{detailEntry.execution}</p>
                       </div>
                     )}
                     {detailEntry.utilite && (
-                      <div className="flex flex-col gap-1.5">
-                        <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80"><span>💡</span> Utilité</p>
+                      <div className="flex flex-col gap-1.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
+                        <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80">{SECTION_ICONS.utilite} Utilité</p>
                         <p className="text-sm text-[var(--t-text-50)] leading-relaxed">{detailEntry.utilite}</p>
                       </div>
                     )}
                     {detailEntry.a_noter && (
-                      <div className="flex flex-col gap-1.5">
-                        <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80"><span>⚠️</span> À noter</p>
+                      <div className="flex flex-col gap-1.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
+                        <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80">{SECTION_ICONS.aNoter} À noter</p>
                         <p className="text-sm text-[var(--t-text-50)] leading-relaxed">{detailEntry.a_noter}</p>
                       </div>
                     )}
                     {detailEntry.tags && detailEntry.tags.length > 0 && (
-                      <div className="flex flex-col gap-1.5">
-                        <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80"><span>🏷️</span> Tags</p>
+                      <div className="flex flex-col gap-1.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
+                        <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80">{SECTION_ICONS.tags} Tags</p>
                         <div className="flex flex-wrap gap-1.5">
                           {detailEntry.tags.map(tag => (
                             <span key={tag} className="text-[0.58rem] tracking-wider uppercase px-2.5 py-1 rounded-full bg-[#c9a84c]/10 text-[#c9a84c] capitalize">{tag}</span>
