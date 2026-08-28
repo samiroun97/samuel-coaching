@@ -130,18 +130,25 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
               {results.length === 0 ? (
                 <p className="text-xs text-[var(--t-text-25)] text-center py-8">Aucun exercice trouvé.</p>
               ) : (
-                results.map(e => (
-                  <button key={e.id} type="button" onClick={() => setDetailEntry(e)}
-                    className={`w-full flex items-center gap-2 text-left p-2 rounded-xl transition-colors ${detailEntry?.id === e.id ? "bg-[#c9a84c]/10 text-[#c9a84c]" : "hover:bg-[var(--t-glass-bg)] text-[var(--t-text-70)]"}`}>
-                    {e.image_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={e.image_url} alt="" loading="lazy" className="w-8 h-8 rounded-lg object-cover shrink-0 bg-[var(--t-surface-2)]"/>
-                    ) : (
-                      <div className="w-8 h-8 rounded-lg shrink-0 bg-[var(--t-surface-2)]"/>
-                    )}
-                    <p className="text-xs cap-first truncate flex-1 min-w-0">{e.nom}</p>
-                  </button>
-                ))
+                results.map(e => {
+                  const active = detailEntry?.id === e.id;
+                  return (
+                    <button key={e.id} type="button" onClick={() => setDetailEntry(e)}
+                      className={`w-full flex items-center gap-2 text-left p-2 rounded-r-xl rounded-l-md border-l-[3px] transition-colors ${
+                        active
+                          ? "border-[#c9a84c] bg-[#c9a84c]/10 text-[#c9a84c]"
+                          : "border-transparent hover:border-[#c9a84c]/25 hover:bg-[var(--t-glass-bg)] text-[var(--t-text-70)] hover:text-[var(--t-text)]"
+                      }`}>
+                      {e.image_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={e.image_url} alt="" loading="lazy" className="w-8 h-8 rounded-lg object-cover shrink-0 bg-[var(--t-surface-2)] border border-[var(--t-border-soft)]"/>
+                      ) : (
+                        <div className="w-8 h-8 rounded-lg shrink-0 bg-[var(--t-surface-2)] border border-[var(--t-border-soft)]"/>
+                      )}
+                      <p className="text-xs cap-first truncate flex-1 min-w-0">{e.nom}</p>
+                    </button>
+                  );
+                })
               )}
             </div>
           </div>
