@@ -184,10 +184,10 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
 
                 <div className="flex flex-wrap gap-1.5">
                   {detailEntry.muscle_cible && (
-                    <span className="text-[0.58rem] tracking-wider uppercase text-[#c9a84c]/70 capitalize border border-[#c9a84c]/20 rounded-full px-2.5 py-1">{detailEntry.muscle_cible}</span>
+                    <span className="text-[0.58rem] tracking-wider uppercase text-[#c9a84c] capitalize bg-[#c9a84c]/10 rounded-full px-2.5 py-1">{detailEntry.muscle_cible}</span>
                   )}
                   {detailEntry.equipement && (
-                    <span className="text-[0.58rem] tracking-wider uppercase text-[var(--t-text-30)] capitalize border border-[var(--t-border)] rounded-full px-2.5 py-1">{detailEntry.equipement}</span>
+                    <span className="text-[0.58rem] tracking-wider uppercase text-[#c9a84c] capitalize bg-[#c9a84c]/10 rounded-full px-2.5 py-1">{detailEntry.equipement}</span>
                   )}
                 </div>
 
@@ -222,7 +222,7 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                         <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80"><span>🏷️</span> Tags</p>
                         <div className="flex flex-wrap gap-1.5">
                           {detailEntry.tags.map(tag => (
-                            <span key={tag} className="text-[0.58rem] tracking-wider uppercase px-2.5 py-1 rounded-full border border-[var(--t-border)] text-[var(--t-text-40)] capitalize">{tag}</span>
+                            <span key={tag} className="text-[0.58rem] tracking-wider uppercase px-2.5 py-1 rounded-full bg-[#c9a84c]/10 text-[#c9a84c] capitalize">{tag}</span>
                           ))}
                         </div>
                       </div>
