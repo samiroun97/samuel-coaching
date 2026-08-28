@@ -649,7 +649,7 @@ export default function SuiviPage() {
         <div className="flex items-center gap-3 px-5 py-4 border-b border-[#c9a84c]/10">
           <div className="w-14 h-14 flex items-center justify-center shrink-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icons/bilan.svg" alt="" width={52} height={52} className="shrink-0"/>
+            <img src="/icons/bilan.svg" alt="" width={34} height={34} className="shrink-0"/>
           </div>
           <div className="min-w-0">
             <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[#c9a84c]">Bilan de la semaine</p>
