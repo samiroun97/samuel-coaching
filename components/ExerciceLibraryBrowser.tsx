@@ -164,13 +164,17 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                   </button>
                 </div>
 
-                {detailEntry.video_url ? (
-                  // eslint-disable-next-line jsx-a11y/media-has-caption
-                  <video key={detailEntry.id} src={detailEntry.video_url} poster={detailEntry.image_url ?? undefined}
-                    controls loop playsInline className="w-full max-h-[40vh] rounded-2xl bg-black object-contain mx-auto"/>
-                ) : detailEntry.image_url && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={detailEntry.image_url} alt="" className="w-full max-h-[40vh] rounded-2xl object-contain mx-auto bg-[var(--t-surface-2)]"/>
+                {(detailEntry.video_url || detailEntry.image_url) && (
+                  <div className="rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.08)] bg-[radial-gradient(circle_at_center,var(--t-surface),var(--t-bg2))]">
+                    {detailEntry.video_url ? (
+                      // eslint-disable-next-line jsx-a11y/media-has-caption
+                      <video key={detailEntry.id} src={detailEntry.video_url} poster={detailEntry.image_url ?? undefined}
+                        controls loop playsInline className="w-full max-h-[40vh] object-contain mx-auto block"/>
+                    ) : (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={detailEntry.image_url!} alt="" className="w-full max-h-[40vh] object-contain mx-auto block"/>
+                    )}
+                  </div>
                 )}
 
                 <div className="flex flex-wrap gap-1.5">
