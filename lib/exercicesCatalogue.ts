@@ -23,9 +23,11 @@ export type CatalogueEntry = {
   // Fiche détaillée enrichie exercice par exercice (voir supabase/exercices_catalogue_rich_content_pass.sql) —
   // prime sur `description` quand renseignée. Encore null pour la grande majorité du catalogue.
   muscle_travaille: string | null;
-  execution: string | null;
+  // execution/a_noter : listes d'étapes (instructions) et d'erreurs fréquentes (commonMistakes)
+  // reprises et traduites du pack MoveKit — voir supabase/exercices_catalogue_instructions_*.sql.
+  execution: string[] | null;
   utilite: string | null;
-  a_noter: string | null;
+  a_noter: string[] | null;
   tags: string[] | null;
   // Type de mouvement MoveKit traduit (push/pull/squat/hinge/fente/gainage...) — axe de
   // filtre par biomécanique, distinct du groupe musculaire (voir

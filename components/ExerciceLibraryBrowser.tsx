@@ -240,7 +240,7 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                   ))}
                 </div>
 
-                {detailEntry.muscle_travaille || detailEntry.execution || detailEntry.utilite || detailEntry.a_noter || (detailEntry.tags && detailEntry.tags.length > 0) ? (
+                {detailEntry.muscle_travaille || (detailEntry.execution && detailEntry.execution.length > 0) || detailEntry.utilite || (detailEntry.a_noter && detailEntry.a_noter.length > 0) || (detailEntry.tags && detailEntry.tags.length > 0) ? (
                   <div className="flex flex-col gap-3">
                     {detailEntry.muscle_travaille && (
                       <div className="flex flex-col gap-1.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
@@ -248,10 +248,17 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                         <p className="text-sm text-[var(--t-text-50)] leading-relaxed">{detailEntry.muscle_travaille}</p>
                       </div>
                     )}
-                    {detailEntry.execution && (
+                    {detailEntry.execution && detailEntry.execution.length > 0 && (
                       <div className="flex flex-col gap-1.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
                         <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80">{SECTION_ICONS.execution} Exécution</p>
-                        <p className="text-sm text-[var(--t-text-50)] leading-relaxed">{detailEntry.execution}</p>
+                        <ol className="flex flex-col gap-1.5">
+                          {detailEntry.execution.map((step, i) => (
+                            <li key={i} className="flex gap-2 text-sm text-[var(--t-text-50)] leading-relaxed">
+                              <span className="shrink-0 text-[#c9a84c]/70 font-bold text-xs mt-0.5">{i + 1}.</span>
+                              <span>{step}</span>
+                            </li>
+                          ))}
+                        </ol>
                       </div>
                     )}
                     {detailEntry.utilite && (
@@ -260,10 +267,17 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                         <p className="text-sm text-[var(--t-text-50)] leading-relaxed">{detailEntry.utilite}</p>
                       </div>
                     )}
-                    {detailEntry.a_noter && (
+                    {detailEntry.a_noter && detailEntry.a_noter.length > 0 && (
                       <div className="flex flex-col gap-1.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
                         <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80">{SECTION_ICONS.aNoter} À noter</p>
-                        <p className="text-sm text-[var(--t-text-50)] leading-relaxed">{detailEntry.a_noter}</p>
+                        <ul className="flex flex-col gap-1.5">
+                          {detailEntry.a_noter.map((mistake, i) => (
+                            <li key={i} className="flex gap-2 text-sm text-[var(--t-text-50)] leading-relaxed">
+                              <span className="shrink-0 text-[#c9a84c]/70 mt-1.5">•</span>
+                              <span>{mistake}</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     )}
                     {detailEntry.tags && detailEntry.tags.length > 0 && (
