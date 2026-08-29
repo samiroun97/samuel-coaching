@@ -1,16 +1,16 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
 import { getMyCoachEmail, getMyCoachBusinessName } from "@/lib/coach";
 import { SeanceBody } from "@/components/SeancePreview";
 import { SeanceLive } from "@/components/SeanceLive";
-import ExerciceEditor from "@/components/ExerciceEditor";
 import { DateNav } from "@/components/DateNav";
 import { useSelectedDate, todayStr } from "@/lib/useSelectedDate";
 import { syncSteps } from "@/lib/steps";
-import { parseExercices, serializeExercices, hasLoggableSets, type ExerciceItem } from "@/lib/exercices";
-import { loadCatalogue, type CatalogueEntry } from "@/lib/exercicesCatalogue";
+import { parseExercices, hasLoggableSets } from "@/lib/exercices";
 import { TdeeIcon } from "@/components/CalRefToggle";
 
 type Profile = { prenom: string; poids: number; taille: number; age: number; sexe: string };
@@ -75,6 +75,8 @@ function WorkoutCard({ w, onRemove }: { w: LoggedWorkout; onRemove: () => void }
 }
 
 export default function ProgrammePage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [profile,      setProfile]      = useState<Profile | null>(null);
   const [userId,       setUserId]       = useState<string | null>(null);
   const [workouts,     setWorkouts]     = useState<LoggedWorkout[]>([]);
@@ -88,14 +90,6 @@ export default function ProgrammePage() {
   const [openSeance,   setOpenSeance]   = useState<string | null>(null);
   const [liveSeance,   setLiveSeance]   = useState<CoachSeance | null>(null);
 
-  // Séance libre composée par le client lui-même (freestyle) — mêmes tables/policies que
-  // les séances assignées par Samuel (RLS déjà ouverte à auth.uid() = client_id), juste
-  // marquée created_by_client pour la distinguer dans les deux vues.
-  const [showFreestyle,   setShowFreestyle]   = useState(false);
-  const [freestyleTitre,  setFreestyleTitre]  = useState("");
-  const [freestyleItems,  setFreestyleItems]  = useState<ExerciceItem[]>([]);
-  const [savingFreestyle, setSavingFreestyle]  = useState(false);
-  const [catalogue,       setCatalogue]        = useState<CatalogueEntry[]>([]);
   const [seancesJourOpen, setSeancesJourOpen] = useState(false);
   const [histSectionOpen, setHistSectionOpen] = useState(false);
   const [openHistDates,   setOpenHistDates]   = useState<Set<string>>(new Set());
@@ -105,29 +99,6 @@ export default function ProgrammePage() {
     const done = s.completed_at ? null : new Date().toISOString();
     setCoachSeances(prev => prev.map(x => x.id === s.id ? { ...x, completed_at: done } : x));
     await supabase.from("programme_seances").update({ completed_at: done }).eq("id", s.id);
-  };
-
-  const saveFreestyle = async (startNow: boolean) => {
-    if (!userId || savingFreestyle) return;
-    const validItems = freestyleItems.filter(it => it.nom.trim());
-    if (validItems.length === 0) return;
-    setSavingFreestyle(true);
-    const { data, error } = await supabase.from("programme_seances").insert({
-      client_id: userId,
-      assigned_to_email: userEmailRef.current,
-      titre: freestyleTitre.trim() || "Séance libre",
-      date_prevue: selectedDate,
-      exercices: serializeExercices(validItems),
-      created_by_client: true,
-    }).select("*").single();
-    setSavingFreestyle(false);
-    if (error || !data) return;
-    const created = data as CoachSeance;
-    setCoachSeances(prev => [...prev, created]);
-    setShowFreestyle(false);
-    setFreestyleTitre("");
-    setFreestyleItems([]);
-    if (startNow) setLiveSeance(created); else setOpenSeance(created.id);
   };
 
   const downloadPdf = async () => {
@@ -185,7 +156,6 @@ export default function ProgrammePage() {
           .eq("assigned_to_email", user.email).order("created_at", { ascending: true });
         setCoachSeances((cs ?? []) as CoachSeance[]);
       }
-      loadCatalogue().then(setCatalogue).catch(() => {});
     })();
     const saved  = localStorage.getItem("programme_logs");
     const savedG = localStorage.getItem("steps_goal");
@@ -194,6 +164,18 @@ export default function ProgrammePage() {
     if (savedG) { const g = parseInt(savedG); setStepGoal(g); setGoalInput(g.toString()); }
     if (savedP) setPerfHistory(JSON.parse(savedP));
   }, []);
+
+  // Retour depuis la page "Créer ma séance" (?live=<id>) : la séance vient d'être créée
+  // et enregistrée en base, on la démarre directement dès qu'elle apparaît dans la liste.
+  useEffect(() => {
+    const liveId = searchParams.get("live");
+    if (!liveId) return;
+    const found = coachSeances.find(s => s.id === liveId);
+    if (found) {
+      setLiveSeance(found);
+      router.replace("/dashboard/programme");
+    }
+  }, [searchParams, coachSeances, router]);
 
   useEffect(() => {
     const savedS = localStorage.getItem(`steps_${selectedDate}`);
@@ -397,37 +379,18 @@ export default function ProgrammePage() {
 
       {/* ── Créer ma propre séance ── */}
       <div className="mb-6">
-        {!showFreestyle ? (
-          <button onClick={() => setShowFreestyle(true)}
-            className="group w-full flex items-center gap-3 border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 hover:border-[var(--t-border-15)] transition-colors">
-            <span className="shrink-0 w-10 h-10 flex items-center justify-center">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/icons/entrainement.svg?v=2" alt="" width={40} height={40} className="w-full h-full object-contain"/>
-            </span>
-            <span className="flex-1 text-left">
-              <span style={{ fontFamily: "var(--font-bebas)" }} className="block text-sm tracking-wide text-[var(--t-text)] leading-tight">Créer ma propre séance</span>
-              <span className="block text-[0.6rem] text-[var(--t-text-30)] tracking-wide mt-1 leading-relaxed">Crée la séance de ton choix avec les exercices de ton choix — chacun accompagné d&apos;une vidéo de démonstration pour une exécution parfaite.</span>
-            </span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-[var(--t-text-20)] transition-transform group-hover:translate-x-0.5"><path d="M9 6l6 6-6 6"/></svg>
-          </button>
-        ) : (
-          <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-4">
-            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[var(--t-text)] mb-3">Séance libre</p>
-            <input className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 mb-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
-              placeholder="Titre (ex : Push du jour)" value={freestyleTitre} onChange={e => setFreestyleTitre(e.target.value)}/>
-            <ExerciceEditor items={freestyleItems} onChange={setFreestyleItems} catalogue={catalogue}/>
-            <div className="flex gap-2 mt-3">
-              <button onClick={() => { setShowFreestyle(false); setFreestyleItems([]); setFreestyleTitre(""); }}
-                className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-xl text-[0.6rem] tracking-[0.1em] uppercase py-2.5 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors">
-                Annuler
-              </button>
-              <button onClick={() => saveFreestyle(true)} disabled={savingFreestyle}
-                className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.1em] uppercase py-2.5 rounded-xl disabled:opacity-50 hover:-translate-y-0.5 active:translate-y-0 transition-all">
-                {savingFreestyle ? "…" : "Enregistrer et démarrer →"}
-              </button>
-            </div>
-          </div>
-        )}
+        <Link href="/dashboard/programme/creer-ma-seance"
+          className="group w-full flex items-center gap-3 border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 hover:border-[var(--t-border-15)] transition-colors">
+          <span className="shrink-0 w-10 h-10 flex items-center justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/icons/entrainement.svg?v=2" alt="" width={40} height={40} className="w-full h-full object-contain"/>
+          </span>
+          <span className="flex-1 text-left">
+            <span style={{ fontFamily: "var(--font-bebas)" }} className="block text-sm tracking-wide text-[var(--t-text)] leading-tight">Créer ma propre séance</span>
+            <span className="block text-[0.6rem] text-[var(--t-text-30)] tracking-wide mt-1 leading-relaxed">Crée la séance de ton choix avec les exercices de ton choix — chacun accompagné d&apos;une vidéo de démonstration pour une exécution parfaite.</span>
+          </span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-[var(--t-text-20)] transition-transform group-hover:translate-x-0.5"><path d="M9 6l6 6-6 6"/></svg>
+        </Link>
       </div>
 
       {/* ── Formulaire séance ── */}
