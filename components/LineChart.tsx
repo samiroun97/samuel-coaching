@@ -11,7 +11,7 @@ export function LineChart({ data, unit, color, glow, lowerIsBetter = true }: {
   lowerIsBetter?: boolean;
 }) {
   const W = 400, H = 172;
-  const PAD = { top: 22, right: 14, bottom: 28, left: 32 };
+  const PAD = { top: 22, right: 14, bottom: 28, left: 14 };
   const vals = data.map(d => d.val);
   const pad = unit === "%" ? 2 : 1;
   const minV = Math.max(0, Math.min(...vals) - pad);
@@ -67,13 +67,7 @@ export function LineChart({ data, unit, color, glow, lowerIsBetter = true }: {
         </defs>
         {[0, 0.5, 1].map(t => {
           const y = PAD.top + t * innerH;
-          const v = maxV - t * (maxV - minV);
-          return (
-            <g key={t}>
-              <line x1={PAD.left} y1={y} x2={W - PAD.right} y2={y} stroke="var(--t-border-soft)" strokeWidth="1" strokeDasharray="3 3"/>
-              <text x={PAD.left - 4} y={y + 3} textAnchor="end" fill="var(--t-text-25)" fontSize="7">{v.toFixed(unit === "%" ? 1 : 0)}</text>
-            </g>
-          );
+          return <line key={t} x1={PAD.left} y1={y} x2={W - PAD.right} y2={y} stroke="var(--t-border-soft)" strokeWidth="1" strokeDasharray="3 3"/>;
         })}
         {areaPath && <path d={areaPath} fill={`url(#${gradientId})`}/>}
         {glow && <path d={smoothPath} fill="none" stroke={color} strokeWidth="4" strokeLinejoin="round" strokeLinecap="round" opacity="0.25"/>}
