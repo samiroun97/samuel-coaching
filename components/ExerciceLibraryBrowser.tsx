@@ -56,33 +56,20 @@ const HIDDEN_EQUIPMENT = new Set(["swiss ball", "corde ondulatoire", "traîneau"
 // repris ici : déjà couverts par les puces Cardio/Étirement existantes.
 const MOVEMENT_ORDER = ["push", "pull", "squat", "hinge", "fente", "isolation", "rotation", "gainage", "pliométrie", "mobilité", "abduction de hanche", "portage"];
 
-// Icônes de sections de la fiche exercice, à la place des emojis. "Utilité" reste en
-// icône trait (aucun visuel fourni pour cette section) ; les 4 autres utilisent les
-// icônes couleur fournies — même famille que library.svg/bilan.svg déjà utilisés
-// ailleurs dans l'app (ExerciceEditor.tsx, dashboard).
-function IconSvg({ children }: { children: ReactNode }) {
-  return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      {children}
-    </svg>
-  );
-}
+// Icônes de sections de la fiche exercice, à la place des emojis — icônes couleur
+// fournies, même famille que library.svg/bilan.svg déjà utilisés ailleurs dans l'app
+// (ExerciceEditor.tsx, dashboard). Agrandies nettement par rapport au texte du libellé
+// pour bien ressortir en tête de chaque bloc.
 function IconImg({ src }: { src: string }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={src} alt="" width={15} height={15} className="shrink-0"/>
+    <img src={src} alt="" width={28} height={28} className="shrink-0"/>
   );
 }
 const SECTION_ICONS: Record<"muscle" | "execution" | "utilite" | "aNoter" | "tags", ReactNode> = {
   muscle: <IconImg src="/icons/section-muscle.svg"/>,
   execution: <IconImg src="/icons/section-exec.svg"/>,
-  utilite: (
-    <IconSvg>
-      <circle cx="12" cy="9" r="6"/>
-      <line x1="10" y1="19" x2="14" y2="19"/>
-      <line x1="10.5" y1="16" x2="13.5" y2="16"/>
-    </IconSvg>
-  ),
+  utilite: <IconImg src="/icons/section-utilite.svg"/>,
   aNoter: <IconImg src="/icons/section-notice.svg"/>,
   tags: <IconImg src="/icons/section-tags.svg"/>,
 };
