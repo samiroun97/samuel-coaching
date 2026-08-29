@@ -35,21 +35,21 @@ const CATEGORY_ORDER = [
 ];
 // Catégories volontairement masquées sous l'écorché (trop marginales comme filtre) — les
 // exercices concernés restent trouvables via la recherche/liste, juste sans puce dédiée.
-// "mobilité" et "cardio" sont masquées ici aussi : elles ont leur propre puce, mise en
+// "étirement" et "cardio" sont masquées ici aussi : elles ont leur propre puce, mise en
 // avant en haut avec l'équipement plutôt que noyées dans les puces hors-corps sous le squelette.
-const HIDDEN_CHIPS = new Set(["cou", "tibial antérieur", "mobilité", "cardio"]);
+const HIDDEN_CHIPS = new Set(["cou", "tibial antérieur", "étirement", "cardio"]);
 
 // Filtre par équipement (repris du schéma MoveKit) — un exercice peut cumuler plusieurs
 // équipements ("poulie + élastique" en base) : on découpe sur " + " pour que la puce
 // corresponde à chacun d'entre eux, pas seulement à la valeur exacte du champ.
 const EQUIPMENT_ORDER = ["poids du corps", "haltère", "barre", "machine", "poulie", "kettlebell", "élastique"];
 // "swiss ball" n'a qu'un seul exercice, déjà regroupé dans la catégorie musculaire à part
-// "mobilité". "corde ondulatoire", "traîneau" et "vélo" sont déjà tous classés en
+// "étirement". "corde ondulatoire", "traîneau" et "vélo" sont déjà tous classés en
 // muscle_cible = "cardio" en base — inutile de les dupliquer en puces équipement à part.
-// "cardio" et "mobilité" comme valeurs d'équipement (exercices au poids du corps
+// "cardio" et "étirement" comme valeurs d'équipement (exercices au poids du corps
 // reclassés pour sortir de la puce "poids du corps") sont déjà couverts par les
-// puces dédiées Cardio/Mobilité ci-dessous — même logique, pas de doublon de puce.
-const HIDDEN_EQUIPMENT = new Set(["swiss ball", "corde ondulatoire", "traîneau", "vélo", "cardio", "mobilité"]);
+// puces dédiées Cardio/Étirement ci-dessous — même logique, pas de doublon de puce.
+const HIDDEN_EQUIPMENT = new Set(["swiss ball", "corde ondulatoire", "traîneau", "vélo", "cardio", "étirement"]);
 
 // Icônes de sections de la fiche exercice, à la place des emojis — icônes couleur
 // fournies, même famille que library.svg/bilan.svg déjà utilisés ailleurs dans l'app
@@ -89,7 +89,7 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
 
   const offBody = useMemo(() => categories.filter(c => !CIBLE_TO_LIB[c]), [categories]);
 
-  const hasStretch = useMemo(() => catalogue.some(e => e.muscle_cible === "mobilité"), [catalogue]);
+  const hasStretch = useMemo(() => catalogue.some(e => e.muscle_cible === "étirement"), [catalogue]);
   const hasCardio = useMemo(() => catalogue.some(e => e.muscle_cible === "cardio"), [catalogue]);
 
   const equipements = useMemo(() => {
@@ -288,9 +288,9 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                         </button>
                       ))}
                       {hasStretch && (
-                        <button type="button" onClick={() => setCategory(prev => (prev === "mobilité" ? null : "mobilité"))}
-                          className={`text-[0.58rem] tracking-wider uppercase px-3 py-1.5 rounded-full border capitalize transition-colors ${category === "mobilité" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
-                          Mobilité
+                        <button type="button" onClick={() => setCategory(prev => (prev === "étirement" ? null : "étirement"))}
+                          className={`text-[0.58rem] tracking-wider uppercase px-3 py-1.5 rounded-full border capitalize transition-colors ${category === "étirement" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
+                          Étirement
                         </button>
                       )}
                       {hasCardio && (
