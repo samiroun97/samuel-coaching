@@ -27,6 +27,11 @@ export type CatalogueEntry = {
   utilite: string | null;
   a_noter: string | null;
   tags: string[] | null;
+  // Type de mouvement MoveKit traduit (push/pull/squat/hinge/fente/gainage...) — axe de
+  // filtre par biomécanique, distinct du groupe musculaire (voir
+  // supabase/exercices_catalogue_movement_pattern.sql). Null pour les exercices cardio/
+  // étirement, déjà catégorisés ailleurs.
+  mouvement: string[] | null;
 };
 
 let cache: CatalogueEntry[] | null = null;
@@ -36,7 +41,7 @@ let cache: CatalogueEntry[] | null = null;
 export async function loadCatalogue(): Promise<CatalogueEntry[]> {
   if (cache) return cache;
   const { data } = await supabase.from("exercices_catalogue")
-    .select("id,nom,partie_corps,equipement,muscle_cible,muscles_secondaires,image_url,image_license,image_license_author,video_url,description,muscle_travaille,execution,utilite,a_noter,tags")
+    .select("id,nom,partie_corps,equipement,muscle_cible,muscles_secondaires,image_url,image_license,image_license_author,video_url,description,muscle_travaille,execution,utilite,a_noter,tags,mouvement")
     .order("nom", { ascending: true });
   cache = (data ?? []) as CatalogueEntry[];
   return cache;

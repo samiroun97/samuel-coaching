@@ -51,8 +51,15 @@ const EQUIPMENT_ORDER = ["poids du corps", "haltère", "barre", "machine", "poul
 // puces dédiées Cardio/Étirement ci-dessous — même logique, pas de doublon de puce.
 const HIDDEN_EQUIPMENT = new Set(["swiss ball", "corde ondulatoire", "traîneau", "vélo", "cardio", "étirement"]);
 
-// Icônes de sections de la fiche exercice — même famille (traits, 2px, coins arrondis) que
-// les icônes de fermeture déjà utilisées dans ce composant, à la place des emojis.
+// Type de mouvement (biomécanique : push/pull/squat/hinge...) — axe de filtre distinct du
+// groupe musculaire, issu de movementPattern MoveKit. "Cardio" et "Stretch" ne sont pas
+// repris ici : déjà couverts par les puces Cardio/Étirement existantes.
+const MOVEMENT_ORDER = ["push", "pull", "squat", "hinge", "fente", "isolation", "rotation", "gainage", "pliométrie", "mobilité", "abduction de hanche", "portage"];
+
+// Icônes de sections de la fiche exercice, à la place des emojis. "Utilité" reste en
+// icône trait (aucun visuel fourni pour cette section) ; les 4 autres utilisent les
+// icônes couleur fournies — même famille que library.svg/bilan.svg déjà utilisés
+// ailleurs dans l'app (ExerciceEditor.tsx, dashboard).
 function IconSvg({ children }: { children: ReactNode }) {
   return (
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -60,19 +67,15 @@ function IconSvg({ children }: { children: ReactNode }) {
     </svg>
   );
 }
+function IconImg({ src }: { src: string }) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={src} alt="" width={15} height={15} className="shrink-0"/>
+  );
+}
 const SECTION_ICONS: Record<"muscle" | "execution" | "utilite" | "aNoter" | "tags", ReactNode> = {
-  muscle: (
-    <IconSvg>
-      <rect x="2" y="9" width="4" height="6" rx="1"/>
-      <rect x="18" y="9" width="4" height="6" rx="1"/>
-      <line x1="6" y1="12" x2="18" y2="12"/>
-    </IconSvg>
-  ),
-  execution: (
-    <IconSvg>
-      <path d="M17 2l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 22l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3"/>
-    </IconSvg>
-  ),
+  muscle: <IconImg src="/icons/section-muscle.svg"/>,
+  execution: <IconImg src="/icons/section-exec.svg"/>,
   utilite: (
     <IconSvg>
       <circle cx="12" cy="9" r="6"/>
@@ -80,16 +83,8 @@ const SECTION_ICONS: Record<"muscle" | "execution" | "utilite" | "aNoter" | "tag
       <line x1="10.5" y1="16" x2="13.5" y2="16"/>
     </IconSvg>
   ),
-  aNoter: (
-    <IconSvg>
-      <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0ZM12 9v4M12 17h.01"/>
-    </IconSvg>
-  ),
-  tags: (
-    <IconSvg>
-      <path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24L3 3v6.59a2 2 0 0 0 .59 1.41l9.58 9.58a2 2 0 0 0 2.82 0l6.59-6.59a2 2 0 0 0 0-2.82ZM7 7h.01"/>
-    </IconSvg>
-  ),
+  aNoter: <IconImg src="/icons/section-notice.svg"/>,
+  tags: <IconImg src="/icons/section-tags.svg"/>,
 };
 
 export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
@@ -99,6 +94,7 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
 }) {
   const [category, setCategory] = useState<string | null>(null);
   const [equipement, setEquipement] = useState<string | null>(null);
+  const [mouvement, setMouvement] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [bodyView, setBodyView] = useState<"face" | "dos">("face");
   const [detailEntry, setDetailEntry] = useState<CatalogueEntry | null>(null);
@@ -123,16 +119,25 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
     return [...ordered, ...rest];
   }, [catalogue]);
 
+  const mouvements = useMemo(() => {
+    const present = new Set<string>();
+    catalogue.forEach(e => e.mouvement?.forEach(m => present.add(m)));
+    const ordered = MOVEMENT_ORDER.filter(m => present.has(m));
+    const rest = [...present].filter(m => !MOVEMENT_ORDER.includes(m)).sort();
+    return [...ordered, ...rest];
+  }, [catalogue]);
+
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
     return catalogue
       .filter(e =>
         (!category || e.muscle_cible === category) &&
         (!equipement || (e.equipement?.split(" + ") ?? []).includes(equipement)) &&
+        (!mouvement || (e.mouvement ?? []).includes(mouvement)) &&
         (!q || e.nom.toLowerCase().includes(q))
       )
       .slice(0, 200);
-  }, [catalogue, category, equipement, query]);
+  }, [catalogue, category, equipement, mouvement, query]);
 
   const modelData: IExerciseData[] = category && CIBLE_TO_LIB[category]
     ? [{ name: "sélection", muscles: CIBLE_TO_LIB[category] }]
@@ -141,7 +146,7 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
   // Sur mobile, la liste des resultats reste masquee tant qu'aucune recherche/filtre n'est
   // actif — evite qu'elle occupe l'ecran par defaut. Toujours visible sur desktop (colonne
   // laterale fixe).
-  const hasActiveFilter = Boolean(query.trim() || category || equipement);
+  const hasActiveFilter = Boolean(query.trim() || category || equipement || mouvement);
 
   return (
     <div className="fixed inset-0 bg-black/70 z-50 flex items-end sm:items-center justify-center" onClick={onClose}>
@@ -230,6 +235,9 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                   {detailEntry.equipement && (
                     <span className="text-[0.58rem] tracking-wider uppercase text-[#c9a84c] capitalize bg-[#c9a84c]/10 rounded-full px-2.5 py-1">{detailEntry.equipement}</span>
                   )}
+                  {detailEntry.mouvement?.map(m => (
+                    <span key={m} className="text-[0.58rem] tracking-wider uppercase text-[#c9a84c] capitalize bg-[#c9a84c]/10 rounded-full px-2.5 py-1">{m}</span>
+                  ))}
                 </div>
 
                 {detailEntry.muscle_travaille || detailEntry.execution || detailEntry.utilite || detailEntry.a_noter || (detailEntry.tags && detailEntry.tags.length > 0) ? (
@@ -312,6 +320,20 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                   </div>
                 )}
 
+                {mouvements.length > 0 && (
+                  <div className="w-full flex flex-col items-center gap-1.5 pb-3 mb-1 border-b border-[var(--t-border-soft)]">
+                    <p className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-25)]">Mouvement</p>
+                    <div className="flex flex-wrap justify-center gap-1.5">
+                      {mouvements.map(m => (
+                        <button key={m} type="button" onClick={() => setMouvement(prev => (prev === m ? null : m))}
+                          className={`text-[0.58rem] tracking-wider uppercase px-3 py-1.5 rounded-full border capitalize transition-colors ${mouvement === m ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
+                          {m}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <p className="text-[0.65rem] text-[var(--t-text-40)] text-center">Quel groupe musculaire veux-tu travailler ?</p>
                 <div className="flex border border-[var(--t-border)] rounded-full p-0.5">
                   {(["face", "dos"] as const).map(v => (
@@ -345,10 +367,19 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                     ))}
                   </div>
                 )}
-                {category && (
-                  <button type="button" onClick={() => setCategory(null)} className="text-[0.58rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">
-                    ✕ Effacer le filtre ({category})
-                  </button>
+                {(category || mouvement) && (
+                  <div className="flex flex-wrap justify-center gap-3">
+                    {category && (
+                      <button type="button" onClick={() => setCategory(null)} className="text-[0.58rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">
+                        ✕ Effacer le filtre ({category})
+                      </button>
+                    )}
+                    {mouvement && (
+                      <button type="button" onClick={() => setMouvement(null)} className="text-[0.58rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">
+                        ✕ Effacer le filtre ({mouvement})
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
             )}
