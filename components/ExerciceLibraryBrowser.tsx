@@ -35,26 +35,21 @@ const CATEGORY_ORDER = [
 ];
 // Catégories volontairement masquées sous l'écorché (trop marginales comme filtre) — les
 // exercices concernés restent trouvables via la recherche/liste, juste sans puce dédiée.
-// "étirement" et "cardio" sont masquées ici aussi : elles ont leur propre puce, mise en
+// "mobilité" et "cardio" sont masquées ici aussi : elles ont leur propre puce, mise en
 // avant en haut avec l'équipement plutôt que noyées dans les puces hors-corps sous le squelette.
-const HIDDEN_CHIPS = new Set(["cou", "tibial antérieur", "étirement", "cardio"]);
+const HIDDEN_CHIPS = new Set(["cou", "tibial antérieur", "mobilité", "cardio"]);
 
 // Filtre par équipement (repris du schéma MoveKit) — un exercice peut cumuler plusieurs
 // équipements ("poulie + élastique" en base) : on découpe sur " + " pour que la puce
 // corresponde à chacun d'entre eux, pas seulement à la valeur exacte du champ.
 const EQUIPMENT_ORDER = ["poids du corps", "haltère", "barre", "machine", "poulie", "kettlebell", "élastique"];
 // "swiss ball" n'a qu'un seul exercice, déjà regroupé dans la catégorie musculaire à part
-// "étirement". "corde ondulatoire", "traîneau" et "vélo" sont déjà tous classés en
+// "mobilité". "corde ondulatoire", "traîneau" et "vélo" sont déjà tous classés en
 // muscle_cible = "cardio" en base — inutile de les dupliquer en puces équipement à part.
-// "cardio" et "étirement" comme valeurs d'équipement (exercices au poids du corps
+// "cardio" et "mobilité" comme valeurs d'équipement (exercices au poids du corps
 // reclassés pour sortir de la puce "poids du corps") sont déjà couverts par les
-// puces dédiées Cardio/Étirement ci-dessous — même logique, pas de doublon de puce.
-const HIDDEN_EQUIPMENT = new Set(["swiss ball", "corde ondulatoire", "traîneau", "vélo", "cardio", "étirement"]);
-
-// Type de mouvement (biomécanique : push/pull/squat/hinge...) — axe de filtre distinct du
-// groupe musculaire, issu de movementPattern MoveKit. "Cardio" et "Stretch" ne sont pas
-// repris ici : déjà couverts par les puces Cardio/Étirement existantes.
-const MOVEMENT_ORDER = ["push", "pull", "squat", "hinge", "fente", "isolation", "rotation", "gainage", "pliométrie", "mobilité", "abduction de hanche", "portage"];
+// puces dédiées Cardio/Mobilité ci-dessous — même logique, pas de doublon de puce.
+const HIDDEN_EQUIPMENT = new Set(["swiss ball", "corde ondulatoire", "traîneau", "vélo", "cardio", "mobilité"]);
 
 // Icônes de sections de la fiche exercice, à la place des emojis — icônes couleur
 // fournies, même famille que library.svg/bilan.svg déjà utilisés ailleurs dans l'app
@@ -81,7 +76,6 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
 }) {
   const [category, setCategory] = useState<string | null>(null);
   const [equipement, setEquipement] = useState<string | null>(null);
-  const [mouvement, setMouvement] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [bodyView, setBodyView] = useState<"face" | "dos">("face");
   const [detailEntry, setDetailEntry] = useState<CatalogueEntry | null>(null);
@@ -95,7 +89,7 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
 
   const offBody = useMemo(() => categories.filter(c => !CIBLE_TO_LIB[c]), [categories]);
 
-  const hasStretch = useMemo(() => catalogue.some(e => e.muscle_cible === "étirement"), [catalogue]);
+  const hasStretch = useMemo(() => catalogue.some(e => e.muscle_cible === "mobilité"), [catalogue]);
   const hasCardio = useMemo(() => catalogue.some(e => e.muscle_cible === "cardio"), [catalogue]);
 
   const equipements = useMemo(() => {
@@ -106,25 +100,16 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
     return [...ordered, ...rest];
   }, [catalogue]);
 
-  const mouvements = useMemo(() => {
-    const present = new Set<string>();
-    catalogue.forEach(e => e.mouvement?.forEach(m => present.add(m)));
-    const ordered = MOVEMENT_ORDER.filter(m => present.has(m));
-    const rest = [...present].filter(m => !MOVEMENT_ORDER.includes(m)).sort();
-    return [...ordered, ...rest];
-  }, [catalogue]);
-
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
     return catalogue
       .filter(e =>
         (!category || e.muscle_cible === category) &&
         (!equipement || (e.equipement?.split(" + ") ?? []).includes(equipement)) &&
-        (!mouvement || (e.mouvement ?? []).includes(mouvement)) &&
         (!q || e.nom.toLowerCase().includes(q))
       )
       .slice(0, 200);
-  }, [catalogue, category, equipement, mouvement, query]);
+  }, [catalogue, category, equipement, query]);
 
   const modelData: IExerciseData[] = category && CIBLE_TO_LIB[category]
     ? [{ name: "sélection", muscles: CIBLE_TO_LIB[category] }]
@@ -133,7 +118,7 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
   // Sur mobile, la liste des resultats reste masquee tant qu'aucune recherche/filtre n'est
   // actif — evite qu'elle occupe l'ecran par defaut. Toujours visible sur desktop (colonne
   // laterale fixe).
-  const hasActiveFilter = Boolean(query.trim() || category || equipement || mouvement);
+  const hasActiveFilter = Boolean(query.trim() || category || equipement);
 
   return (
     <div className="fixed inset-0 bg-black/70 z-50 flex items-end sm:items-center justify-center" onClick={onClose}>
@@ -222,9 +207,6 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                   {detailEntry.equipement && (
                     <span className="text-[0.58rem] tracking-wider uppercase text-[#c9a84c] capitalize bg-[#c9a84c]/10 rounded-full px-2.5 py-1">{detailEntry.equipement}</span>
                   )}
-                  {detailEntry.mouvement?.map(m => (
-                    <span key={m} className="text-[0.58rem] tracking-wider uppercase text-[#c9a84c] capitalize bg-[#c9a84c]/10 rounded-full px-2.5 py-1">{m}</span>
-                  ))}
                 </div>
 
                 {detailEntry.muscle_travaille || (detailEntry.execution && detailEntry.execution.length > 0) || detailEntry.utilite || (detailEntry.a_noter && detailEntry.a_noter.length > 0) || (detailEntry.tags && detailEntry.tags.length > 0) ? (
@@ -306,9 +288,9 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                         </button>
                       ))}
                       {hasStretch && (
-                        <button type="button" onClick={() => setCategory(prev => (prev === "étirement" ? null : "étirement"))}
-                          className={`text-[0.58rem] tracking-wider uppercase px-3 py-1.5 rounded-full border capitalize transition-colors ${category === "étirement" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
-                          Étirement
+                        <button type="button" onClick={() => setCategory(prev => (prev === "mobilité" ? null : "mobilité"))}
+                          className={`text-[0.58rem] tracking-wider uppercase px-3 py-1.5 rounded-full border capitalize transition-colors ${category === "mobilité" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
+                          Mobilité
                         </button>
                       )}
                       {hasCardio && (
@@ -317,20 +299,6 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                           Cardio
                         </button>
                       )}
-                    </div>
-                  </div>
-                )}
-
-                {mouvements.length > 0 && (
-                  <div className="w-full flex flex-col items-center gap-1.5 pb-3 mb-1 border-b border-[var(--t-border-soft)]">
-                    <p className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-25)]">Mouvement</p>
-                    <div className="flex flex-wrap justify-center gap-1.5">
-                      {mouvements.map(m => (
-                        <button key={m} type="button" onClick={() => setMouvement(prev => (prev === m ? null : m))}
-                          className={`text-[0.58rem] tracking-wider uppercase px-3 py-1.5 rounded-full border capitalize transition-colors ${mouvement === m ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
-                          {m}
-                        </button>
-                      ))}
                     </div>
                   </div>
                 )}
@@ -368,19 +336,10 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                     ))}
                   </div>
                 )}
-                {(category || mouvement) && (
-                  <div className="flex flex-wrap justify-center gap-3">
-                    {category && (
-                      <button type="button" onClick={() => setCategory(null)} className="text-[0.58rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">
-                        ✕ Effacer le filtre ({category})
-                      </button>
-                    )}
-                    {mouvement && (
-                      <button type="button" onClick={() => setMouvement(null)} className="text-[0.58rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">
-                        ✕ Effacer le filtre ({mouvement})
-                      </button>
-                    )}
-                  </div>
+                {category && (
+                  <button type="button" onClick={() => setCategory(null)} className="text-[0.58rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">
+                    ✕ Effacer le filtre ({category})
+                  </button>
                 )}
               </div>
             )}

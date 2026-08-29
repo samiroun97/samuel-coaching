@@ -8,7 +8,7 @@ import { Select } from "@/components/Select";
 
 const inp = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
 const inpSm = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-2.5 py-2 text-center focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
-const inpXs = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-[0.65rem] px-2 py-1.5 text-center focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
+const inpXs = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-2 py-2 text-center focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
 const lblSm = "flex items-center justify-center gap-1 text-[0.42rem] tracking-[0.18em] uppercase text-[var(--t-text-30)] mb-1";
 
 const IconSeries = () => <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M17 2v4M7 2v4M3 10h18M5 22h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>;
@@ -139,11 +139,11 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
             <span className="text-[0.62rem] font-bold text-[var(--t-text-25)]">{i + 1}</span>
             <div className="flex flex-col">
               <button type="button" onClick={onMoveUp} disabled={!onMoveUp} title="Monter"
-                className="w-5 h-4 flex items-center justify-center text-[var(--t-text-20)] hover:text-[#c9a84c] transition-colors disabled:opacity-20 disabled:hover:text-[var(--t-text-20)]">
+                className="w-7 h-6 flex items-center justify-center text-[var(--t-text-20)] hover:text-[#c9a84c] transition-colors disabled:opacity-20 disabled:hover:text-[var(--t-text-20)]">
                 <IconUp/>
               </button>
               <button type="button" onClick={onMoveDown} disabled={!onMoveDown} title="Descendre"
-                className="w-5 h-4 flex items-center justify-center text-[var(--t-text-20)] hover:text-[#c9a84c] transition-colors disabled:opacity-20 disabled:hover:text-[var(--t-text-20)]">
+                className="w-7 h-6 flex items-center justify-center text-[var(--t-text-20)] hover:text-[#c9a84c] transition-colors disabled:opacity-20 disabled:hover:text-[var(--t-text-20)]">
                 <IconDown/>
               </button>
             </div>
@@ -155,7 +155,7 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
               style={{ fontFamily: "var(--font-bebas)" }}
               className="w-full bg-transparent border-0 border-b border-[var(--t-border-soft)] focus:border-[#c9a84c]/50 outline-none text-lg tracking-wide text-[var(--t-text)] placeholder-[var(--t-text-20)] pb-1.5 transition-colors"/>
 
-            <div className="flex flex-wrap items-center gap-2 mt-2.5">
+            <div className="flex items-center gap-2 mt-2.5">
               <div className="inline-flex bg-[var(--t-surface-2)] rounded-full p-0.5">
                 {MODES.map(m => (
                   <button key={m.key} type="button" onClick={() => setMode(i, m.key)}
@@ -164,6 +164,8 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
                   </button>
                 ))}
               </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-2">
               <Select value={ex.type} onChange={v => update(i, { type: v })} placeholder="Type d'exercice…"
                 options={EXERCICE_TYPES.map(t => ({ value: t, label: t }))} align="right"
                 triggerClassName="text-[0.62rem] text-[var(--t-text-30)] hover:text-[var(--t-text-60)] transition-colors"/>
