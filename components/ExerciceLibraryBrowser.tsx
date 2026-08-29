@@ -63,7 +63,7 @@ const MOVEMENT_ORDER = ["push", "pull", "squat", "hinge", "fente", "isolation", 
 function IconImg({ src }: { src: string }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={src} alt="" width={26} height={26} className="shrink-0"/>
+    <img src={src} alt="" width={23} height={23} className="shrink-0"/>
   );
 }
 const SECTION_ICONS: Record<"muscle" | "execution" | "utilite" | "aNoter" | "tags", ReactNode> = {
