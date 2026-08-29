@@ -968,7 +968,10 @@ export default function SuiviPage() {
       {/* ── Graphique évolution body fat ── */}
       {bfChartData.length > 1 && (
         <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-4 mb-4">
-          <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-3">Évolution body fat</p>
+          <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1">Évolution body fat</p>
+          <p className="text-[0.62rem] text-[var(--t-text-30)] mb-3">
+            {bfChartData.length} mesure{bfChartData.length > 1 ? "s" : ""} enregistrée{bfChartData.length > 1 ? "s" : ""}
+          </p>
           <LineChart data={bfChartData.map(e => ({ id: e.id, date: e.date, val: e.body_fat }))} unit="%" color="#c9a84c" glow/>
         </div>
       )}
