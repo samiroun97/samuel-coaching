@@ -1,8 +1,49 @@
 "use client";
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import Model, { type IExerciseData, type Muscle } from "react-body-highlighter";
 import { type CatalogueEntry } from "@/lib/exercicesCatalogue";
-import { Select } from "@/components/Select";
+
+// Bouton icône seul (pas de texte visible) avec pastille dorée quand un filtre est actif —
+// plus discret qu'un menu déroulant classique et plus proche des conventions mobiles
+// (icône de filtre en haut à droite d'une barre de recherche, cf. Mail, Fichiers, etc.).
+function FilterDropdown({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: { value: string; label: string }[] }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => { document.removeEventListener("mousedown", onDown); document.removeEventListener("keydown", onKey); };
+  }, [open]);
+
+  const active = Boolean(value);
+  return (
+    <div ref={ref} className="relative shrink-0">
+      <button type="button" onClick={() => setOpen(o => !o)} title="Filtre"
+        className={`relative w-8 h-8 rounded-full border flex items-center justify-center transition-colors ${active ? "border-[#c9a84c]/50 text-[#c9a84c] bg-[#c9a84c]/10" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[#c9a84c]/40 hover:text-[#c9a84c]"}`}>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        {active && <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#c9a84c] ring-2 ring-[var(--t-bg)]"/>}
+      </button>
+      {open && (
+        <div className="absolute right-0 mt-1.5 z-[100] border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl shadow-[0_16px_40px_-8px_rgba(0,0,0,0.6)] py-1 min-w-[10rem] max-h-64 overflow-y-auto">
+          <button type="button" onClick={() => { onChange(""); setOpen(false); }}
+            className={`w-full text-left px-3 py-2 text-xs transition-colors whitespace-nowrap ${!value ? "text-[#c9a84c] bg-[#c9a84c]/10" : "text-[var(--t-text-25)] hover:bg-[var(--t-glass-bg)]"}`}>
+            Tous
+          </button>
+          {options.map(o => (
+            <button key={o.value} type="button" onClick={() => { onChange(o.value); setOpen(false); }}
+              className={`w-full text-left px-3 py-2 text-xs capitalize transition-colors whitespace-nowrap ${o.value === value ? "text-[#c9a84c] bg-[#c9a84c]/10" : "text-[var(--t-text-60)] hover:bg-[var(--t-glass-bg)]"}`}>
+              {o.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // On filtre par muscle_cible (plus précis que partie_corps, ~19 valeurs) plutôt que par
 // partie_corps (~10, trop large pour une silhouette détaillée) — voir supabase/exercices_catalogue_migration.sql.
@@ -101,9 +142,9 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
     return [...ordered, ...rest];
   }, [catalogue]);
 
-  // Filtre "Mouvement" : un seul contrôle qui couvre à la fois l'équipement (barre,
-  // haltère…) et étirement/cardio — ces deux derniers filtrent en réalité sur `category`
-  // (muscle_cible) plutôt que sur `equipement`, d'où l'aiguillage dans le handler.
+  // Filtre unique qui couvre à la fois l'équipement (barre, haltère…) et étirement/cardio —
+  // ces deux derniers filtrent en réalité sur `category` (muscle_cible) plutôt que sur
+  // `equipement`, d'où l'aiguillage dans le handler.
   const movementOptions = [
     ...equipements.map(eq => ({ value: eq, label: eq })),
     ...(hasStretch ? [{ value: "étirement", label: "Étirement" }] : []),
@@ -150,9 +191,7 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
             placeholder="Rechercher…" value={query} onChange={e => setQuery(e.target.value)}
           />
           {movementOptions.length > 0 && (
-            <Select value={movementValue} onChange={handleMovementChange} options={movementOptions} placeholder="Mouvement" align="right"
-              triggerClassName={`shrink-0 text-[0.6rem] tracking-wider uppercase capitalize px-3 py-2 rounded-full border transition-colors ${movementValue ? "border-[#c9a84c]/40 text-[#c9a84c]" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[#c9a84c]/40 hover:text-[#c9a84c]"}`}
-              panelClassName="capitalize"/>
+            <FilterDropdown value={movementValue} onChange={handleMovementChange} options={movementOptions}/>
           )}
         </div>
 
