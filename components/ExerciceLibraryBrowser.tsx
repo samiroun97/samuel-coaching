@@ -144,11 +144,16 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
-        <div className="px-5 pb-3 border-b border-[var(--t-border-soft)] shrink-0">
+        <div className="px-5 pb-3 border-b border-[var(--t-border-soft)] shrink-0 flex items-center gap-2">
           <input
-            className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
+            className="flex-1 min-w-0 bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
             placeholder="Rechercher…" value={query} onChange={e => setQuery(e.target.value)}
           />
+          {movementOptions.length > 0 && (
+            <Select value={movementValue} onChange={handleMovementChange} options={movementOptions} placeholder="Mouvement" align="right"
+              triggerClassName={`shrink-0 text-[0.6rem] tracking-wider uppercase capitalize px-3 py-2 rounded-full border transition-colors ${movementValue ? "border-[#c9a84c]/40 text-[#c9a84c]" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[#c9a84c]/40 hover:text-[#c9a84c]"}`}
+              panelClassName="capitalize"/>
+          )}
         </div>
 
         <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
@@ -297,15 +302,6 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                     </button>
                   )}
                 </div>
-
-                {movementOptions.length > 0 && (
-                  <div className="w-full flex flex-col items-center gap-2 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-2xl p-4">
-                    <p className="text-[0.62rem] tracking-[0.2em] uppercase text-[var(--t-text-30)]">Mouvement</p>
-                    <Select value={movementValue} onChange={handleMovementChange} options={movementOptions} placeholder="Tous les mouvements"
-                      triggerClassName="w-full justify-between border border-[var(--t-border)] rounded-xl px-3 py-2.5 text-sm capitalize text-[var(--t-text)] hover:border-[#c9a84c]/40 transition-colors"
-                      panelClassName="w-full capitalize"/>
-                  </div>
-                )}
               </div>
             )}
           </div>
