@@ -317,7 +317,7 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                             const cible = LIB_TO_CIBLE[muscle];
                             if (cible) setCategory(prev => (prev === cible ? null : cible));
                           }}
-                          style={{ width: "118px" }}
+                          style={{ width: "152px" }}
                           svgStyle={{ filter: "drop-shadow(0 0 0 transparent)" }}
                         />
                         <p className="text-[0.5rem] tracking-[0.15em] uppercase text-[var(--t-text-20)]">{type === "anterior" ? "Face" : "Dos"}</p>
