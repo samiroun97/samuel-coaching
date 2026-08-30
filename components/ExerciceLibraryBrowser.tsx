@@ -33,16 +33,6 @@ const CATEGORY_ORDER = [
   "pectoraux", "haut du dos", "grand dorsal", "trapèzes", "deltoïdes", "biceps", "triceps", "avant-bras",
   "abdominaux", "quadriceps", "ischio-jambiers", "adducteurs", "abducteurs", "fessiers", "mollets",
 ];
-// Pastille de couleur par muscle dans la liste de résultats — repère visuel rapide en plus
-// du filtre par silhouette, une couleur par entrée de CATEGORY_ORDER (+ un gris neutre pour
-// les catégories hors-corps type étirement/cardio, non listées ici).
-const MUSCLE_COLOR_PALETTE = [
-  "#e07070", "#e0a05a", "#d8c05a", "#a8c05a", "#7eb8a0", "#5fae8f", "#5f9fae", "#6ea8d8",
-  "#7e8fd8", "#a78fd8", "#c08fd8", "#d88fc0", "#d87090", "#b0705a", "#8fae5f",
-];
-const MUSCLE_COLOR: Record<string, string> = Object.fromEntries(
-  CATEGORY_ORDER.map((c, i) => [c, MUSCLE_COLOR_PALETTE[i % MUSCLE_COLOR_PALETTE.length]])
-);
 // Catégories volontairement masquées sous l'écorché (trop marginales comme filtre) — les
 // exercices concernés restent trouvables via la recherche/liste, juste sans puce dédiée.
 // "étirement" et "cardio" sont masquées ici aussi : elles ont leur propre puce, mise en
@@ -130,7 +120,7 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
   const hasActiveFilter = Boolean(query.trim() || category || equipement);
 
   return (
-    <div className="border border-[var(--t-border)] bg-[var(--t-bg)] rounded-2xl w-full h-[65vh] sm:h-[560px] flex flex-col overflow-hidden">
+    <div className="border border-[var(--t-border)] bg-[var(--t-bg)] rounded-2xl w-full h-[80vh] sm:h-[700px] flex flex-col overflow-hidden">
       <div className="flex items-center justify-between px-5 pt-4 pb-3 shrink-0">
           <p style={{ fontFamily: "var(--font-bebas)" }} className="text-lg tracking-wider text-[var(--t-text)]">Bibliothèque d&apos;exercices</p>
           <button onClick={onClose} className="shrink-0 text-[var(--t-text-30)] hover:text-[var(--t-text)] transition-colors">
@@ -172,9 +162,6 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                         <div className="w-8 h-8 rounded-lg shrink-0 bg-[var(--t-surface-2)] border border-[var(--t-border-soft)]"/>
                       )}
                       <p className="text-xs cap-first truncate flex-1 min-w-0">{e.nom}</p>
-                      {e.muscle_cible && MUSCLE_COLOR[e.muscle_cible] && (
-                        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: MUSCLE_COLOR[e.muscle_cible] }} title={e.muscle_cible}/>
-                      )}
                     </button>
                   );
                 })
@@ -287,8 +274,8 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                 </button>
               </div>
             ) : (
-              <div className="flex flex-col items-center gap-4">
-                <div className="w-full flex flex-col items-center gap-4 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-2xl p-4">
+              <div className="flex flex-col items-center gap-6">
+                <div className="w-full flex flex-col items-center gap-5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-2xl p-5">
                   <p className="text-[0.62rem] tracking-[0.2em] uppercase text-[var(--t-text-30)]">Quel groupe musculaire veux-tu travailler ?</p>
 
                   <div className="flex items-start justify-center gap-6">
@@ -329,8 +316,8 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                 </div>
 
                 {(equipements.length > 0 || hasStretch || hasCardio) && (
-                  <div className="w-full flex flex-col items-center gap-1.5">
-                    <p className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-25)]">Équipement</p>
+                  <div className="w-full flex flex-col items-center gap-2.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-2xl p-4">
+                    <p className="text-[0.62rem] tracking-[0.2em] uppercase text-[var(--t-text-30)]">Équipement</p>
                     <div className="flex flex-wrap justify-center gap-1.5">
                       {equipements.map(eq => (
                         <button key={eq} type="button" onClick={() => setEquipement(prev => (prev === eq ? null : eq))}
