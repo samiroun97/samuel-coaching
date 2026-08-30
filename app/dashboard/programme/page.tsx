@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
@@ -375,22 +374,6 @@ export default function ProgrammePage() {
           </div>
           {!profile && <span className="text-[var(--t-text-15)]">Complète ton profil pour personnaliser</span>}
         </div>
-      </div>
-
-      {/* ── Créer ma propre séance ── */}
-      <div className="mb-6">
-        <Link href="/dashboard/programme/creer-ma-seance"
-          className="group w-full flex items-center gap-3 border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 hover:border-[var(--t-border-15)] transition-colors">
-          <span className="shrink-0 w-10 h-10 flex items-center justify-center">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icons/entrainement.svg?v=2" alt="" width={40} height={40} className="w-full h-full object-contain"/>
-          </span>
-          <span className="flex-1 text-left">
-            <span style={{ fontFamily: "var(--font-bebas)" }} className="block text-sm tracking-wide text-[var(--t-text)] leading-tight">Créer ma propre séance</span>
-            <span className="block text-[0.6rem] text-[var(--t-text-30)] tracking-wide mt-1 leading-relaxed">Crée la séance de ton choix avec les exercices de ton choix — chacun accompagné d&apos;une vidéo de démonstration pour une exécution parfaite.</span>
-          </span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-[var(--t-text-20)] transition-transform group-hover:translate-x-0.5"><path d="M9 6l6 6-6 6"/></svg>
-        </Link>
       </div>
 
       {/* ── Formulaire séance ── */}

@@ -77,7 +77,6 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
   const [category, setCategory] = useState<string | null>(null);
   const [equipement, setEquipement] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const [bodyView, setBodyView] = useState<"face" | "dos">("face");
   const [detailEntry, setDetailEntry] = useState<CatalogueEntry | null>(null);
 
   const categories = useMemo(() => {
@@ -276,9 +275,49 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                 </button>
               </div>
             ) : (
-              <div className="flex flex-col items-center gap-2">
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-full flex flex-col items-center gap-4 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-2xl p-4">
+                  <p className="text-[0.62rem] tracking-[0.2em] uppercase text-[var(--t-text-30)]">Quel groupe musculaire veux-tu travailler ?</p>
+
+                  <div className="flex items-start justify-center gap-6">
+                    {(["anterior", "posterior"] as const).map(type => (
+                      <div key={type} className="flex flex-col items-center gap-1.5">
+                        <Model
+                          type={type}
+                          data={modelData}
+                          bodyColor="var(--t-glass-bg)"
+                          highlightedColors={["#c9a84c"]}
+                          onClick={({ muscle }) => {
+                            const cible = LIB_TO_CIBLE[muscle];
+                            if (cible) setCategory(prev => (prev === cible ? null : cible));
+                          }}
+                          style={{ width: "118px" }}
+                          svgStyle={{ filter: "drop-shadow(0 0 0 transparent)" }}
+                        />
+                        <p className="text-[0.5rem] tracking-[0.15em] uppercase text-[var(--t-text-20)]">{type === "anterior" ? "Face" : "Dos"}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {offBody.length > 0 && (
+                    <div className="flex flex-wrap justify-center gap-1.5">
+                      {offBody.map(c => (
+                        <button key={c} type="button" onClick={() => setCategory(prev => (prev === c ? null : c))}
+                          className={`text-[0.58rem] tracking-wider uppercase px-3 py-1.5 rounded-full border capitalize transition-colors ${category === c ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
+                          {c}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {category && (
+                    <button type="button" onClick={() => setCategory(null)} className="text-[0.58rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[#c9a84c] transition-colors -mt-1.5">
+                      {category} · ✕ effacer
+                    </button>
+                  )}
+                </div>
+
                 {(equipements.length > 0 || hasStretch || hasCardio) && (
-                  <div className="w-full flex flex-col items-center gap-1.5 pb-3 mb-1 border-b border-[var(--t-border-soft)]">
+                  <div className="w-full flex flex-col items-center gap-1.5">
                     <p className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-25)]">Équipement</p>
                     <div className="flex flex-wrap justify-center gap-1.5">
                       {equipements.map(eq => (
@@ -301,45 +340,6 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                       )}
                     </div>
                   </div>
-                )}
-
-                <p className="text-[0.65rem] text-[var(--t-text-40)] text-center">Quel groupe musculaire veux-tu travailler ?</p>
-                <div className="flex border border-[var(--t-border)] rounded-full p-0.5">
-                  {(["face", "dos"] as const).map(v => (
-                    <button key={v} type="button" onClick={() => setBodyView(v)}
-                      className={`text-[0.55rem] tracking-[0.15em] uppercase px-4 py-1.5 rounded-full transition-colors ${bodyView === v ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-[var(--t-text-40)]"}`}>
-                      {v}
-                    </button>
-                  ))}
-                </div>
-
-                <Model
-                  type={bodyView === "face" ? "anterior" : "posterior"}
-                  data={modelData}
-                  bodyColor="var(--t-glass-bg)"
-                  highlightedColors={["#c9a84c"]}
-                  onClick={({ muscle }) => {
-                    const cible = LIB_TO_CIBLE[muscle];
-                    if (cible) setCategory(prev => (prev === cible ? null : cible));
-                  }}
-                  style={{ width: "190px" }}
-                  svgStyle={{ filter: "drop-shadow(0 0 0 transparent)" }}
-                />
-
-                {offBody.length > 0 && (
-                  <div className="flex flex-wrap justify-center gap-1.5">
-                    {offBody.map(c => (
-                      <button key={c} type="button" onClick={() => setCategory(prev => (prev === c ? null : c))}
-                        className={`text-[0.58rem] tracking-wider uppercase px-3 py-1.5 rounded-full border capitalize transition-colors ${category === c ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
-                        {c}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                {category && (
-                  <button type="button" onClick={() => setCategory(null)} className="text-[0.58rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">
-                    ✕ Effacer le filtre ({category})
-                  </button>
                 )}
               </div>
             )}
