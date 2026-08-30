@@ -78,6 +78,7 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
   const [equipement, setEquipement] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [detailEntry, setDetailEntry] = useState<CatalogueEntry | null>(null);
+  const [listOpen, setListOpen] = useState(false);
 
   const categories = useMemo(() => {
     const present = new Set(catalogue.map(e => e.muscle_cible).filter(Boolean) as string[]);
@@ -114,10 +115,6 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
     ? [{ name: "sélection", muscles: CIBLE_TO_LIB[category] }]
     : [];
 
-  // Sur mobile, la liste des resultats reste masquee tant qu'aucune recherche/filtre n'est
-  // actif — evite qu'elle occupe l'ecran par defaut. Toujours visible sur desktop (colonne
-  // laterale fixe).
-  const hasActiveFilter = Boolean(query.trim() || category || equipement);
 
   return (
     <div className="border border-[var(--t-border)] bg-[var(--t-bg)] rounded-2xl w-full h-[80vh] sm:h-[700px] flex flex-col overflow-hidden">
@@ -134,42 +131,8 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
           />
         </div>
 
-        <div className="flex-1 min-h-0 flex flex-col-reverse sm:flex-row overflow-hidden">
-          {/* Colonne de gauche : liste défilante de tous les exercices (recherche déplacée
-              en haut, avant le titre). Hauteur bornée quand ouverte (h-[45vh]) : sans ça,
-              cette colonne n'a pas de hauteur propre dans le flex-col-reverse et grandit avec
-              tout son contenu (jusqu'à 200 résultats), poussant la colonne principale
-              (silhouette) hors de l'écran. Sur mobile, la liste reste masquée tant qu'aucun
-              filtre/recherche n'est actif — toujours visible sur desktop. */}
-          <div className={`w-full ${hasActiveFilter ? "h-[45vh]" : "h-0"} sm:h-auto sm:w-56 shrink-0 border-t sm:border-t-0 sm:border-r border-[var(--t-border-soft)] flex flex-col overflow-hidden`}>
-            <div className={`${hasActiveFilter ? "flex" : "hidden"} sm:flex flex-1 min-h-0 overflow-y-auto p-2 flex-col gap-1.5`}>
-              {results.length === 0 ? (
-                <p className="text-xs text-[var(--t-text-25)] text-center py-8">Aucun exercice trouvé.</p>
-              ) : (
-                results.map(e => {
-                  const active = detailEntry?.id === e.id;
-                  return (
-                    <button key={e.id} type="button" onClick={() => setDetailEntry(e)}
-                      className={`w-full flex items-center gap-2 text-left p-2 rounded-r-xl rounded-l-md border-l-[3px] transition-colors ${
-                        active
-                          ? "border-[#c9a84c] bg-[#c9a84c]/10 text-[#c9a84c]"
-                          : "border-transparent hover:border-[#c9a84c]/25 hover:bg-[var(--t-glass-bg)] text-[var(--t-text-70)] hover:text-[var(--t-text)]"
-                      }`}>
-                      {e.image_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={e.image_url} alt="" loading="lazy" className="w-8 h-8 rounded-lg object-cover shrink-0 bg-[var(--t-surface-2)] border border-[var(--t-border-soft)]"/>
-                      ) : (
-                        <div className="w-8 h-8 rounded-lg shrink-0 bg-[var(--t-surface-2)] border border-[var(--t-border-soft)]"/>
-                      )}
-                      <p className="text-xs cap-first truncate flex-1 min-w-0">{e.nom}</p>
-                    </button>
-                  );
-                })
-              )}
-            </div>
-          </div>
-
-          {/* Colonne principale : detail de l'exercice selectionne, ou filtres (silhouette/liste) */}
+        <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+          {/* Zone principale : detail de l'exercice selectionne, ou filtres (silhouette/equipement) */}
           <div className="flex-1 min-h-0 overflow-y-auto p-5">
             {detailEntry ? (
               <div className="flex flex-col gap-4">
@@ -339,6 +302,44 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                       )}
                     </div>
                   </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Tiroir résultats, replié par défaut — reste dans un coin séparé du reste de
+              l'écran plutôt que d'occuper une colonne en permanence, avec son propre
+              défilement interne une fois ouvert. */}
+          <div className="shrink-0 border-t border-[var(--t-border-soft)]">
+            <button type="button" onClick={() => setListOpen(v => !v)}
+              className="w-full flex items-center justify-between px-5 py-3 text-[var(--t-text-40)] hover:text-[var(--t-text-70)] transition-colors">
+              <span className="text-[0.62rem] tracking-[0.15em] uppercase">Résultats · {results.length}</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${listOpen ? "rotate-180" : ""}`}><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            {listOpen && (
+              <div className="h-[38vh] overflow-y-auto border-t border-[var(--t-border-soft)] p-2 flex flex-col gap-1.5">
+                {results.length === 0 ? (
+                  <p className="text-xs text-[var(--t-text-25)] text-center py-8">Aucun exercice trouvé.</p>
+                ) : (
+                  results.map(e => {
+                    const active = detailEntry?.id === e.id;
+                    return (
+                      <button key={e.id} type="button" onClick={() => setDetailEntry(e)}
+                        className={`w-full flex items-center gap-2 text-left p-2 rounded-r-xl rounded-l-md border-l-[3px] transition-colors ${
+                          active
+                            ? "border-[#c9a84c] bg-[#c9a84c]/10 text-[#c9a84c]"
+                            : "border-transparent hover:border-[#c9a84c]/25 hover:bg-[var(--t-glass-bg)] text-[var(--t-text-70)] hover:text-[var(--t-text)]"
+                        }`}>
+                        {e.image_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={e.image_url} alt="" loading="lazy" className="w-8 h-8 rounded-lg object-cover shrink-0 bg-[var(--t-surface-2)] border border-[var(--t-border-soft)]"/>
+                        ) : (
+                          <div className="w-8 h-8 rounded-lg shrink-0 bg-[var(--t-surface-2)] border border-[var(--t-border-soft)]"/>
+                        )}
+                        <p className="text-xs cap-first truncate flex-1 min-w-0">{e.nom}</p>
+                      </button>
+                    );
+                  })
                 )}
               </div>
             )}
