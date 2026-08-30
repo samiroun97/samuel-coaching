@@ -137,7 +137,7 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
 
 
   return (
-    <div className="border border-[var(--t-border)] bg-[var(--t-bg)] rounded-2xl w-full h-[80vh] sm:h-[700px] flex flex-col overflow-hidden">
+    <div className="border border-[var(--t-border)] bg-[var(--t-bg)] rounded-2xl w-full max-h-[80vh] sm:max-h-[700px] flex flex-col overflow-hidden">
       <div className="flex items-center justify-between px-5 pt-4 pb-3 shrink-0">
           <p style={{ fontFamily: "var(--font-bebas)" }} className="text-lg tracking-wider text-[var(--t-text)]">Bibliothèque d&apos;exercices</p>
           <button onClick={onClose} className="shrink-0 text-[var(--t-text-30)] hover:text-[var(--t-text)] transition-colors">
@@ -316,7 +316,7 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${listOpen ? "rotate-180" : ""}`}><polyline points="6 9 12 15 18 9"/></svg>
             </button>
             {listOpen && (
-              <div className="h-[38vh] overflow-y-auto border-t border-[var(--t-border-soft)] p-2 flex flex-col gap-1.5">
+              <div className="max-h-[38vh] overflow-y-auto border-t border-[var(--t-border-soft)] p-2 flex flex-col gap-1.5">
                 {results.length === 0 ? (
                   <p className="text-xs text-[var(--t-text-25)] text-center py-8">Aucun exercice trouvé.</p>
                 ) : (
