@@ -163,13 +163,11 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return catalogue
-      .filter(e =>
-        (!category || e.muscle_cible === category) &&
-        (!equipement || (e.equipement?.split(" + ") ?? []).includes(equipement)) &&
-        (!q || e.nom.toLowerCase().includes(q))
-      )
-      .slice(0, 200);
+    return catalogue.filter(e =>
+      (!category || e.muscle_cible === category) &&
+      (!equipement || (e.equipement?.split(" + ") ?? []).includes(equipement)) &&
+      (!q || e.nom.toLowerCase().includes(q))
+    );
   }, [catalogue, category, equipement, query]);
 
   const modelData: IExerciseData[] = category && CIBLE_TO_LIB[category]
