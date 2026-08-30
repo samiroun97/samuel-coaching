@@ -40,7 +40,11 @@ const genId = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto
 
 const DATALIST_ID = "exercice-bibliotheque-list";
 
-export default function ExerciceEditor({ items, onChange, library = [], catalogue = [] }: { items: ExerciceItem[]; onChange: (items: ExerciceItem[]) => void; library?: LibraryEntry[]; catalogue?: CatalogueEntry[] }) {
+// simplified : vue allégée pour un client qui compose sa propre séance libre (page
+// /dashboard/programme/creer-ma-seance) — masque les réglages pensés pour le coach
+// (mode Avancé/Texte libre, type d'exercice, supersets, lien vidéo) pour ne garder
+// que l'essentiel (séries/reps/poids/repos) ; l'éditeur CRM du coach reste inchangé.
+export default function ExerciceEditor({ items, onChange, library = [], catalogue = [], simplified = false }: { items: ExerciceItem[]; onChange: (items: ExerciceItem[]) => void; library?: LibraryEntry[]; catalogue?: CatalogueEntry[]; simplified?: boolean }) {
   const [showLibraryBrowser, setShowLibraryBrowser] = useState(false);
   const update = (i: number, patch: Partial<ExerciceItem>) => onChange(items.map((it, j) => (j === i ? { ...it, ...patch } : it)));
   const remove = (i: number) => onChange(items.filter((_, j) => j !== i));
@@ -137,16 +141,18 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
         <div className="flex items-start gap-2.5">
           <div className="shrink-0 flex flex-col items-center gap-1 pt-0.5">
             <span className="text-[0.62rem] font-bold text-[var(--t-text-25)]">{i + 1}</span>
-            <div className="flex flex-col">
-              <button type="button" onClick={onMoveUp} disabled={!onMoveUp} title="Monter"
-                className="w-7 h-6 flex items-center justify-center text-[var(--t-text-20)] hover:text-[#c9a84c] transition-colors disabled:opacity-20 disabled:hover:text-[var(--t-text-20)]">
-                <IconUp/>
-              </button>
-              <button type="button" onClick={onMoveDown} disabled={!onMoveDown} title="Descendre"
-                className="w-7 h-6 flex items-center justify-center text-[var(--t-text-20)] hover:text-[#c9a84c] transition-colors disabled:opacity-20 disabled:hover:text-[var(--t-text-20)]">
-                <IconDown/>
-              </button>
-            </div>
+            {(onMoveUp || onMoveDown) && (
+              <div className="flex flex-col">
+                <button type="button" onClick={onMoveUp} disabled={!onMoveUp} title="Monter"
+                  className="w-7 h-6 flex items-center justify-center text-[var(--t-text-20)] hover:text-[#c9a84c] transition-colors disabled:opacity-20 disabled:hover:text-[var(--t-text-20)]">
+                  <IconUp/>
+                </button>
+                <button type="button" onClick={onMoveDown} disabled={!onMoveDown} title="Descendre"
+                  className="w-7 h-6 flex items-center justify-center text-[var(--t-text-20)] hover:text-[#c9a84c] transition-colors disabled:opacity-20 disabled:hover:text-[var(--t-text-20)]">
+                  <IconDown/>
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="flex-1 min-w-0">
@@ -155,27 +161,31 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
               style={{ fontFamily: "var(--font-bebas)" }}
               className="w-full bg-transparent border-0 border-b border-[var(--t-border-soft)] focus:border-[#c9a84c]/50 outline-none text-lg tracking-wide text-[var(--t-text)] placeholder-[var(--t-text-20)] pb-1.5 transition-colors"/>
 
-            <div className="flex items-center gap-2 mt-2.5">
-              <div className="inline-flex bg-[var(--t-surface-2)] rounded-full p-0.5">
-                {MODES.map(m => (
-                  <button key={m.key} type="button" onClick={() => setMode(i, m.key)}
-                    className={`px-2.5 py-1 rounded-full text-[0.56rem] tracking-[0.08em] uppercase transition-colors ${ex.mode === m.key ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-[var(--t-text-35)] hover:text-[var(--t-text-60)]"}`}>
-                    {m.label}
-                  </button>
-                ))}
+            {!simplified && (
+              <div className="flex items-center gap-2 mt-2.5">
+                <div className="inline-flex bg-[var(--t-surface-2)] rounded-full p-0.5">
+                  {MODES.map(m => (
+                    <button key={m.key} type="button" onClick={() => setMode(i, m.key)}
+                      className={`px-2.5 py-1 rounded-full text-[0.56rem] tracking-[0.08em] uppercase transition-colors ${ex.mode === m.key ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-[var(--t-text-35)] hover:text-[var(--t-text-60)]"}`}>
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-2">
-              <Select value={ex.type} onChange={v => update(i, { type: v })} placeholder="Type d'exercice…"
-                options={EXERCICE_TYPES.map(t => ({ value: t, label: t }))} align="right"
-                triggerClassName="text-[0.62rem] text-[var(--t-text-30)] hover:text-[var(--t-text-60)] transition-colors"/>
-              {i > 0 && !isGrouped && (
-                <button type="button" onClick={() => linkWithPrevious(i)}
-                  className="text-[0.58rem] tracking-[0.05em] text-[var(--t-text-25)] hover:text-[#c9a84c] transition-colors">
-                  + Lier au précédent
-                </button>
-              )}
-            </div>
+            )}
+            {!simplified && (
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-2">
+                <Select value={ex.type} onChange={v => update(i, { type: v })} placeholder="Type d'exercice…"
+                  options={EXERCICE_TYPES.map(t => ({ value: t, label: t }))} align="right"
+                  triggerClassName="text-[0.62rem] text-[var(--t-text-30)] hover:text-[var(--t-text-60)] transition-colors"/>
+                {i > 0 && !isGrouped && (
+                  <button type="button" onClick={() => linkWithPrevious(i)}
+                    className="text-[0.58rem] tracking-[0.05em] text-[var(--t-text-25)] hover:text-[#c9a84c] transition-colors">
+                    + Lier au précédent
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           <button type="button" onClick={() => remove(i)} className="shrink-0 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors p-2 -m-2">
@@ -244,9 +254,12 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
         )}
 
         <div className="flex flex-col gap-2 pt-1 border-t border-[var(--t-border-soft)]">
-          <textarea className={`${inpSm} text-left resize-none mt-2`} rows={2} placeholder="Note libre sur cet exercice (optionnel) : consigne, précision, variante…"
+          <textarea className={`${inpSm} text-left resize-none mt-2`} rows={2}
+            placeholder={simplified ? "Note personnelle (optionnel) : ressenti, variante…" : "Note libre sur cet exercice (optionnel) : consigne, précision, variante…"}
             value={ex.note} onChange={e => update(i, { note: e.target.value })} />
-          <input className={`${inpSm} text-left`} placeholder="Lien vidéo (optionnel)" value={ex.videoUrl} onChange={e => update(i, { videoUrl: e.target.value })} />
+          {!simplified && (
+            <input className={`${inpSm} text-left`} placeholder="Lien vidéo (optionnel)" value={ex.videoUrl} onChange={e => update(i, { videoUrl: e.target.value })} />
+          )}
         </div>
       </div>
     );
@@ -288,41 +301,68 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
     )
   );
 
+  const bigAddButtons = (
+    <div className="flex flex-col gap-2">
+      {catalogue.length > 0 && (
+        <button type="button" onClick={() => setShowLibraryBrowser(true)}
+          className="group flex items-center gap-3 border border-[var(--t-border)] bg-[var(--t-surface)] px-4 py-3.5 rounded-2xl hover:border-[var(--t-border-15)] transition-colors">
+          <span className="shrink-0 w-12 h-12 flex items-center justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/icons/library.svg" alt="" width={48} height={48} className="w-full h-full object-contain"/>
+          </span>
+          <span className="flex-1 text-left">
+            <span className="block text-[0.68rem] font-bold tracking-[0.1em] uppercase leading-tight text-[var(--t-text)]">Choisir dans la bibliothèque</span>
+            <span className="block text-[0.58rem] font-medium text-[var(--t-text-30)] tracking-wide leading-tight mt-0.5">{catalogue.length} exercices classés par muscle</span>
+          </span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-[var(--t-text-20)] transition-transform group-hover:translate-x-0.5"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+      )}
+      <button type="button" onClick={add}
+        className="group flex items-center gap-3 border border-[var(--t-border)] bg-[var(--t-surface)] px-4 py-3.5 rounded-2xl hover:border-[var(--t-border-15)] transition-colors">
+        <span className="shrink-0 w-12 h-12 flex items-center justify-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/icons/entrainement-libre.svg" alt="" width={48} height={48} className="w-full h-full object-contain"/>
+        </span>
+        <span className="flex-1 text-left">
+          <span className="block text-[0.68rem] font-bold tracking-[0.1em] uppercase leading-tight text-[var(--t-text)]">Exercice libre</span>
+          <span className="block text-[0.58rem] font-medium text-[var(--t-text-30)] tracking-wide leading-tight mt-0.5">Ajoute un exercice vierge à compléter toi-même</span>
+        </span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-[var(--t-text-20)] transition-transform group-hover:translate-x-0.5"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+  );
+
+  // En mode simplifié, une fois la séance amorcée, les deux grandes cartes cèdent la
+  // place à une rangée compacte "+ ajouter" — l'espace revient à la liste d'exercices,
+  // qui est ce que le client regarde le plus une fois la séance en cours de construction.
+  const compactAddButtons = (
+    <div className="flex gap-2">
+      {catalogue.length > 0 && (
+        <button type="button" onClick={() => setShowLibraryBrowser(true)}
+          className="flex-1 flex items-center justify-center gap-1.5 border border-dashed border-[var(--t-border-15)] text-[var(--t-text-30)] text-[0.62rem] font-bold tracking-[0.08em] uppercase py-3 rounded-xl hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Bibliothèque
+        </button>
+      )}
+      <button type="button" onClick={add}
+        className="flex-1 flex items-center justify-center gap-1.5 border border-dashed border-[var(--t-border-15)] text-[var(--t-text-30)] text-[0.62rem] font-bold tracking-[0.08em] uppercase py-3 rounded-xl hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Exercice libre
+      </button>
+    </div>
+  );
+
+  const showBigCards = !simplified || items.length === 0;
+
   return (
     <div className="flex flex-col gap-2.5">
       <datalist id={DATALIST_ID}>
         {library.map(l => <option key={`lib-${l.id}`} value={l.nom} />)}
         {catalogue.map(c => <option key={`cat-${c.id}`} value={c.nom} />)}
       </datalist>
-      <div className="flex flex-col gap-2">
-        {catalogue.length > 0 && (
-          <button type="button" onClick={() => setShowLibraryBrowser(true)}
-            className="group flex items-center gap-3 border border-[var(--t-border)] bg-[var(--t-surface)] px-4 py-3.5 rounded-2xl hover:border-[var(--t-border-15)] transition-colors">
-            <span className="shrink-0 w-12 h-12 flex items-center justify-center">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/icons/library.svg" alt="" width={48} height={48} className="w-full h-full object-contain"/>
-            </span>
-            <span className="flex-1 text-left">
-              <span className="block text-[0.68rem] font-bold tracking-[0.1em] uppercase leading-tight text-[var(--t-text)]">Choisir dans la bibliothèque</span>
-              <span className="block text-[0.58rem] font-medium text-[var(--t-text-30)] tracking-wide leading-tight mt-0.5">{catalogue.length} exercices classés par muscle</span>
-            </span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-[var(--t-text-20)] transition-transform group-hover:translate-x-0.5"><path d="M9 6l6 6-6 6"/></svg>
-          </button>
-        )}
-        <button type="button" onClick={add}
-          className="group flex items-center gap-3 border border-[var(--t-border)] bg-[var(--t-surface)] px-4 py-3.5 rounded-2xl hover:border-[var(--t-border-15)] transition-colors">
-          <span className="shrink-0 w-12 h-12 flex items-center justify-center">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icons/entrainement-libre.svg" alt="" width={48} height={48} className="w-full h-full object-contain"/>
-          </span>
-          <span className="flex-1 text-left">
-            <span className="block text-[0.68rem] font-bold tracking-[0.1em] uppercase leading-tight text-[var(--t-text)]">Exercice libre</span>
-            <span className="block text-[0.58rem] font-medium text-[var(--t-text-30)] tracking-wide leading-tight mt-0.5">Ajoute un exercice vierge à compléter toi-même</span>
-          </span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-[var(--t-text-20)] transition-transform group-hover:translate-x-0.5"><path d="M9 6l6 6-6 6"/></svg>
-        </button>
-      </div>
+      {showBigCards && bigAddButtons}
       {nodes}
+      {simplified && items.length > 0 && compactAddButtons}
       {showLibraryBrowser && (
         <ExerciceLibraryBrowser catalogue={catalogue} onPick={addFromCatalogue} onClose={() => setShowLibraryBrowser(false)}/>
       )}
