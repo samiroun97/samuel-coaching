@@ -353,6 +353,12 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
   );
 
   const showBigCards = !simplified || items.length === 0;
+  // Le panneau s'ouvre juste sous le bouton qui l'a déclenché (grande carte en haut,
+  // ou rangée compacte en bas une fois des exercices ajoutés) plutôt qu'en popup —
+  // il reste ainsi intégré au flux de la page, avec son propre défilement interne.
+  const libraryBrowser = (
+    <ExerciceLibraryBrowser catalogue={catalogue} onPick={addFromCatalogue} onClose={() => setShowLibraryBrowser(false)}/>
+  );
 
   return (
     <div className="flex flex-col gap-2.5">
@@ -360,12 +366,11 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
         {library.map(l => <option key={`lib-${l.id}`} value={l.nom} />)}
         {catalogue.map(c => <option key={`cat-${c.id}`} value={c.nom} />)}
       </datalist>
-      {showBigCards && bigAddButtons}
+      {showBigCards && !showLibraryBrowser && bigAddButtons}
+      {showLibraryBrowser && showBigCards && libraryBrowser}
       {nodes}
-      {simplified && items.length > 0 && compactAddButtons}
-      {showLibraryBrowser && (
-        <ExerciceLibraryBrowser catalogue={catalogue} onPick={addFromCatalogue} onClose={() => setShowLibraryBrowser(false)}/>
-      )}
+      {simplified && items.length > 0 && !showLibraryBrowser && compactAddButtons}
+      {showLibraryBrowser && !showBigCards && libraryBrowser}
     </div>
   );
 }
