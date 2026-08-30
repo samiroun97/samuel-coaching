@@ -38,6 +38,12 @@ const SIMPLE_FIELDS: { key: SimpleField; label: string; icon: () => React.ReactN
 
 const genId = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`);
 
+// Repos entre séries en mode Avancé : réglage unique par exercice (pastilles) plutôt qu'un
+// champ texte répété à chaque ligne — le repos change rarement d'une série à l'autre, ça
+// évite de le retaper N fois et ça libère de la place dans le tableau des séries.
+const REST_PRESETS = ["", "60 sec", "90 sec", "120 sec", "180 sec"];
+const REST_LABELS: Record<string, string> = { "": "Off", "60 sec": "60s", "90 sec": "90s", "120 sec": "120s", "180 sec": "180s" };
+
 const DATALIST_ID = "exercice-bibliotheque-list";
 
 // simplified : vue allégée pour un client qui compose sa propre séance libre (page
@@ -46,6 +52,7 @@ const DATALIST_ID = "exercice-bibliotheque-list";
 // que l'essentiel (séries/reps/poids/repos) ; l'éditeur CRM du coach reste inchangé.
 export default function ExerciceEditor({ items, onChange, library = [], catalogue = [], simplified = false }: { items: ExerciceItem[]; onChange: (items: ExerciceItem[]) => void; library?: LibraryEntry[]; catalogue?: CatalogueEntry[]; simplified?: boolean }) {
   const [showLibraryBrowser, setShowLibraryBrowser] = useState(false);
+  const [customRepos, setCustomRepos] = useState<Record<number, boolean>>({});
   const update = (i: number, patch: Partial<ExerciceItem>) => onChange(items.map((it, j) => (j === i ? { ...it, ...patch } : it)));
   const remove = (i: number) => onChange(items.filter((_, j) => j !== i));
   const add = () => onChange([...items, emptyExercice()]);
@@ -89,7 +96,12 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
 
   const updateSet = (i: number, si: number, patch: Partial<SetDetail>) =>
     update(i, { sets: items[i].sets.map((s, j) => (j === si ? { ...s, ...patch } : s)) });
-  const addSet = (i: number) => update(i, { sets: [...items[i].sets, emptySet()] });
+  const exerciceRepos = (i: number) => items[i].sets[0]?.repos ?? "";
+  const setRepos = (i: number, value: string) => {
+    setCustomRepos(p => ({ ...p, [i]: false }));
+    update(i, { sets: items[i].sets.map(s => ({ ...s, repos: value })) });
+  };
+  const addSet = (i: number) => update(i, { sets: [...items[i].sets, { ...emptySet(), repos: exerciceRepos(i) }] });
   const duplicateSet = (i: number, si: number) =>
     update(i, { sets: [...items[i].sets.slice(0, si + 1), { ...items[i].sets[si] }, ...items[i].sets.slice(si + 1)] });
   const removeSet = (i: number, si: number) => update(i, { sets: items[i].sets.filter((_, j) => j !== si) });
@@ -219,16 +231,36 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
 
         {ex.mode === "avance" && (
           <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-1.5">
+              <p className="text-[0.42rem] tracking-[0.18em] uppercase text-[var(--t-text-25)]">Repos entre séries</p>
+              <div className="flex flex-wrap gap-1.5">
+                {REST_PRESETS.map(v => {
+                  const active = !customRepos[i] && exerciceRepos(i) === v;
+                  return (
+                    <button key={v || "off"} type="button" onClick={() => setRepos(i, v)}
+                      className={`text-[0.56rem] tracking-[0.08em] uppercase px-2.5 py-1 rounded-full border transition-colors ${active ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-35)] hover:border-[#c9a84c]/40"}`}>
+                      {REST_LABELS[v]}
+                    </button>
+                  );
+                })}
+                <button type="button" onClick={() => setCustomRepos(p => ({ ...p, [i]: true }))}
+                  className={`text-[0.56rem] tracking-[0.08em] uppercase px-2.5 py-1 rounded-full border transition-colors ${customRepos[i] || !REST_PRESETS.includes(exerciceRepos(i)) ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-35)] hover:border-[#c9a84c]/40"}`}>
+                  Perso
+                </button>
+              </div>
+              {(customRepos[i] || !REST_PRESETS.includes(exerciceRepos(i))) && (
+                <input className={`${inpXs} !text-left max-w-[8rem]`} placeholder="ex : 45 sec" value={exerciceRepos(i)} onChange={e => setRepos(i, e.target.value)} />
+              )}
+            </div>
             {ex.sets.length > 0 && (
-              <div className="grid grid-cols-3 sm:grid-cols-[1fr_1fr_1fr_1fr_1fr_auto] gap-1.5 text-[0.4rem] tracking-[0.15em] uppercase text-[var(--t-text-25)] px-0.5">
-                <span>Reps</span><span>Poids</span><span>Repos</span><span>RPE</span><span>Tempo</span><span></span>
+              <div className="grid grid-cols-3 sm:grid-cols-[1fr_1fr_1fr_1fr_auto] gap-1.5 text-[0.4rem] tracking-[0.15em] uppercase text-[var(--t-text-25)] px-0.5">
+                <span>Reps</span><span>Poids</span><span>RPE</span><span>Tempo</span><span></span>
               </div>
             )}
             {ex.sets.map((s, si) => (
-              <div key={si} className="grid grid-cols-3 sm:grid-cols-[1fr_1fr_1fr_1fr_1fr_auto] gap-1.5 items-center pb-2 sm:pb-0 border-b border-[var(--t-border-soft)] sm:border-0 last:border-0">
+              <div key={si} className="grid grid-cols-3 sm:grid-cols-[1fr_1fr_1fr_1fr_auto] gap-1.5 items-center pb-2 sm:pb-0 border-b border-[var(--t-border-soft)] sm:border-0 last:border-0">
                 <input className={inpXs} placeholder="12" value={s.reps} onChange={e => updateSet(i, si, { reps: e.target.value })} />
                 <input className={inpXs} placeholder="20 kg" value={s.poids} onChange={e => updateSet(i, si, { poids: e.target.value })} />
-                <input className={inpXs} placeholder="90 sec" value={s.repos} onChange={e => updateSet(i, si, { repos: e.target.value })} />
                 <input className={inpXs} placeholder="8" value={s.rpe} onChange={e => updateSet(i, si, { rpe: e.target.value })} />
                 <input className={inpXs} placeholder="3-1-2-0" value={s.tempo} onChange={e => updateSet(i, si, { tempo: e.target.value })} />
                 <div className="flex items-center justify-center gap-3 sm:gap-1">
@@ -353,6 +385,8 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
   );
 
   const showBigCards = !simplified || items.length === 0;
+  const totalExercices = items.filter(it => it.nom.trim()).length;
+  const totalSeries = items.reduce((sum, it) => sum + (it.mode === "avance" ? it.sets.length : parseInt(it.series) || 0), 0);
   // Le panneau s'ouvre juste sous le bouton qui l'a déclenché (grande carte en haut,
   // ou rangée compacte en bas une fois des exercices ajoutés) plutôt qu'en popup —
   // il reste ainsi intégré au flux de la page, avec son propre défilement interne.
@@ -366,6 +400,19 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
         {library.map(l => <option key={`lib-${l.id}`} value={l.nom} />)}
         {catalogue.map(c => <option key={`cat-${c.id}`} value={c.nom} />)}
       </datalist>
+      {totalExercices > 0 && (
+        <div className="flex items-center justify-around bg-[#c9a84c]/[0.06] border border-[#c9a84c]/20 rounded-xl py-2.5">
+          <div className="text-center">
+            <p className="text-sm font-bold text-[#c9a84c]" style={{ fontFamily: "var(--font-bebas)" }}>{totalExercices}</p>
+            <p className="text-[0.48rem] tracking-[0.12em] uppercase text-[var(--t-text-30)]">Exercice{totalExercices > 1 ? "s" : ""}</p>
+          </div>
+          <div className="w-px h-6 bg-[var(--t-border-soft)]"/>
+          <div className="text-center">
+            <p className="text-sm font-bold text-[#c9a84c]" style={{ fontFamily: "var(--font-bebas)" }}>{totalSeries}</p>
+            <p className="text-[0.48rem] tracking-[0.12em] uppercase text-[var(--t-text-30)]">Série{totalSeries > 1 ? "s" : ""}</p>
+          </div>
+        </div>
+      )}
       {showBigCards && !showLibraryBrowser && bigAddButtons}
       {showLibraryBrowser && showBigCards && libraryBrowser}
       {nodes}
