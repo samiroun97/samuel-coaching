@@ -2,6 +2,7 @@
 import { useMemo, useState, type ReactNode } from "react";
 import Model, { type IExerciseData, type Muscle } from "react-body-highlighter";
 import { type CatalogueEntry } from "@/lib/exercicesCatalogue";
+import { Select } from "@/components/Select";
 
 // On filtre par muscle_cible (plus précis que partie_corps, ~19 valeurs) plutôt que par
 // partie_corps (~10, trop large pour une silhouette détaillée) — voir supabase/exercices_catalogue_migration.sql.
@@ -99,6 +100,25 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
     const rest = [...present].filter(x => !EQUIPMENT_ORDER.includes(x) && !HIDDEN_EQUIPMENT.has(x)).sort();
     return [...ordered, ...rest];
   }, [catalogue]);
+
+  // Filtre "Mouvement" : un seul contrôle qui couvre à la fois l'équipement (barre,
+  // haltère…) et étirement/cardio — ces deux derniers filtrent en réalité sur `category`
+  // (muscle_cible) plutôt que sur `equipement`, d'où l'aiguillage dans le handler.
+  const movementOptions = [
+    ...equipements.map(eq => ({ value: eq, label: eq })),
+    ...(hasStretch ? [{ value: "étirement", label: "Étirement" }] : []),
+    ...(hasCardio ? [{ value: "cardio", label: "Cardio" }] : []),
+  ];
+  const movementValue = equipement ?? (category === "étirement" || category === "cardio" ? category : "");
+  const handleMovementChange = (v: string) => {
+    if (v === "étirement" || v === "cardio") {
+      setEquipement(null);
+      setCategory(v);
+      return;
+    }
+    if (category === "étirement" || category === "cardio") setCategory(null);
+    setEquipement(v || null);
+  };
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -278,29 +298,12 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                   )}
                 </div>
 
-                {(equipements.length > 0 || hasStretch || hasCardio) && (
-                  <div className="w-full flex flex-col items-center gap-2.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-2xl p-4">
-                    <p className="text-[0.62rem] tracking-[0.2em] uppercase text-[var(--t-text-30)]">Équipement</p>
-                    <div className="flex flex-wrap justify-center gap-1.5">
-                      {equipements.map(eq => (
-                        <button key={eq} type="button" onClick={() => setEquipement(prev => (prev === eq ? null : eq))}
-                          className={`text-[0.58rem] tracking-wider uppercase px-3 py-1.5 rounded-full border capitalize transition-colors ${equipement === eq ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
-                          {eq}
-                        </button>
-                      ))}
-                      {hasStretch && (
-                        <button type="button" onClick={() => setCategory(prev => (prev === "étirement" ? null : "étirement"))}
-                          className={`text-[0.58rem] tracking-wider uppercase px-3 py-1.5 rounded-full border capitalize transition-colors ${category === "étirement" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
-                          Étirement
-                        </button>
-                      )}
-                      {hasCardio && (
-                        <button type="button" onClick={() => setCategory(prev => (prev === "cardio" ? null : "cardio"))}
-                          className={`text-[0.58rem] tracking-wider uppercase px-3 py-1.5 rounded-full border capitalize transition-colors ${category === "cardio" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
-                          Cardio
-                        </button>
-                      )}
-                    </div>
+                {movementOptions.length > 0 && (
+                  <div className="w-full flex flex-col items-center gap-2 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-2xl p-4">
+                    <p className="text-[0.62rem] tracking-[0.2em] uppercase text-[var(--t-text-30)]">Mouvement</p>
+                    <Select value={movementValue} onChange={handleMovementChange} options={movementOptions} placeholder="Tous les mouvements"
+                      triggerClassName="w-full justify-between border border-[var(--t-border)] rounded-xl px-3 py-2.5 text-sm capitalize text-[var(--t-text)] hover:border-[#c9a84c]/40 transition-colors"
+                      panelClassName="w-full capitalize"/>
                   </div>
                 )}
               </div>
