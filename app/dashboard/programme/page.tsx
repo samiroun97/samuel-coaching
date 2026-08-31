@@ -13,6 +13,8 @@ import { parseExercices, hasLoggableSets } from "@/lib/exercices";
 import { TdeeIcon } from "@/components/CalRefToggle";
 import { ConsistencyHeatmap } from "@/components/ConsistencyHeatmap";
 import { loadTrainedDates } from "@/lib/consistency";
+import { type Mesocycle, loadActiveMesocycle } from "@/lib/mesocycles";
+import { MesocycleCard } from "@/components/MesocycleCard";
 
 type Profile = { prenom: string; poids: number; taille: number; age: number; sexe: string };
 type LoggedWorkout = {
@@ -97,6 +99,7 @@ export default function ProgrammePage() {
   const [exportingPdf, setExportingPdf] = useState(false);
   const [deletingSeanceId, setDeletingSeanceId] = useState<string | null>(null);
   const [trainedDates, setTrainedDates] = useState<Set<string>>(new Set());
+  const [activeMeso,   setActiveMeso]   = useState<Mesocycle | null>(null);
 
   const deleteSeance = async (s: CoachSeance) => {
     if (!window.confirm("Supprimer définitivement cette séance ?")) return;
@@ -170,6 +173,7 @@ export default function ProgrammePage() {
         setCoachSeances((cs ?? []) as CoachSeance[]);
       }
       loadTrainedDates(user.id).then(setTrainedDates).catch(() => {});
+      loadActiveMesocycle(user.id).then(setActiveMeso).catch(() => {});
     })();
     const saved  = localStorage.getItem("programme_logs");
     const savedG = localStorage.getItem("steps_goal");
@@ -673,6 +677,13 @@ export default function ProgrammePage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* ── Mésocycle en cours ── */}
+      {activeMeso && (
+        <div className="mb-6">
+          <MesocycleCard meso={activeMeso}/>
         </div>
       )}
 

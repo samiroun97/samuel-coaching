@@ -18,6 +18,8 @@ import { getMyCoachId } from "@/lib/coach";
 import { WeekPlanning } from "@/components/WeekPlanning";
 import { ConsistencyHeatmap } from "@/components/ConsistencyHeatmap";
 import { loadTrainedDates } from "@/lib/consistency";
+import { type Mesocycle, loadActiveMesocycle, createMesocycle, deleteMesocycle } from "@/lib/mesocycles";
+import { MesocycleCard } from "@/components/MesocycleCard";
 
 const SEANCE_TYPES = ["Haut du corps","Bas du corps","Full body","Cardio","Boxe","Natation","CrossFit","Yoga","Autre"];
 
@@ -59,6 +61,10 @@ export default function ProgrammesPage() {
   const [openSentId,   setOpenSentId]   = useState<string | null>(null);
   const [sentView,     setSentView]     = useState<"liste" | "semaine">("liste");
   const [trainedDates, setTrainedDates] = useState<Set<string>>(new Set());
+  const [activeMeso,   setActiveMeso]   = useState<Mesocycle | null>(null);
+  const [showMesoForm, setShowMesoForm] = useState(false);
+  const [mesoForm, setMesoForm] = useState({ nom: "", objectif: "", dateDebut: "", dateFin: "" });
+  const [mesoSaving,   setMesoSaving]   = useState(false);
   const [myCoachId,    setMyCoachId]    = useState<string | null>(null);
   const [catalogue,    setCatalogue]    = useState<CatalogueEntry[]>([]);
   const [deletingId,   setDeletingId]   = useState<string | null>(null);
@@ -145,6 +151,24 @@ export default function ProgrammesPage() {
     loadSentSeances(c.email);
     setTrainedDates(new Set());
     loadTrainedDates(c.id).then(setTrainedDates).catch(() => {});
+    setActiveMeso(null); setShowMesoForm(false);
+    loadActiveMesocycle(c.id).then(setActiveMeso).catch(() => {});
+  };
+
+  const submitMeso = async () => {
+    if (!selected || !myCoachId || !mesoForm.nom.trim() || !mesoForm.dateDebut || !mesoForm.dateFin || mesoSaving) return;
+    setMesoSaving(true);
+    const created = await createMesocycle({
+      coachId: myCoachId, clientId: selected.id, nom: mesoForm.nom.trim(),
+      objectif: mesoForm.objectif.trim(), dateDebut: mesoForm.dateDebut, dateFin: mesoForm.dateFin,
+    });
+    setMesoSaving(false);
+    if (created) { setActiveMeso(created); setShowMesoForm(false); setMesoForm({ nom: "", objectif: "", dateDebut: "", dateFin: "" }); }
+  };
+
+  const removeMeso = async () => {
+    if (!activeMeso || !window.confirm("Supprimer ce mésocycle ? Les séances déjà envoyées restent intactes.")) return;
+    if (await deleteMesocycle(activeMeso.id)) setActiveMeso(null);
   };
 
   // Arrivée depuis la fiche client (CRM > Clients > Programme) avec ?client=email
@@ -199,6 +223,7 @@ export default function ProgrammesPage() {
     const { data: inserted, error } = await supabase.from("programme_seances").insert(valid.map(d => ({
       client_id: selected.id,
       assigned_to_email: selected.email,
+      mesocycle_id: activeMeso?.id ?? null,
       titre: d.titre.trim(),
       type_seance: d.type_seance || null,
       date_prevue: d.date_prevue || null,
@@ -303,6 +328,47 @@ export default function ProgrammesPage() {
                 )}
                 <p className="text-[0.55rem] text-[var(--t-text-25)] mt-2">Lieu : {selected.lieu_entrainement || "—"}</p>
               </div>
+
+              {/* Mésocycle — bloc d'entraînement nommé avec un objectif et des dates. Les
+                  séances envoyées pendant qu'il est actif y sont automatiquement rattachées. */}
+              {activeMeso ? (
+                <MesocycleCard meso={activeMeso} onDelete={removeMeso}/>
+              ) : showMesoForm ? (
+                <div className="border border-[#a08ec9]/25 bg-[#a08ec9]/5 rounded-xl p-4 flex flex-col gap-3">
+                  <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#a08ec9]">Nouveau mésocycle</p>
+                  <input className={inp} placeholder="Nom (ex : Prise de masse — bloc 1)" value={mesoForm.nom}
+                    onChange={e => setMesoForm(f => ({ ...f, nom: e.target.value }))}/>
+                  <input className={inp} placeholder="Objectif (optionnel)" value={mesoForm.objectif}
+                    onChange={e => setMesoForm(f => ({ ...f, objectif: e.target.value }))}/>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className={lbl}>Début</label>
+                      <input type="date" className={inp} value={mesoForm.dateDebut}
+                        onChange={e => setMesoForm(f => ({ ...f, dateDebut: e.target.value }))}/>
+                    </div>
+                    <div>
+                      <label className={lbl}>Fin</label>
+                      <input type="date" className={inp} value={mesoForm.dateFin}
+                        onChange={e => setMesoForm(f => ({ ...f, dateFin: e.target.value }))}/>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => setShowMesoForm(false)}
+                      className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] text-[0.6rem] tracking-wider uppercase py-2.5 rounded-xl hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors">
+                      Annuler
+                    </button>
+                    <button onClick={submitMeso} disabled={mesoSaving || !mesoForm.nom.trim() || !mesoForm.dateDebut || !mesoForm.dateFin}
+                      className="flex-1 bg-gradient-to-b from-[#a08ec9] to-[#8a76b8] text-black text-[0.6rem] font-bold tracking-wider uppercase py-2.5 rounded-xl disabled:opacity-40 transition-all">
+                      {mesoSaving ? "…" : "Créer →"}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button onClick={() => setShowMesoForm(true)}
+                  className="border border-dashed border-[var(--t-border)] text-[var(--t-text-25)] text-[0.6rem] tracking-wider uppercase py-2.5 rounded-xl hover:border-[#a08ec9]/40 hover:text-[#a08ec9] transition-colors">
+                  + Démarrer un mésocycle
+                </button>
+              )}
 
               {/* Confirmation d'envoi */}
               {sentTo === selected.email && (
