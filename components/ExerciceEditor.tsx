@@ -358,32 +358,32 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
   );
 
   const bigAddButtons = (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-3">
       {catalogue.length > 0 && (
         <button type="button" onClick={() => setShowLibraryBrowser(true)}
-          className="group flex items-center gap-3 border border-[var(--t-border)] bg-[var(--t-surface)] px-4 py-3.5 rounded-2xl hover:border-[var(--t-border-15)] transition-colors">
-          <span className="shrink-0 w-12 h-12 flex items-center justify-center">
+          className="group flex items-center gap-4 border border-[#c9a84c]/25 bg-[#c9a84c]/[0.04] px-5 py-4 rounded-2xl shadow-[0_4px_16px_-10px_rgba(0,0,0,0.4)] hover:border-[#c9a84c]/50 hover:bg-[#c9a84c]/[0.08] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200">
+          <span className="shrink-0 w-14 h-14 rounded-2xl bg-[#c9a84c]/10 flex items-center justify-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icons/library.svg" alt="" width={48} height={48} className="w-full h-full object-contain"/>
+            <img src="/icons/library.svg" alt="" width={32} height={32} className="w-8 h-8 object-contain"/>
           </span>
-          <span className="flex-1 text-left">
-            <span className="block text-[0.68rem] font-bold tracking-[0.1em] uppercase leading-tight text-[var(--t-text)]">Choisir dans la bibliothèque</span>
-            <span className="block text-[0.58rem] font-medium text-[var(--t-text-30)] tracking-wide leading-tight mt-0.5">{catalogue.length} exercices classés par muscle</span>
+          <span className="flex-1 text-left min-w-0">
+            <span className="block text-sm font-bold tracking-[0.06em] uppercase leading-tight text-[var(--t-text)]">Choisir dans la bibliothèque</span>
+            <span className="block text-[0.65rem] font-medium text-[var(--t-text-35)] tracking-wide leading-tight mt-1">{catalogue.length} exercices classés par muscle</span>
           </span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-[var(--t-text-20)] transition-transform group-hover:translate-x-0.5"><path d="M9 6l6 6-6 6"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-[#c9a84c] transition-transform group-hover:translate-x-1"><path d="M9 6l6 6-6 6"/></svg>
         </button>
       )}
       <button type="button" onClick={add}
-        className="group flex items-center gap-3 border border-[var(--t-border)] bg-[var(--t-surface)] px-4 py-3.5 rounded-2xl hover:border-[var(--t-border-15)] transition-colors">
-        <span className="shrink-0 w-12 h-12 flex items-center justify-center">
+        className="group flex items-center gap-4 border border-[var(--t-border)] bg-[var(--t-surface)] px-5 py-4 rounded-2xl hover:border-[var(--t-border-15)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200">
+        <span className="shrink-0 w-14 h-14 rounded-2xl bg-[var(--t-surface-2)] flex items-center justify-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/icons/entrainement-libre.svg" alt="" width={48} height={48} className="w-full h-full object-contain"/>
+          <img src="/icons/entrainement-libre.svg" alt="" width={32} height={32} className="w-8 h-8 object-contain"/>
         </span>
-        <span className="flex-1 text-left">
-          <span className="block text-[0.68rem] font-bold tracking-[0.1em] uppercase leading-tight text-[var(--t-text)]">Exercice libre</span>
-          <span className="block text-[0.58rem] font-medium text-[var(--t-text-30)] tracking-wide leading-tight mt-0.5">Ajoute un exercice vierge à compléter toi-même</span>
+        <span className="flex-1 text-left min-w-0">
+          <span className="block text-sm font-bold tracking-[0.06em] uppercase leading-tight text-[var(--t-text)]">Exercice libre</span>
+          <span className="block text-[0.65rem] font-medium text-[var(--t-text-30)] tracking-wide leading-tight mt-1">Ajoute un exercice vierge à compléter toi-même</span>
         </span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-[var(--t-text-20)] transition-transform group-hover:translate-x-0.5"><path d="M9 6l6 6-6 6"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-[var(--t-text-20)] transition-transform group-hover:translate-x-1"><path d="M9 6l6 6-6 6"/></svg>
       </button>
     </div>
   );
