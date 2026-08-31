@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { type ExerciceItem, type ExerciceMode, type SetDetail, type SimpleField, type ExerciceRun, EXERCICE_TYPES, emptyExercice, emptySet, groupExerciceRuns } from "@/lib/exercices";
 import { type LibraryEntry } from "@/lib/exerciceLibrary";
-import { type CatalogueEntry } from "@/lib/exercicesCatalogue";
+import { type CatalogueEntry, findCatalogueEntry } from "@/lib/exercicesCatalogue";
 import { ExerciceLibraryBrowser } from "@/components/ExerciceLibraryBrowser";
 import { Select } from "@/components/Select";
 
@@ -17,6 +17,28 @@ const IconPoids = () => <svg width="9" height="9" viewBox="0 0 24 24" fill="none
 const IconRepos = () => <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>;
 const IconUp = () => <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 15 12 9 6 15"/></svg>;
 const IconDown = () => <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>;
+
+// Vignette sans photo (exercice libre, ou catalogue pas encore illustré pour cet exercice) —
+// jamais de case vide/cassée dans la carte.
+const IconDumbbellLg = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6.5 6.5h11a2 2 0 012 2v7a2 2 0 01-2 2h-11a2 2 0 01-2-2v-7a2 2 0 012-2zM2 9v6M22 9v6"/>
+  </svg>
+);
+
+function ExerciceThumb({ catalogue, nom }: { catalogue: CatalogueEntry[]; nom: string }) {
+  const entry = nom.trim() ? findCatalogueEntry(catalogue, nom) : undefined;
+  return (
+    <div className="shrink-0 w-12 h-12 rounded-xl overflow-hidden bg-[var(--t-surface-2)] border border-[var(--t-border-soft)] flex items-center justify-center mt-0.5">
+      {entry?.image_url ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={entry.image_url} alt="" className="w-full h-full object-cover"/>
+      ) : (
+        <span className="text-[var(--t-text-15)]"><IconDumbbellLg/></span>
+      )}
+    </div>
+  );
+}
 
 const MODES: { key: ExerciceMode; label: string }[] = [
   { key: "simple", label: "Simple" },
@@ -166,6 +188,8 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
               </div>
             )}
           </div>
+
+          <ExerciceThumb catalogue={catalogue} nom={ex.nom}/>
 
           <div className="flex-1 min-w-0">
             <input list={DATALIST_ID} placeholder="Nom de l'exercice" value={ex.nom}
