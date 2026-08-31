@@ -338,30 +338,35 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
           </div>
         ) : viewMode === "silhouette" ? (
           <div className="flex flex-col items-center gap-6">
-            <div className="w-full flex flex-col items-center gap-5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-2xl p-5">
-              <p className="text-[0.62rem] tracking-[0.2em] uppercase text-[var(--t-text-30)]">Quel groupe musculaire veux-tu travailler ?</p>
-              <div className="flex items-start justify-center gap-6">
+            <div className="w-full flex flex-col items-center gap-6 bg-[radial-gradient(circle_at_center,var(--t-surface),var(--t-bg2))] border border-[var(--t-border-soft)] rounded-2xl p-6">
+              <p className="text-[0.62rem] tracking-[0.25em] uppercase text-[var(--t-text-30)]">Quel groupe musculaire veux-tu travailler ?</p>
+              <div className="flex items-start justify-center gap-10 sm:gap-14">
                 {(["anterior", "posterior"] as const).map(type => (
-                  <div key={type} className="flex flex-col items-center gap-1.5">
-                    <Model
-                      type={type}
-                      data={modelData}
-                      bodyColor="var(--t-glass-bg)"
-                      highlightedColors={["#c9a84c"]}
-                      onClick={({ muscle }) => {
-                        const cible = LIB_TO_CIBLE[muscle];
-                        if (cible) setCategory(prev => (prev === cible ? null : cible));
-                      }}
-                      style={{ width: "152px" }}
-                      svgStyle={{ filter: "drop-shadow(0 0 0 transparent)" }}
-                    />
-                    <p className="text-[0.5rem] tracking-[0.15em] uppercase text-[var(--t-text-20)]">{type === "anterior" ? "Face" : "Dos"}</p>
+                  <div key={type} className="flex flex-col items-center gap-3">
+                    <div className="relative">
+                      <div className="absolute left-1/2 -translate-x-1/2 bottom-0.5 w-20 h-3 -z-10 rounded-[50%] bg-black/40 blur-md pointer-events-none"/>
+                      <Model
+                        type={type}
+                        data={modelData}
+                        bodyColor="var(--t-glass-bg)"
+                        highlightedColors={["#e2c97e"]}
+                        onClick={({ muscle }) => {
+                          const cible = LIB_TO_CIBLE[muscle];
+                          if (cible) setCategory(prev => (prev === cible ? null : cible));
+                        }}
+                        style={{ width: "184px" }}
+                        svgStyle={{ cursor: "pointer" }}
+                      />
+                    </div>
+                    <span className="text-[0.55rem] tracking-[0.2em] uppercase text-[var(--t-text-30)] border border-[var(--t-border-soft)] rounded-full px-2.5 py-1">{type === "anterior" ? "Face" : "Dos"}</span>
                   </div>
                 ))}
               </div>
               {category && (
-                <button type="button" onClick={() => setCategory(null)} className="text-[0.58rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[#c9a84c] transition-colors -mt-1.5">
-                  {category} · ✕ effacer
+                <button type="button" onClick={() => setCategory(null)}
+                  className="flex items-center gap-1.5 text-[0.6rem] font-bold tracking-[0.15em] uppercase capitalize text-black bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] rounded-full pl-3.5 pr-2.5 py-1.5 shadow-[0_3px_14px_-4px_rgba(201,168,76,0.6)] hover:shadow-[0_4px_18px_-3px_rgba(201,168,76,0.8)] transition-shadow">
+                  {category}
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
               )}
             </div>
