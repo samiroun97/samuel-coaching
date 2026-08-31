@@ -56,6 +56,7 @@ export default function ProgrammesPage() {
   const [openSentId,   setOpenSentId]   = useState<string | null>(null);
   const [myCoachId,    setMyCoachId]    = useState<string | null>(null);
   const [catalogue,    setCatalogue]    = useState<CatalogueEntry[]>([]);
+  const [deletingId,   setDeletingId]   = useState<string | null>(null);
 
   // Séances déjà envoyées à ce client — pour que le coach ait un aperçu visuel de
   // ce qui a été effectivement reçu, pas juste un message "envoyé ✓".
@@ -63,6 +64,17 @@ export default function ProgrammesPage() {
     const { data } = await supabase.from("programme_seances").select("*")
       .eq("assigned_to_email", email).order("created_at", { ascending: false });
     setSentSeances((data ?? []) as SentSeance[]);
+  };
+
+  const deleteSeance = async (id: string) => {
+    if (!window.confirm("Supprimer définitivement cette séance ?")) return;
+    setDeletingId(id);
+    const { error } = await supabase.from("programme_seances").delete().eq("id", id);
+    setDeletingId(null);
+    if (error) { setGenError(error.message); return; }
+    setSentSeances(prev => prev.filter(s => s.id !== id));
+    if (openSentId === id) setOpenSentId(null);
+    await load();
   };
 
   const loadLibrary = async () => { try { setLibrary(await listLibrary()); } catch { /* table pas encore créée */ } };
@@ -304,21 +316,29 @@ export default function ProgrammesPage() {
                     const open = openSentId === s.id;
                     return (
                       <div key={s.id} className="border-t border-[var(--t-border-soft)]">
-                        <button onClick={() => setOpenSentId(open ? null : s.id)}
-                          className="w-full text-left px-4 py-2.5 flex items-center justify-between gap-2 hover:bg-[var(--t-glass-bg)] transition-colors">
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2">
-                              {s.completed_at && <span className="text-[0.7rem] text-[#7eb8a0] shrink-0">✓</span>}
-                              {s.created_by_client && <span className="text-[0.62rem] tracking-wider uppercase text-[#a08ec9] rounded-full border border-[#a08ec9]/25 px-1.5 py-0.5 shrink-0">Séance libre du client</span>}
-                              {s.type_seance && <span className="text-[0.62rem] tracking-wider uppercase text-[#c9a84c] rounded-full border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">{s.type_seance}</span>}
-                              {s.semaine && <span className="text-[0.62rem] tracking-wider uppercase text-[var(--t-text-30)] rounded-full border border-[var(--t-border)] px-1.5 py-0.5 shrink-0">Sem. {s.semaine}</span>}
-                              <p className="text-xs text-[var(--t-text-70)] truncate">{s.titre}</p>
+                        <div className="w-full flex items-center gap-2">
+                          <button onClick={() => setOpenSentId(open ? null : s.id)}
+                            className="flex-1 min-w-0 text-left px-4 py-2.5 flex items-center justify-between gap-2 hover:bg-[var(--t-glass-bg)] transition-colors">
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                {s.completed_at && <span className="text-[0.7rem] text-[#7eb8a0] shrink-0">✓</span>}
+                                {s.created_by_client && <span className="text-[0.62rem] tracking-wider uppercase text-[#a08ec9] rounded-full border border-[#a08ec9]/25 px-1.5 py-0.5 shrink-0">Séance libre du client</span>}
+                                {s.type_seance && <span className="text-[0.62rem] tracking-wider uppercase text-[#c9a84c] rounded-full border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">{s.type_seance}</span>}
+                                {s.semaine && <span className="text-[0.62rem] tracking-wider uppercase text-[var(--t-text-30)] rounded-full border border-[var(--t-border)] px-1.5 py-0.5 shrink-0">Sem. {s.semaine}</span>}
+                                <p className="text-xs text-[var(--t-text-70)] truncate">{s.titre}</p>
+                              </div>
+                              {s.date_prevue && <p className="text-[0.65rem] text-[var(--t-text-25)] mt-0.5">{new Date(s.date_prevue + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</p>}
                             </div>
-                            {s.date_prevue && <p className="text-[0.65rem] text-[var(--t-text-25)] mt-0.5">{new Date(s.date_prevue + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</p>}
-                          </div>
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-                            className={`text-[var(--t-text-25)] shrink-0 transition-transform ${open ? "rotate-180" : ""}`}><polyline points="6 9 12 15 18 9"/></svg>
-                        </button>
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+                              className={`text-[var(--t-text-25)] shrink-0 transition-transform ${open ? "rotate-180" : ""}`}><polyline points="6 9 12 15 18 9"/></svg>
+                          </button>
+                          <button onClick={() => deleteSeance(s.id)} disabled={deletingId === s.id} title="Supprimer cette séance"
+                            className="shrink-0 mr-3 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors disabled:opacity-30">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+                            </svg>
+                          </button>
+                        </div>
                         {open && (
                           <div className="px-4 pb-4 flex flex-col gap-3">
                             <SeanceBody s={s} />
