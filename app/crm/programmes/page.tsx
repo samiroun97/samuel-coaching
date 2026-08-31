@@ -178,6 +178,7 @@ export default function ProgrammesPage() {
     if (!valid.length) return;
     setSending(true);
     const { data: inserted, error } = await supabase.from("programme_seances").insert(valid.map(d => ({
+      client_id: selected.id,
       assigned_to_email: selected.email,
       titre: d.titre.trim(),
       type_seance: d.type_seance || null,
