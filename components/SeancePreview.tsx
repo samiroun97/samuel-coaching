@@ -18,36 +18,42 @@ export type PreviewSeance = {
 
 export function ExerciceCard({ ex }: { ex: ExerciceItem }) {
   return (
-    <div className="border border-[var(--t-text-8)] bg-[var(--t-glass-bg)] rounded-xl px-3 py-2.5">
-      <div className="flex items-center gap-2 flex-wrap">
-        <p className="text-xs text-[var(--t-text-70)] font-medium leading-snug">{ex.nom}</p>
-        {ex.type && <span className="text-[0.55rem] tracking-wider uppercase text-[var(--t-text-30)] rounded-full border border-[var(--t-border)] px-1.5 py-0.5 shrink-0">{ex.type}</span>}
-        {ex.videoUrl && (
-          <a href={ex.videoUrl} target="_blank" rel="noopener noreferrer" className="text-[0.55rem] tracking-wider uppercase text-[#c9a84c]/70 hover:text-[#c9a84c] transition-colors shrink-0">▶ Vidéo</a>
-        )}
-      </div>
-
-      {ex.mode === "libre" ? (
-        ex.texteLibre && <p className="text-[0.68rem] text-[var(--t-text-50)] leading-relaxed mt-1.5 whitespace-pre-wrap">{ex.texteLibre}</p>
-      ) : ex.mode === "avance" && ex.sets.length > 0 ? (
-        <div className="flex flex-col gap-1 mt-1.5">
-          {ex.sets.map((s, si) => {
-            const parts = [s.reps, s.poids, s.repos ? `repos ${s.repos}` : "", s.rpe ? `RPE ${s.rpe}` : "", s.tempo ? `tempo ${s.tempo}` : ""].filter(Boolean);
-            return parts.length > 0 ? (
-              <p key={si} className="text-[0.68rem] text-[var(--t-text-40)]"><span className="text-[#c9a84c] font-bold">Série {si + 1}</span> — {parts.join(" · ")}</p>
-            ) : null;
-          })}
-        </div>
-      ) : (
-        (ex.series || ex.repetitions || ex.poids || ex.repos) && (
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5">
-            {ex.series && <span className="text-[0.7rem] font-bold text-[#c9a84c]">{ex.series}{ex.repetitions ? ` × ${ex.repetitions}` : " séries"}</span>}
-            {ex.poids && <span className="text-[0.65rem] text-[var(--t-text-40)]">{ex.poids}</span>}
-            {ex.repos && <span className="text-[0.65rem] text-[var(--t-text-35)]">repos {ex.repos}</span>}
-          </div>
-        )
+    <div className="border border-[var(--t-text-8)] bg-[var(--t-glass-bg)] rounded-xl px-3 py-2.5 flex gap-2.5">
+      {ex.imageUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={ex.imageUrl} alt="" className="shrink-0 w-10 h-10 rounded-lg object-cover"/>
       )}
-      {ex.note && <p className="text-[0.65rem] text-[var(--t-text-35)] italic mt-1.5 leading-relaxed whitespace-pre-line">{ex.note}</p>}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className="text-xs text-[var(--t-text-70)] font-medium leading-snug">{ex.nom}</p>
+          {ex.type && <span className="text-[0.55rem] tracking-wider uppercase text-[var(--t-text-30)] rounded-full border border-[var(--t-border)] px-1.5 py-0.5 shrink-0">{ex.type}</span>}
+          {ex.videoUrl && (
+            <a href={ex.videoUrl} target="_blank" rel="noopener noreferrer" className="text-[0.55rem] tracking-wider uppercase text-[#c9a84c]/70 hover:text-[#c9a84c] transition-colors shrink-0">▶ Vidéo</a>
+          )}
+        </div>
+
+        {ex.mode === "libre" ? (
+          ex.texteLibre && <p className="text-[0.68rem] text-[var(--t-text-50)] leading-relaxed mt-1.5 whitespace-pre-wrap">{ex.texteLibre}</p>
+        ) : ex.mode === "avance" && ex.sets.length > 0 ? (
+          <div className="flex flex-col gap-1 mt-1.5">
+            {ex.sets.map((s, si) => {
+              const parts = [s.reps, s.poids, s.repos ? `repos ${s.repos}` : "", s.rpe ? `RPE ${s.rpe}` : "", s.tempo ? `tempo ${s.tempo}` : ""].filter(Boolean);
+              return parts.length > 0 ? (
+                <p key={si} className="text-[0.68rem] text-[var(--t-text-40)]"><span className="text-[#c9a84c] font-bold">Série {si + 1}</span> — {parts.join(" · ")}</p>
+              ) : null;
+            })}
+          </div>
+        ) : (
+          (ex.series || ex.repetitions || ex.poids || ex.repos) && (
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5">
+              {ex.series && <span className="text-[0.7rem] font-bold text-[#c9a84c]">{ex.series}{ex.repetitions ? ` × ${ex.repetitions}` : " séries"}</span>}
+              {ex.poids && <span className="text-[0.65rem] text-[var(--t-text-40)]">{ex.poids}</span>}
+              {ex.repos && <span className="text-[0.65rem] text-[var(--t-text-35)]">repos {ex.repos}</span>}
+            </div>
+          )
+        )}
+        {ex.note && <p className="text-[0.65rem] text-[var(--t-text-35)] italic mt-1.5 leading-relaxed whitespace-pre-line">{ex.note}</p>}
+      </div>
     </div>
   );
 }

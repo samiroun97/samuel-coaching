@@ -416,6 +416,7 @@ export default function NutritionPage() {
   const [ideaLoading, setIdeaLoading] = useState(false);
   const [ideaError,   setIdeaError]   = useState("");
   const [respectBudget, setRespectBudget] = useState(true);
+  const [dietaryPrefs, setDietaryPrefs] = useState("");
   const [mealPlan,    setMealPlan]    = useState<MealPlan | null>(null);
   const [description, setDescription] = useState("");
   const [showFoods,   setShowFoods]   = useState(true);
@@ -539,6 +540,7 @@ export default function NutritionPage() {
     const g = localStorage.getItem("nutrition_goals");
     const s = localStorage.getItem("nutrition_saved_meals");
     const r = localStorage.getItem("nutrition_cal_ref");
+    const dp = localStorage.getItem("nutrition_dietary_prefs");
     if (g) {
       const parsed = JSON.parse(g);
       // Anciens objectifs sauvegardés avant l'ajout des fibres : on complète avec la valeur par défaut.
@@ -547,6 +549,7 @@ export default function NutritionPage() {
     }
     if (s) setSavedMeals(JSON.parse(s));
     if (r === "tdee" || r === "objectif") setCalRef(r);
+    if (dp) setDietaryPrefs(dp);
     const hist: DayHistory[] = [];
     for (let i = 6; i >= 1; i--) {
       const d = new Date(); d.setDate(d.getDate() - i);
@@ -568,6 +571,7 @@ export default function NutritionPage() {
 
   useEffect(() => { if (goalsSet) localStorage.setItem("nutrition_goals", JSON.stringify(goals)); }, [goals, goalsSet]);
   useEffect(() => { localStorage.setItem("nutrition_cal_ref", calRef); }, [calRef]);
+  useEffect(() => { localStorage.setItem("nutrition_dietary_prefs", dietaryPrefs); }, [dietaryPrefs]);
 
   // NEAT (pas) + EAT (entraînements) du jour sélectionné, comme sur l'accueil
   useEffect(() => {
@@ -643,6 +647,7 @@ export default function NutritionPage() {
       const res = await apiPost("/api/nutrition/meal-idea", {
         mealType: ideaMealType,
         remaining: respectBudget ? remaining : null,
+        restrictions: dietaryPrefs.trim() || null,
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
@@ -1037,6 +1042,14 @@ export default function NutritionPage() {
         <CalorieRow consumed={totals.calories} target={calTarget} expended={tdee} goalDefined={useTdee || goalsSet}/>
       </button>
 
+      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-6 mb-6 mt-6">
+        <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Macronutriments</p>
+        <div className="flex items-start justify-around">
+          {macroConfig.map(m => <MacroBar key={m.key} label={m.label} consumed={totals[m.key]} goal={goals[m.key]} color={m.color}/>)}
+          <MacroBar label="Fibres" consumed={totals.fibres} goal={goals.fibres} color="#b6a186"/>
+        </div>
+      </div>
+
       {/* Dépense totale — fluide, monochrome */}
       <div className="mt-6 pt-5 border-t border-[var(--t-border-soft)]">
         <p className="text-[0.6rem] tracking-[0.18em] uppercase text-[var(--t-text-20)] mb-3 text-center">Dépense totale</p>
@@ -1055,17 +1068,10 @@ export default function NutritionPage() {
       </div>
 
       <button onClick={() => setShowAdd(true)}
-        className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.72rem] font-bold tracking-[0.22em] uppercase py-4 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl mt-6 flex items-center justify-center">
+        className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.72rem] font-bold tracking-[0.22em] uppercase py-4 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl mt-6 mb-9 flex items-center justify-center gap-2">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
         Ajouter un repas
       </button>
-
-      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-6 mb-6 mt-6">
-        <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Macronutriments</p>
-        <div className="flex items-start justify-around">
-          {macroConfig.map(m => <MacroBar key={m.key} label={m.label} consumed={totals[m.key]} goal={goals[m.key]} color={m.color}/>)}
-          <MacroBar label="Fibres" consumed={totals.fibres} goal={goals.fibres} color="#b6a186"/>
-        </div>
-      </div>
 
       <WaterTracker water={water} goal={WATER_GOAL}
         onAdd={() => setWater(w => Math.min(w+1, WATER_GOAL))}
@@ -1120,29 +1126,33 @@ export default function NutritionPage() {
 
       {/* ── Idée repas ── */}
       <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl mb-6">
-        <div className="flex items-start justify-between px-5 py-4 border-b border-[var(--t-border-soft)]">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <img src={LIGHTBULB_ICON} alt="" width={18} height={18} className="shrink-0"/>
-              <span style={{ fontFamily:"var(--font-bebas)" }} className="text-sm tracking-wider text-[var(--t-text)]">Idée repas</span>
-            </div>
-            {respectBudget ? (
-              remaining.calories > 0 ? (
-                <p className="text-[0.65rem] tracking-wider text-[var(--t-text-25)]">
-                  Budget · {remaining.calories} kcal · P {remaining.proteines}g · G {remaining.glucides}g · L {remaining.lipides}g · F {remaining.fibres}g
-                </p>
-              ) : (
-                <p className="text-[0.65rem] tracking-wider text-[#7eb8a0]/60">Objectif calorique atteint</p>
-              )
-            ) : (
-              <p className="text-[0.65rem] tracking-wider text-[var(--t-text-25)]">Idées libres, sans contrainte de budget</p>
-            )}
+        <div className="px-5 py-4 border-b border-[var(--t-border-soft)]">
+          <div className="flex items-center gap-2 mb-1.5">
+            <img src={LIGHTBULB_ICON} alt="" width={18} height={18} className="shrink-0"/>
+            <span style={{ fontFamily:"var(--font-bebas)" }} className="text-sm tracking-wider text-[var(--t-text)]">Idée repas</span>
           </div>
+          <p className="text-[0.78rem] text-[var(--t-text-60)] leading-snug mb-2">
+            Tu ne sais pas quoi manger ? Laisse-moi te proposer quelque chose !
+          </p>
+          {respectBudget ? (
+            remaining.calories > 0 ? (
+              <p className="text-[0.65rem] tracking-wider text-[var(--t-text-25)] mb-3">
+                Budget · {remaining.calories} kcal · P {remaining.proteines}g · G {remaining.glucides}g · L {remaining.lipides}g · F {remaining.fibres}g
+              </p>
+            ) : (
+              <p className="text-[0.65rem] tracking-wider text-[#7eb8a0]/60 mb-3">Objectif calorique atteint</p>
+            )
+          ) : (
+            <p className="text-[0.65rem] tracking-wider text-[var(--t-text-25)] mb-3">Idées libres, sans contrainte de budget</p>
+          )}
+          <input type="text" value={dietaryPrefs} onChange={e => setDietaryPrefs(e.target.value)}
+            placeholder="Allergies, intolérances, régime (ex: sans lactose, sans gluten, pas de porc, végétarien…)"
+            className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-[0.7rem] px-3.5 py-2.5 mb-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"/>
           <button onClick={generateIdeas} disabled={ideaLoading || !canGenerateIdeas}
-            className="shrink-0 ml-3 border border-[#c9a84c]/30 text-[#c9a84c] rounded-xl text-[0.7rem] tracking-[0.15em] uppercase px-3.5 py-2 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5">
+            className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.72rem] font-bold tracking-[0.18em] uppercase py-3.5 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40 disabled:hover:translate-y-0 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             {ideaLoading
-              ? <><div className="w-2.5 h-2.5 border border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>Génération…</>
-              : "Générer"}
+              ? <><div className="w-2.5 h-2.5 border border-black/50 border-t-transparent rounded-full animate-spin"/>Génération…</>
+              : <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>Générer une idée repas</>}
           </button>
         </div>
 
@@ -1177,7 +1187,7 @@ export default function NutritionPage() {
 
         {!ideaLoading && ideas.length === 0 && !ideaError && canGenerateIdeas && (
           <p className="px-5 py-4 text-[0.7rem] tracking-wider text-[var(--t-text-20)] uppercase">
-            Clique sur &ldquo;Générer&rdquo; pour des idées {respectBudget ? "adaptées à ton budget" : "de repas"}
+            Clique sur &ldquo;Générer une idée repas&rdquo; pour des idées {respectBudget ? "adaptées à ton budget" : "de repas"}
           </p>
         )}
 

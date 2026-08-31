@@ -36,7 +36,7 @@ export function Select({
   return (
     <div ref={ref} className="relative inline-block">
       <button type="button" disabled={disabled} onClick={() => setOpen(o => !o)}
-        className={`flex items-center justify-between gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed ${triggerClassName}`}>
+        className={`flex items-center justify-between gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${triggerClassName}`}>
         <span className={`truncate ${current ? "" : "text-[var(--t-text-20)]"}`}>{current?.label ?? placeholder ?? "—"}</span>
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
           className={`shrink-0 transition-transform ${open ? "rotate-180" : ""}`}><polyline points="6 9 12 15 18 9"/></svg>
@@ -45,13 +45,13 @@ export function Select({
         <div className={`absolute z-[100] mt-1 border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl shadow-[0_16px_40px_-8px_rgba(0,0,0,0.6)] py-1 max-h-64 overflow-y-auto ${align === "right" ? "right-0" : "left-0"} ${panelClassName || "min-w-full"}`}>
           {placeholder && (
             <button type="button" onClick={() => { onChange(""); setOpen(false); }}
-              className="w-full text-left px-3 py-2 text-xs text-[var(--t-text-25)] hover:bg-[var(--t-glass-bg)] transition-colors whitespace-nowrap">
+              className="w-full text-left px-3 py-2 text-xs text-[var(--t-text-25)] hover:bg-[var(--t-glass-bg)] transition-colors whitespace-nowrap cursor-pointer">
               {placeholder}
             </button>
           )}
           {options.map(o => (
             <button key={o.value} type="button" onClick={() => { onChange(o.value); setOpen(false); }}
-              className={`w-full text-left px-3 py-2 text-xs transition-colors whitespace-nowrap ${o.value === value ? "text-[#c9a84c] bg-[#c9a84c]/10" : "text-[var(--t-text-60)] hover:bg-[var(--t-glass-bg)]"}`}>
+              className={`w-full text-left px-3 py-2 text-xs transition-colors whitespace-nowrap cursor-pointer ${o.value === value ? "text-[#c9a84c] bg-[#c9a84c]/10" : "text-[var(--t-text-60)] hover:bg-[var(--t-glass-bg)]"}`}>
               {o.label}
             </button>
           ))}
