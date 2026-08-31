@@ -87,6 +87,28 @@ export async function loadBest1RM(clientId: string, exerciceNom: string, exclude
   return best1RM((data ?? []) as SeanceLogRow[]);
 }
 
+export type LastPerformance = Record<number, { poids: number | null; reps: number | null }>;
+export type ExerciceHistory = { best1RM: number | null; lastPerformance: LastPerformance };
+
+// Historique d'un exercice pour ce client, hors séance en cours : le 1RM de référence pour
+// détecter un record, et le détail série par série de la dernière fois — alimente la colonne
+// "précédent" façon Hevy pendant le live, en une seule requête par exercice.
+export async function loadExerciceHistory(clientId: string, exerciceNom: string, excludeSeanceId: string): Promise<ExerciceHistory> {
+  const { data } = await supabase.from("seance_logs")
+    .select("seance_id,set_index,poids_reel,reps_reel,logged_at")
+    .eq("client_id", clientId).eq("exercice_nom", exerciceNom).neq("seance_id", excludeSeanceId)
+    .order("logged_at", { ascending: false });
+  const rows = (data ?? []) as (Pick<SeanceLogRow, "seance_id" | "set_index" | "poids_reel" | "reps_reel"> & { logged_at: string })[];
+  const lastPerformance: LastPerformance = {};
+  if (rows.length) {
+    const lastSeanceId = rows[0].seance_id;
+    for (const r of rows) {
+      if (r.seance_id === lastSeanceId) lastPerformance[r.set_index] = { poids: r.poids_reel, reps: r.reps_reel };
+    }
+  }
+  return { best1RM: best1RM(rows), lastPerformance };
+}
+
 export type SetOutcome = "hit" | "under" | "unlogged";
 
 function parseTargetReps(text: string): number | null {
