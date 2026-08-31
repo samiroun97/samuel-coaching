@@ -15,6 +15,7 @@ import { type LibraryEntry, listLibrary, addLibraryEntry, deleteLibraryEntry } f
 import { type CatalogueEntry, loadCatalogue } from "@/lib/exercicesCatalogue";
 import { type ProgrammeTemplate, listTemplates, saveTemplate, deleteTemplate, templateToExercices } from "@/lib/programmeTemplates";
 import { getMyCoachId } from "@/lib/coach";
+import { WeekPlanning } from "@/components/WeekPlanning";
 
 const SEANCE_TYPES = ["Haut du corps","Bas du corps","Full body","Cardio","Boxe","Natation","CrossFit","Yoga","Autre"];
 
@@ -54,6 +55,7 @@ export default function ProgrammesPage() {
   const [showTemplates, setShowTemplates] = useState(false);
   const [sentSeances,  setSentSeances]  = useState<SentSeance[]>([]);
   const [openSentId,   setOpenSentId]   = useState<string | null>(null);
+  const [sentView,     setSentView]     = useState<"liste" | "semaine">("liste");
   const [myCoachId,    setMyCoachId]    = useState<string | null>(null);
   const [catalogue,    setCatalogue]    = useState<CatalogueEntry[]>([]);
   const [deletingId,   setDeletingId]   = useState<string | null>(null);
@@ -309,10 +311,29 @@ export default function ProgrammesPage() {
               {/* Séances déjà envoyées — aperçu visuel identique à ce que le client voit */}
               {sentSeances.length > 0 && (
                 <div className="border border-[var(--t-text-8)] bg-[var(--t-bg)] rounded-xl">
-                  <p className="px-4 pt-3 pb-2 text-[0.55rem] tracking-[0.2em] uppercase text-[var(--t-text-40)]">
-                    Séances envoyées à {selected.prenom} ({sentSeances.length})
-                  </p>
-                  {sentSeances.map(s => {
+                  <div className="flex items-center justify-between gap-2 px-4 pt-3 pb-2">
+                    <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[var(--t-text-40)]">
+                      Séances envoyées à {selected.prenom} ({sentSeances.length})
+                    </p>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button onClick={() => setSentView("liste")}
+                        className={`text-[0.55rem] tracking-wider uppercase px-2 py-1 rounded-lg transition-colors ${sentView === "liste" ? "bg-[#c9a84c]/15 text-[#c9a84c]" : "text-[var(--t-text-25)] hover:text-[var(--t-text-50)]"}`}>
+                        Liste
+                      </button>
+                      <button onClick={() => setSentView("semaine")}
+                        className={`text-[0.55rem] tracking-wider uppercase px-2 py-1 rounded-lg transition-colors ${sentView === "semaine" ? "bg-[#c9a84c]/15 text-[#c9a84c]" : "text-[var(--t-text-25)] hover:text-[var(--t-text-50)]"}`}>
+                        Semaine
+                      </button>
+                    </div>
+                  </div>
+
+                  {sentView === "semaine" && (
+                    <div className="px-4 pb-4 border-t border-[var(--t-border-soft)] pt-3">
+                      <WeekPlanning seances={sentSeances} onOpen={id => { setSentView("liste"); setOpenSentId(id); }}/>
+                    </div>
+                  )}
+
+                  {sentView === "liste" && sentSeances.map(s => {
                     const open = openSentId === s.id;
                     return (
                       <div key={s.id} className="border-t border-[var(--t-border-soft)]">

@@ -7,6 +7,8 @@ import ExerciceEditor from "@/components/ExerciceEditor";
 import { useSelectedDate } from "@/lib/useSelectedDate";
 import { serializeExercices, type ExerciceItem } from "@/lib/exercices";
 import { loadCatalogue, type CatalogueEntry } from "@/lib/exercicesCatalogue";
+import { loadPersonalRecords, type PRCard } from "@/lib/personalRecords";
+import { Sparkline } from "@/components/Sparkline";
 
 type MySeance = { id: string; titre: string; type_seance: string | null; date_prevue: string | null; completed_at: string | null; created_by_client?: boolean };
 
@@ -29,6 +31,7 @@ export default function CreerMaSeancePage() {
   const [saving, setSaving] = useState(false);
   const [mesSeances, setMesSeances] = useState<MySeance[]>([]);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [records, setRecords] = useState<PRCard[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -42,6 +45,7 @@ export default function CreerMaSeancePage() {
           .eq("assigned_to_email", user.email).order("created_at", { ascending: false });
         setMesSeances((data ?? []) as MySeance[]);
       }
+      loadPersonalRecords(user.id).then(setRecords).catch(() => {});
     })();
     loadCatalogue().then(setCatalogue).catch(() => {});
   }, []);
@@ -131,6 +135,30 @@ export default function CreerMaSeancePage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Records personnels — 1RM estimé le plus récent par exercice, avec son évolution */}
+      {records.length > 0 && (
+        <div className="mb-8">
+          <p className="text-[0.62rem] tracking-[0.2em] uppercase text-[var(--t-text-40)] mb-3">
+            Mes records ({records.length})
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {records.map(r => (
+              <div key={r.nom} className="border border-[var(--t-border-soft)] bg-[var(--t-surface)] rounded-2xl p-3.5 flex flex-col gap-2">
+                <p className="text-[0.68rem] text-[var(--t-text-60)] font-medium capitalize truncate">{r.nom}</p>
+                <div className="flex items-baseline gap-1">
+                  <span style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[var(--t-text)] tracking-wide leading-none">{r.currentKg}</span>
+                  <span className="text-[0.62rem] text-[var(--t-text-30)]">kg</span>
+                </div>
+                <Sparkline points={r.points} color="#c9a84c"/>
+                <p className="text-[0.58rem] text-[var(--t-text-20)] tracking-wide">
+                  {new Date(r.date + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
