@@ -72,6 +72,15 @@ const CIBLE_TO_LIB: Record<string, Muscle[]> = {
 const LIB_TO_CIBLE: Record<string, string> = Object.fromEntries(
   Object.entries(CIBLE_TO_LIB).flatMap(([cible, libs]) => libs.map(l => [l, cible]))
 );
+// Vue (face/dos) à afficher pour la mini-silhouette de la fiche exercice — certains muscles
+// existent dans les deux vues de la librairie, on choisit celle où ils sont le plus lisibles.
+const CIBLE_VIEW: Record<string, "anterior" | "posterior"> = {
+  "pectoraux": "anterior", "grand dorsal": "posterior", "lombaires": "posterior",
+  "trapèzes": "posterior", "deltoïdes": "anterior", "biceps": "anterior", "triceps": "posterior",
+  "avant-bras": "anterior", "abdominaux": "anterior", "quadriceps": "anterior",
+  "ischio-jambiers": "posterior", "adducteurs": "posterior", "abducteurs": "anterior",
+  "fessiers": "posterior", "mollets": "posterior",
+};
 // Ordre d'affichage des chips — du plus gros groupe musculaire au plus spécifique.
 const CATEGORY_ORDER = [
   "pectoraux", "grand dorsal", "trapèzes", "lombaires", "deltoïdes", "biceps", "triceps", "avant-bras",
@@ -241,100 +250,132 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
 
       <div className="flex-1 min-h-0 overflow-y-auto p-5">
         {detailEntry ? (
-          <div className="flex flex-col gap-4 pb-16">
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                {detailEntry.muscle_cible && (
-                  <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-0.5">{detailEntry.muscle_cible}</p>
-                )}
-                <p style={{ fontFamily: "var(--font-bebas)" }} className="text-xl font-bold tracking-wide text-[var(--t-text)] cap-first">{detailEntry.nom}</p>
-              </div>
-              <button onClick={() => setDetailEntry(null)} className="shrink-0 text-[var(--t-text-25)] hover:text-[var(--t-text)] transition-colors">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <div className="flex flex-col gap-4 pb-16 -m-5">
+            {/* Hero : média plein cadre avec titre incrusté façon fiche produit, ou
+                simple en-tête texte quand l'exercice n'a pas encore de photo/vidéo. */}
+            <div className="relative shrink-0">
+              <button onClick={() => setDetailEntry(null)}
+                className={`absolute z-10 flex items-center justify-center transition-colors ${
+                  detailEntry.video_url || detailEntry.image_url
+                    ? "top-3 right-3 w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm text-white hover:bg-black/70"
+                    : "top-4 right-5 text-[var(--t-text-25)] hover:text-[var(--t-text)]"
+                }`}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
+              {detailEntry.video_url || detailEntry.image_url ? (
+                <div className="relative bg-[radial-gradient(circle_at_center,var(--t-surface),var(--t-bg2))]">
+                  {detailEntry.video_url ? (
+                    <video key={detailEntry.id} src={detailEntry.video_url} poster={detailEntry.image_url ?? undefined}
+                      controls loop playsInline className="w-full max-h-[34vh] object-contain mx-auto block"/>
+                  ) : (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={detailEntry.image_url!} alt="" className="w-full max-h-[34vh] object-contain mx-auto block"/>
+                  )}
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent pt-12 pb-3 px-5 pointer-events-none">
+                    {detailEntry.muscle_cible && (
+                      <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#e2c97e] mb-0.5">{detailEntry.muscle_cible}</p>
+                    )}
+                    <p style={{ fontFamily: "var(--font-bebas)" }} className="text-xl font-bold tracking-wide text-white cap-first">{detailEntry.nom}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="px-5 pt-1">
+                  {detailEntry.muscle_cible && (
+                    <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-0.5">{detailEntry.muscle_cible}</p>
+                  )}
+                  <p style={{ fontFamily: "var(--font-bebas)" }} className="text-xl font-bold tracking-wide text-[var(--t-text)] cap-first pr-10">{detailEntry.nom}</p>
+                </div>
+              )}
             </div>
 
-            {(detailEntry.video_url || detailEntry.image_url) && (
-              <div className="rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.08)] bg-[radial-gradient(circle_at_center,var(--t-surface),var(--t-bg2))]">
-                {detailEntry.video_url ? (
-                  <video key={detailEntry.id} src={detailEntry.video_url} poster={detailEntry.image_url ?? undefined}
-                    controls loop playsInline className="w-full max-h-[40vh] object-contain mx-auto block"/>
-                ) : (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={detailEntry.image_url!} alt="" className="w-full max-h-[40vh] object-contain mx-auto block"/>
-                )}
-              </div>
-            )}
-
-            <div className="flex flex-wrap gap-1.5">
-              {detailEntry.muscle_cible && (
-                <span className="text-[0.58rem] tracking-wider uppercase text-[#c9a84c] capitalize bg-[#c9a84c]/10 rounded-full px-2.5 py-1">{detailEntry.muscle_cible}</span>
-              )}
+            <div className="px-5 flex flex-col gap-4">
               {detailEntry.equipement && (
-                <span className="text-[0.58rem] tracking-wider uppercase text-[#c9a84c] capitalize bg-[#c9a84c]/10 rounded-full px-2.5 py-1">{detailEntry.equipement}</span>
+                <div className="flex flex-wrap gap-1.5">
+                  <span className="text-[0.58rem] tracking-wider uppercase text-[#c9a84c] capitalize bg-[#c9a84c]/10 rounded-full px-2.5 py-1">{detailEntry.equipement}</span>
+                </div>
+              )}
+
+              {/* Mini-silhouette : réutilise l'écorché de la bibliothèque pour repérer le
+                  muscle principal en un coup d'œil, plutôt qu'un simple mot dans une puce. */}
+              {detailEntry.muscle_cible && CIBLE_TO_LIB[detailEntry.muscle_cible] && (
+                <div className="flex items-center gap-4 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
+                  <div className="shrink-0 pointer-events-none">
+                    <Model
+                      type={CIBLE_VIEW[detailEntry.muscle_cible] ?? "anterior"}
+                      data={[{ name: "cible", muscles: CIBLE_TO_LIB[detailEntry.muscle_cible] }]}
+                      bodyColor="var(--t-glass-bg)"
+                      highlightedColors={["#c9a84c"]}
+                      style={{ width: "56px" }}
+                    />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[var(--t-text-25)] mb-0.5">Muscle principal</p>
+                    <p className="text-sm font-bold text-[var(--t-text)] capitalize">{detailEntry.muscle_cible}</p>
+                  </div>
+                </div>
+              )}
+
+              {detailEntry.muscle_travaille || (detailEntry.execution && detailEntry.execution.length > 0) || detailEntry.utilite || (detailEntry.a_noter && detailEntry.a_noter.length > 0) || (detailEntry.tags && detailEntry.tags.length > 0) ? (
+                <div className="flex flex-col gap-3">
+                  {detailEntry.muscle_travaille && (
+                    <div className="flex flex-col gap-1.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
+                      <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80">{SECTION_ICONS.muscle} Muscle travaillé</p>
+                      <p className="text-sm text-[var(--t-text-50)] leading-relaxed">{detailEntry.muscle_travaille}</p>
+                    </div>
+                  )}
+                  {detailEntry.execution && detailEntry.execution.length > 0 && (
+                    <div className="flex flex-col gap-2 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
+                      <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80">{SECTION_ICONS.execution} Exécution</p>
+                      <ol className="flex flex-col gap-2.5">
+                        {detailEntry.execution.map((step, i) => (
+                          <li key={i} className="flex gap-2.5 text-sm text-[var(--t-text-50)] leading-relaxed">
+                            <span className="shrink-0 w-5 h-5 rounded-full bg-[#c9a84c]/15 text-[#c9a84c] text-[0.65rem] font-bold flex items-center justify-center mt-0.5">{i + 1}</span>
+                            <span className="pt-0.5">{step}</span>
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  )}
+                  {detailEntry.utilite && (
+                    <div className="flex flex-col gap-1.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
+                      <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80">{SECTION_ICONS.utilite} Utilité</p>
+                      <p className="text-sm text-[var(--t-text-50)] leading-relaxed">{detailEntry.utilite}</p>
+                    </div>
+                  )}
+                  {detailEntry.a_noter && detailEntry.a_noter.length > 0 && (
+                    <div className="flex flex-col gap-1.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
+                      <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80">{SECTION_ICONS.aNoter} À noter</p>
+                      <ul className="flex flex-col gap-1.5">
+                        {detailEntry.a_noter.map((mistake, i) => (
+                          <li key={i} className="flex gap-2 text-sm text-[var(--t-text-50)] leading-relaxed">
+                            <span className="shrink-0 text-[#c9a84c]/70 mt-1.5">•</span>
+                            <span>{mistake}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {detailEntry.tags && detailEntry.tags.length > 0 && (
+                    <div className="flex flex-col gap-1.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
+                      <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80">{SECTION_ICONS.tags} Tags</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {detailEntry.tags.map(tag => (
+                          <span key={tag} className="text-[0.58rem] tracking-wider uppercase px-2.5 py-1 rounded-full bg-[#c9a84c]/10 text-[#c9a84c] capitalize">{tag}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                detailEntry.description && (
+                  <p className="text-sm text-[var(--t-text-50)] leading-relaxed">{detailEntry.description}</p>
+                )
+              )}
+
+              {detailEntry.image_license && (
+                <p className="text-[0.5rem] text-[var(--t-text-15)]">Photo : {detailEntry.image_license_author || "?"} · {detailEntry.image_license}</p>
               )}
             </div>
-
-            {detailEntry.muscle_travaille || (detailEntry.execution && detailEntry.execution.length > 0) || detailEntry.utilite || (detailEntry.a_noter && detailEntry.a_noter.length > 0) || (detailEntry.tags && detailEntry.tags.length > 0) ? (
-              <div className="flex flex-col gap-3">
-                {detailEntry.muscle_travaille && (
-                  <div className="flex flex-col gap-1.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
-                    <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80">{SECTION_ICONS.muscle} Muscle travaillé</p>
-                    <p className="text-sm text-[var(--t-text-50)] leading-relaxed">{detailEntry.muscle_travaille}</p>
-                  </div>
-                )}
-                {detailEntry.execution && detailEntry.execution.length > 0 && (
-                  <div className="flex flex-col gap-1.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
-                    <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80">{SECTION_ICONS.execution} Exécution</p>
-                    <ol className="flex flex-col gap-1.5">
-                      {detailEntry.execution.map((step, i) => (
-                        <li key={i} className="flex gap-2 text-sm text-[var(--t-text-50)] leading-relaxed">
-                          <span className="shrink-0 text-[#c9a84c]/70 font-bold text-xs mt-0.5">{i + 1}.</span>
-                          <span>{step}</span>
-                        </li>
-                      ))}
-                    </ol>
-                  </div>
-                )}
-                {detailEntry.utilite && (
-                  <div className="flex flex-col gap-1.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
-                    <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80">{SECTION_ICONS.utilite} Utilité</p>
-                    <p className="text-sm text-[var(--t-text-50)] leading-relaxed">{detailEntry.utilite}</p>
-                  </div>
-                )}
-                {detailEntry.a_noter && detailEntry.a_noter.length > 0 && (
-                  <div className="flex flex-col gap-1.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
-                    <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80">{SECTION_ICONS.aNoter} À noter</p>
-                    <ul className="flex flex-col gap-1.5">
-                      {detailEntry.a_noter.map((mistake, i) => (
-                        <li key={i} className="flex gap-2 text-sm text-[var(--t-text-50)] leading-relaxed">
-                          <span className="shrink-0 text-[#c9a84c]/70 mt-1.5">•</span>
-                          <span>{mistake}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {detailEntry.tags && detailEntry.tags.length > 0 && (
-                  <div className="flex flex-col gap-1.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
-                    <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80">{SECTION_ICONS.tags} Tags</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {detailEntry.tags.map(tag => (
-                        <span key={tag} className="text-[0.58rem] tracking-wider uppercase px-2.5 py-1 rounded-full bg-[#c9a84c]/10 text-[#c9a84c] capitalize">{tag}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              detailEntry.description && (
-                <p className="text-sm text-[var(--t-text-50)] leading-relaxed">{detailEntry.description}</p>
-              )
-            )}
-
-            {detailEntry.image_license && (
-              <p className="text-[0.5rem] text-[var(--t-text-15)]">Photo : {detailEntry.image_license_author || "?"} · {detailEntry.image_license}</p>
-            )}
           </div>
         ) : viewMode === "silhouette" ? (
           <div className="flex flex-col items-center gap-6">
