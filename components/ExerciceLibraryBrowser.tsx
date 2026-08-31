@@ -54,8 +54,8 @@ function FilterDropdown({ value, onChange, options }: { value: string; onChange:
 // la scapula, grand dentelé, système cardiovasculaire) — ils restent accessibles via les chips/la recherche.
 const CIBLE_TO_LIB: Record<string, Muscle[]> = {
   "pectoraux": ["chest"],
-  "haut du dos": ["upper-back"],
-  "grand dorsal": ["lower-back"],
+  "grand dorsal": ["upper-back"],
+  "lombaires": ["lower-back"],
   "trapèzes": ["trapezius"],
   "deltoïdes": ["front-deltoids", "back-deltoids"],
   "biceps": ["biceps"],
@@ -74,7 +74,7 @@ const LIB_TO_CIBLE: Record<string, string> = Object.fromEntries(
 );
 // Ordre d'affichage des chips — du plus gros groupe musculaire au plus spécifique.
 const CATEGORY_ORDER = [
-  "pectoraux", "haut du dos", "grand dorsal", "trapèzes", "deltoïdes", "biceps", "triceps", "avant-bras",
+  "pectoraux", "grand dorsal", "trapèzes", "lombaires", "deltoïdes", "biceps", "triceps", "avant-bras",
   "abdominaux", "quadriceps", "ischio-jambiers", "adducteurs", "abducteurs", "fessiers", "mollets",
 ];
 // Catégories volontairement masquées de la liste de chips (trop marginales comme filtre) — les

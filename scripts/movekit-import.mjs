@@ -287,10 +287,15 @@ const MUSCLE_MAP = {
 };
 
 // Doit correspondre aux clés attendues par ExerciceLibraryBrowser.tsx (CIBLE_TO_LIB) quand possible.
+// "Back" chez MoveKit couvre les rowings/tirages/tractions → grand dorsal (les dorsaux), pas
+// le "haut du dos" (zone trapèzes/rhomboïdes déjà couverte par la catégorie "trapèzes" à part).
+// "Lower Back" couvre les extensions lombaires → lombaires (érecteurs du rachis), qui n'ont
+// rien à voir avec le grand dorsal malgré une inversion historique de ces deux libellés
+// (voir supabase/exercices_catalogue_dos_categories_fix.sql).
 const MUSCLE_CIBLE_MAP = {
-  Adductors: "adducteurs", Back: "haut du dos", Biceps: "biceps", Calves: "mollets",
+  Adductors: "adducteurs", Back: "grand dorsal", Biceps: "biceps", Calves: "mollets",
   Chest: "pectoraux", Core: "abdominaux", Forearms: "avant-bras", Glutes: "fessiers",
-  Hamstrings: "ischio-jambiers", "Lower Back": "grand dorsal", Neck: "cou",
+  Hamstrings: "ischio-jambiers", "Lower Back": "lombaires", Neck: "cou",
   Quadriceps: "quadriceps", Shoulders: "deltoïdes", Tibialis: "tibial antérieur",
   Trapezius: "trapèzes", Triceps: "triceps",
 };
