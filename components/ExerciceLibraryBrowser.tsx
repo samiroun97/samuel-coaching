@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import Model, { type IExerciseData, type Muscle } from "react-body-highlighter";
 import { type CatalogueEntry } from "@/lib/exercicesCatalogue";
+import { getRecentExerciceNoms, pushRecentExerciceNom } from "@/lib/recentExercices";
 
 // Bouton icône seul (pas de texte visible) avec pastille dorée quand un filtre est actif —
 // plus discret qu'un menu déroulant classique et plus proche des conventions mobiles
@@ -22,8 +23,8 @@ function FilterDropdown({ value, onChange, options }: { value: string; onChange:
   const active = Boolean(value);
   return (
     <div ref={ref} className="relative shrink-0">
-      <button type="button" onClick={() => setOpen(o => !o)} title="Filtre"
-        className={`relative w-8 h-8 rounded-full border flex items-center justify-center transition-colors ${active ? "border-[#c9a84c]/50 text-[#c9a84c] bg-[#c9a84c]/10" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[#c9a84c]/40 hover:text-[#c9a84c]"}`}>
+      <button type="button" onClick={() => setOpen(o => !o)} title="Équipement"
+        className={`relative w-9 h-9 rounded-full border flex items-center justify-center transition-colors ${active ? "border-[#c9a84c]/50 text-[#c9a84c] bg-[#c9a84c]/10" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[#c9a84c]/40 hover:text-[#c9a84c]"}`}>
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
         {active && <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#c9a84c] ring-2 ring-[var(--t-bg)]"/>}
       </button>
@@ -31,7 +32,7 @@ function FilterDropdown({ value, onChange, options }: { value: string; onChange:
         <div className="absolute right-0 mt-1.5 z-[100] border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl shadow-[0_16px_40px_-8px_rgba(0,0,0,0.6)] py-1 min-w-[10rem] max-h-64 overflow-y-auto">
           <button type="button" onClick={() => { onChange(""); setOpen(false); }}
             className={`w-full text-left px-3 py-2 text-xs transition-colors whitespace-nowrap ${!value ? "text-[#c9a84c] bg-[#c9a84c]/10" : "text-[var(--t-text-25)] hover:bg-[var(--t-glass-bg)]"}`}>
-            Tous
+            Tous équipements
           </button>
           {options.map(o => (
             <button key={o.value} type="button" onClick={() => { onChange(o.value); setOpen(false); }}
@@ -49,7 +50,7 @@ function FilterDropdown({ value, onChange, options }: { value: string; onChange:
 // partie_corps (~10, trop large pour une silhouette détaillée) — voir supabase/exercices_catalogue_migration.sql.
 // Correspondance avec les clés de react-body-highlighter (licence MIT, github.com/giavinh79/react-body-highlighter) :
 // certains muscle_cible n'ont pas d'équivalent sur la silhouette (colonne vertébrale, élévateur de
-// la scapula, grand dentelé, système cardiovasculaire) — ils restent accessibles via des puces à part.
+// la scapula, grand dentelé, système cardiovasculaire) — ils restent accessibles via les chips/la recherche.
 const CIBLE_TO_LIB: Record<string, Muscle[]> = {
   "pectoraux": ["chest"],
   "haut du dos": ["upper-back"],
@@ -70,33 +71,22 @@ const CIBLE_TO_LIB: Record<string, Muscle[]> = {
 const LIB_TO_CIBLE: Record<string, string> = Object.fromEntries(
   Object.entries(CIBLE_TO_LIB).flatMap(([cible, libs]) => libs.map(l => [l, cible]))
 );
-// Ordre d'affichage des puces — du plus gros groupe musculaire au plus spécifique.
+// Ordre d'affichage des chips — du plus gros groupe musculaire au plus spécifique.
 const CATEGORY_ORDER = [
   "pectoraux", "haut du dos", "grand dorsal", "trapèzes", "deltoïdes", "biceps", "triceps", "avant-bras",
   "abdominaux", "quadriceps", "ischio-jambiers", "adducteurs", "abducteurs", "fessiers", "mollets",
 ];
-// Catégories volontairement masquées sous l'écorché (trop marginales comme filtre) — les
-// exercices concernés restent trouvables via la recherche/liste, juste sans puce dédiée.
-// "étirement" et "cardio" sont masquées ici aussi : elles ont leur propre puce, mise en
-// avant en haut avec l'équipement plutôt que noyées dans les puces hors-corps sous le squelette.
-const HIDDEN_CHIPS = new Set(["cou", "tibial antérieur", "étirement", "cardio"]);
+// Catégories volontairement masquées de la liste de chips (trop marginales comme filtre) — les
+// exercices concernés restent trouvables via la recherche, juste sans chip dédiée.
+const HIDDEN_CHIPS = new Set(["cou", "tibial antérieur"]);
 
 // Filtre par équipement (repris du schéma MoveKit) — un exercice peut cumuler plusieurs
 // équipements ("poulie + élastique" en base) : on découpe sur " + " pour que la puce
 // corresponde à chacun d'entre eux, pas seulement à la valeur exacte du champ.
 const EQUIPMENT_ORDER = ["poids du corps", "haltère", "barre", "machine", "poulie", "kettlebell", "élastique"];
-// "swiss ball" n'a qu'un seul exercice, déjà regroupé dans la catégorie musculaire à part
-// "étirement". "corde ondulatoire", "traîneau" et "vélo" sont déjà tous classés en
-// muscle_cible = "cardio" en base — inutile de les dupliquer en puces équipement à part.
-// "cardio" et "étirement" comme valeurs d'équipement (exercices au poids du corps
-// reclassés pour sortir de la puce "poids du corps") sont déjà couverts par les
-// puces dédiées Cardio/Étirement ci-dessous — même logique, pas de doublon de puce.
 const HIDDEN_EQUIPMENT = new Set(["swiss ball", "corde ondulatoire", "traîneau", "vélo", "cardio", "étirement"]);
 
-// Icônes de sections de la fiche exercice, à la place des emojis — icônes couleur
-// fournies, même famille que library.svg/bilan.svg déjà utilisés ailleurs dans l'app
-// (ExerciceEditor.tsx, dashboard). Agrandies nettement par rapport au texte du libellé
-// pour bien ressortir en tête de chaque bloc.
+// Icônes de sections de la fiche exercice, à la place des emojis.
 function IconImg({ src }: { src: string }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
@@ -111,6 +101,37 @@ const SECTION_ICONS: Record<"muscle" | "execution" | "utilite" | "aNoter" | "tag
   tags: <IconImg src="/icons/section-tags.svg"/>,
 };
 
+// Icône neutre pour les cartes sans photo (la grande majorité du catalogue) — un exercice sur
+// une grille visuelle ne doit jamais rendre une case vide/cassée, même sans média.
+function DumbbellIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6.5 6.5h11a2 2 0 012 2v7a2 2 0 01-2 2h-11a2 2 0 01-2-2v-7a2 2 0 012-2zM2 9v6M22 9v6"/>
+    </svg>
+  );
+}
+
+function ExerciceCard({ entry, onOpen }: { entry: CatalogueEntry; onOpen: () => void }) {
+  return (
+    <button type="button" onClick={onOpen}
+      className="group flex flex-col text-left border border-[var(--t-border-soft)] bg-[var(--t-surface)] rounded-xl overflow-hidden hover:border-[#c9a84c]/40 transition-colors">
+      <div className="aspect-square w-full bg-[var(--t-surface-2)] flex items-center justify-center overflow-hidden">
+        {entry.image_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={entry.image_url} alt="" loading="lazy"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"/>
+        ) : (
+          <div className="text-[var(--t-text-15)] group-hover:text-[#c9a84c]/50 transition-colors"><DumbbellIcon/></div>
+        )}
+      </div>
+      <div className="px-2 py-1.5 flex flex-col gap-0.5">
+        <p className="text-[0.65rem] leading-snug text-[var(--t-text-70)] cap-first line-clamp-2">{entry.nom}</p>
+        {entry.muscle_cible && <p className="text-[0.52rem] tracking-wider uppercase text-[#c9a84c]/70 capitalize truncate">{entry.muscle_cible}</p>}
+      </div>
+    </button>
+  );
+}
+
 export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
   catalogue: CatalogueEntry[];
   onPick: (entry: CatalogueEntry) => void;
@@ -120,7 +141,14 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
   const [equipement, setEquipement] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [detailEntry, setDetailEntry] = useState<CatalogueEntry | null>(null);
-  const [listOpen, setListOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<"grid" | "silhouette">("grid");
+  const [recentNoms, setRecentNoms] = useState<string[]>(getRecentExerciceNoms);
+
+  const handlePick = (entry: CatalogueEntry) => {
+    pushRecentExerciceNom(entry.nom);
+    setRecentNoms(getRecentExerciceNoms());
+    onPick(entry);
+  };
 
   const categories = useMemo(() => {
     const present = new Set(catalogue.map(e => e.muscle_cible).filter(Boolean) as string[]);
@@ -129,11 +157,6 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
     return [...ordered, ...rest];
   }, [catalogue]);
 
-  const offBody = useMemo(() => categories.filter(c => !CIBLE_TO_LIB[c]), [categories]);
-
-  const hasStretch = useMemo(() => catalogue.some(e => e.muscle_cible === "étirement"), [catalogue]);
-  const hasCardio = useMemo(() => catalogue.some(e => e.muscle_cible === "cardio"), [catalogue]);
-
   const equipements = useMemo(() => {
     const present = new Set<string>();
     catalogue.forEach(e => e.equipement?.split(" + ").forEach(x => present.add(x)));
@@ -141,25 +164,6 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
     const rest = [...present].filter(x => !EQUIPMENT_ORDER.includes(x) && !HIDDEN_EQUIPMENT.has(x)).sort();
     return [...ordered, ...rest];
   }, [catalogue]);
-
-  // Filtre unique qui couvre à la fois l'équipement (barre, haltère…) et étirement/cardio —
-  // ces deux derniers filtrent en réalité sur `category` (muscle_cible) plutôt que sur
-  // `equipement`, d'où l'aiguillage dans le handler.
-  const movementOptions = [
-    ...equipements.map(eq => ({ value: eq, label: eq })),
-    ...(hasStretch ? [{ value: "étirement", label: "Étirement" }] : []),
-    ...(hasCardio ? [{ value: "cardio", label: "Cardio" }] : []),
-  ];
-  const movementValue = equipement ?? (category === "étirement" || category === "cardio" ? category : "");
-  const handleMovementChange = (v: string) => {
-    if (v === "étirement" || v === "cardio") {
-      setEquipement(null);
-      setCategory(v);
-      return;
-    }
-    if (category === "étirement" || category === "cardio") setCategory(null);
-    setEquipement(v || null);
-  };
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -170,217 +174,238 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
     );
   }, [catalogue, category, equipement, query]);
 
+  const recentEntries = useMemo(() => {
+    if (query.trim() || category || equipement) return [];
+    return recentNoms.map(nom => catalogue.find(e => e.nom === nom)).filter((e): e is CatalogueEntry => !!e);
+  }, [recentNoms, catalogue, query, category, equipement]);
+
   const modelData: IExerciseData[] = category && CIBLE_TO_LIB[category]
     ? [{ name: "sélection", muscles: CIBLE_TO_LIB[category] }]
     : [];
 
-
   return (
     <div className="border border-[var(--t-border)] bg-[var(--t-bg)] rounded-2xl w-full max-h-[80vh] sm:max-h-[700px] flex flex-col overflow-hidden">
       <div className="flex items-center justify-between px-5 pt-4 pb-3 shrink-0">
+        <div className="min-w-0">
           <p style={{ fontFamily: "var(--font-bebas)" }} className="text-lg tracking-wider text-[var(--t-text)]">Bibliothèque d&apos;exercices</p>
-          <button onClick={onClose} className="shrink-0 text-[var(--t-text-30)] hover:text-[var(--t-text)] transition-colors">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </button>
+          {!detailEntry && <p className="text-[0.6rem] text-[var(--t-text-25)] tracking-wider">{results.length} exercice{results.length > 1 ? "s" : ""}</p>}
         </div>
-        <div className="px-5 pb-3 border-b border-[var(--t-border-soft)] shrink-0 flex items-center gap-2">
-          <input
-            className="flex-1 min-w-0 bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
-            placeholder="Rechercher…" value={query} onChange={e => setQuery(e.target.value)}
-          />
-          {movementOptions.length > 0 && (
-            <FilterDropdown value={movementValue} onChange={handleMovementChange} options={movementOptions}/>
-          )}
-        </div>
+        <button onClick={onClose} className="shrink-0 text-[var(--t-text-30)] hover:text-[var(--t-text)] transition-colors">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
 
-        <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-          {/* Zone principale : detail de l'exercice selectionne, ou filtres (silhouette/equipement) */}
-          <div className="flex-1 min-h-0 overflow-y-auto p-5">
-            {detailEntry ? (
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    {detailEntry.muscle_cible && (
-                      <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-0.5">{detailEntry.muscle_cible}</p>
-                    )}
-                    <p style={{ fontFamily: "var(--font-bebas)" }} className="text-xl font-bold tracking-wide text-[var(--t-text)] cap-first">{detailEntry.nom}</p>
-                  </div>
-                  <button onClick={() => setDetailEntry(null)} className="shrink-0 text-[var(--t-text-25)] hover:text-[var(--t-text)] transition-colors">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                  </button>
-                </div>
+      {!detailEntry && (
+        <>
+          <div className="px-5 pb-3 shrink-0 flex items-center gap-2">
+            <input
+              className="flex-1 min-w-0 bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
+              placeholder="Rechercher un exercice…" value={query} onChange={e => setQuery(e.target.value)}
+            />
+            {equipements.length > 0 && <FilterDropdown value={equipement ?? ""} onChange={v => setEquipement(v || null)} options={equipements.map(eq => ({ value: eq, label: eq }))}/>}
+            <div className="shrink-0 flex border border-[var(--t-border)] rounded-full p-0.5">
+              <button type="button" onClick={() => setViewMode("grid")} title="Vue grille"
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${viewMode === "grid" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-[var(--t-text-30)] hover:text-[#c9a84c]"}`}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+              </button>
+              <button type="button" onClick={() => setViewMode("silhouette")} title="Vue silhouette"
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${viewMode === "silhouette" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-[var(--t-text-30)] hover:text-[#c9a84c]"}`}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="5" r="2.5"/><path d="M12 8v6M9 22l1.5-8M15 22l-1.5-8M8 12l4-1 4 1"/></svg>
+              </button>
+            </div>
+          </div>
 
-                {(detailEntry.video_url || detailEntry.image_url) && (
-                  <div className="rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.08)] bg-[radial-gradient(circle_at_center,var(--t-surface),var(--t-bg2))]">
-                    {detailEntry.video_url ? (
-                      // eslint-disable-next-line jsx-a11y/media-has-caption
-                      <video key={detailEntry.id} src={detailEntry.video_url} poster={detailEntry.image_url ?? undefined}
-                        controls loop playsInline className="w-full max-h-[40vh] object-contain mx-auto block"/>
-                    ) : (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={detailEntry.image_url!} alt="" className="w-full max-h-[40vh] object-contain mx-auto block"/>
-                    )}
-                  </div>
+          {/* Chips de catégories — scroll horizontal, filtre principal toujours visible plutôt
+              que caché derrière un tap sur la silhouette. */}
+          <div className="pb-3 border-b border-[var(--t-border-soft)] shrink-0 flex gap-1.5 overflow-x-auto px-5 no-scrollbar">
+            <button type="button" onClick={() => setCategory(null)}
+              className={`shrink-0 text-[0.6rem] tracking-wider uppercase px-3 py-1.5 rounded-full border transition-colors ${!category ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
+              Tout
+            </button>
+            {categories.map(c => (
+              <button key={c} type="button" onClick={() => setCategory(prev => (prev === c ? null : c))}
+                className={`shrink-0 text-[0.6rem] tracking-wider uppercase px-3 py-1.5 rounded-full border capitalize transition-colors ${category === c ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
+                {c}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
+      <div className="flex-1 min-h-0 overflow-y-auto p-5">
+        {detailEntry ? (
+          <div className="flex flex-col gap-4 pb-16">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                {detailEntry.muscle_cible && (
+                  <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-0.5">{detailEntry.muscle_cible}</p>
                 )}
-
-                <div className="flex flex-wrap gap-1.5">
-                  {detailEntry.muscle_cible && (
-                    <span className="text-[0.58rem] tracking-wider uppercase text-[#c9a84c] capitalize bg-[#c9a84c]/10 rounded-full px-2.5 py-1">{detailEntry.muscle_cible}</span>
-                  )}
-                  {detailEntry.equipement && (
-                    <span className="text-[0.58rem] tracking-wider uppercase text-[#c9a84c] capitalize bg-[#c9a84c]/10 rounded-full px-2.5 py-1">{detailEntry.equipement}</span>
-                  )}
-                </div>
-
-                {detailEntry.muscle_travaille || (detailEntry.execution && detailEntry.execution.length > 0) || detailEntry.utilite || (detailEntry.a_noter && detailEntry.a_noter.length > 0) || (detailEntry.tags && detailEntry.tags.length > 0) ? (
-                  <div className="flex flex-col gap-3">
-                    {detailEntry.muscle_travaille && (
-                      <div className="flex flex-col gap-1.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
-                        <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80">{SECTION_ICONS.muscle} Muscle travaillé</p>
-                        <p className="text-sm text-[var(--t-text-50)] leading-relaxed">{detailEntry.muscle_travaille}</p>
-                      </div>
-                    )}
-                    {detailEntry.execution && detailEntry.execution.length > 0 && (
-                      <div className="flex flex-col gap-1.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
-                        <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80">{SECTION_ICONS.execution} Exécution</p>
-                        <ol className="flex flex-col gap-1.5">
-                          {detailEntry.execution.map((step, i) => (
-                            <li key={i} className="flex gap-2 text-sm text-[var(--t-text-50)] leading-relaxed">
-                              <span className="shrink-0 text-[#c9a84c]/70 font-bold text-xs mt-0.5">{i + 1}.</span>
-                              <span>{step}</span>
-                            </li>
-                          ))}
-                        </ol>
-                      </div>
-                    )}
-                    {detailEntry.utilite && (
-                      <div className="flex flex-col gap-1.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
-                        <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80">{SECTION_ICONS.utilite} Utilité</p>
-                        <p className="text-sm text-[var(--t-text-50)] leading-relaxed">{detailEntry.utilite}</p>
-                      </div>
-                    )}
-                    {detailEntry.a_noter && detailEntry.a_noter.length > 0 && (
-                      <div className="flex flex-col gap-1.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
-                        <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80">{SECTION_ICONS.aNoter} À noter</p>
-                        <ul className="flex flex-col gap-1.5">
-                          {detailEntry.a_noter.map((mistake, i) => (
-                            <li key={i} className="flex gap-2 text-sm text-[var(--t-text-50)] leading-relaxed">
-                              <span className="shrink-0 text-[#c9a84c]/70 mt-1.5">•</span>
-                              <span>{mistake}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    {detailEntry.tags && detailEntry.tags.length > 0 && (
-                      <div className="flex flex-col gap-1.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
-                        <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80">{SECTION_ICONS.tags} Tags</p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {detailEntry.tags.map(tag => (
-                            <span key={tag} className="text-[0.58rem] tracking-wider uppercase px-2.5 py-1 rounded-full bg-[#c9a84c]/10 text-[#c9a84c] capitalize">{tag}</span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  detailEntry.description && (
-                    <p className="text-sm text-[var(--t-text-50)] leading-relaxed">{detailEntry.description}</p>
-                  )
-                )}
-
-                {detailEntry.image_license && (
-                  <p className="text-[0.5rem] text-[var(--t-text-15)]">Photo : {detailEntry.image_license_author || "?"} · {detailEntry.image_license}</p>
-                )}
-
-                <button type="button" onClick={() => onPick(detailEntry)}
-                  className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.15em] uppercase py-3 rounded-2xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 hover:scale-[1.02] active:translate-y-0 active:scale-[0.97] active:brightness-95 transition-all duration-200">
-                  Ajouter à ma séance
-                </button>
+                <p style={{ fontFamily: "var(--font-bebas)" }} className="text-xl font-bold tracking-wide text-[var(--t-text)] cap-first">{detailEntry.nom}</p>
               </div>
-            ) : (
-              <div className="flex flex-col items-center gap-6">
-                <div className="w-full flex flex-col items-center gap-5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-2xl p-5">
-                  <p className="text-[0.62rem] tracking-[0.2em] uppercase text-[var(--t-text-30)]">Quel groupe musculaire veux-tu travailler ?</p>
+              <button onClick={() => setDetailEntry(null)} className="shrink-0 text-[var(--t-text-25)] hover:text-[var(--t-text)] transition-colors">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
 
-                  <div className="flex items-start justify-center gap-6">
-                    {(["anterior", "posterior"] as const).map(type => (
-                      <div key={type} className="flex flex-col items-center gap-1.5">
-                        <Model
-                          type={type}
-                          data={modelData}
-                          bodyColor="var(--t-glass-bg)"
-                          highlightedColors={["#c9a84c"]}
-                          onClick={({ muscle }) => {
-                            const cible = LIB_TO_CIBLE[muscle];
-                            if (cible) setCategory(prev => (prev === cible ? null : cible));
-                          }}
-                          style={{ width: "152px" }}
-                          svgStyle={{ filter: "drop-shadow(0 0 0 transparent)" }}
-                        />
-                        <p className="text-[0.5rem] tracking-[0.15em] uppercase text-[var(--t-text-20)]">{type === "anterior" ? "Face" : "Dos"}</p>
-                      </div>
-                    ))}
+            {(detailEntry.video_url || detailEntry.image_url) && (
+              <div className="rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.08)] bg-[radial-gradient(circle_at_center,var(--t-surface),var(--t-bg2))]">
+                {detailEntry.video_url ? (
+                  <video key={detailEntry.id} src={detailEntry.video_url} poster={detailEntry.image_url ?? undefined}
+                    controls loop playsInline className="w-full max-h-[40vh] object-contain mx-auto block"/>
+                ) : (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={detailEntry.image_url!} alt="" className="w-full max-h-[40vh] object-contain mx-auto block"/>
+                )}
+              </div>
+            )}
+
+            <div className="flex flex-wrap gap-1.5">
+              {detailEntry.muscle_cible && (
+                <span className="text-[0.58rem] tracking-wider uppercase text-[#c9a84c] capitalize bg-[#c9a84c]/10 rounded-full px-2.5 py-1">{detailEntry.muscle_cible}</span>
+              )}
+              {detailEntry.equipement && (
+                <span className="text-[0.58rem] tracking-wider uppercase text-[#c9a84c] capitalize bg-[#c9a84c]/10 rounded-full px-2.5 py-1">{detailEntry.equipement}</span>
+              )}
+            </div>
+
+            {detailEntry.muscle_travaille || (detailEntry.execution && detailEntry.execution.length > 0) || detailEntry.utilite || (detailEntry.a_noter && detailEntry.a_noter.length > 0) || (detailEntry.tags && detailEntry.tags.length > 0) ? (
+              <div className="flex flex-col gap-3">
+                {detailEntry.muscle_travaille && (
+                  <div className="flex flex-col gap-1.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
+                    <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80">{SECTION_ICONS.muscle} Muscle travaillé</p>
+                    <p className="text-sm text-[var(--t-text-50)] leading-relaxed">{detailEntry.muscle_travaille}</p>
                   </div>
-
-                  {offBody.length > 0 && (
-                    <div className="flex flex-wrap justify-center gap-1.5">
-                      {offBody.map(c => (
-                        <button key={c} type="button" onClick={() => setCategory(prev => (prev === c ? null : c))}
-                          className={`text-[0.58rem] tracking-wider uppercase px-3 py-1.5 rounded-full border capitalize transition-colors ${category === c ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
-                          {c}
-                        </button>
+                )}
+                {detailEntry.execution && detailEntry.execution.length > 0 && (
+                  <div className="flex flex-col gap-1.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
+                    <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80">{SECTION_ICONS.execution} Exécution</p>
+                    <ol className="flex flex-col gap-1.5">
+                      {detailEntry.execution.map((step, i) => (
+                        <li key={i} className="flex gap-2 text-sm text-[var(--t-text-50)] leading-relaxed">
+                          <span className="shrink-0 text-[#c9a84c]/70 font-bold text-xs mt-0.5">{i + 1}.</span>
+                          <span>{step}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                )}
+                {detailEntry.utilite && (
+                  <div className="flex flex-col gap-1.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
+                    <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80">{SECTION_ICONS.utilite} Utilité</p>
+                    <p className="text-sm text-[var(--t-text-50)] leading-relaxed">{detailEntry.utilite}</p>
+                  </div>
+                )}
+                {detailEntry.a_noter && detailEntry.a_noter.length > 0 && (
+                  <div className="flex flex-col gap-1.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
+                    <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80">{SECTION_ICONS.aNoter} À noter</p>
+                    <ul className="flex flex-col gap-1.5">
+                      {detailEntry.a_noter.map((mistake, i) => (
+                        <li key={i} className="flex gap-2 text-sm text-[var(--t-text-50)] leading-relaxed">
+                          <span className="shrink-0 text-[#c9a84c]/70 mt-1.5">•</span>
+                          <span>{mistake}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {detailEntry.tags && detailEntry.tags.length > 0 && (
+                  <div className="flex flex-col gap-1.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
+                    <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80">{SECTION_ICONS.tags} Tags</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {detailEntry.tags.map(tag => (
+                        <span key={tag} className="text-[0.58rem] tracking-wider uppercase px-2.5 py-1 rounded-full bg-[#c9a84c]/10 text-[#c9a84c] capitalize">{tag}</span>
                       ))}
                     </div>
-                  )}
-                  {category && (
-                    <button type="button" onClick={() => setCategory(null)} className="text-[0.58rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[#c9a84c] transition-colors -mt-1.5">
-                      {category} · ✕ effacer
+                  </div>
+                )}
+              </div>
+            ) : (
+              detailEntry.description && (
+                <p className="text-sm text-[var(--t-text-50)] leading-relaxed">{detailEntry.description}</p>
+              )
+            )}
+
+            {detailEntry.image_license && (
+              <p className="text-[0.5rem] text-[var(--t-text-15)]">Photo : {detailEntry.image_license_author || "?"} · {detailEntry.image_license}</p>
+            )}
+          </div>
+        ) : viewMode === "silhouette" ? (
+          <div className="flex flex-col items-center gap-6">
+            <div className="w-full flex flex-col items-center gap-5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-2xl p-5">
+              <p className="text-[0.62rem] tracking-[0.2em] uppercase text-[var(--t-text-30)]">Quel groupe musculaire veux-tu travailler ?</p>
+              <div className="flex items-start justify-center gap-6">
+                {(["anterior", "posterior"] as const).map(type => (
+                  <div key={type} className="flex flex-col items-center gap-1.5">
+                    <Model
+                      type={type}
+                      data={modelData}
+                      bodyColor="var(--t-glass-bg)"
+                      highlightedColors={["#c9a84c"]}
+                      onClick={({ muscle }) => {
+                        const cible = LIB_TO_CIBLE[muscle];
+                        if (cible) setCategory(prev => (prev === cible ? null : cible));
+                      }}
+                      style={{ width: "152px" }}
+                      svgStyle={{ filter: "drop-shadow(0 0 0 transparent)" }}
+                    />
+                    <p className="text-[0.5rem] tracking-[0.15em] uppercase text-[var(--t-text-20)]">{type === "anterior" ? "Face" : "Dos"}</p>
+                  </div>
+                ))}
+              </div>
+              {category && (
+                <button type="button" onClick={() => setCategory(null)} className="text-[0.58rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[#c9a84c] transition-colors -mt-1.5">
+                  {category} · ✕ effacer
+                </button>
+              )}
+            </div>
+            {category && (
+              <div className="w-full grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                {results.map(e => <ExerciceCard key={e.id} entry={e} onOpen={() => setDetailEntry(e)}/>)}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-5">
+            {recentEntries.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <p className="text-[0.58rem] tracking-[0.2em] uppercase text-[var(--t-text-25)]">Récemment utilisés</p>
+                <div className="flex gap-2.5 overflow-x-auto no-scrollbar pb-1">
+                  {recentEntries.map(e => (
+                    <button key={e.id} type="button" onClick={() => setDetailEntry(e)}
+                      className="shrink-0 w-24 flex flex-col text-left border border-[var(--t-border-soft)] bg-[var(--t-surface)] rounded-xl overflow-hidden hover:border-[#c9a84c]/40 transition-colors">
+                      <div className="aspect-square w-full bg-[var(--t-surface-2)] flex items-center justify-center overflow-hidden">
+                        {e.image_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={e.image_url} alt="" loading="lazy" className="w-full h-full object-cover"/>
+                        ) : (
+                          <div className="text-[var(--t-text-15)]"><DumbbellIcon/></div>
+                        )}
+                      </div>
+                      <p className="px-1.5 py-1.5 text-[0.6rem] leading-snug text-[var(--t-text-60)] cap-first line-clamp-2">{e.nom}</p>
                     </button>
-                  )}
+                  ))}
                 </div>
               </div>
             )}
-          </div>
-
-          {/* Tiroir résultats, replié par défaut — reste dans un coin séparé du reste de
-              l'écran plutôt que d'occuper une colonne en permanence, avec son propre
-              défilement interne une fois ouvert. */}
-          <div className="shrink-0 border-t border-[var(--t-border-soft)]">
-            <button type="button" onClick={() => setListOpen(v => !v)}
-              className="w-full flex items-center justify-between px-5 py-3 text-[var(--t-text-40)] hover:text-[var(--t-text-70)] transition-colors">
-              <span className="text-[0.62rem] tracking-[0.15em] uppercase">Résultats · {results.length}</span>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${listOpen ? "rotate-180" : ""}`}><polyline points="6 9 12 15 18 9"/></svg>
-            </button>
-            {listOpen && (
-              <div className="max-h-[38vh] overflow-y-auto border-t border-[var(--t-border-soft)] p-2 flex flex-col gap-1.5">
-                {results.length === 0 ? (
-                  <p className="text-xs text-[var(--t-text-25)] text-center py-8">Aucun exercice trouvé.</p>
-                ) : (
-                  results.map(e => {
-                    const active = detailEntry?.id === e.id;
-                    return (
-                      <button key={e.id} type="button" onClick={() => setDetailEntry(e)}
-                        className={`w-full flex items-center gap-2 text-left p-2 rounded-r-xl rounded-l-md border-l-[3px] transition-colors ${
-                          active
-                            ? "border-[#c9a84c] bg-[#c9a84c]/10 text-[#c9a84c]"
-                            : "border-transparent hover:border-[#c9a84c]/25 hover:bg-[var(--t-glass-bg)] text-[var(--t-text-70)] hover:text-[var(--t-text)]"
-                        }`}>
-                        {e.image_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={e.image_url} alt="" loading="lazy" className="w-8 h-8 rounded-lg object-cover shrink-0 bg-[var(--t-surface-2)] border border-[var(--t-border-soft)]"/>
-                        ) : (
-                          <div className="w-8 h-8 rounded-lg shrink-0 bg-[var(--t-surface-2)] border border-[var(--t-border-soft)]"/>
-                        )}
-                        <p className="text-xs cap-first truncate flex-1 min-w-0">{e.nom}</p>
-                      </button>
-                    );
-                  })
-                )}
+            {results.length === 0 ? (
+              <p className="text-xs text-[var(--t-text-25)] text-center py-12">Aucun exercice trouvé.</p>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                {results.map(e => <ExerciceCard key={e.id} entry={e} onOpen={() => setDetailEntry(e)}/>)}
               </div>
             )}
           </div>
-        </div>
+        )}
       </div>
+
+      {detailEntry && (
+        <div className="shrink-0 border-t border-[var(--t-border-soft)] p-4">
+          <button type="button" onClick={() => handlePick(detailEntry)}
+            className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.15em] uppercase py-3 rounded-2xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 hover:scale-[1.02] active:translate-y-0 active:scale-[0.97] active:brightness-95 transition-all duration-200">
+            Ajouter à ma séance
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
