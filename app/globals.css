@@ -209,6 +209,17 @@ body {
 .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
+/* Même rangées : dégradé sur les bords pour signaler qu'il y a plus de contenu à glisser
+   des deux côtés, plus un léger magnétisme par carte/chip pour que le glissement (souris
+   ou doigt) s'arrête proprement au lieu de couper une puce en deux. */
+.h-scroll-snap {
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+  mask-image: linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent);
+}
+.h-scroll-snap > * { scroll-snap-align: start; }
+
 /* Mobile menu */
 .mobile-menu-open { overflow: hidden; }
 

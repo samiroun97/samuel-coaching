@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import Model, { type IExerciseData, type Muscle } from "react-body-highlighter";
 import { type CatalogueEntry } from "@/lib/exercicesCatalogue";
 import { getRecentExerciceNoms, pushRecentExerciceNom } from "@/lib/recentExercices";
+import { useDragScroll } from "@/lib/useDragScroll";
 
 // Bouton icône seul (pas de texte visible) avec pastille dorée quand un filtre est actif —
 // plus discret qu'un menu déroulant classique et plus proche des conventions mobiles
@@ -142,7 +143,13 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
   const [query, setQuery] = useState("");
   const [detailEntry, setDetailEntry] = useState<CatalogueEntry | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "silhouette">("grid");
-  const [recentNoms, setRecentNoms] = useState<string[]>(getRecentExerciceNoms);
+  // localStorage n'existe pas côté serveur : lu en effet plutôt qu'en initialiseur de useState
+  // pour ne jamais faire diverger le HTML serveur (toujours vide) du premier rendu client
+  // (potentiellement rempli) et provoquer une erreur d'hydratation React.
+  const [recentNoms, setRecentNoms] = useState<string[]>([]);
+  useEffect(() => { setRecentNoms(getRecentExerciceNoms()); }, []);
+  const categoryScrollRef = useDragScroll<HTMLDivElement>();
+  const recentScrollRef = useDragScroll<HTMLDivElement>();
 
   const handlePick = (entry: CatalogueEntry) => {
     pushRecentExerciceNom(entry.nom);
@@ -217,7 +224,7 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
 
           {/* Chips de catégories — scroll horizontal, filtre principal toujours visible plutôt
               que caché derrière un tap sur la silhouette. */}
-          <div className="pb-3 border-b border-[var(--t-border-soft)] shrink-0 flex gap-1.5 overflow-x-auto px-5 no-scrollbar">
+          <div ref={categoryScrollRef} className="pb-3 border-b border-[var(--t-border-soft)] shrink-0 flex gap-1.5 overflow-x-auto px-5 no-scrollbar h-scroll-snap cursor-grab active:cursor-grabbing select-none">
             <button type="button" onClick={() => setCategory(null)}
               className={`shrink-0 text-[0.6rem] tracking-wider uppercase px-3 py-1.5 rounded-full border transition-colors ${!category ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
               Tout
@@ -369,7 +376,7 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
             {recentEntries.length > 0 && (
               <div className="flex flex-col gap-2">
                 <p className="text-[0.58rem] tracking-[0.2em] uppercase text-[var(--t-text-25)]">Récemment utilisés</p>
-                <div className="flex gap-2.5 overflow-x-auto no-scrollbar pb-1">
+                <div ref={recentScrollRef} className="flex gap-2.5 overflow-x-auto no-scrollbar h-scroll-snap pb-1 cursor-grab active:cursor-grabbing select-none">
                   {recentEntries.map(e => (
                     <button key={e.id} type="button" onClick={() => setDetailEntry(e)}
                       className="shrink-0 w-24 flex flex-col text-left border border-[var(--t-border-soft)] bg-[var(--t-surface)] rounded-xl overflow-hidden hover:border-[#c9a84c]/40 transition-colors">
