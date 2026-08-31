@@ -329,12 +329,9 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                   {detailEntry.a_noter && detailEntry.a_noter.length > 0 && (
                     <div className="flex flex-col gap-1.5">
                       <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[var(--t-text-25)]">À noter</p>
-                      <ul className="flex flex-col gap-1.5">
+                      <ul className="list-disc pl-4 marker:text-[#c9a84c]/70 flex flex-col gap-1.5">
                         {detailEntry.a_noter.map((mistake, i) => (
-                          <li key={i} className="flex gap-2 text-sm text-[var(--t-text-50)] leading-relaxed">
-                            <span className="shrink-0 text-[#c9a84c]/70 mt-1.5">•</span>
-                            <span>{mistake}</span>
-                          </li>
+                          <li key={i} className="text-sm text-[var(--t-text-50)] leading-relaxed pl-0.5">{mistake}</li>
                         ))}
                       </ul>
                     </div>
