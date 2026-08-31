@@ -93,6 +93,17 @@ export default function ProgrammePage() {
   const [histSectionOpen, setHistSectionOpen] = useState(false);
   const [openHistDates,   setOpenHistDates]   = useState<Set<string>>(new Set());
   const [exportingPdf, setExportingPdf] = useState(false);
+  const [deletingSeanceId, setDeletingSeanceId] = useState<string | null>(null);
+
+  const deleteSeance = async (s: CoachSeance) => {
+    if (!window.confirm("Supprimer définitivement cette séance ?")) return;
+    setDeletingSeanceId(s.id);
+    const { error } = await supabase.from("programme_seances").delete().eq("id", s.id);
+    setDeletingSeanceId(null);
+    if (error) return;
+    setCoachSeances(prev => prev.filter(x => x.id !== s.id));
+    if (openSeance === s.id) setOpenSeance(null);
+  };
 
   const toggleSeanceDone = async (s: CoachSeance) => {
     const done = s.completed_at ? null : new Date().toISOString();
@@ -745,6 +756,11 @@ export default function ProgrammePage() {
                         Un souci avec cette séance ? Signale-la à Samuel →
                       </button>
                     )}
+
+                    <button onClick={() => deleteSeance(s)} disabled={deletingSeanceId === s.id}
+                      className="text-[0.55rem] tracking-wider uppercase text-[var(--t-text-15)] hover:text-[#e07070] transition-colors text-center py-1 mt-1 w-full disabled:opacity-40">
+                      {deletingSeanceId === s.id ? "Suppression…" : "Supprimer cette séance"}
+                    </button>
                   </div>
                 )}
               </div>

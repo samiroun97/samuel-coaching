@@ -28,6 +28,7 @@ export default function CreerMaSeancePage() {
   const [items, setItems] = useState<ExerciceItem[]>([]);
   const [saving, setSaving] = useState(false);
   const [mesSeances, setMesSeances] = useState<MySeance[]>([]);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -65,6 +66,15 @@ export default function CreerMaSeancePage() {
     router.push(`/dashboard/programme?live=${data.id}`);
   };
 
+  const deleteSeance = async (id: string) => {
+    if (!window.confirm("Supprimer définitivement cette séance ?")) return;
+    setDeletingId(id);
+    const { error } = await supabase.from("programme_seances").delete().eq("id", id);
+    setDeletingId(null);
+    if (error) return;
+    setMesSeances(prev => prev.filter(s => s.id !== id));
+  };
+
   return (
     <div className="p-4 sm:p-8 max-w-2xl">
       <Link href="/dashboard/programme"
@@ -90,31 +100,35 @@ export default function CreerMaSeancePage() {
             Mes séances ({mesSeances.length})
           </p>
           {mesSeances.map(s => {
-            const rowContent = (
-              <>
-                <div className="min-w-0 flex items-center gap-2">
-                  {s.completed_at && <span className="text-[0.7rem] text-[#7eb8a0] shrink-0">✓</span>}
-                  {s.created_by_client
-                    ? <span className="text-[0.6rem] tracking-wider uppercase text-[var(--t-text-30)] rounded-full border border-[var(--t-border)] px-1.5 py-0.5 shrink-0">Toi</span>
-                    : <span className="text-[0.6rem] tracking-wider uppercase text-[#c9a84c] rounded-full border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">Samuel</span>}
-                  {s.type_seance && <span className="text-[0.6rem] tracking-wider uppercase text-[#c9a84c] rounded-full border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">{s.type_seance}</span>}
-                  <p className={`text-xs truncate ${s.completed_at ? "text-[var(--t-text-35)] line-through" : "text-[var(--t-text-70)]"}`}>{s.titre}</p>
-                </div>
-                {!s.completed_at && (
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-                    className="text-[var(--t-text-25)] shrink-0"><polyline points="9 18 15 12 9 6"/></svg>
-                )}
-              </>
-            );
-            return s.completed_at ? (
-              <div key={s.id} className="flex items-center justify-between gap-2 px-4 py-2.5 border-t border-[var(--t-border-soft)]">
-                {rowContent}
+            const label = (
+              <div className="min-w-0 flex items-center gap-2">
+                {s.completed_at && <span className="text-[0.7rem] text-[#7eb8a0] shrink-0">✓</span>}
+                {s.created_by_client
+                  ? <span className="text-[0.6rem] tracking-wider uppercase text-[var(--t-text-30)] rounded-full border border-[var(--t-border)] px-1.5 py-0.5 shrink-0">Toi</span>
+                  : <span className="text-[0.6rem] tracking-wider uppercase text-[#c9a84c] rounded-full border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">Samuel</span>}
+                {s.type_seance && <span className="text-[0.6rem] tracking-wider uppercase text-[#c9a84c] rounded-full border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">{s.type_seance}</span>}
+                <p className={`text-xs truncate ${s.completed_at ? "text-[var(--t-text-35)] line-through" : "text-[var(--t-text-70)]"}`}>{s.titre}</p>
               </div>
-            ) : (
-              <Link key={s.id} href={`/dashboard/programme?live=${s.id}`}
-                className="flex items-center justify-between gap-2 px-4 py-2.5 border-t border-[var(--t-border-soft)] hover:bg-[var(--t-glass-bg)] transition-colors">
-                {rowContent}
-              </Link>
+            );
+            return (
+              <div key={s.id} className="flex items-center gap-1 border-t border-[var(--t-border-soft)]">
+                {s.completed_at ? (
+                  <div className="flex-1 min-w-0 px-4 py-2.5">{label}</div>
+                ) : (
+                  <Link href={`/dashboard/programme?live=${s.id}`}
+                    className="flex-1 min-w-0 flex items-center justify-between gap-2 px-4 py-2.5 hover:bg-[var(--t-glass-bg)] transition-colors">
+                    {label}
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+                      className="text-[var(--t-text-25)] shrink-0"><polyline points="9 18 15 12 9 6"/></svg>
+                  </Link>
+                )}
+                <button onClick={() => deleteSeance(s.id)} disabled={deletingId === s.id} title="Supprimer cette séance"
+                  className="shrink-0 mr-3 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors disabled:opacity-30">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+                  </svg>
+                </button>
+              </div>
             );
           })}
         </div>
