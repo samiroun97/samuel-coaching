@@ -1,8 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { type ExerciceItem, type ExerciceMode, type SetDetail, type SimpleField, type ExerciceRun, EXERCICE_TYPES, emptyExercice, emptySet, groupExerciceRuns } from "@/lib/exercices";
 import { type LibraryEntry } from "@/lib/exerciceLibrary";
 import { type CatalogueEntry, findCatalogueEntry } from "@/lib/exercicesCatalogue";
+import { uploadCustomExerciceImage } from "@/lib/customExerciceImage";
 import { ExerciceLibraryBrowser } from "@/components/ExerciceLibraryBrowser";
 import { Select } from "@/components/Select";
 
@@ -26,16 +27,65 @@ const IconDumbbellLg = () => (
   </svg>
 );
 
-function ExerciceThumb({ catalogue, nom }: { catalogue: CatalogueEntry[]; nom: string }) {
-  const entry = nom.trim() ? findCatalogueEntry(catalogue, nom) : undefined;
+const IconCamera = () => <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>;
+
+// Vignette de l'exercice : photo du catalogue si l'exercice y est répertorié (verrouillée —
+// on ne remplace pas la photo officielle), sinon photo perso uploadable par le client
+// (exercice libre, ou nom qui ne matche rien dans le catalogue).
+function ExerciceThumb({ catalogue, ex, onChange }: { catalogue: CatalogueEntry[]; ex: ExerciceItem; onChange: (patch: Partial<ExerciceItem>) => void }) {
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const catalogueEntry = ex.nom.trim() ? findCatalogueEntry(catalogue, ex.nom) : undefined;
+  const editable = !catalogueEntry?.image_url;
+  const imageUrl = catalogueEntry?.image_url || ex.imageUrl || null;
+
+  const onFile = async (file: File | undefined) => {
+    if (!file) return;
+    setError("");
+    setUploading(true);
+    const result = await uploadCustomExerciceImage(file);
+    setUploading(false);
+    if ("error" in result) { setError(result.error); return; }
+    onChange({ imageUrl: result.url });
+  };
+
   return (
-    <div className="shrink-0 w-12 h-12 rounded-xl overflow-hidden bg-[var(--t-surface-2)] border border-[var(--t-border-soft)] flex items-center justify-center mt-0.5">
-      {entry?.image_url ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={entry.image_url} alt="" className="w-full h-full object-cover"/>
-      ) : (
-        <span className="text-[var(--t-text-15)]"><IconDumbbellLg/></span>
+    <div className="shrink-0 flex flex-col items-center gap-1 mt-0.5">
+      <div className="relative">
+        <button type="button" onClick={() => editable && inputRef.current?.click()} disabled={!editable}
+          className={`w-12 h-12 rounded-xl overflow-hidden bg-[var(--t-surface-2)] border border-[var(--t-border-soft)] flex items-center justify-center transition-colors ${editable ? "hover:border-[#c9a84c]/40" : ""}`}>
+          {imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={imageUrl} alt="" className="w-full h-full object-cover"/>
+          ) : (
+            <span className="text-[var(--t-text-15)]"><IconDumbbellLg/></span>
+          )}
+        </button>
+        {editable && uploading && (
+          <span className="absolute inset-0 rounded-xl bg-black/60 flex items-center justify-center text-white">
+            <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin"/>
+          </span>
+        )}
+        {editable && !uploading && (
+          imageUrl ? (
+            <button type="button" onClick={() => onChange({ imageUrl: "" })} title="Retirer la photo"
+              className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[var(--t-surface)] border border-[var(--t-border)] flex items-center justify-center text-[var(--t-text-25)] hover:text-[#e07070] hover:border-[#e07070]/40 transition-colors">
+              <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          ) : (
+            <span className="absolute -bottom-1.5 -right-1.5 w-5 h-5 rounded-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black flex items-center justify-center pointer-events-none">
+              <IconCamera/>
+            </span>
+          )
+        )}
+      </div>
+      {editable && (
+        <input ref={inputRef} type="file" accept="image/*" className="hidden"
+          onChange={e => { onFile(e.target.files?.[0]); e.target.value = ""; }}/>
       )}
+      {error && <p className="text-[0.5rem] text-[#e07070] w-16 text-center leading-tight">{error}</p>}
     </div>
   );
 }
@@ -189,7 +239,7 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
             )}
           </div>
 
-          <ExerciceThumb catalogue={catalogue} nom={ex.nom}/>
+          <ExerciceThumb catalogue={catalogue} ex={ex} onChange={patch => update(i, patch)}/>
 
           <div className="flex-1 min-w-0">
             <input list={DATALIST_ID} placeholder="Nom de l'exercice" value={ex.nom}

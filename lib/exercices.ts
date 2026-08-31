@@ -22,6 +22,9 @@ export type ExerciceItem = {
   texteLibre: string;
   // commun
   videoUrl: string;
+  // Photo perso pour un exercice sans équivalent illustré dans le catalogue (exercice
+  // libre, ou nom qui ne matche rien) — uploadée par le client, cf. lib/customExerciceImage.ts.
+  imageUrl: string;
   groupId: string | null;
   groupLabel: string;
 };
@@ -29,7 +32,7 @@ export type ExerciceItem = {
 export const emptyExercice = (): ExerciceItem => ({
   nom: "", type: "", note: "", mode: "simple",
   series: "", repetitions: "", poids: "", repos: "", hiddenFields: [],
-  sets: [], texteLibre: "", videoUrl: "", groupId: null, groupLabel: "",
+  sets: [], texteLibre: "", videoUrl: "", imageUrl: "", groupId: null, groupLabel: "",
 });
 
 // Comble les champs manquants d'un exercice partiel (ancien format JSON, réponse IA, modèle importé…).
@@ -42,6 +45,7 @@ export function normalizeExercice(p: Partial<ExerciceItem>): ExerciceItem {
     sets: Array.isArray(p.sets) ? p.sets : [],
     texteLibre: p.texteLibre ?? "",
     videoUrl: p.videoUrl ?? "",
+    imageUrl: p.imageUrl ?? "",
     groupId: p.groupId ?? null,
     groupLabel: p.groupLabel ?? "",
   };
@@ -123,6 +127,7 @@ export function serializeExercices(items: ExerciceItem[]): string | null {
     sets: i.sets.map(s => ({ reps: s.reps.trim(), poids: s.poids.trim(), repos: s.repos.trim(), rpe: s.rpe.trim(), tempo: s.tempo.trim() })),
     texteLibre: i.texteLibre.trim(),
     videoUrl: i.videoUrl.trim(),
+    imageUrl: i.imageUrl.trim(),
     groupId: i.groupId,
     groupLabel: i.groupLabel.trim(),
   })));
