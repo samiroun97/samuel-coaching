@@ -96,10 +96,21 @@ export function groupExerciceRuns(items: ExerciceItem[]): ExerciceRun[] {
 
 // Une séance ne peut être "démarrée" en mode live (logging série par série) que si au moins
 // un exercice a des séries structurées à cocher — un mode "libre" pur (texte seul) n'a rien à logger.
+// Nombre de séries cible en mode "simple" : le champ "séries" est explicite quand rempli,
+// mais un exercice où seuls reps/poids/repos ont été saisis (le coach a oublié "séries", ou
+// le "4" affiché en placeholder dans l'éditeur a été pris pour une vraie valeur) ne doit
+// jamais tomber à 0 série et disparaître silencieusement de la séance loggable — on retombe
+// alors sur 4, le même défaut implicite déjà suggéré partout ailleurs dans l'éditeur.
+function simpleSetCount(ex: ExerciceItem): number {
+  const n = parseInt(ex.series) || 0;
+  if (n > 0) return n;
+  return ex.repetitions || ex.poids || ex.repos ? 4 : 0;
+}
+
 export function hasLoggableSets(items: ExerciceItem[]): boolean {
   return items.some(ex =>
     (ex.mode === "avance" && ex.sets.length > 0) ||
-    (ex.mode === "simple" && (parseInt(ex.series) || 0) > 0)
+    (ex.mode === "simple" && simpleSetCount(ex) > 0)
   );
 }
 
@@ -110,7 +121,7 @@ export function hasLoggableSets(items: ExerciceItem[]): boolean {
 export function targetSetsFor(ex: ExerciceItem): SetDetail[] {
   if (ex.mode === "avance") return ex.sets;
   if (ex.mode === "simple") {
-    const n = parseInt(ex.series) || 0;
+    const n = simpleSetCount(ex);
     return Array.from({ length: n }, () => ({ reps: ex.repetitions, poids: ex.poids, repos: ex.repos, rpe: "", tempo: "" }));
   }
   return [];

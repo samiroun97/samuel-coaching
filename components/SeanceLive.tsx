@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type TouchEvent } from "react";
 import { supabase } from "@/lib/supabase";
 import { type ExerciceItem, type SetDetail, parseExercices, groupExerciceRuns, targetSetsFor } from "@/lib/exercices";
 import { useWakeLock } from "@/lib/useWakeLock";
@@ -159,6 +159,11 @@ export function SeanceLive({ seance, clientId, onFinish, onClose }: {
   const exercices = useMemo(() => parseExercices(seance.exercices), [seance.exercices]);
   const runs = useMemo(() => groupExerciceRuns(exercices), [exercices]);
 
+  // Un exercice (ou superset) à la fois, avec flèches/points pour naviguer — plutôt qu'une
+  // longue liste à faire défiler, façon Liftoff/Hevy : on sait toujours où on en est.
+  const [runIdx, setRunIdx] = useState(0);
+  const touchStartX = useRef<number | null>(null);
+
   const [logs, setLogs] = useState<Record<string, SetLogState>>({});
   const [historyByNom, setHistoryByNom] = useState<Record<string, LastPerformance>>({});
   const [prByNom, setPrByNom] = useState<Record<string, boolean>>({});
@@ -249,6 +254,22 @@ export function SeanceLive({ seance, clientId, onFinish, onClose }: {
   const doneLogs = Object.values(logs).filter(l => l.done);
   const doneSets = doneLogs.length;
   const volume = doneLogs.reduce((s, l) => s + (numOr(l.poids) ?? 0) * (numOr(l.reps) ?? 0), 0);
+
+  const runIsComplete = (run: { indices: number[] }) => run.indices.every(exIdx => {
+    const rows = displaySetsFor(exercices[exIdx], extraSets[exIdx] ?? 0);
+    return rows.length === 0 || rows.every((_, i) => logs[`${exIdx}-${i}`]?.done);
+  });
+  const clampRun = (i: number) => Math.max(0, Math.min(runs.length - 1, i));
+  const goPrev = () => setRunIdx(i => clampRun(i - 1));
+  const goNext = () => setRunIdx(i => clampRun(i + 1));
+  const onTouchStart = (e: TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
+  const onTouchEnd = (e: TouchEvent) => {
+    if (touchStartX.current == null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    touchStartX.current = null;
+    if (Math.abs(dx) < 60) return;
+    if (dx < 0) goNext(); else goPrev();
+  };
 
   const onChange = (exIdx: number, setIdx: number, field: "poids" | "reps" | "rir", val: string) => {
     const k = `${exIdx}-${setIdx}`;
@@ -381,25 +402,65 @@ export function SeanceLive({ seance, clientId, onFinish, onClose }: {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4 pb-28 max-w-lg mx-auto w-full">
-        {!loaded ? (
-          <p className="text-xs text-[var(--t-text-30)] text-center py-8">Chargement…</p>
-        ) : runs.map(run =>
-          run.groupId ? (
-            <div key={`g-${run.indices[0]}`} className="border border-[#c9a84c]/25 bg-[#c9a84c]/[0.03] rounded-2xl p-3 flex flex-col gap-3">
-              <p className="text-[0.62rem] tracking-[0.15em] uppercase text-[#c9a84c] font-medium px-1">{run.groupLabel || "Superset"}</p>
-              {run.indices.map(exIdx => (
-                <ExerciceLiveBlock key={exIdx} ex={exercices[exIdx]} exIdx={exIdx} logs={logs}
-                  history={historyByNom[exercices[exIdx].nom] ?? {}} prBadge={!!prByNom[exercices[exIdx].nom]}
-                  extra={extraSets[exIdx] ?? 0} onToggle={onToggle} onChange={onChange} onAddSet={onAddSet}/>
+      {loaded && runs.length > 0 && (
+        <div className="flex items-center justify-between gap-2 px-4 py-2.5 shrink-0 max-w-lg mx-auto w-full">
+          <button onClick={goPrev} disabled={runIdx === 0}
+            className="w-9 h-9 rounded-full border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-70)] active:scale-90 transition-all disabled:opacity-20 flex items-center justify-center shrink-0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <div className="flex flex-col items-center gap-1.5 min-w-0">
+            <p className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-30)]">Exercice {runIdx + 1}/{runs.length}</p>
+            <div className="flex items-center gap-1.5">
+              {runs.map((run, i) => (
+                <button key={i} onClick={() => setRunIdx(i)} aria-label={`Exercice ${i + 1}`}
+                  className={`h-1.5 rounded-full transition-all ${i === runIdx ? "w-5 bg-[#c9a84c]" : runIsComplete(run) ? "w-1.5 bg-[#7eb8a0]" : "w-1.5 bg-[var(--t-track)]"}`}/>
               ))}
             </div>
-          ) : (
-            <ExerciceLiveBlock key={run.indices[0]} ex={exercices[run.indices[0]]} exIdx={run.indices[0]} logs={logs}
-              history={historyByNom[exercices[run.indices[0]].nom] ?? {}} prBadge={!!prByNom[exercices[run.indices[0]].nom]}
-              extra={extraSets[run.indices[0]] ?? 0} onToggle={onToggle} onChange={onChange} onAddSet={onAddSet}/>
-          )
-        )}
+          </div>
+          <button onClick={goNext} disabled={runIdx === runs.length - 1}
+            className="w-9 h-9 rounded-full border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-70)] active:scale-90 transition-all disabled:opacity-20 flex items-center justify-center shrink-0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      )}
+
+      <div className="flex-1 overflow-y-auto px-4 pb-28 max-w-lg mx-auto w-full" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+        {!loaded ? (
+          <p className="text-xs text-[var(--t-text-30)] text-center py-8">Chargement…</p>
+        ) : (() => {
+          const run = runs[runIdx];
+          if (!run) return null;
+          const complete = runIsComplete(run);
+          return (
+            <div className="flex flex-col gap-3">
+              {run.groupId ? (
+                <div className="border border-[#c9a84c]/25 bg-[#c9a84c]/[0.03] rounded-2xl p-3 flex flex-col gap-3">
+                  <p className="text-[0.62rem] tracking-[0.15em] uppercase text-[#c9a84c] font-medium px-1">{run.groupLabel || "Superset"}</p>
+                  {run.indices.map(exIdx => (
+                    <ExerciceLiveBlock key={exIdx} ex={exercices[exIdx]} exIdx={exIdx} logs={logs}
+                      history={historyByNom[exercices[exIdx].nom] ?? {}} prBadge={!!prByNom[exercices[exIdx].nom]}
+                      extra={extraSets[exIdx] ?? 0} onToggle={onToggle} onChange={onChange} onAddSet={onAddSet}/>
+                  ))}
+                </div>
+              ) : (
+                <ExerciceLiveBlock ex={exercices[run.indices[0]]} exIdx={run.indices[0]} logs={logs}
+                  history={historyByNom[exercices[run.indices[0]].nom] ?? {}} prBadge={!!prByNom[exercices[run.indices[0]].nom]}
+                  extra={extraSets[run.indices[0]] ?? 0} onToggle={onToggle} onChange={onChange} onAddSet={onAddSet}/>
+              )}
+
+              {runIdx < runs.length - 1 ? (
+                <button onClick={goNext}
+                  className={`w-full py-3.5 rounded-2xl text-[0.7rem] font-bold tracking-[0.15em] uppercase transition-all duration-200 flex items-center justify-center gap-2 ${
+                    complete ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black shadow-[0_4px_16px_-6px_rgba(201,168,76,0.6)] hover:-translate-y-0.5"
+                             : "border border-[var(--t-border)] text-[var(--t-text-30)] hover:text-[var(--t-text-60)] hover:border-[var(--t-text-20)]"}`}>
+                  Exercice suivant <span aria-hidden>→</span>
+                </button>
+              ) : complete ? (
+                <p className="text-center text-[0.68rem] text-[#7eb8a0] tracking-wide py-1">Dernier exercice terminé — tu peux finir la séance ✓</p>
+              ) : null}
+            </div>
+          );
+        })()}
       </div>
 
       {rest && rest.left > 0 && (
