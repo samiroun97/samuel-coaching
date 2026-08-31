@@ -8,6 +8,8 @@ import { useSelectedDate } from "@/lib/useSelectedDate";
 import { serializeExercices, type ExerciceItem } from "@/lib/exercices";
 import { loadCatalogue, type CatalogueEntry } from "@/lib/exercicesCatalogue";
 
+type MySeance = { id: string; titre: string; type_seance: string | null; date_prevue: string | null; completed_at: string | null; created_by_client?: boolean };
+
 // Séance libre composée par le client lui-même (freestyle) — mêmes tables/policies que
 // les séances assignées par Samuel (RLS déjà ouverte à auth.uid() = client_id), juste
 // marquée created_by_client pour la distinguer dans les deux vues. Page dédiée (plutôt
@@ -25,6 +27,7 @@ export default function CreerMaSeancePage() {
   const [titre, setTitre] = useState("");
   const [items, setItems] = useState<ExerciceItem[]>([]);
   const [saving, setSaving] = useState(false);
+  const [mesSeances, setMesSeances] = useState<MySeance[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -32,6 +35,12 @@ export default function CreerMaSeancePage() {
       if (!user) return;
       setUserId(user.id);
       userEmailRef.current = user.email ?? "";
+      if (user.email) {
+        const { data } = await supabase.from("programme_seances")
+          .select("id,titre,type_seance,date_prevue,completed_at,created_by_client")
+          .eq("assigned_to_email", user.email).order("created_at", { ascending: false });
+        setMesSeances((data ?? []) as MySeance[]);
+      }
     })();
     loadCatalogue().then(setCatalogue).catch(() => {});
   }, []);
@@ -73,6 +82,43 @@ export default function CreerMaSeancePage() {
             : `${validCount} exercice${validCount > 1 ? "s" : ""} ajouté${validCount > 1 ? "s" : ""} — ajuste séries, reps et poids si besoin.`}
         </p>
       </div>
+
+      {/* Séances existantes — reprendre ou consulter avant d'en créer une nouvelle */}
+      {mesSeances.length > 0 && (
+        <div className="border border-[var(--t-border-soft)] bg-[var(--t-surface)] rounded-2xl mb-8 overflow-hidden">
+          <p className="px-4 pt-3 pb-2 text-[0.62rem] tracking-[0.2em] uppercase text-[var(--t-text-40)]">
+            Mes séances ({mesSeances.length})
+          </p>
+          {mesSeances.map(s => {
+            const rowContent = (
+              <>
+                <div className="min-w-0 flex items-center gap-2">
+                  {s.completed_at && <span className="text-[0.7rem] text-[#7eb8a0] shrink-0">✓</span>}
+                  {s.created_by_client
+                    ? <span className="text-[0.6rem] tracking-wider uppercase text-[var(--t-text-30)] rounded-full border border-[var(--t-border)] px-1.5 py-0.5 shrink-0">Toi</span>
+                    : <span className="text-[0.6rem] tracking-wider uppercase text-[#c9a84c] rounded-full border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">Samuel</span>}
+                  {s.type_seance && <span className="text-[0.6rem] tracking-wider uppercase text-[#c9a84c] rounded-full border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">{s.type_seance}</span>}
+                  <p className={`text-xs truncate ${s.completed_at ? "text-[var(--t-text-35)] line-through" : "text-[var(--t-text-70)]"}`}>{s.titre}</p>
+                </div>
+                {!s.completed_at && (
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+                    className="text-[var(--t-text-25)] shrink-0"><polyline points="9 18 15 12 9 6"/></svg>
+                )}
+              </>
+            );
+            return s.completed_at ? (
+              <div key={s.id} className="flex items-center justify-between gap-2 px-4 py-2.5 border-t border-[var(--t-border-soft)]">
+                {rowContent}
+              </div>
+            ) : (
+              <Link key={s.id} href={`/dashboard/programme?live=${s.id}`}
+                className="flex items-center justify-between gap-2 px-4 py-2.5 border-t border-[var(--t-border-soft)] hover:bg-[var(--t-glass-bg)] transition-colors">
+                {rowContent}
+              </Link>
+            );
+          })}
+        </div>
+      )}
 
       {/* Étape 1 — construire la séance */}
       <div className="flex items-center gap-2.5 mb-4">
