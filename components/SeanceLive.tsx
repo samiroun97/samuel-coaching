@@ -349,7 +349,7 @@ export function SeanceLive({ seance, clientId, onFinish, onClose }: {
 
   return (
     <div className="fixed inset-0 bg-[var(--t-bg)] z-50 flex flex-col">
-      <div className="flex items-center justify-between px-5 py-3.5 shrink-0 gap-3">
+      <div className="flex items-center justify-between px-5 py-3.5 shrink-0 gap-3 max-w-lg mx-auto w-full">
         <button onClick={onClose} className="text-[var(--t-text-30)] hover:text-[var(--t-text)] transition-colors shrink-0 w-8 h-8 flex items-center justify-center -ml-1.5">
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
@@ -361,25 +361,27 @@ export function SeanceLive({ seance, clientId, onFinish, onClose }: {
       </div>
 
       <div className="h-1 bg-[var(--t-track)] shrink-0">
-        <div className="h-full bg-gradient-to-r from-[#e2c97e] to-[#c9a84c] transition-all duration-500" style={{ width: `${overallPct}%` }}/>
+        <div className="h-full bg-gradient-to-r from-[#e2c97e] to-[#c9a84c] transition-all duration-500 max-w-lg mx-auto" style={{ width: `${overallPct}%` }}/>
       </div>
 
-      <div className="grid grid-cols-3 border-b border-[var(--t-border-soft)] shrink-0">
-        <div className="text-center py-3.5 border-r border-[var(--t-border-soft)]">
-          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[var(--t-text)] tracking-wide leading-none">{fmtDuration(elapsed)}</p>
-          <p className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-25)] mt-1.5">Durée</p>
-        </div>
-        <div className="text-center py-3.5 border-r border-[var(--t-border-soft)]">
-          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[#c9a84c] tracking-wide leading-none">{Math.round(volume).toLocaleString("fr-FR")}</p>
-          <p className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-25)] mt-1.5">Volume kg</p>
-        </div>
-        <div className="text-center py-3.5">
-          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[var(--t-text)] tracking-wide leading-none">{doneSets}/{totalSets}</p>
-          <p className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-25)] mt-1.5">Séries</p>
+      <div className="border-b border-[var(--t-border-soft)] shrink-0">
+        <div className="grid grid-cols-3 max-w-lg mx-auto">
+          <div className="text-center py-3.5 border-r border-[var(--t-border-soft)]">
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[var(--t-text)] tracking-wide leading-none">{fmtDuration(elapsed)}</p>
+            <p className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-25)] mt-1.5">Durée</p>
+          </div>
+          <div className="text-center py-3.5 border-r border-[var(--t-border-soft)]">
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[#c9a84c] tracking-wide leading-none">{Math.round(volume).toLocaleString("fr-FR")}</p>
+            <p className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-25)] mt-1.5">Volume kg</p>
+          </div>
+          <div className="text-center py-3.5">
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[var(--t-text)] tracking-wide leading-none">{doneSets}/{totalSets}</p>
+            <p className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-25)] mt-1.5">Séries</p>
+          </div>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4 pb-28">
+      <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4 pb-28 max-w-lg mx-auto w-full">
         {!loaded ? (
           <p className="text-xs text-[var(--t-text-30)] text-center py-8">Chargement…</p>
         ) : runs.map(run =>
