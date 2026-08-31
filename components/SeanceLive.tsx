@@ -39,34 +39,53 @@ function displaySetsFor(ex: ExerciceItem, extra: number): { target: SetDetail; i
   return [...base, ...extras];
 }
 
+// Stepper numérique tactile (Liftoff/Hevy-style) : +/- pour ajuster vite au poker/à la
+// série suivante sans ouvrir le clavier, tap sur le nombre pour saisir une valeur précise.
+function NumberStepper({ value, placeholder, step, onChange, accent }: {
+  value: string; placeholder: string; step: number; onChange: (v: string) => void; accent?: boolean;
+}) {
+  const bump = (dir: 1 | -1) => {
+    const n = numOr(value) ?? numOr(placeholder) ?? 0;
+    const next = Math.max(0, Math.round((n + dir * step) * 100) / 100);
+    onChange(String(next));
+  };
+  return (
+    <div className={`flex items-center rounded-xl border overflow-hidden ${accent && value ? "border-[#c9a84c]/40 bg-[#c9a84c]/[0.06]" : "border-[var(--t-border)] bg-[var(--t-bg)]"}`}>
+      <button type="button" onClick={() => bump(-1)} tabIndex={-1}
+        className="w-7 h-9 shrink-0 flex items-center justify-center text-[var(--t-text-30)] hover:text-[var(--t-text-60)] active:bg-[var(--t-track)] transition-colors text-base leading-none">−</button>
+      <input type="number" inputMode="decimal" placeholder={placeholder} value={value}
+        onChange={e => onChange(e.target.value)}
+        className="w-full min-w-0 bg-transparent text-center text-sm font-semibold py-2 text-[var(--t-text)] placeholder-[var(--t-text-20)] focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"/>
+      <button type="button" onClick={() => bump(1)} tabIndex={-1}
+        className="w-7 h-9 shrink-0 flex items-center justify-center text-[var(--t-text-30)] hover:text-[var(--t-text-60)] active:bg-[var(--t-track)] transition-colors text-base leading-none">+</button>
+    </div>
+  );
+}
+
 function SetRow({ target, idx, log, prev, isExtra, onToggle, onChange, onCopyPrev }: {
   target: SetDetail; idx: number; log: SetLogState | undefined; prev: { poids: number | null; reps: number | null } | undefined;
   isExtra: boolean; onToggle: () => void; onChange: (field: "poids" | "reps" | "rir", val: string) => void; onCopyPrev: () => void;
 }) {
   const hasPrev = prev && (prev.poids != null || prev.reps != null);
   return (
-    <div className={`grid grid-cols-[26px_1fr_50px_44px_44px_28px] items-center gap-1.5 rounded-lg px-2 py-1.5 transition-colors ${log?.done ? "bg-[#7eb8a0]/10" : isExtra ? "bg-[#c9a84c]/[0.04]" : ""}`}>
-      <span className="text-[0.62rem] text-[var(--t-text-30)] font-bold text-center">{idx + 1}</span>
+    <div className={`grid grid-cols-[28px_60px_1fr_1fr_52px_36px] items-center gap-2 rounded-xl px-2 py-1.5 transition-colors ${log?.done ? "bg-[#7eb8a0]/12" : isExtra ? "bg-[#c9a84c]/[0.05]" : ""}`}>
+      <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[0.68rem] font-bold shrink-0 ${log?.done ? "bg-[#7eb8a0] text-black" : "bg-[var(--t-track)] text-[var(--t-text-40)]"}`}>{idx + 1}</span>
       {hasPrev && !log?.done ? (
-        <button onClick={onCopyPrev} className="text-[0.62rem] text-[var(--t-text-25)] truncate text-left hover:text-[#c9a84c] transition-colors underline decoration-dotted decoration-[var(--t-text-15)]">
+        <button onClick={onCopyPrev} className="text-[0.7rem] text-[var(--t-text-30)] truncate text-left hover:text-[#c9a84c] transition-colors underline decoration-dotted decoration-[var(--t-text-15)]">
           {fmtPrev(prev)}
         </button>
       ) : (
-        <span className="text-[0.62rem] text-[var(--t-text-15)] truncate">{hasPrev ? fmtPrev(prev) : "—"}</span>
+        <span className="text-[0.7rem] text-[var(--t-text-15)] truncate">{hasPrev ? fmtPrev(prev) : "—"}</span>
       )}
-      <input type="number" inputMode="decimal" placeholder={target.poids || "kg"} value={log?.poids ?? ""}
-        onChange={e => onChange("poids", e.target.value)}
-        className="w-full min-w-0 bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg text-center text-[0.68rem] py-1.5 text-[var(--t-text)] placeholder-[var(--t-text-20)] focus:outline-none focus:border-[#c9a84c]/40"/>
-      <input type="number" inputMode="numeric" placeholder={target.reps || "reps"} value={log?.reps ?? ""}
-        onChange={e => onChange("reps", e.target.value)}
-        className="w-full min-w-0 bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg text-center text-[0.68rem] py-1.5 text-[var(--t-text)] placeholder-[var(--t-text-20)] focus:outline-none focus:border-[#c9a84c]/40"/>
-      <Select value={log?.rir ?? ""} onChange={v => onChange("rir", v)} placeholder="—"
+      <NumberStepper value={log?.poids ?? ""} placeholder={target.poids || "kg"} step={2.5} onChange={v => onChange("poids", v)} accent/>
+      <NumberStepper value={log?.reps ?? ""} placeholder={target.reps || "reps"} step={1} onChange={v => onChange("reps", v)}/>
+      <Select value={log?.rir ?? ""} onChange={v => onChange("rir", v)} placeholder="RIR"
         options={[0, 1, 2, 3, 4].map(n => ({ value: String(n), label: `${n}${n === 4 ? "+" : ""}` }))}
-        triggerClassName="bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg text-[0.58rem] text-[var(--t-text-40)] px-1 py-1.5 w-full justify-center"
+        triggerClassName="bg-[var(--t-bg)] border border-[var(--t-border)] rounded-xl text-[0.65rem] text-[var(--t-text-40)] px-1 py-2 w-full justify-center"
         panelClassName="w-16"/>
       <button onClick={onToggle}
-        className={`w-7 h-7 rounded-full border shrink-0 flex items-center justify-center transition-colors mx-auto ${log?.done ? "bg-[#7eb8a0] border-[#7eb8a0] text-black" : "border-[var(--t-text-25)] text-transparent"}`}>
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+        className={`w-8 h-8 rounded-full border-2 shrink-0 flex items-center justify-center transition-all mx-auto active:scale-90 ${log?.done ? "bg-[#7eb8a0] border-[#7eb8a0] text-black" : "border-[var(--t-border)] text-transparent hover:border-[#7eb8a0]/50"}`}>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7"/></svg>
       </button>
     </div>
   );
@@ -80,24 +99,36 @@ function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle,
 }) {
   const rows = displaySetsFor(ex, extra);
   const doneCount = rows.filter((_, i) => logs[`${exIdx}-${i}`]?.done).length;
+  const pct = rows.length ? Math.round((doneCount / rows.length) * 100) : 0;
+  const complete = rows.length > 0 && doneCount === rows.length;
   return (
-    <div className="border border-[var(--t-border-soft)] bg-[var(--t-surface)] rounded-xl p-3 flex flex-col gap-2">
-      <div className="flex items-center justify-between gap-2 px-1">
-        <div className="flex items-center gap-2 min-w-0">
-          <p className="text-xs text-[var(--t-text-70)] font-medium truncate">{ex.nom}</p>
-          {prBadge && <span className="text-[0.6rem] text-[#c9a84c] shrink-0">🏆 Record</span>}
+    <div className={`border rounded-2xl p-4 flex flex-col gap-3 transition-colors ${complete ? "border-[#7eb8a0]/30 bg-[#7eb8a0]/[0.04]" : "border-[var(--t-border-soft)] bg-[var(--t-surface)]"}`}>
+      <div className="flex items-center justify-between gap-2">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-semibold text-[var(--t-text)] truncate">{ex.nom}</p>
+            {prBadge && <span className="text-[0.62rem] text-[#c9a84c] shrink-0">🏆 Record</span>}
+          </div>
+          {rows.length > 0 && (
+            <div className="flex items-center gap-2 mt-1.5">
+              <div className="h-1.5 w-24 bg-[var(--t-track)] rounded-full overflow-hidden">
+                <div className={`h-full rounded-full transition-all duration-300 ${complete ? "bg-[#7eb8a0]" : "bg-[#c9a84c]"}`} style={{ width: `${pct}%` }}/>
+              </div>
+              <span className={`text-[0.65rem] tracking-wider shrink-0 font-medium ${complete ? "text-[#7eb8a0]" : "text-[var(--t-text-30)]"}`}>{doneCount}/{rows.length}</span>
+            </div>
+          )}
         </div>
-        {rows.length > 0 && <span className="text-[0.6rem] text-[var(--t-text-25)] tracking-wider shrink-0">{doneCount}/{rows.length}</span>}
+        {complete && <span className="text-[#7eb8a0] shrink-0 text-lg">✓</span>}
       </div>
 
       {rows.length > 0 ? (
         <>
-          <div className="grid grid-cols-[26px_1fr_50px_44px_44px_28px] items-center gap-1.5 px-2">
-            <span className="text-[0.5rem] tracking-[0.1em] uppercase text-[var(--t-text-15)] text-center">Série</span>
-            <span className="text-[0.5rem] tracking-[0.1em] uppercase text-[var(--t-text-15)]">Précédent</span>
-            <span className="text-[0.5rem] tracking-[0.1em] uppercase text-[var(--t-text-15)] text-center">Kg</span>
-            <span className="text-[0.5rem] tracking-[0.1em] uppercase text-[var(--t-text-15)] text-center">Reps</span>
-            <span className="text-[0.5rem] tracking-[0.1em] uppercase text-[var(--t-text-15)] text-center">Rir</span>
+          <div className="grid grid-cols-[28px_60px_1fr_1fr_52px_36px] items-center gap-2 px-2">
+            <span className="text-[0.58rem] tracking-[0.1em] uppercase text-[var(--t-text-20)] text-center">Série</span>
+            <span className="text-[0.58rem] tracking-[0.1em] uppercase text-[var(--t-text-20)]">Préc.</span>
+            <span className="text-[0.58rem] tracking-[0.1em] uppercase text-[var(--t-text-20)] text-center">Kg</span>
+            <span className="text-[0.58rem] tracking-[0.1em] uppercase text-[var(--t-text-20)] text-center">Reps</span>
+            <span className="text-[0.58rem] tracking-[0.1em] uppercase text-[var(--t-text-20)] text-center">Rir</span>
             <span/>
           </div>
           <div className="flex flex-col gap-1">
@@ -110,14 +141,14 @@ function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle,
             ))}
           </div>
           <button onClick={() => onAddSet(exIdx)}
-            className="text-[0.6rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[#c9a84c] transition-colors text-left px-2 py-1">
+            className="text-[0.65rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[#c9a84c] transition-colors text-left px-2 py-1.5 font-medium">
             + Ajouter une série
           </button>
         </>
       ) : ex.texteLibre ? (
-        <p className="text-[0.68rem] text-[var(--t-text-50)] leading-relaxed whitespace-pre-wrap px-1">{ex.texteLibre}</p>
+        <p className="text-[0.72rem] text-[var(--t-text-50)] leading-relaxed whitespace-pre-wrap">{ex.texteLibre}</p>
       ) : null}
-      {ex.note && <p className="text-[0.65rem] text-[var(--t-text-35)] italic px-1">{ex.note}</p>}
+      {ex.note && <p className="text-[0.68rem] text-[var(--t-text-35)] italic">{ex.note}</p>}
     </div>
   );
 }
@@ -314,41 +345,47 @@ export function SeanceLive({ seance, clientId, onFinish, onClose }: {
     );
   }
 
+  const overallPct = totalSets ? Math.min((doneSets / totalSets) * 100, 100) : 0;
+
   return (
     <div className="fixed inset-0 bg-[var(--t-bg)] z-50 flex flex-col">
-      <div className="flex items-center justify-between px-5 py-3 border-b border-[var(--t-border-soft)] shrink-0 gap-3">
-        <button onClick={onClose} className="text-[var(--t-text-30)] hover:text-[var(--t-text)] transition-colors shrink-0">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      <div className="flex items-center justify-between px-5 py-3.5 shrink-0 gap-3">
+        <button onClick={onClose} className="text-[var(--t-text-30)] hover:text-[var(--t-text)] transition-colors shrink-0 w-8 h-8 flex items-center justify-center -ml-1.5">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
-        <p style={{ fontFamily: "var(--font-bebas)" }} className="text-base tracking-wider text-[var(--t-text)] truncate flex-1 text-center">{seance.titre}</p>
+        <p style={{ fontFamily: "var(--font-bebas)" }} className="text-lg tracking-wider text-[var(--t-text)] truncate flex-1 text-center">{seance.titre}</p>
         <button onClick={finish} disabled={finishing}
-          className="shrink-0 rounded-full text-[0.62rem] font-bold tracking-[0.12em] uppercase px-3.5 py-2 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black shadow-[0_3px_12px_-4px_rgba(201,168,76,0.6)] transition-all disabled:opacity-50">
+          className="shrink-0 rounded-full text-[0.65rem] font-bold tracking-[0.12em] uppercase px-4 py-2.5 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black shadow-[0_3px_12px_-4px_rgba(201,168,76,0.6)] transition-all disabled:opacity-50">
           {finishing ? "…" : "Terminer"}
         </button>
       </div>
 
+      <div className="h-1 bg-[var(--t-track)] shrink-0">
+        <div className="h-full bg-gradient-to-r from-[#e2c97e] to-[#c9a84c] transition-all duration-500" style={{ width: `${overallPct}%` }}/>
+      </div>
+
       <div className="grid grid-cols-3 border-b border-[var(--t-border-soft)] shrink-0">
-        <div className="text-center py-2.5 border-r border-[var(--t-border-soft)]">
-          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-lg text-[var(--t-text)] tracking-wide leading-none">{fmtDuration(elapsed)}</p>
-          <p className="text-[0.55rem] tracking-[0.15em] uppercase text-[var(--t-text-25)] mt-1">Durée</p>
+        <div className="text-center py-3.5 border-r border-[var(--t-border-soft)]">
+          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[var(--t-text)] tracking-wide leading-none">{fmtDuration(elapsed)}</p>
+          <p className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-25)] mt-1.5">Durée</p>
         </div>
-        <div className="text-center py-2.5 border-r border-[var(--t-border-soft)]">
-          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-lg text-[#c9a84c] tracking-wide leading-none">{Math.round(volume).toLocaleString("fr-FR")}</p>
-          <p className="text-[0.55rem] tracking-[0.15em] uppercase text-[var(--t-text-25)] mt-1">Volume kg</p>
+        <div className="text-center py-3.5 border-r border-[var(--t-border-soft)]">
+          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[#c9a84c] tracking-wide leading-none">{Math.round(volume).toLocaleString("fr-FR")}</p>
+          <p className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-25)] mt-1.5">Volume kg</p>
         </div>
-        <div className="text-center py-2.5">
-          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-lg text-[var(--t-text)] tracking-wide leading-none">{doneSets}/{totalSets}</p>
-          <p className="text-[0.55rem] tracking-[0.15em] uppercase text-[var(--t-text-25)] mt-1">Séries</p>
+        <div className="text-center py-3.5">
+          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[var(--t-text)] tracking-wide leading-none">{doneSets}/{totalSets}</p>
+          <p className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-25)] mt-1.5">Séries</p>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3 pb-24">
+      <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4 pb-28">
         {!loaded ? (
           <p className="text-xs text-[var(--t-text-30)] text-center py-8">Chargement…</p>
         ) : runs.map(run =>
           run.groupId ? (
-            <div key={`g-${run.indices[0]}`} className="border border-[#c9a84c]/25 bg-[#c9a84c]/[0.03] rounded-xl p-2 flex flex-col gap-2">
-              <p className="text-[0.55rem] tracking-[0.15em] uppercase text-[#c9a84c] px-1.5">{run.groupLabel || "Superset"}</p>
+            <div key={`g-${run.indices[0]}`} className="border border-[#c9a84c]/25 bg-[#c9a84c]/[0.03] rounded-2xl p-3 flex flex-col gap-3">
+              <p className="text-[0.62rem] tracking-[0.15em] uppercase text-[#c9a84c] font-medium px-1">{run.groupLabel || "Superset"}</p>
               {run.indices.map(exIdx => (
                 <ExerciceLiveBlock key={exIdx} ex={exercices[exIdx]} exIdx={exIdx} logs={logs}
                   history={historyByNom[exercices[exIdx].nom] ?? {}} prBadge={!!prByNom[exercices[exIdx].nom]}
@@ -365,19 +402,22 @@ export function SeanceLive({ seance, clientId, onFinish, onClose }: {
 
       {rest && rest.left > 0 && (
         <div className="absolute left-0 right-0 bottom-0 px-4 pb-4 shrink-0 pointer-events-none">
-          <div className="pointer-events-auto max-w-sm mx-auto border border-[#c9a84c]/30 bg-[var(--t-surface)] rounded-2xl shadow-[0_12px_32px_-8px_rgba(0,0,0,0.5)] overflow-hidden">
-            <div className="h-1 bg-[var(--t-track)]">
-              <div className="h-full bg-[#c9a84c] transition-all duration-1000 linear" style={{ width: `${Math.min((rest.left / rest.total) * 100, 100)}%` }}/>
+          <div className="pointer-events-auto max-w-sm mx-auto border border-[#c9a84c]/30 bg-[var(--t-surface)] rounded-2xl shadow-[0_16px_40px_-8px_rgba(0,0,0,0.55)] overflow-hidden">
+            <div className="h-1.5 bg-[var(--t-track)]">
+              <div className="h-full bg-gradient-to-r from-[#e2c97e] to-[#c9a84c] transition-all duration-1000 linear" style={{ width: `${Math.min((rest.left / rest.total) * 100, 100)}%` }}/>
             </div>
-            <div className="flex items-center justify-between px-4 py-3">
-              <span className="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--t-text-30)]">Repos</span>
-              <span style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[#c9a84c] tracking-wide">{fmtClock(rest.left)}</span>
-              <div className="flex items-center gap-1.5">
+            <div className="flex items-center justify-between px-5 py-4">
+              <div className="flex flex-col items-start">
+                <span className="text-[0.62rem] tracking-[0.2em] uppercase text-[var(--t-text-30)]">Repos</span>
+                <span style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-[#c9a84c] tracking-wide leading-none mt-0.5">{fmtClock(rest.left)}</span>
+              </div>
+              <div className="flex items-center gap-2">
                 <button onClick={() => setRest(r => r ? { ...r, left: Math.max(0, r.left - 15) } : r)}
-                  className="w-7 h-7 rounded-full border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-70)] transition-colors text-xs">−</button>
+                  className="w-9 h-9 rounded-full border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-70)] active:scale-90 transition-all text-sm font-medium">−15</button>
                 <button onClick={() => setRest(r => r ? { left: r.left + 15, total: Math.max(r.total, r.left + 15) } : r)}
-                  className="w-7 h-7 rounded-full border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-70)] transition-colors text-xs">+</button>
-                <button onClick={() => setRest(null)} className="text-[0.58rem] uppercase tracking-wider text-[var(--t-text-30)] hover:text-[var(--t-text-60)] transition-colors ml-1">Passer</button>
+                  className="w-9 h-9 rounded-full border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-70)] active:scale-90 transition-all text-sm font-medium">+15</button>
+                <button onClick={() => setRest(null)}
+                  className="text-[0.62rem] uppercase tracking-wider font-medium text-[var(--t-text-30)] hover:text-[var(--t-text-60)] transition-colors ml-1.5">Passer</button>
               </div>
             </div>
           </div>
