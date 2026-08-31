@@ -321,13 +321,13 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                     </div>
                   )}
                   {detailEntry.utilite && (
-                    <div className="flex flex-col gap-1">
+                    <div className="flex flex-col gap-1 px-4">
                       <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[var(--t-text-25)]">Utilité</p>
                       <p className="text-sm text-[var(--t-text-50)] leading-relaxed">{detailEntry.utilite}</p>
                     </div>
                   )}
                   {detailEntry.a_noter && detailEntry.a_noter.length > 0 && (
-                    <div className="flex flex-col gap-1.5">
+                    <div className="flex flex-col gap-1.5 px-4">
                       <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[var(--t-text-25)]">À noter</p>
                       <div className="flex flex-col gap-1.5">
                         {detailEntry.a_noter.map((mistake, i) => (
