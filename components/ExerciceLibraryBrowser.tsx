@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Model, { type IExerciseData, type Muscle } from "react-body-highlighter";
 import { type CatalogueEntry } from "@/lib/exercicesCatalogue";
 import { getRecentExerciceNoms, pushRecentExerciceNom } from "@/lib/recentExercices";
@@ -95,21 +95,6 @@ const HIDDEN_CHIPS = new Set(["cou", "tibial antérieur"]);
 // corresponde à chacun d'entre eux, pas seulement à la valeur exacte du champ.
 const EQUIPMENT_ORDER = ["poids du corps", "haltère", "barre", "machine", "poulie", "kettlebell", "élastique"];
 const HIDDEN_EQUIPMENT = new Set(["swiss ball", "corde ondulatoire", "traîneau", "vélo", "cardio", "étirement"]);
-
-// Icônes de sections de la fiche exercice, à la place des emojis.
-function IconImg({ src }: { src: string }) {
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img src={src} alt="" width={23} height={23} className="shrink-0"/>
-  );
-}
-const SECTION_ICONS: Record<"muscle" | "execution" | "utilite" | "aNoter" | "tags", ReactNode> = {
-  muscle: <IconImg src="/icons/section-muscle.svg"/>,
-  execution: <IconImg src="/icons/section-exec.svg"/>,
-  utilite: <IconImg src="/icons/section-utilite.svg"/>,
-  aNoter: <IconImg src="/icons/section-notice.svg"/>,
-  tags: <IconImg src="/icons/section-tags.svg"/>,
-};
 
 // Icône neutre pour les cartes sans photo (la grande majorité du catalogue) — un exercice sur
 // une grille visuelle ne doit jamais rendre une case vide/cassée, même sans média.
@@ -289,9 +274,14 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
             </div>
 
             <div className="px-5 flex flex-col gap-4">
-              {detailEntry.equipement && (
+              {(detailEntry.equipement || (detailEntry.tags && detailEntry.tags.length > 0)) && (
                 <div className="flex flex-wrap gap-1.5">
-                  <span className="text-[0.58rem] tracking-wider uppercase text-[#c9a84c] capitalize bg-[#c9a84c]/10 rounded-full px-2.5 py-1">{detailEntry.equipement}</span>
+                  {detailEntry.equipement && (
+                    <span className="text-[0.58rem] tracking-wider uppercase text-[#c9a84c] capitalize bg-[#c9a84c]/10 rounded-full px-2.5 py-1">{detailEntry.equipement}</span>
+                  )}
+                  {detailEntry.tags?.map(tag => (
+                    <span key={tag} className="text-[0.58rem] tracking-wider uppercase text-[var(--t-text-35)] capitalize border border-[var(--t-border)] rounded-full px-2.5 py-1">{tag}</span>
+                  ))}
                 </div>
               )}
 
@@ -315,17 +305,11 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                 </div>
               )}
 
-              {detailEntry.muscle_travaille || (detailEntry.execution && detailEntry.execution.length > 0) || detailEntry.utilite || (detailEntry.a_noter && detailEntry.a_noter.length > 0) || (detailEntry.tags && detailEntry.tags.length > 0) ? (
-                <div className="flex flex-col gap-3">
-                  {detailEntry.muscle_travaille && (
-                    <div className="flex flex-col gap-1.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
-                      <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80">{SECTION_ICONS.muscle} Muscle travaillé</p>
-                      <p className="text-sm text-[var(--t-text-50)] leading-relaxed">{detailEntry.muscle_travaille}</p>
-                    </div>
-                  )}
+              {(detailEntry.execution && detailEntry.execution.length > 0) || detailEntry.utilite || (detailEntry.a_noter && detailEntry.a_noter.length > 0) ? (
+                <div className="flex flex-col gap-4">
                   {detailEntry.execution && detailEntry.execution.length > 0 && (
-                    <div className="flex flex-col gap-2 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
-                      <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80">{SECTION_ICONS.execution} Exécution</p>
+                    <div className="flex flex-col gap-2.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-4">
+                      <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c]">Exécution</p>
                       <ol className="flex flex-col gap-2.5">
                         {detailEntry.execution.map((step, i) => (
                           <li key={i} className="flex gap-2.5 text-sm text-[var(--t-text-50)] leading-relaxed">
@@ -337,14 +321,14 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                     </div>
                   )}
                   {detailEntry.utilite && (
-                    <div className="flex flex-col gap-1.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
-                      <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80">{SECTION_ICONS.utilite} Utilité</p>
+                    <div className="flex flex-col gap-1">
+                      <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[var(--t-text-25)]">Utilité</p>
                       <p className="text-sm text-[var(--t-text-50)] leading-relaxed">{detailEntry.utilite}</p>
                     </div>
                   )}
                   {detailEntry.a_noter && detailEntry.a_noter.length > 0 && (
-                    <div className="flex flex-col gap-1.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
-                      <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80">{SECTION_ICONS.aNoter} À noter</p>
+                    <div className="flex flex-col gap-1.5">
+                      <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[var(--t-text-25)]">À noter</p>
                       <ul className="flex flex-col gap-1.5">
                         {detailEntry.a_noter.map((mistake, i) => (
                           <li key={i} className="flex gap-2 text-sm text-[var(--t-text-50)] leading-relaxed">
@@ -353,16 +337,6 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                           </li>
                         ))}
                       </ul>
-                    </div>
-                  )}
-                  {detailEntry.tags && detailEntry.tags.length > 0 && (
-                    <div className="flex flex-col gap-1.5 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl p-3">
-                      <p className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]/80">{SECTION_ICONS.tags} Tags</p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {detailEntry.tags.map(tag => (
-                          <span key={tag} className="text-[0.58rem] tracking-wider uppercase px-2.5 py-1 rounded-full bg-[#c9a84c]/10 text-[#c9a84c] capitalize">{tag}</span>
-                        ))}
-                      </div>
                     </div>
                   )}
                 </div>
