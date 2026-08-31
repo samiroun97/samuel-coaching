@@ -16,6 +16,8 @@ import { type CatalogueEntry, loadCatalogue } from "@/lib/exercicesCatalogue";
 import { type ProgrammeTemplate, listTemplates, saveTemplate, deleteTemplate, templateToExercices } from "@/lib/programmeTemplates";
 import { getMyCoachId } from "@/lib/coach";
 import { WeekPlanning } from "@/components/WeekPlanning";
+import { ConsistencyHeatmap } from "@/components/ConsistencyHeatmap";
+import { loadTrainedDates } from "@/lib/consistency";
 
 const SEANCE_TYPES = ["Haut du corps","Bas du corps","Full body","Cardio","Boxe","Natation","CrossFit","Yoga","Autre"];
 
@@ -56,6 +58,7 @@ export default function ProgrammesPage() {
   const [sentSeances,  setSentSeances]  = useState<SentSeance[]>([]);
   const [openSentId,   setOpenSentId]   = useState<string | null>(null);
   const [sentView,     setSentView]     = useState<"liste" | "semaine">("liste");
+  const [trainedDates, setTrainedDates] = useState<Set<string>>(new Set());
   const [myCoachId,    setMyCoachId]    = useState<string | null>(null);
   const [catalogue,    setCatalogue]    = useState<CatalogueEntry[]>([]);
   const [deletingId,   setDeletingId]   = useState<string | null>(null);
@@ -140,6 +143,8 @@ export default function ProgrammesPage() {
   const selectClient = (c: Client) => {
     setSelected(c); setDrafts([]); setGenError(""); setSentTo(null); setGenDescription(""); setOpenSentId(null);
     loadSentSeances(c.email);
+    setTrainedDates(new Set());
+    loadTrainedDates(c.id).then(setTrainedDates).catch(() => {});
   };
 
   // Arrivée depuis la fiche client (CRM > Clients > Programme) avec ?client=email
@@ -307,6 +312,12 @@ export default function ProgrammesPage() {
               )}
 
               <ProgressionSuggestions clientId={selected.id} />
+
+              {trainedDates.size > 0 && (
+                <div className="border border-[var(--t-text-8)] bg-[var(--t-bg)] rounded-xl px-4 py-3">
+                  <ConsistencyHeatmap dates={trainedDates}/>
+                </div>
+              )}
 
               {/* Séances déjà envoyées — aperçu visuel identique à ce que le client voit */}
               {sentSeances.length > 0 && (

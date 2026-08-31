@@ -22,6 +22,12 @@ export type ExerciceItem = {
   texteLibre: string;
   // commun
   videoUrl: string;
+  // Exercice au poids du corps (tractions, dips, pompes…) : la charge réelle inclut une
+  // fraction du poids de corps du client en plus du "poids" saisi (lest additionnel, souvent
+  // 0). bodyweightPct permet de nuancer selon le mouvement (~65% en pompes, ~100% en tractions)
+  // au lieu de compter tout le poids de corps pour tout, ce qui fausserait volume et 1RM estimé.
+  bodyweight: boolean;
+  bodyweightPct: string;
   // Photo perso pour un exercice sans équivalent illustré dans le catalogue (exercice
   // libre, ou nom qui ne matche rien) — uploadée par le client, cf. lib/customExerciceImage.ts.
   imageUrl: string;
@@ -33,6 +39,7 @@ export const emptyExercice = (): ExerciceItem => ({
   nom: "", type: "", note: "", mode: "simple",
   series: "", repetitions: "", poids: "", repos: "", hiddenFields: [],
   sets: [], texteLibre: "", videoUrl: "", imageUrl: "", groupId: null, groupLabel: "",
+  bodyweight: false, bodyweightPct: "100",
 });
 
 // Comble les champs manquants d'un exercice partiel (ancien format JSON, réponse IA, modèle importé…).
@@ -48,6 +55,8 @@ export function normalizeExercice(p: Partial<ExerciceItem>): ExerciceItem {
     imageUrl: p.imageUrl ?? "",
     groupId: p.groupId ?? null,
     groupLabel: p.groupLabel ?? "",
+    bodyweight: p.bodyweight ?? false,
+    bodyweightPct: p.bodyweightPct ?? "100",
   };
 }
 
@@ -141,5 +150,17 @@ export function serializeExercices(items: ExerciceItem[]): string | null {
     imageUrl: i.imageUrl.trim(),
     groupId: i.groupId,
     groupLabel: i.groupLabel.trim(),
+    bodyweight: i.bodyweight,
+    bodyweightPct: i.bodyweightPct.trim() || "100",
   })));
+}
+
+// Charge effective d'une série pour un exercice au poids du corps : la fraction de poids de
+// corps configurée sur l'exercice, plus le lest additionnel loggué (souvent 0). Pour un
+// exercice classique (bodyweight: false), c'est simplement le poids loggué — inchangé.
+export function effectiveLoad(ex: Pick<ExerciceItem, "bodyweight" | "bodyweightPct">, loggedPoids: number | null, clientBodyweight: number | null): number | null {
+  if (!ex.bodyweight) return loggedPoids;
+  if (clientBodyweight == null) return loggedPoids;
+  const pct = parseFloat(ex.bodyweightPct) || 100;
+  return (clientBodyweight * pct) / 100 + (loggedPoids ?? 0);
 }

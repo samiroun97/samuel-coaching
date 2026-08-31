@@ -13,13 +13,16 @@ export type SeanceLogRow = {
   logged_at: string;
 };
 
-// Au-delà de ~12 reps, l'estimation de 1RM (formule d'Epley) devient peu fiable : la série
+// Au-delà de ~12 reps, l'estimation de 1RM (formule de Berger) devient peu fiable : la série
 // sollicite surtout l'endurance musculaire, plus la force pure sur laquelle la formule se base.
 const REP_CAP = 12;
 
+// Formule de Berger (1961) : 1RM = poids / (1.0261 × e^(−0.0262 × reps)). Retenue plutôt
+// qu'Epley pour sa meilleure corrélation (R² ≈ 0.93) sur la plage de reps modérée qu'on
+// loggue le plus souvent (5-10) — cf. l'étude de validation de 2001.
 export function estimate1RM(poids: number | null, reps: number | null): number | null {
   if (!poids || !reps || reps < 1 || reps > REP_CAP) return null;
-  return poids * (1 + reps / 30);
+  return poids / (1.0261 * Math.exp(-0.0262 * reps));
 }
 
 export function best1RM(logs: Pick<SeanceLogRow, "poids_reel" | "reps_reel">[]): number | null {

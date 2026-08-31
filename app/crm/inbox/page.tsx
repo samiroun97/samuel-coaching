@@ -33,6 +33,14 @@ function parseBFFeedback(content: string): BFFeedback | null {
   if (!m) return null;
   try { return JSON.parse(m[1]) as BFFeedback; } catch { return null; }
 }
+
+const PROGRESSION_RE = /^\[PROGRESSION_ACCEPTED:(\{[\s\S]*\})\]$/;
+type ProgressionAccepted = { nom: string; action: "increase" | "deload"; suggestedWeight: number | null; basis: string };
+function parseProgressionAccepted(content: string): ProgressionAccepted | null {
+  const m = content.match(PROGRESSION_RE);
+  if (!m) return null;
+  try { return JSON.parse(m[1]) as ProgressionAccepted; } catch { return null; }
+}
 type Client = { id: string; email: string; prenom: string; nom: string; poids: number; pipeline_stage: string | null; subscription_end: string | null; objectifs: string };
 
 const STAGE_CFG: Record<string, { label: string; color: string }> = {
@@ -393,6 +401,32 @@ export default function InboxPage() {
                               {bfc.points_forts   && <div className="flex gap-2"><span className="text-[0.45rem] text-[#7eb8a0] uppercase tracking-wider shrink-0 w-16 pt-px">Points forts</span><p className="text-[0.65rem] text-[var(--t-text-50)] leading-relaxed">{bfc.points_forts}</p></div>}
                               {bfc.points_faibles && <div className="flex gap-2"><span className="text-[0.45rem] text-[#e07070] uppercase tracking-wider shrink-0 w-16 pt-px">À travailler</span><p className="text-[0.65rem] text-[var(--t-text-50)] leading-relaxed">{bfc.points_faibles}</p></div>}
                               {bfc.conseils       && <div className="flex gap-2"><span className="text-[0.45rem] text-[#c9a84c] uppercase tracking-wider shrink-0 w-16 pt-px">Conseils</span><p className="text-[0.65rem] text-[var(--t-text-50)] leading-relaxed">{bfc.conseils}</p></div>}
+                            </div>
+                          </div>
+                        );
+                      }
+                      // Suggestion de progression acceptée par le client en fin de séance
+                      const pa = !isMe ? parseProgressionAccepted(m.content) : null;
+                      if (pa) {
+                        const color = pa.action === "deload" ? "#e09070" : "#7eb8a0";
+                        return (
+                          <div className="overflow-hidden border-l-2"
+                            style={{ borderLeftColor: color, borderTop: `1px solid ${color}35`, borderRight: `1px solid ${color}35`, borderBottom: `1px solid ${color}35`, boxShadow: `0 0 16px ${color}20` }}>
+                            <div className="px-3 py-2 flex items-center justify-between" style={{ backgroundColor: `${color}20` }}>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm">🎯</span>
+                                <span className="text-[0.48rem] tracking-[0.2em] uppercase font-bold" style={{ color }}>Progression acceptée</span>
+                              </div>
+                              {pa.suggestedWeight != null && (
+                                <div className="flex items-baseline gap-1">
+                                  <span style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[var(--t-text)] tracking-wide leading-none">{pa.suggestedWeight}</span>
+                                  <span className="text-[0.45rem] text-[var(--t-text-40)]">kg</span>
+                                </div>
+                              )}
+                            </div>
+                            <div className="px-4 py-3 bg-[var(--t-surface-2)] flex flex-col gap-1">
+                              <p className="text-xs text-[var(--t-text-70)]">{pa.nom}</p>
+                              <p className="text-[0.62rem] text-[var(--t-text-40)] leading-relaxed">{pa.basis}</p>
                             </div>
                           </div>
                         );

@@ -1,13 +1,15 @@
 "use client";
 import { useEffect, useMemo, useRef, useState, type TouchEvent } from "react";
 import { supabase } from "@/lib/supabase";
-import { type ExerciceItem, type SetDetail, parseExercices, groupExerciceRuns, targetSetsFor } from "@/lib/exercices";
+import { type ExerciceItem, type SetDetail, parseExercices, groupExerciceRuns, targetSetsFor, effectiveLoad } from "@/lib/exercices";
 import { useWakeLock } from "@/lib/useWakeLock";
 import { Select } from "@/components/Select";
+import { getMyCoachEmail } from "@/lib/coach";
 import {
   estimate1RM, isNewRecord, parseRestSeconds,
   loadSeanceLogs, saveSetLog, deleteSetLog, loadExerciceHistory, type LastPerformance,
 } from "@/lib/workoutLog";
+import { loadExerciceSessionOutcomes, suggestProgression, type ProgressionSuggestion } from "@/lib/progression";
 
 type LiveSeance = { id: string; titre: string; exercices: string | null };
 type SetLogState = { poids: string; reps: string; rir: string; done: boolean };
@@ -62,9 +64,9 @@ function NumberStepper({ value, placeholder, step, onChange, accent }: {
   );
 }
 
-function SetRow({ target, idx, log, prev, isExtra, onToggle, onChange, onCopyPrev }: {
+function SetRow({ target, idx, log, prev, isExtra, bodyweight, onToggle, onChange, onCopyPrev }: {
   target: SetDetail; idx: number; log: SetLogState | undefined; prev: { poids: number | null; reps: number | null } | undefined;
-  isExtra: boolean; onToggle: () => void; onChange: (field: "poids" | "reps" | "rir", val: string) => void; onCopyPrev: () => void;
+  isExtra: boolean; bodyweight?: boolean; onToggle: () => void; onChange: (field: "poids" | "reps" | "rir", val: string) => void; onCopyPrev: () => void;
 }) {
   const hasPrev = prev && (prev.poids != null || prev.reps != null);
   return (
@@ -77,7 +79,7 @@ function SetRow({ target, idx, log, prev, isExtra, onToggle, onChange, onCopyPre
       ) : (
         <span className="text-[0.7rem] text-[var(--t-text-15)] truncate">{hasPrev ? fmtPrev(prev) : "—"}</span>
       )}
-      <NumberStepper value={log?.poids ?? ""} placeholder={target.poids || "kg"} step={2.5} onChange={v => onChange("poids", v)} accent/>
+      <NumberStepper value={log?.poids ?? ""} placeholder={bodyweight ? (target.poids || "+kg") : (target.poids || "kg")} step={2.5} onChange={v => onChange("poids", v)} accent/>
       <NumberStepper value={log?.reps ?? ""} placeholder={target.reps || "reps"} step={1} onChange={v => onChange("reps", v)}/>
       <Select value={log?.rir ?? ""} onChange={v => onChange("rir", v)} placeholder="RIR"
         options={[0, 1, 2, 3, 4].map(n => ({ value: String(n), label: `${n}${n === 4 ? "+" : ""}` }))}
@@ -107,6 +109,7 @@ function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle,
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <p className="text-sm font-semibold text-[var(--t-text)] truncate">{ex.nom}</p>
+            {ex.bodyweight && <span className="text-[0.58rem] text-[var(--t-text-30)] shrink-0" title="Charge = poids de corps + lest">🏋️ PDC</span>}
             {prBadge && <span className="text-[0.62rem] text-[#c9a84c] shrink-0">🏆 Record</span>}
           </div>
           {rows.length > 0 && (
@@ -133,7 +136,7 @@ function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle,
           </div>
           <div className="flex flex-col gap-1">
             {rows.map((row, setIdx) => (
-              <SetRow key={setIdx} target={row.target} idx={setIdx} isExtra={row.isExtra}
+              <SetRow key={setIdx} target={row.target} idx={setIdx} isExtra={row.isExtra} bodyweight={ex.bodyweight}
                 log={logs[`${exIdx}-${setIdx}`]} prev={history[setIdx]}
                 onToggle={() => onToggle(exIdx, setIdx, row.target)}
                 onChange={(field, val) => onChange(exIdx, setIdx, field, val)}
@@ -153,8 +156,8 @@ function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle,
   );
 }
 
-export function SeanceLive({ seance, clientId, onFinish, onClose }: {
-  seance: LiveSeance; clientId: string; onFinish: () => void; onClose: () => void;
+export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish, onClose }: {
+  seance: LiveSeance; clientId: string; clientBodyweight?: number | null; onFinish: () => void; onClose: () => void;
 }) {
   const exercices = useMemo(() => parseExercices(seance.exercices), [seance.exercices]);
   const runs = useMemo(() => groupExerciceRuns(exercices), [exercices]);
@@ -173,6 +176,9 @@ export function SeanceLive({ seance, clientId, onFinish, onClose }: {
   const [finishing, setFinishing] = useState(false);
   const [summary, setSummary] = useState<{ duration: string; volume: number; sets: number; prs: number } | null>(null);
   const [elapsed, setElapsed] = useState(0);
+  const [suggestions, setSuggestions] = useState<{ nom: string; suggestion: ProgressionSuggestion }[] | null>(null);
+  const [suggestionStatus, setSuggestionStatus] = useState<Record<string, "accepted" | "dismissed">>({});
+  const [sendingNom, setSendingNom] = useState<string | null>(null);
   // Meilleur 1RM historique par exercice, pour détecter un record en direct sans re-render —
   // n'affecte que prByNom (affiché), donc une simple ref suffit.
   const bestRef = useRef<Record<string, number | null>>({});
@@ -251,9 +257,16 @@ export function SeanceLive({ seance, clientId, onFinish, onClose }: {
   const lastKey = flatSets.length ? `${flatSets[flatSets.length - 1].exIdx}-${flatSets[flatSets.length - 1].setIdx}` : null;
 
   const totalSets = flatSets.length;
-  const doneLogs = Object.values(logs).filter(l => l.done);
-  const doneSets = doneLogs.length;
-  const volume = doneLogs.reduce((s, l) => s + (numOr(l.poids) ?? 0) * (numOr(l.reps) ?? 0), 0);
+  const doneEntries = Object.entries(logs).filter(([, l]) => l.done);
+  const doneSets = doneEntries.length;
+  // Le volume compte la charge réelle : pour un exercice au poids du corps, "poids" n'est que
+  // le lest additionnel loggué — effectiveLoad y ajoute la fraction de poids de corps configurée
+  // pour ne pas sous-évaluer le travail réel d'une série de tractions ou de dips.
+  const volume = doneEntries.reduce((s, [k, l]) => {
+    const exIdx = parseInt(k.split("-")[0], 10);
+    const load = effectiveLoad(exercices[exIdx], numOr(l.poids), clientBodyweight);
+    return s + (load ?? 0) * (numOr(l.reps) ?? 0);
+  }, 0);
 
   const runIsComplete = (run: { indices: number[] }) => run.indices.every(exIdx => {
     const rows = displaySetsFor(exercices[exIdx], extraSets[exIdx] ?? 0);
@@ -301,10 +314,17 @@ export function SeanceLive({ seance, clientId, onFinish, onClose }: {
       setIndex: setIdx, poids: poidsNum, reps: repsNum, rir: rirNum,
     });
 
-    const est = estimate1RM(poidsNum, repsNum);
-    if (isNewRecord(est, bestRef.current[ex.nom] ?? null)) {
-      setPrByNom(prev => ({ ...prev, [ex.nom]: true }));
-      bestRef.current[ex.nom] = est;
+    // La détection de record historique (bestRef) vient de seance_logs, qui ne stocke que le
+    // lest additionnel loggué — sans savoir quelle fraction de poids de corps s'y ajoutait à
+    // l'époque. Comparer un 1RM "poids de corps inclus" à cet historique brut donnerait de
+    // faux records à chaque série ; on désactive donc juste ce badge pour les exos au poids
+    // du corps plutôt que d'afficher un résultat trompeur.
+    if (!ex.bodyweight) {
+      const est = estimate1RM(poidsNum, repsNum);
+      if (isNewRecord(est, bestRef.current[ex.nom] ?? null)) {
+        setPrByNom(prev => ({ ...prev, [ex.nom]: true }));
+        bestRef.current[ex.nom] = est;
+      }
     }
 
     if (k !== lastKey) {
@@ -322,6 +342,34 @@ export function SeanceLive({ seance, clientId, onFinish, onClose }: {
       duration: fmtDuration(elapsed), volume: Math.round(volume), sets: doneSets,
       prs: Object.values(prByNom).filter(Boolean).length,
     });
+
+    // Suggestions de charge pour la prochaine fois, sur les exercices réellement loggués
+    // aujourd'hui — le client les accepte ou les ignore, une acceptation prévient juste
+    // Samuel par message pour qu'il en tienne compte en écrivant la prochaine séance (les
+    // séances restent rédigées par le coach, rien n'est appliqué automatiquement).
+    const noms = [...new Set(doneEntries.map(([k]) => exercices[parseInt(k.split("-")[0], 10)].nom).filter(Boolean))];
+    if (noms.length) {
+      const results = await Promise.all(noms.map(async nom => {
+        const history = await loadExerciceSessionOutcomes(clientId, nom);
+        return { nom, suggestion: suggestProgression(history) };
+      }));
+      setSuggestions(results.filter(r => r.suggestion.action === "increase" || r.suggestion.action === "deload"));
+    } else {
+      setSuggestions([]);
+    }
+  };
+
+  const acceptSuggestion = async (nom: string, suggestion: ProgressionSuggestion) => {
+    setSendingNom(nom);
+    const [{ data: { user } }, coachEmail] = await Promise.all([supabase.auth.getUser(), getMyCoachEmail(clientId)]);
+    if (user?.email && coachEmail) {
+      const payload = JSON.stringify({
+        nom, action: suggestion.action, suggestedWeight: suggestion.suggestedWeight, basis: suggestion.basis,
+      });
+      await supabase.from("messages").insert({ from_email: user.email, to_email: coachEmail, content: `[PROGRESSION_ACCEPTED:${payload}]` });
+    }
+    setSendingNom(null);
+    setSuggestionStatus(prev => ({ ...prev, [nom]: "accepted" }));
   };
 
   if (summary) {
@@ -354,6 +402,47 @@ export function SeanceLive({ seance, clientId, onFinish, onClose }: {
           {summary.prs > 0 && (
             <div className="border border-[#c9a84c]/25 bg-[#c9a84c]/5 rounded-xl px-4 py-3 w-full">
               <p className="text-xs text-[#c9a84c] font-medium">🏆 {summary.prs} nouveau{summary.prs > 1 ? "x" : ""} record{summary.prs > 1 ? "s" : ""} personnel{summary.prs > 1 ? "s" : ""} !</p>
+            </div>
+          )}
+
+          {suggestions && suggestions.length > 0 && (
+            <div className="w-full flex flex-col gap-2 text-left">
+              <p className="text-[0.62rem] tracking-[0.2em] uppercase text-[var(--t-text-30)] text-center">Pour la prochaine fois</p>
+              {suggestions.map(({ nom, suggestion }) => {
+                const status = suggestionStatus[nom];
+                const isDeload = suggestion.action === "deload";
+                return (
+                  <div key={nom} className={`border rounded-xl px-3.5 py-3 ${isDeload ? "border-[#e09070]/25 bg-[#e09070]/5" : "border-[#7eb8a0]/25 bg-[#7eb8a0]/5"}`}>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-xs text-[var(--t-text-70)] truncate">{nom}</p>
+                        <p className="text-[0.6rem] text-[var(--t-text-30)] mt-0.5 leading-relaxed">{suggestion.basis}</p>
+                      </div>
+                      {suggestion.suggestedWeight != null && (
+                        <p style={{ fontFamily: "var(--font-bebas)" }} className={`text-lg tracking-wide leading-none shrink-0 ${isDeload ? "text-[#e09070]" : "text-[#7eb8a0]"}`}>
+                          {suggestion.suggestedWeight} <span className="text-[0.55rem] text-[var(--t-text-25)]">kg</span>
+                        </p>
+                      )}
+                    </div>
+                    {status === "accepted" ? (
+                      <p className="text-[0.6rem] text-[#7eb8a0] mt-2">✓ Envoyé à Samuel</p>
+                    ) : status === "dismissed" ? (
+                      <p className="text-[0.6rem] text-[var(--t-text-20)] mt-2">Ignoré</p>
+                    ) : (
+                      <div className="flex gap-2 mt-2.5">
+                        <button onClick={() => setSuggestionStatus(prev => ({ ...prev, [nom]: "dismissed" }))}
+                          className="flex-1 border border-[var(--t-border)] text-[var(--t-text-30)] text-[0.58rem] tracking-wider uppercase py-1.5 rounded-lg hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors">
+                          Ignorer
+                        </button>
+                        <button onClick={() => acceptSuggestion(nom, suggestion)} disabled={sendingNom === nom}
+                          className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.58rem] font-bold tracking-wider uppercase py-1.5 rounded-lg disabled:opacity-50 transition-all">
+                          {sendingNom === nom ? "…" : "Accepter"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
 

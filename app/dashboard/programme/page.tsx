@@ -11,6 +11,8 @@ import { useSelectedDate, todayStr } from "@/lib/useSelectedDate";
 import { syncSteps } from "@/lib/steps";
 import { parseExercices, hasLoggableSets } from "@/lib/exercices";
 import { TdeeIcon } from "@/components/CalRefToggle";
+import { ConsistencyHeatmap } from "@/components/ConsistencyHeatmap";
+import { loadTrainedDates } from "@/lib/consistency";
 
 type Profile = { prenom: string; poids: number; taille: number; age: number; sexe: string };
 type LoggedWorkout = {
@@ -94,6 +96,7 @@ export default function ProgrammePage() {
   const [openHistDates,   setOpenHistDates]   = useState<Set<string>>(new Set());
   const [exportingPdf, setExportingPdf] = useState(false);
   const [deletingSeanceId, setDeletingSeanceId] = useState<string | null>(null);
+  const [trainedDates, setTrainedDates] = useState<Set<string>>(new Set());
 
   const deleteSeance = async (s: CoachSeance) => {
     if (!window.confirm("Supprimer définitivement cette séance ?")) return;
@@ -166,6 +169,7 @@ export default function ProgrammePage() {
           .eq("assigned_to_email", user.email).order("created_at", { ascending: true });
         setCoachSeances((cs ?? []) as CoachSeance[]);
       }
+      loadTrainedDates(user.id).then(setTrainedDates).catch(() => {});
     })();
     const saved  = localStorage.getItem("programme_logs");
     const savedG = localStorage.getItem("steps_goal");
@@ -672,6 +676,13 @@ export default function ProgrammePage() {
         </div>
       )}
 
+      {/* ── Régularité ── */}
+      {trainedDates.size > 0 && (
+        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 mb-6">
+          <ConsistencyHeatmap dates={trainedDates}/>
+        </div>
+      )}
+
       {/* ── Mon programme (séances envoyées par Samuel + séances libres) ── */}
       {coachSeances.length > 0 && (
         <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-xl mb-6">
@@ -773,6 +784,7 @@ export default function ProgrammePage() {
         <SeanceLive
           seance={liveSeance}
           clientId={userId}
+          clientBodyweight={profile?.poids ?? null}
           onClose={() => setLiveSeance(null)}
           onFinish={() => {
             setCoachSeances(prev => prev.map(x => x.id === liveSeance.id ? { ...x, completed_at: new Date().toISOString() } : x));

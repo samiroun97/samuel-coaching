@@ -281,6 +281,25 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
 
         {ex.mode === "simple" && (
           <div className="flex flex-wrap gap-2">
+            {/* Poids du corps : la charge réelle = fraction du poids de corps du client +
+                lest additionnel loggué dans le champ "Poids" — pertinent pour tractions,
+                dips, pompes… où le poids seul sous-estime la charge réellement soulevée. */}
+            <button type="button" onClick={() => update(i, { bodyweight: !ex.bodyweight })}
+              title="Charge = fraction du poids de corps + lest additionnel"
+              className={`flex items-center gap-1.5 text-[0.5rem] tracking-[0.1em] uppercase rounded-2xl px-2.5 py-1.5 border transition-colors shrink-0 self-start ${
+                ex.bodyweight ? "border-[#c9a84c]/50 text-[#c9a84c] bg-[#c9a84c]/10" : "border-dashed border-[var(--t-border-15)] text-[var(--t-text-25)] hover:border-[#c9a84c]/40 hover:text-[#c9a84c]"}`}>
+              🏋️ PDC{ex.bodyweight ? ` ${ex.bodyweightPct || "100"}%` : ""}
+            </button>
+            {ex.bodyweight && (
+              <div className="relative min-w-[5.5rem]">
+                <div className="bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-2xl px-3 py-2.5 text-center focus-within:border-[#c9a84c]/40 transition-colors">
+                  <p className="text-[0.5rem] tracking-[0.14em] uppercase text-[var(--t-text-25)] mb-1">% du poids</p>
+                  <input className="w-full bg-transparent text-center text-[0.85rem] text-[var(--t-text)] placeholder-[var(--t-text-15)] outline-none"
+                    inputMode="numeric" placeholder="100" value={ex.bodyweightPct}
+                    onChange={e => update(i, { bodyweightPct: e.target.value })}/>
+                </div>
+              </div>
+            )}
             {SIMPLE_FIELDS.filter(f => !ex.hiddenFields.includes(f.key)).map(f => (
               <div key={f.key} className="relative flex-1 min-w-[5.5rem]">
                 <div className="bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-2xl px-3 py-2.5 text-center focus-within:border-[#c9a84c]/40 transition-colors">
