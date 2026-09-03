@@ -1362,23 +1362,6 @@ export default function NutritionPage() {
                 </button>
               </div>
 
-              {/* Moment de la journée : s'applique aux 3 modes ci-dessous */}
-              <div>
-                <label className={labelCls}>Moment du repas</label>
-                <div className="flex gap-1.5">
-                  {MEAL_TYPES.map(t => (
-                    <button key={t} onClick={() => setAddMealType(t)}
-                      className={`flex-1 flex flex-col items-center justify-center gap-1 py-2 rounded-xl text-[0.5rem] tracking-[0.06em] uppercase border transition-colors ${addMealType === t ? "" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)]"}`}
-                      style={addMealType === t
-                        ? { borderColor: MEAL_TYPE_COLOR[t], color: MEAL_TYPE_COLOR[t], backgroundColor: `${MEAL_TYPE_COLOR[t]}18` }
-                        : undefined}>
-                      <MealTypeIcon type={t} size={44} className={`transition-opacity ${addMealType === t ? "opacity-100" : "opacity-45"}`}/>
-                      {t}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               {/* ── AI MODE ── */}
               {modalMode === "ai" && (
                 <div className="flex flex-col gap-4">
