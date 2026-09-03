@@ -1,7 +1,12 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
-import { ChevronLeft, ChevronRight } from "@/lib/solarIcons";
+import { ChevronLeft, ChevronRight, Flame } from "@/lib/solarIcons";
+import { STATUS_COLOR, STATUS_LABEL, STATUS_LEGEND, type DayStatus } from "@/lib/consistency";
+
+function FlameIcon({ className }: { className?: string }) {
+  return <Icon icon={Flame} fill="currentColor" stroke="none" className={className}/>;
+}
 
 const WEEKDAYS = ["Lu", "Ma", "Me", "Je", "Ve", "Sa", "Di"];
 const MONTHS = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
@@ -18,13 +23,16 @@ function parseISO(s: string) {
 // (non stylisable) pour les sélecteurs de date. À placer dans un conteneur
 // `relative`, se ferme au clic extérieur / Échap / sélection.
 export function CalendarPicker({
-  value, onChange, onClose, min, max, className = "",
+  value, onChange, onClose, min, max, statuses, className = "",
 }: {
   value?: string | null;
   onChange: (iso: string) => void;
   onClose: () => void;
   min?: string;
   max?: string;
+  // Statut de régularité (nutrition + entraînement) par jour — quand fourni, colore chaque
+  // case du calendrier au lieu d'un tableau de régularité séparé. Voir lib/consistency.ts.
+  statuses?: Record<string, DayStatus>;
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -90,20 +98,39 @@ export function CalendarPicker({
           const isToday = iso === todayISO;
           const isSel = iso === selISO;
           const isDisabled = disabled(d);
+          const status = statuses && !isDisabled ? (statuses[iso] ?? "empty") : null;
           return (
             <button key={i} type="button" disabled={isDisabled}
+              title={status ? STATUS_LABEL[status] : undefined}
               onClick={() => { onChange(iso); onClose(); }}
-              className={`w-9 h-9 text-xs rounded-full transition-colors flex items-center justify-center ${
+              className={`relative w-9 h-9 text-xs rounded-full transition-colors flex items-center justify-center ${
                 isSel ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black font-bold"
                 : isDisabled ? "text-[var(--t-text-15)] cursor-not-allowed"
+                : status ? `${STATUS_COLOR[status]} ${status === "empty" ? "text-[var(--t-text-50)]" : "text-white"} ${isToday ? "ring-2 ring-[#c9a84c] ring-offset-1 ring-offset-[var(--t-surface)]" : ""}`
                 : isToday ? "text-[#c9a84c] border border-[#c9a84c]/40 hover:bg-[#c9a84c]/10"
                 : "text-[var(--t-text-70)] hover:bg-[var(--t-glass-bg)]"
               }`}>
               {d.getDate()}
+              {status === "exemplary" && (
+                <FlameIcon className="absolute top-0.5 right-0.5 w-2 h-2 text-white/90"/>
+              )}
             </button>
           );
         })}
       </div>
+
+      {statuses && (
+        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 pt-3 mt-1 border-t border-[var(--t-border-soft)]">
+          {STATUS_LEGEND.map(({ status, label }) => (
+            <div key={status} className="flex items-center gap-1">
+              <div className={`relative w-[9px] h-[9px] rounded-full shrink-0 ${STATUS_COLOR[status]}`}>
+                {status === "exemplary" && <FlameIcon className="absolute inset-0 w-[6px] h-[6px] m-auto text-white"/>}
+              </div>
+              <span className="text-[0.55rem] text-[var(--t-text-30)]">{label}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {!disabled(today) && (
         <button type="button" onClick={() => { onChange(todayISO); onClose(); }}

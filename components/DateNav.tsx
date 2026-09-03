@@ -3,8 +3,9 @@ import { useState } from "react";
 import { CalendarPicker } from "./CalendarPicker";
 import { Icon } from "@/components/Icon";
 import { ChevronLeft, ChevronRight, Calendar } from "@/lib/solarIcons";
+import type { DayStatus } from "@/lib/consistency";
 
-export function DateNav({ date, onChange }: { date: string; onChange: (d: string) => void }) {
+export function DateNav({ date, onChange, statuses }: { date: string; onChange: (d: string) => void; statuses?: Record<string, DayStatus> }) {
   const todayD = new Date().toISOString().split("T")[0];
   const isToday = date === todayD;
   const [open, setOpen] = useState(false);
@@ -25,7 +26,7 @@ export function DateNav({ date, onChange }: { date: string; onChange: (d: string
           <p className="text-[0.7rem] tracking-[0.15em] uppercase text-[var(--t-text-60)] group-hover:text-[var(--t-text-80)] transition-colors capitalize select-none">{label}</p>
         </button>
         {open && (
-          <CalendarPicker value={date} max={todayD} onChange={onChange} onClose={() => setOpen(false)}
+          <CalendarPicker value={date} max={todayD} onChange={onChange} onClose={() => setOpen(false)} statuses={statuses}
             className="top-full left-1/2 -translate-x-1/2 mt-2"/>
         )}
       </div>

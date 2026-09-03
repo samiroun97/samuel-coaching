@@ -8,6 +8,34 @@ import type { ObjectifType } from "@/lib/objectifTypes";
 // - exemplary : objectif nutrition atteint + séance complétée le même jour
 export type DayStatus = "empty" | "off" | "ok" | "exemplary";
 
+// Rendu partagé entre le calendrier de régularité du coach (ConsistencyHeatmap) et le
+// calendrier de sélection de date côté client (CalendarPicker), pour une seule et même
+// logique de couleurs/labels.
+export const STATUS_COLOR: Record<DayStatus, string> = {
+  empty:     "bg-[var(--t-track)]",
+  off:       "bg-[#e07070]",
+  ok:        "bg-[#7eb8a0]",
+  exemplary: "bg-[#6ea8d9]",
+};
+export const STATUS_TEXT: Record<DayStatus, string> = {
+  empty:     "text-[var(--t-text-50)]",
+  off:       "text-white",
+  ok:        "text-white",
+  exemplary: "text-white",
+};
+export const STATUS_LABEL: Record<DayStatus, string> = {
+  empty:     "Rien loggé",
+  off:       "Objectif non respecté",
+  ok:        "Objectif atteint",
+  exemplary: "Séance + objectif atteints",
+};
+export const STATUS_LEGEND: { status: DayStatus; label: string }[] = [
+  { status: "ok",        label: "Atteint" },
+  { status: "off",       label: "Non respecté" },
+  { status: "empty",     label: "Rien loggé" },
+  { status: "exemplary", label: "Exemplaire" },
+];
+
 type DailySummaryRow = {
   date: string;
   calories: number; proteines: number; glucides: number; lipides: number;

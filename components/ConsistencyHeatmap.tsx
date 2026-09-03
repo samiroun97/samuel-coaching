@@ -1,39 +1,16 @@
 "use client";
 import { useState } from "react";
-import type { DayStatus } from "@/lib/consistency";
+import { STATUS_COLOR, STATUS_TEXT, STATUS_LABEL, STATUS_LEGEND, type DayStatus } from "@/lib/consistency";
 import { Icon } from "@/components/Icon";
 import { Flame, ChevronLeft, ChevronRight } from "@/lib/solarIcons";
 
 // Calendrier de régularité en vue mois classique (façon CalendarPicker) — cases grandes,
 // numéro du jour affiché, navigable mois par mois. Croise nutrition (calories/macros vs
 // objectif du jour) et entraînement — voir lib/consistency.ts pour la logique de statut.
+// Vue coach (CRM) uniquement — côté client, la même info est affichée directement dans
+// CalendarPicker (voir components/CalendarPicker.tsx).
 const WEEKDAYS = ["Lu", "Ma", "Me", "Je", "Ve", "Sa", "Di"];
 const MONTHS = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
-
-const STATUS_COLOR: Record<DayStatus, string> = {
-  empty:     "bg-[var(--t-track)]",
-  off:       "bg-[#e07070]",
-  ok:        "bg-[#7eb8a0]",
-  exemplary: "bg-[#6ea8d9]",
-};
-const STATUS_TEXT: Record<DayStatus, string> = {
-  empty:     "text-[var(--t-text-50)]",
-  off:       "text-white",
-  ok:        "text-white",
-  exemplary: "text-white",
-};
-const STATUS_LABEL: Record<DayStatus, string> = {
-  empty:     "Rien loggé",
-  off:       "Objectif non respecté",
-  ok:        "Objectif atteint",
-  exemplary: "Séance + objectif atteints",
-};
-const LEGEND: { status: DayStatus; label: string }[] = [
-  { status: "ok",        label: "Atteint" },
-  { status: "off",       label: "Non respecté" },
-  { status: "empty",     label: "Rien loggé" },
-  { status: "exemplary", label: "Exemplaire" },
-];
 
 const toISO = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
@@ -116,7 +93,7 @@ export function ConsistencyHeatmap({ statuses }: { statuses: Record<string, DayS
       </div>
 
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-0.5">
-        {LEGEND.map(({ status, label }) => (
+        {STATUS_LEGEND.map(({ status, label }) => (
           <div key={status} className="flex items-center gap-1">
             <div className={`relative w-[10px] h-[10px] rounded-[2px] shrink-0 ${STATUS_COLOR[status]}`}>
               {status === "exemplary" && <FlameIcon className="absolute inset-0 w-[7px] h-[7px] m-auto text-white"/>}

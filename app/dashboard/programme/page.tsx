@@ -11,7 +11,6 @@ import { useSelectedDate, todayStr } from "@/lib/useSelectedDate";
 import { syncSteps } from "@/lib/steps";
 import { parseExercices, hasLoggableSets } from "@/lib/exercices";
 import { TdeeIcon } from "@/components/CalRefToggle";
-import { ConsistencyHeatmap } from "@/components/ConsistencyHeatmap";
 import { loadDayStatuses, type DayStatus } from "@/lib/consistency";
 import { MuscleVolumeChart } from "@/components/MuscleVolumeChart";
 import { loadMuscleVolume } from "@/lib/muscleVolume";
@@ -354,7 +353,7 @@ export default function ProgrammePage() {
         <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl sm:text-5xl text-[var(--t-text)] tracking-wide">ACTIVITÉ</h1>
       </div>
 
-      <DateNav date={selectedDate} onChange={setSelectedDate} />
+      <DateNav date={selectedDate} onChange={setSelectedDate} statuses={dayStatuses}/>
 
       {/* ── EAT / NEAT / TOTAL ── */}
       <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 mb-6">
@@ -631,13 +630,6 @@ export default function ProgrammePage() {
               {todayWorkouts.map(w => <WorkoutCard key={w.id} w={w} onRemove={() => removeWorkout(w.id)}/>)}
             </div>
           )}
-        </div>
-      )}
-
-      {/* ── Régularité ── */}
-      {Object.keys(dayStatuses).length > 0 && (
-        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 mb-6">
-          <ConsistencyHeatmap statuses={dayStatuses}/>
         </div>
       )}
 
