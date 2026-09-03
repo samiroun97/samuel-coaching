@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
-import { ChevronLeft, ChevronRight, Flame } from "@/lib/solarIcons";
-import { STATUS_COLOR, STATUS_LABEL, STATUS_LEGEND, type DayStatus } from "@/lib/consistency";
+import { ChevronLeft, ChevronRight, Flame, Check } from "@/lib/solarIcons";
+import { STATUS_LABEL, STATUS_LEGEND, type DayStatus } from "@/lib/consistency";
 
 function FlameIcon({ className }: { className?: string }) {
   return <Icon icon={Flame} fill="currentColor" stroke="none" className={className}/>;
@@ -103,21 +103,47 @@ export function CalendarPicker({
           const isSel = iso === selISO;
           const isDisabled = disabled(d);
           const status = statuses && !isDisabled ? (statuses[iso] ?? "empty") : null;
+
+          // Vue "table" pour le calendrier de régularité : bordure fine + numéro en coin,
+          // un check pour les jours réussis plutôt qu'un remplissage plein — plus lisible
+          // qu'une case de couleur unie.
+          if (big) {
+            return (
+              <button key={i} type="button" disabled={isDisabled}
+                title={status ? STATUS_LABEL[status] : undefined}
+                onClick={() => { onChange(iso); onClose(); }}
+                className={`relative w-full aspect-square rounded-lg border flex items-center justify-center transition-colors ${
+                  isDisabled ? "border-[var(--t-border-soft)] cursor-not-allowed"
+                  : isSel ? "border-[#c9a84c] bg-[#c9a84c]/10"
+                  : isToday ? "border-[#c9a84c]/50"
+                  : "border-[var(--t-border)] hover:border-[var(--t-text-20)]"
+                }`}>
+                <span className={`absolute top-1 left-1.5 text-[0.55rem] leading-none ${isDisabled ? "text-[var(--t-text-15)]" : "text-[var(--t-text-30)]"}`}>
+                  {d.getDate()}
+                </span>
+                {!isDisabled && (status === "ok" || status === "exemplary") && (
+                  <Icon icon={Check} size={big ? 17 : 14} strokeWidth={2.5} className="text-[#7eb8a0]"/>
+                )}
+                {!isDisabled && status === "off" && (
+                  <span className="w-[7px] h-[7px] rounded-full bg-[#e07070]"/>
+                )}
+                {!isDisabled && status === "exemplary" && (
+                  <FlameIcon className="absolute top-1 right-1 w-2.5 h-2.5 text-[#e8a13c]"/>
+                )}
+              </button>
+            );
+          }
+
           return (
             <button key={i} type="button" disabled={isDisabled}
-              title={status ? STATUS_LABEL[status] : undefined}
               onClick={() => { onChange(iso); onClose(); }}
-              className={`relative ${big ? "w-full aspect-square text-xs rounded-lg" : "w-9 h-9 text-xs rounded-full"} transition-colors flex items-center justify-center ${
+              className={`w-9 h-9 text-xs rounded-full transition-colors flex items-center justify-center ${
                 isDisabled ? "text-[var(--t-text-15)] cursor-not-allowed"
-                : status ? `${STATUS_COLOR[status]} ${status === "empty" ? "text-[var(--t-text-50)]" : "text-white"} ${isSel ? "font-bold ring-2 ring-[#c9a84c]" : isToday ? "ring-2 ring-[var(--t-text)]/70" : ""}`
                 : isSel ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black font-bold"
                 : isToday ? "text-[#c9a84c] border border-[#c9a84c]/40 hover:bg-[#c9a84c]/10"
                 : "text-[var(--t-text-70)] hover:bg-[var(--t-glass-bg)]"
               }`}>
               {d.getDate()}
-              {status === "exemplary" && (
-                <FlameIcon className="absolute top-0.5 right-0.5 w-2 h-2 text-white/90"/>
-              )}
             </button>
           );
         })}
@@ -127,8 +153,10 @@ export function CalendarPicker({
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 pt-4 mt-1 border-t border-[var(--t-border-soft)]">
           {STATUS_LEGEND.map(({ status, label }) => (
             <div key={status} className="flex items-center gap-1.5">
-              <div className={`relative w-[11px] h-[11px] rounded-full shrink-0 ${STATUS_COLOR[status]}`}>
-                {status === "exemplary" && <FlameIcon className="absolute inset-0 w-[7px] h-[7px] m-auto text-white"/>}
+              <div className="relative w-[14px] h-[14px] rounded-[4px] border border-[var(--t-border)] shrink-0 flex items-center justify-center">
+                {(status === "ok" || status === "exemplary") && <Icon icon={Check} size={10} strokeWidth={3} className="text-[#7eb8a0]"/>}
+                {status === "off" && <span className="w-[5px] h-[5px] rounded-full bg-[#e07070]"/>}
+                {status === "exemplary" && <FlameIcon className="absolute -top-0.5 -right-0.5 w-2 h-2 text-[#e8a13c]"/>}
               </div>
               <span className="text-[0.62rem] text-[var(--t-text-30)]">{label}</span>
             </div>
