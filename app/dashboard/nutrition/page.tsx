@@ -231,7 +231,7 @@ function WaterTracker({ water, goal, onAdd, onRemove }: { water: number; goal: n
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <WaterBottleIcon/>
-          <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[var(--t-text-80)]">Hydratation</p>
+          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-base tracking-wider text-[var(--t-text-80)]">Hydratation</p>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-[0.7rem] text-[var(--t-text-40)]">{liters}L / {goalLiters}L</span>
