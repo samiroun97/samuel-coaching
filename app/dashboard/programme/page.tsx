@@ -63,7 +63,7 @@ function IntensityBars({ level, color }: { level: 1 | 2 | 3; color: string }) {
 // Chemin raccourci avant la croix (laisse un blanc au lieu du dernier pointillé, pour que
 // la croix, plus grosse, ait sa place sans chevaucher le tracé). Quatre ondulations au lieu
 // de deux — viewBox élargie en conséquence, le masque de révélation suit (largeur = pct * 6.6).
-const STEPS_PATH_D = "M8,38 C70,6 90,70 150,38 C210,6 230,70 292,38 C354,6 374,70 434,38 C479,6 556,66 569,42";
+const STEPS_PATH_D = "M8,38 C70,6 90,70 150,38 C210,6 230,70 292,38 C354,6 374,70 434,38 C479,6 590,66 601,42";
 function StepsPath({ pct, color }: { pct: number; color: string }) {
   const clamped = Math.max(0, Math.min(100, pct));
   const maskId = useId();
