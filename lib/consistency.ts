@@ -69,15 +69,35 @@ function macroOnTarget(actual: number, goal: number): boolean {
   return Math.abs(actual - goal) <= goal * MACRO_TOLERANCE;
 }
 
-// Jours (YYYY-MM-DD) où ce client a terminé au moins une séance sur les N derniers jours.
+// Jours (YYYY-MM-DD) où ce client a terminé au moins une séance sur les N derniers jours —
+// croise les séances assignées par le coach (programme_seances.completed_at) ET les activités
+// loggées à la main sur la page Activité (formulaire "musculation, boxe, natation…", stocké en
+// localStorage sous programme_logs et répliqué dans user_state par lib/syncStorage.ts). Sans ce
+// second croisement, un client qui logge une sortie course à pied n'a ni flamme au calendrier de
+// régularité ni visibilité côté coach — les deux étaient auparavant complètement déconnectés.
 async function loadTrainedDays(clientId: string, since: Date): Promise<Set<string>> {
-  const { data } = await supabase.from("programme_seances")
-    .select("completed_at")
-    .eq("client_id", clientId)
-    .not("completed_at", "is", null)
-    .gte("completed_at", since.toISOString());
+  const [{ data: seances }, { data: state }] = await Promise.all([
+    supabase.from("programme_seances")
+      .select("completed_at")
+      .eq("client_id", clientId)
+      .not("completed_at", "is", null)
+      .gte("completed_at", since.toISOString()),
+    supabase.from("user_state")
+      .select("value")
+      .eq("user_id", clientId).eq("key", "programme_logs")
+      .maybeSingle(),
+  ]);
   const days = new Set<string>();
-  for (const r of data ?? []) if (r.completed_at) days.add(String(r.completed_at).slice(0, 10));
+  for (const r of seances ?? []) if (r.completed_at) days.add(String(r.completed_at).slice(0, 10));
+  if (state?.value) {
+    try {
+      const logs = JSON.parse(state.value) as { date?: string }[];
+      for (const log of logs) if (log.date) {
+        const d = new Date(log.date);
+        if (d >= since) days.add(log.date.slice(0, 10));
+      }
+    } catch { /* valeur corrompue ou format inattendu : on ignore plutôt que de faire planter le calendrier */ }
+  }
   return days;
 }
 

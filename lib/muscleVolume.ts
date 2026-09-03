@@ -3,12 +3,16 @@ import { loadCatalogue, findCatalogueEntry } from "@/lib/exercicesCatalogue";
 
 const mondayOf = (d: Date) => { const n = new Date(d); const day = (n.getDay() + 6) % 7; n.setDate(n.getDate() - day); n.setHours(0, 0, 0, 0); return n; };
 
+// Partagé avec MuscleVolumeChart (libellé "N dern. sem.") pour ne jamais désynchroniser la
+// fenêtre réellement chargée de celle affichée à l'écran.
+export const MUSCLE_VOLUME_WEEKS = 6;
+
 // Volume (poids × reps, additionné) loggué par ce client sur les `weeks` dernières semaines,
 // regroupé par muscle cible — déduit du nom d'exercice loggué via le catalogue de référence
 // (exercices_catalogue), jamais saisi à la main. Les exercices sans correspondance dans le
 // catalogue (nom libre, faute de frappe…) n'ont pas de muscle connu et sont ignorés plutôt que
 // de fausser un total "Autre" qui ne dirait rien d'exploitable.
-export async function loadMuscleVolume(clientId: string, weeks = 6): Promise<Record<string, number[]>> {
+export async function loadMuscleVolume(clientId: string, weeks = MUSCLE_VOLUME_WEEKS): Promise<Record<string, number[]>> {
   const since = mondayOf(new Date());
   since.setDate(since.getDate() - (weeks - 1) * 7);
 

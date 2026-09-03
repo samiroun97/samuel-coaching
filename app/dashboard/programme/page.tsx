@@ -16,6 +16,8 @@ import { MuscleVolumeChart } from "@/components/MuscleVolumeChart";
 import { loadMuscleVolume } from "@/lib/muscleVolume";
 import { type Mesocycle, loadActiveMesocycle } from "@/lib/mesocycles";
 import { MesocycleCard } from "@/components/MesocycleCard";
+import { loadPersonalRecords, type PRCard } from "@/lib/personalRecords";
+import { Sparkline } from "@/components/Sparkline";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
 import { Activity, X, Mic, ChevronDown, Download } from "@/lib/solarIcons";
@@ -101,6 +103,7 @@ export default function ProgrammePage() {
   const [dayStatuses, setDayStatuses] = useState<Record<string, DayStatus>>({});
   const [muscleVolume, setMuscleVolume] = useState<Record<string, number[]>>({});
   const [activeMeso,   setActiveMeso]   = useState<Mesocycle | null>(null);
+  const [records,      setRecords]      = useState<PRCard[]>([]);
 
   const deleteSeance = async (s: CoachSeance) => {
     if (!window.confirm("Supprimer définitivement cette séance ?")) return;
@@ -177,6 +180,7 @@ export default function ProgrammePage() {
       loadDayStatuses(user.id, p?.objectif_type).then(setDayStatuses).catch(() => {});
       loadActiveMesocycle(user.id).then(setActiveMeso).catch(() => {});
       loadMuscleVolume(user.id).then(setMuscleVolume).catch(() => {});
+      loadPersonalRecords(user.id).then(r => setRecords(r.slice(0, 6))).catch(() => {});
     })();
     const saved  = localStorage.getItem("programme_logs");
     const savedG = localStorage.getItem("steps_goal");
@@ -342,7 +346,21 @@ export default function ProgrammePage() {
 
   const pastDates = [...new Set(
     workouts.filter(w => !w.date.startsWith(selectedDate)).map(w => w.date.split("T")[0])
-  )].slice(0, 6);
+  )].sort().reverse().slice(0, 30);
+
+  // Résumé de la semaine (lundi → aujourd'hui) affiché avant le détail du jour — séances
+  // assignées cochées + activités loggées à la main, dédupliquées par jour.
+  const weekStartISO = (() => {
+    const d = new Date(); const day = (d.getDay() + 6) % 7; d.setDate(d.getDate() - day);
+    return d.toISOString().slice(0, 10);
+  })();
+  const weekActiveDays = new Set([
+    ...workouts.filter(w => w.date.slice(0, 10) >= weekStartISO).map(w => w.date.slice(0, 10)),
+    ...coachSeances.filter(s => s.completed_at && s.completed_at.slice(0, 10) >= weekStartISO).map(s => s.completed_at!.slice(0, 10)),
+  ]);
+  const weekKcal = workouts
+    .filter(w => w.date.slice(0, 10) >= weekStartISO)
+    .reduce((s, w) => s + w.calories_burned, 0);
 
   return (
     <div className="p-4 sm:p-8 max-w-2xl">
@@ -354,6 +372,21 @@ export default function ProgrammePage() {
       </div>
 
       <DateNav date={selectedDate} onChange={setSelectedDate} statuses={dayStatuses}/>
+
+      {/* ── Résumé de la semaine ── */}
+      <div className="flex items-stretch border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl mb-6 overflow-hidden">
+        <div className="flex-1 text-center py-4">
+          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[var(--t-text)] tracking-wide leading-none">{weekActiveDays.size}</p>
+          <p className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mt-1.5">
+            Séance{weekActiveDays.size > 1 ? "s" : ""} cette semaine
+          </p>
+        </div>
+        <div className="w-px bg-[var(--t-border-soft)]"/>
+        <div className="flex-1 text-center py-4">
+          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[var(--t-text)] tracking-wide leading-none">{weekKcal.toLocaleString("fr-FR")}</p>
+          <p className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mt-1.5">Kcal brûlées cette semaine</p>
+        </div>
+      </div>
 
       {/* ── EAT / NEAT / TOTAL ── */}
       <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 mb-6">
@@ -671,6 +704,28 @@ export default function ProgrammePage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* ── Records personnels ── */}
+      {records.length > 0 && (
+        <div className="mb-6">
+          <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[var(--t-text-30)] mb-3">Mes records</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {records.map(r => (
+              <div key={r.nom} className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-2xl p-3.5 flex flex-col gap-2">
+                <p className="text-[0.68rem] text-[var(--t-text-60)] font-medium capitalize truncate">{r.nom}</p>
+                <div className="flex items-baseline gap-1">
+                  <span style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[var(--t-text)] tracking-wide leading-none">{r.currentKg}</span>
+                  <span className="text-[0.62rem] text-[var(--t-text-30)]">kg</span>
+                </div>
+                <Sparkline points={r.points} color="#c9a84c"/>
+                <p className="text-[0.58rem] text-[var(--t-text-20)] tracking-wide">
+                  {new Date(r.date + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
