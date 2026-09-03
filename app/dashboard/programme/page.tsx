@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useId } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
@@ -57,18 +57,29 @@ function IntensityBars({ level, color }: { level: 1 | 2 | 3; color: string }) {
   );
 }
 
-// Progression des pas façon "chemin" plutôt qu'une barre plate — le tracé (fond) reste fixe,
-// le tracé coloré par-dessus se révèle via pathLength/dashoffset, proportionnel à pct.
+// Progression des pas façon "carte au trésor" — sentier en pointillés, la portion parcourue
+// se colore via un masque qui grandit avec pct (approximation par position en X, largement
+// suffisante pour un tracé décoratif qui ne revient jamais en arrière), une croix à l'arrivée.
 const STEPS_PATH_D = "M8,38 C70,6 90,70 150,38 C210,6 230,70 292,38";
 function StepsPath({ pct, color }: { pct: number; color: string }) {
   const clamped = Math.max(0, Math.min(100, pct));
+  const maskId = useId();
   return (
-    <svg viewBox="0 0 300 60" preserveAspectRatio="none" className="w-full h-[52px]">
-      <path d={STEPS_PATH_D} fill="none" stroke="var(--t-track)" strokeWidth="6" strokeLinecap="round"/>
-      <path d={STEPS_PATH_D} fill="none" stroke={color} strokeWidth="6" strokeLinecap="round"
-        pathLength={100} strokeDasharray="100" strokeDashoffset={100 - clamped}
-        style={{ transition: "stroke-dashoffset 0.6s ease" }}/>
-    </svg>
+    <div className="relative">
+      <svg viewBox="0 0 300 60" preserveAspectRatio="none" className="w-full h-[52px]">
+        <defs>
+          <mask id={maskId}>
+            <rect x="0" y="0" width={clamped * 3} height="60" fill="white" style={{ transition: "width 0.6s ease" }}/>
+          </mask>
+        </defs>
+        <path d={STEPS_PATH_D} fill="none" stroke="var(--t-border)" strokeWidth="5" strokeLinecap="round" strokeDasharray="7 6"/>
+        <path d={STEPS_PATH_D} fill="none" stroke={color} strokeWidth="5" strokeLinecap="round" strokeDasharray="7 6"
+          mask={`url(#${maskId})`}/>
+      </svg>
+      <div className="absolute" style={{ left: "97.3%", top: "63.3%", transform: "translate(-50%, -50%) rotate(-10deg)" }}>
+        <Icon icon={X} size={18} strokeWidth={3.5} className="text-[#a0522d]"/>
+      </div>
+    </div>
   );
 }
 
