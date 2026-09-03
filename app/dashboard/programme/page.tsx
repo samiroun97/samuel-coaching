@@ -61,17 +61,18 @@ function IntensityBars({ level, color }: { level: 1 | 2 | 3; color: string }) {
 // se colore via un masque qui grandit avec pct (approximation par position en X, largement
 // suffisante pour un tracé décoratif qui ne revient jamais en arrière), une croix à l'arrivée.
 // Chemin raccourci avant la croix (laisse un blanc au lieu du dernier pointillé, pour que
-// la croix, plus grosse, ait sa place sans chevaucher le tracé).
-const STEPS_PATH_D = "M8,38 C70,6 90,70 150,38 C195,6 205,66 240,42";
+// la croix, plus grosse, ait sa place sans chevaucher le tracé). Quatre ondulations au lieu
+// de deux — viewBox élargie en conséquence, le masque de révélation suit (largeur = pct * 6.6).
+const STEPS_PATH_D = "M8,38 C70,6 90,70 150,38 C210,6 230,70 292,38 C354,6 374,70 434,38 C479,6 489,66 524,42";
 function StepsPath({ pct, color }: { pct: number; color: string }) {
   const clamped = Math.max(0, Math.min(100, pct));
   const maskId = useId();
   return (
     <div className="relative">
-      <svg viewBox="0 0 300 60" preserveAspectRatio="none" className="w-full h-[52px]">
+      <svg viewBox="0 0 660 60" preserveAspectRatio="none" className="w-full h-[52px]">
         <defs>
           <mask id={maskId}>
-            <rect x="0" y="0" width={clamped * 3} height="60" fill="white" style={{ transition: "width 0.6s ease" }}/>
+            <rect x="0" y="0" width={clamped * 6.6} height="60" fill="white" style={{ transition: "width 0.6s ease" }}/>
           </mask>
         </defs>
         <path d={STEPS_PATH_D} fill="none" stroke="var(--t-border)" strokeWidth="5" strokeLinecap="round" strokeDasharray="7 6"/>
