@@ -205,7 +205,7 @@ function MacroBar({ label, consumed, goal, color }: { label: string; consumed: n
 }
 
 // Bouteille lévitante avec halo bleu — même traitement que les icônes de repas.
-function WaterBottleIcon({ size = 68 }: { size?: number }) {
+function WaterBottleIcon({ size = 58 }: { size?: number }) {
   return (
     <div className="relative shrink-0 animate-levitate">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-lg pointer-events-none"
