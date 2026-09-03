@@ -1,18 +1,18 @@
 "use client";
-import { useState, useEffect, useRef, useCallback, useId } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
-import { apiPost } from "@/lib/apiClient";
+import { apiPost, withTimeout } from "@/lib/apiClient";
 import { getMyCoachEmail } from "@/lib/coach";
 import { DateNav } from "@/components/DateNav";
 import { CalRefToggle, TdeeIcon } from "@/components/CalRefToggle";
-import { WATER_GLASS_ICON } from "@/components/waterGlassIcon";
-import { LIGHTBULB_ICON } from "@/components/lightbulbIcon";
-import { MEAL_ICON_PETIT_DEJEUNER, MEAL_ICON_DEJEUNER, MEAL_ICON_DINER, MEAL_ICON_COLLATION } from "@/components/mealTypeIcons";
 import { useSelectedDate, todayStr } from "@/lib/useSelectedDate";
 import { syncSteps } from "@/lib/steps";
-import { BrowserMultiFormatReader } from "@zxing/browser";
+import { BrowserCodeReader, BrowserMultiFormatReader } from "@zxing/browser";
 import type { IScannerControls } from "@zxing/browser";
 import { BarcodeFormat, DecodeHintType } from "@zxing/library";
+import { Icon } from "@/components/Icon";
+import { RichIcon, type RichIconName } from "@/components/RichIcon";
+import { Plus, Shield, ChevronDown, Copy, Star, Trash2, X, Camera, ImageIcon, Mic, Save, ScanBarcode, Lightbulb, MoreHorizontal, Droplet } from "@/lib/solarIcons";
 
 // BarcodeDetector (API native) n'existe pas sur Safari/iOS — ZXing décode en JS pur
 // via canvas, donc ça marche identiquement sur iPhone et Android.
@@ -35,40 +35,30 @@ const MEAL_TYPES = ["Petit-déjeuner", "Déjeuner", "Dîner", "Collation"] as co
 const MEAL_TYPE_COLOR: Record<string, string> = {
   "Petit-déjeuner": "#e6b45c",
   "Déjeuner":       "#6fa3c4",
-  "Dîner":          "#8a7fc4",
+  "Dîner":          "#c97ea0",
   "Collation":      "#d98f6c",
   "Autres":         "#8a8a8a",
 };
 
-const MEAL_TYPE_ICON_SRC: Record<string, string> = {
-  "Petit-déjeuner": MEAL_ICON_PETIT_DEJEUNER,
-  "Déjeuner":       MEAL_ICON_DEJEUNER,
-  "Dîner":          MEAL_ICON_DINER,
-  "Collation":      MEAL_ICON_COLLATION,
+const MEAL_TYPE_ICON: Record<string, RichIconName> = {
+  "Petit-déjeuner": "mealPetitDejeuner",
+  "Déjeuner":       "mealDejeuner",
+  "Dîner":          "mealDiner",
+  "Collation":      "mealCollation",
 };
 
 function MealTypeIcon({ type, className, size = 48 }: { type: string; className?: string; size?: number }) {
-  const src = MEAL_TYPE_ICON_SRC[type];
-  if (!src) { // Autres — points
-    return (
-      <svg width={size * 0.875} height={size * 0.875} viewBox="0 0 24 24" fill="currentColor" stroke="none" className={className}>
-        <circle cx="6" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18" cy="12" r="1.6"/>
-      </svg>
-    );
-  }
-  return <img src={src} alt="" width={size} height={size} className={`shrink-0 object-contain ${className ?? ""}`}/>;
+  const name = MEAL_TYPE_ICON[type];
+  if (!name) return <Icon icon={MoreHorizontal} size={size} className={`shrink-0 ${className ?? ""}`}/>;
+  return <RichIcon name={name} size={size} className={className}/>;
 }
 
-// Thème unique (couleur de marque) pour le badge capsule des catégories.
-const MEAL_BADGE_COLOR = "#c9a84c";
-
-// Rond plein (badge circulaire) — les icônes fournies sont des illustrations à plat
-// (pas de fond rond intégré), donc on leur donne toutes un fond rond assorti, avec
-// une légère marge interne pour ne pas coller aux bords du cercle.
+// Rond plein (badge circulaire) — léger fond neutre pour asseoir l'icône illustrée sans
+// entrer en conflit avec ses propres couleurs (rendus 3D pleine couleur, pas currentColor).
 function MealTypeBadge({ type, size = 42 }: { type: string; size?: number }) {
   return (
-    <div className="relative z-10 rounded-full flex items-center justify-center shrink-0 overflow-hidden" style={{ width: size, height: size, backgroundColor: `${MEAL_BADGE_COLOR}18`, color: MEAL_BADGE_COLOR }}>
-      <MealTypeIcon type={type} size={size * (MEAL_TYPE_ICON_SRC[type] ? 0.78 : 0.4)}/>
+    <div className="relative z-10 rounded-full flex items-center justify-center shrink-0 overflow-hidden bg-[var(--t-glass-bg)]" style={{ width: size, height: size }}>
+      <MealTypeIcon type={type} size={size * 0.8}/>
     </div>
   );
 }
@@ -100,66 +90,6 @@ const PHOTO_DRAFT_KEY = "nutrition_photo_draft";
 // « reload pendant le traitement » d'un simple abandon, pour prévenir l'utilisateur au lieu
 // de le laisser deviner pourquoi sa photo a disparu.
 const PHOTO_PENDING_KEY = "nutrition_photo_pending";
-
-const MAX_PHOTO_DIM = 900;
-
-// Repli qui passe par un <img> plutôt qu'un createImageBitmap. Contre-intuitif mais
-// volontaire : sur mobile, le pipeline de décodage d'un <img> (utilisé aussi pour l'affichage
-// normal des pages) sait sous-échantillonner une photo dès lors qu'on la dessine dans un
-// canvas plus petit, alors que createImageBitmap matérialise le bitmap complet en mémoire
-// quand ses options de redimensionnement ne sont pas honorées (voir supportsBitmapResize).
-function downscaleViaImage(file: File): Promise<string> {
-  return new Promise<string>((resolve, reject) => {
-    const objectUrl = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload = () => {
-      try {
-        const scale = Math.min(MAX_PHOTO_DIM / img.width, MAX_PHOTO_DIM / img.height, 1);
-        const canvas = document.createElement("canvas");
-        canvas.width = Math.floor(img.width * scale);
-        canvas.height = Math.floor(img.height * scale);
-        canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL("image/jpeg", 0.6));
-      } catch (err) {
-        reject(err);
-      } finally {
-        URL.revokeObjectURL(objectUrl);
-      }
-    };
-    img.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error("Image illisible")); };
-    img.src = objectUrl;
-  });
-}
-
-// createImageBitmap + resizeWidth est censé laisser le décodeur sous-échantillonner
-// directement pendant le décodage au lieu de matérialiser la photo en pleine résolution —
-// MAIS Safari/iOS avant la version 16.4 accepte ces options sans erreur et les ignore
-// silencieusement : le bitmap ressort alors en pleine résolution (une photo de téléphone
-// récent, 12-48 Mpx, peut peser 150-200 Mo décodée en brut), largement de quoi planter
-// l'onglet — sans jamais déclencher de catch, puisqu'aucune exception n'est levée. On
-// vérifie donc une fois pour toutes (résultat mis en cache pour la durée de vie de la page)
-// si le résultat correspond vraiment à ce qui est demandé avant de faire confiance à ce
-// chemin ; sinon on bascule directement sur downscaleViaImage.
-let bitmapResizeSupport: Promise<boolean> | null = null;
-function supportsBitmapResize(): Promise<boolean> {
-  if (!bitmapResizeSupport) {
-    bitmapResizeSupport = (async () => {
-      try {
-        const probe = document.createElement("canvas");
-        probe.width = 20; probe.height = 20;
-        const blob = await new Promise<Blob | null>(r => probe.toBlob(r, "image/png"));
-        if (!blob) return false;
-        const bitmap = await createImageBitmap(blob, { resizeWidth: 10, resizeQuality: "low" });
-        const honored = bitmap.width === 10;
-        bitmap.close();
-        return honored;
-      } catch {
-        return false;
-      }
-    })();
-  }
-  return bitmapResizeSupport;
-}
 
 type MiniProfile = { poids: number; taille: number; age: number; sexe: string };
 
@@ -284,27 +214,14 @@ function MacroBar({ label, consumed, goal, color }: { label: string; consumed: n
 }
 
 function WaterDropIcon({ size = 15 }: { size?: number }) {
-  const gradId = useId();
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24">
-      <defs>
-        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#aed8ef"/>
-          <stop offset="55%" stopColor="#6fa3c4"/>
-          <stop offset="100%" stopColor="#3f7ca3"/>
-        </linearGradient>
-      </defs>
-      <path fill={`url(#${gradId})`} d="M12 2C6 8 4 12 4 15a8 8 0 0016 0c0-3-2-7-8-13z"/>
-      <ellipse cx="9.4" cy="14" rx="1.5" ry="2.3" fill="#ffffff" opacity="0.35"/>
-    </svg>
-  );
+  return <Icon icon={Droplet} size={size} className="text-[#6fa3c4]"/>;
 }
 
 // Petit verre : plein une fois ce cran d'hydratation atteint, estompé sinon.
 function GlassIcon({ filled }: { filled: boolean }) {
   return (
-    <img src={WATER_GLASS_ICON} alt="" width={16} height={23} draggable={false}
-      className={`shrink-0 transition-opacity ${filled ? "opacity-100" : "opacity-25 grayscale"}`}/>
+    <Icon icon={Droplet} size={16}
+      className={`shrink-0 transition-opacity ${filled ? "opacity-100 text-[#6fa3c4]" : "opacity-25 text-[var(--t-text-30)]"}`}/>
   );
 }
 
@@ -426,6 +343,7 @@ export default function NutritionPage() {
   const coachEmailRef   = useRef<string | null>(null);
   const syncTimers      = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const selectedDateRef = useRef(realToday);
+  const goalSnapshotRef = useRef({ calories: 0, proteines: 0, glucides: 0, lipides: 0 });
   const scanRef         = useRef<HTMLInputElement>(null);
   const [scanError, setScanError] = useState("");
   const [scannerOpen, setScannerOpen] = useState(false);
@@ -435,6 +353,8 @@ export default function NutritionPage() {
   const [torchAvailable, setTorchAvailable] = useState(false);
   const videoRef        = useRef<HTMLVideoElement>(null);
   const scanControlsRef = useRef<IScannerControls | null>(null);
+  const scanStreamRef   = useRef<MediaStream | null>(null);
+  const scanLoopStopRef = useRef(false);
   const [aiResult,    setAiResult]    = useState<AIResult | null>(null);
   const [analyzing,   setAnalyzing]   = useState(false);
   const [aiError,     setAiError]     = useState("");
@@ -446,6 +366,7 @@ export default function NutritionPage() {
   const [reportSending,  setReportSending]  = useState(false);
   const [reportSent,     setReportSent]     = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoProcessing, setPhotoProcessing] = useState(false);
   const [portionSize,  setPortionSize]  = useState<"petite" | "moyenne" | "grande" | null>(null);
   const [gramsInput,   setGramsInput]   = useState("");
   const photoRef       = useRef<HTMLInputElement>(null);
@@ -606,8 +527,11 @@ export default function NutritionPage() {
         glucides: acc.glucides + f.glucides, lipides: acc.lipides + f.lipides,
         fibres: acc.fibres + (f.fibres || 0),
       }), { calories: 0, proteines: 0, glucides: 0, lipides: 0, fibres: 0 });
+      const goalSnap = goalSnapshotRef.current;
       await supabase.from("daily_summaries").upsert({
         user_id: userIdRef.current, date, ...t,
+        goal_calories: goalSnap.calories, goal_proteines: goalSnap.proteines,
+        goal_glucides: goalSnap.glucides, goal_lipides: goalSnap.lipides,
         foods: foods.map(f => ({ name: f.name, calories: f.calories, proteines: f.proteines, glucides: f.glucides, lipides: f.lipides, fibres: f.fibres ?? 0, repas: f.repas ?? null })),
         updated_at: new Date().toISOString(),
       }, { onConflict: "user_id,date" });
@@ -625,6 +549,15 @@ export default function NutritionPage() {
   // En mode TDEE, le budget calorique s'adapte à la dépense réelle du jour ; les macros
   // suivent proportionnellement le même ratio que dans "Mes objectifs" pour rester cohérentes.
   const macroScale = useTdee && goals.calories > 0 ? calTarget / goals.calories : 1;
+  // Snapshot du budget du jour (calories + macros, TDEE compris) pour l'envoyer à Supabase avec
+  // le journal — c'est ce qui permet au calendrier de régularité (côté client ET côté coach) de
+  // savoir, même rétroactivement, quel était l'objectif du jour et pas seulement celui d'aujourd'hui.
+  goalSnapshotRef.current = {
+    calories: Math.round(calTarget),
+    proteines: Math.round(goals.proteines * macroScale),
+    glucides: Math.round(goals.glucides * macroScale),
+    lipides: Math.round(goals.lipides * macroScale),
+  };
   const consumed = foods.reduce((acc, f) => ({
     calories: acc.calories + f.calories, proteines: acc.proteines + f.proteines,
     glucides: acc.glucides + f.glucides, lipides: acc.lipides + f.lipides,
@@ -709,7 +642,7 @@ export default function NutritionPage() {
 
   // Signalement d'une estimation qui semble fausse — envoyé à Samuel via l'Inbox, avec la
   // photo utilisée pour l'estimation (jamais conservée sinon), pour recalibrer l'IA depuis
-  // la rubrique IA du CRM (cf. app/crm/ia).
+  // l'onglet Corrections IA de l'opérateur (cf. components/OperateurIaCorrections.tsx).
   const submitReport = async () => {
     if (!aiResult || !reportComment.trim() || !userEmailRef.current || !coachEmailRef.current) return;
     setReportSending(true);
@@ -727,56 +660,64 @@ export default function NutritionPage() {
     setReportSending(false); setReportSent(true); setShowReportForm(false); setReportComment("");
   };
 
-  const compressImage = async (file: File): Promise<string> => {
-    if (await supportsBitmapResize()) {
-      try {
-        // bitmap.close() libère la mémoire immédiatement au lieu d'attendre le GC.
-        const bitmap = await createImageBitmap(file, { resizeWidth: MAX_PHOTO_DIM, resizeQuality: "low" });
-        try {
-          const canvas = document.createElement("canvas");
-          canvas.width = bitmap.width;
-          canvas.height = bitmap.height;
-          canvas.getContext("2d")!.drawImage(bitmap, 0, 0);
-          return canvas.toDataURL("image/jpeg", 0.6);
-        } finally {
-          bitmap.close();
-        }
-      } catch { /* repli ci-dessous */ }
-    }
-    return downscaleViaImage(file);
-  };
-
-  // Un fichier aussi lourd (photo RAW, Live Photo exportée, capture d'un appareil très
-  // récent) fait courir un vrai risque de plantage à la compression, même avec les
-  // protections ci-dessous. Mieux vaut prévenir tout de suite que tenter et planter.
-  const MAX_PHOTO_FILE_BYTES = 30 * 1024 * 1024;
+  // Le redimensionnement se fait désormais côté serveur (sharp, voir
+  // /api/nutrition/prepare-photo) : le fichier brut est uploadé tel quel vers Supabase
+  // Storage, jamais décodé en pleine résolution dans le navigateur. L'ancien pipeline
+  // client (canvas/createImageBitmap) décodait la photo entière en mémoire avant tout
+  // redimensionnement — largement suffisant pour épuiser la mémoire d'un onglet mobile
+  // sur les photos très haute résolution des Android récents, d'où les plantages fréquents.
+  const MAX_PHOTO_FILE_BYTES = 20 * 1024 * 1024;
 
   const selectPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return;
     setAiError(""); setAiResult(null);
+    if (!file.type.startsWith("image/")) {
+      if (photoRef.current) photoRef.current.value = "";
+      if (galleryRef.current) galleryRef.current.value = "";
+      setAiError("Ce fichier n'est pas reconnu comme une image — réessaie avec une autre photo.");
+      return;
+    }
     if (file.size > MAX_PHOTO_FILE_BYTES) {
       if (photoRef.current) photoRef.current.value = "";
       if (galleryRef.current) galleryRef.current.value = "";
-      setAiError("Cette photo est trop lourde et risquerait de faire planter la page. Reprends-la avec l'appareil photo plutôt que depuis un fichier haute résolution.");
+      setAiError("Cette photo est trop lourde (max 20 Mo). Réessaie, ou choisis-en une autre.");
       return;
     }
     if (photoRef.current) photoRef.current.value = "";
     if (galleryRef.current) galleryRef.current.value = "";
-    // Posée avant compressImage (l'étape coûteuse en mémoire) : si l'onglet est tué pendant
-    // le traitement, cette marque seule survit et permet d'expliquer le crash au retour.
+    // Posée avant l'upload+traitement : si l'onglet est tué pendant, cette marque seule
+    // survit et permet d'expliquer ce qui s'est passé au retour.
     try { sessionStorage.setItem(PHOTO_PENDING_KEY, "1"); } catch { /* ignore */ }
+    setPhotoProcessing(true);
     try {
-      const compressed = await compressImage(file);
-      setPhotoPreview(compressed);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Session expirée, reconnecte-toi.");
+      const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+      const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
+      // Le SDK Supabase n'expose pas de signal d'annulation sur l'upload — withTimeout ne
+      // coupe pas la requête réseau sous-jacente, mais rend la main à l'UI après le délai
+      // au lieu de rester bloquée indéfiniment si le réseau mobile ne répond plus.
+      const { error: upErr } = await withTimeout(
+        supabase.storage.from("nutrition-temp").upload(path, file, { contentType: file.type }),
+        45_000,
+        "L'envoi de la photo a pris trop de temps — vérifie ta connexion et réessaie."
+      );
+      if (upErr) throw new Error("Échec de l'envoi de la photo — vérifie ta connexion et réessaie.");
+      const res = await apiPost("/api/nutrition/prepare-photo", { path });
+      if (!res.ok) { const t = await res.text(); throw new Error(t || "Impossible de traiter cette photo."); }
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setPhotoPreview(data.image);
       // Sauvegarde immédiate : si le retour de l'appareil photo recharge la page,
       // ce brouillon permet de retrouver la photo au lieu de tout perdre.
       try {
-        const draft: PhotoDraft = { photoPreview: compressed, description, portionSize, gramsInput };
+        const draft: PhotoDraft = { photoPreview: data.image, description, portionSize, gramsInput };
         sessionStorage.setItem(PHOTO_DRAFT_KEY, JSON.stringify(draft));
       } catch { /* quota dépassé, tant pis */ }
-    } catch {
-      setAiError("Impossible de traiter cette photo — réessaie ou choisis-en une autre.");
+    } catch (err: unknown) {
+      setAiError(err instanceof Error ? err.message : "Impossible de traiter cette photo — réessaie ou choisis-en une autre.");
     } finally {
+      setPhotoProcessing(false);
       try { sessionStorage.removeItem(PHOTO_PENDING_KEY); } catch { /* ignore */ }
     }
   };
@@ -833,8 +774,11 @@ export default function NutritionPage() {
   };
 
   const stopScanner = useCallback(() => {
+    scanLoopStopRef.current = true;
     scanControlsRef.current?.stop();
     scanControlsRef.current = null;
+    scanStreamRef.current?.getTracks().forEach(t => t.stop());
+    scanStreamRef.current = null;
     clearTimeout(scanTimeoutRef.current);
     setScannerOpen(false);
     setScanTakingLong(false);
@@ -852,49 +796,79 @@ export default function NutritionPage() {
     try { await scanControlsRef.current.switchTorch(next); setTorchOn(next); } catch { /* non supporté */ }
   };
 
-  // Ouvre un scanner caméra live avec cadre de visée. ZXing décode les frames
-  // en JS pur (canvas), donc ça fonctionne aussi bien sur Safari/iPhone que
-  // sur Chrome/Android — contrairement à l'API native BarcodeDetector, que
-  // Safari n'a jamais implémentée.
+  // Zone de visée décodée : mêmes proportions que le petit cadre affiché plus bas (220px,
+  // aspect 2.4/1, centré) — cf. le <div> "Cadre de visée" dans le JSX du scanner. Un cadre
+  // plus petit que l'écran est le vrai correctif : ça évite d'avoir à approcher le téléphone
+  // pour "remplir" un grand cadre, ce qui poussait systématiquement sous la distance minimale
+  // de mise au point de la caméra (d'où le flou signalé, quel que soit le zoom appliqué).
+  const SCAN_CROP_W_RATIO = 0.62;
+  const SCAN_CROP_H_RATIO = 0.13;
+  // Agrandissement appliqué à cette zone avant décodage : c'est un "zoom logiciel" qui ne
+  // porte QUE sur ce que ZXing analyse, jamais sur ce que l'utilisateur voit à l'écran — donc
+  // aucun risque de flou de mise au point induit par un vrai zoom caméra (contrairement au
+  // zoom matériel testé précédemment, qui forçait l'utilisateur à re-cadrer un flux déjà
+  // zoomé et aggravait le flou plutôt que de le corriger).
+  const SCAN_UPSCALE = 2.5;
+
+  // Ouvre un scanner caméra live avec cadre de visée. Le flux caméra affiché à l'écran reste
+  // à sa résolution/cadrage naturel (facile à tenir stable, net) ; seule la zone du cadre de
+  // visée est recadrée puis agrandie sur un canvas séparé avant d'être passée à ZXing — le
+  // code-barres n'a donc besoin de remplir que le petit cadre visuel, pas tout l'écran, ce qui
+  // évite d'avoir à approcher le téléphone jusqu'à perdre la mise au point.
   const openScanner = async () => {
     setScanError("");
     if (!navigator.mediaDevices?.getUserMedia) { scanRef.current?.click(); return; }
     setScannerOpen(true);
     setScanTakingLong(false);
-    // Le décodage caméra live peut ramer selon l'éclairage/l'état du code-barres (froissé,
-    // reflet...) — au-delà d'un certain temps, on propose une porte de sortie plutôt que de
-    // laisser l'utilisateur bloqué face à un cadre qui ne détecte rien.
+    scanLoopStopRef.current = false;
     clearTimeout(scanTimeoutRef.current);
     scanTimeoutRef.current = setTimeout(() => setScanTakingLong(true), 7000);
     requestAnimationFrame(async () => {
       if (!videoRef.current) return;
       try {
-        const reader = new BrowserMultiFormatReader(BARCODE_HINTS);
-        const controls = await reader.decodeFromConstraints(
-          // Une résolution basse (souvent 640x480 par défaut) rend les barres d'un
-          // EAN/UPC illisibles de trop près ou de loin ; on demande explicitement
-          // mieux, en laissant le navigateur retomber sur une valeur plus faible
-          // si la caméra ne supporte pas cette résolution ("ideal", pas "exact").
-          // focusMode "continuous" : sans ça, certaines caméras gardent une mise au
-          // point fixe pensée pour un cadrage lointain et ne refont jamais le point
-          // quand on approche le code-barres — résultat systématiquement flou.
-          {
-            video: {
-              facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 },
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              advanced: [{ focusMode: "continuous" } as any],
-            },
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 },
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            advanced: [{ focusMode: "continuous" } as any],
           },
-          videoRef.current,
-          (result) => {
-            if (result) {
-              stopScanner();
-              lookupBarcode(result.getText());
-            }
+        });
+        if (scanLoopStopRef.current) { stream.getTracks().forEach(t => t.stop()); return; }
+        scanStreamRef.current = stream;
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play().catch(() => {});
+
+        const track = stream.getVideoTracks()[0];
+        const torchCompatible = BrowserCodeReader.mediaStreamIsTorchCompatible(stream);
+        setTorchAvailable(torchCompatible);
+        scanControlsRef.current = {
+          stop: () => { stream.getTracks().forEach(t => t.stop()); },
+          switchTorch: torchCompatible ? (onOff: boolean) => BrowserCodeReader.mediaStreamSetTorch(track, onOff) : undefined,
+        };
+
+        const reader = new BrowserMultiFormatReader(BARCODE_HINTS);
+        const cropCanvas = document.createElement("canvas");
+        const ctx = cropCanvas.getContext("2d", { willReadFrequently: true })!;
+
+        const tick = () => {
+          if (scanLoopStopRef.current || !videoRef.current) return;
+          const video = videoRef.current;
+          if (video.videoWidth > 0 && video.videoHeight > 0) {
+            const cw = video.videoWidth * SCAN_CROP_W_RATIO;
+            const ch = video.videoHeight * SCAN_CROP_H_RATIO;
+            const sx = (video.videoWidth - cw) / 2;
+            const sy = (video.videoHeight - ch) / 2;
+            cropCanvas.width = cw * SCAN_UPSCALE;
+            cropCanvas.height = ch * SCAN_UPSCALE;
+            ctx.drawImage(video, sx, sy, cw, ch, 0, 0, cropCanvas.width, cropCanvas.height);
+            try {
+              const result = reader.decodeFromCanvas(cropCanvas);
+              if (result) { stopScanner(); lookupBarcode(result.getText()); return; }
+            } catch { /* rien trouvé sur cette frame, on retente à la suivante */ }
           }
-        );
-        scanControlsRef.current = controls;
-        setTorchAvailable(!!controls.switchTorch);
+          requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
       } catch {
         clearTimeout(scanTimeoutRef.current);
         setScanError("Impossible d'accéder à la caméra. Vérifie les autorisations.");
@@ -904,7 +878,12 @@ export default function NutritionPage() {
   };
 
   // Coupe bien la caméra si l'utilisateur quitte la page pendant un scan.
-  useEffect(() => () => { scanControlsRef.current?.stop(); clearTimeout(scanTimeoutRef.current); }, []);
+  useEffect(() => () => {
+    scanLoopStopRef.current = true;
+    scanControlsRef.current?.stop();
+    scanStreamRef.current?.getTracks().forEach(t => t.stop());
+    clearTimeout(scanTimeoutRef.current);
+  }, []);
 
   const doSearch = useCallback(async (q: string) => {
     setSearching(true);
@@ -933,6 +912,56 @@ export default function NutritionPage() {
 
   const saveMeal = (meal: { name: string; calories: number; proteines: number; glucides: number; lipides: number; fibres?: number; base_qty?: number; unit?: string }) => {
     setSavedMeals(s => [...s, { id: Date.now().toString(), ...meal }]);
+  };
+
+  // Une ligne d'aliment (nom + kcal + copier/favori/supprimer, puis macros) — partagée entre
+  // les cartes par repas et la liste "Aliments du jour" pour un affichage identique partout.
+  const renderFoodItem = (f: Food) => {
+    const favMeal = savedMeals.find(s => s.name === f.name);
+    const isFav = !!favMeal;
+    return (
+      <div key={f.id} className="px-4 py-3 group">
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <p className="text-xs text-[var(--t-text-70)] truncate">{f.name}</p>
+          <div className="flex items-center gap-3 shrink-0">
+            <span className="text-xs text-[var(--t-text-50)]">{f.calories} kcal</span>
+            <button onClick={() => setFoods(fs => [...fs, { ...f, id: Date.now().toString() }])}
+              title="Reprendre cet aliment aujourd'hui"
+              className="text-[var(--t-text-35)] hover:text-[#c9a84c] transition-colors opacity-70 group-hover:opacity-100">
+              <Icon icon={Copy} size={13} strokeWidth={2}/>
+            </button>
+            <button
+              onClick={() => {
+                const current = savedMeals.find(s => s.name === f.name);
+                if (current) removeSavedMeal(current.id);
+                else saveMeal({ ...f, base_qty: 100, unit: "g" });
+              }}
+              title={isFav ? "Retirer des favoris" : "Ajouter aux favoris"}
+              className={`transition-colors ${isFav ? "text-[#c9a84c] opacity-100" : "text-[var(--t-text-35)] hover:text-[#c9a84c] opacity-70 group-hover:opacity-100"}`}>
+              <Icon icon={Star} size={16} strokeWidth={1.5} fill={isFav ? "currentColor" : "none"}/>
+            </button>
+            <button
+              onClick={() => {
+                const index = foods.findIndex(x => x.id === f.id);
+                setFoods(fs => fs.filter(x => x.id !== f.id));
+                clearTimeout(undoTimer.current);
+                setDeletedFood({ food: f, index });
+                undoTimer.current = setTimeout(() => setDeletedFood(null), 6000);
+              }}
+              title="Supprimer"
+              className="text-[#e07070]/60 hover:text-[#e07070] transition-colors opacity-70 group-hover:opacity-100">
+              <Icon icon={Trash2} size={15} strokeWidth={1.8}/>
+            </button>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-x-3.5 gap-y-1">
+          <MacroChip label="P" value={f.proteines} color="#dd8790"/>
+          <MacroChip label="G" value={f.glucides} color="#e8a374"/>
+          <MacroChip label="L" value={f.lipides} color="#eed37a"/>
+          <MacroChip label="F" value={f.fibres ?? 0} color="#b6a186"/>
+        </div>
+      </div>
+    );
   };
 
   const createProduct = () => {
@@ -1067,11 +1096,49 @@ export default function NutritionPage() {
         </div>
       </div>
 
-      <button onClick={() => setShowAdd(true)}
-        className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.72rem] font-bold tracking-[0.22em] uppercase py-4 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl mt-6 mb-9 flex items-center justify-center gap-2">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
-        Ajouter un repas
-      </button>
+      <div className="flex flex-col gap-3 mt-6 mb-9">
+        {MEAL_TYPES.map((type, i) => {
+          const typeFoods = foods.filter(f => (f.repas ?? "Autres") === type);
+          const typeCal = typeFoods.reduce((s, f) => s + f.calories, 0);
+          const typeP = typeFoods.reduce((s, f) => s + f.proteines, 0);
+          const typeG = typeFoods.reduce((s, f) => s + f.glucides, 0);
+          const typeL = typeFoods.reduce((s, f) => s + f.lipides, 0);
+          return (
+          <div key={type} className="rounded-xl border border-[var(--t-border)] bg-[var(--t-surface)] overflow-hidden">
+            <div className="flex items-center gap-4 px-5 py-4">
+              <div className="relative animate-levitate" style={{ animationDelay: `${i * 0.35}s` }}>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-xl pointer-events-none"
+                  style={{ width: 50, height: 50, backgroundColor: "#f0c95c", opacity: 0.55 }}/>
+                <MealTypeIcon type={type} size={64} className="relative"/>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <p style={{ fontFamily: "var(--font-bebas)" }} className="text-base tracking-wider text-[var(--t-text-80)]">{type}</p>
+                  {typeFoods.length > 0 && <p className="text-[0.68rem] text-[var(--t-text-30)] shrink-0">{typeCal} kcal</p>}
+                </div>
+                {typeFoods.length > 0 && (
+                  <div className="flex gap-3 mt-1.5">
+                    <MacroChip label="P" value={typeP} color="#dd8790"/>
+                    <MacroChip label="G" value={typeG} color="#e8a374"/>
+                    <MacroChip label="L" value={typeL} color="#eed37a"/>
+                  </div>
+                )}
+              </div>
+            </div>
+            {typeFoods.length > 0 && (
+              <div className="divide-y divide-[var(--t-border-soft)] border-t border-[var(--t-border-soft)]">
+                {typeFoods.map(renderFoodItem)}
+              </div>
+            )}
+            <button onClick={() => { setAddMealType(type); setShowAdd(true); }}
+              className="w-full bg-transparent text-[var(--t-text-35)] text-[0.65rem] font-medium tracking-[0.18em] uppercase py-3 border-t border-[var(--t-border-soft)] hover:bg-[var(--t-glass-bg)] hover:text-[var(--t-text-60)] active:bg-[var(--t-glass-bg)] transition-colors duration-200 flex items-center justify-center gap-2">
+              <Icon icon={Plus} size={11} strokeWidth={2}/>
+              Ajouter
+            </button>
+          </div>
+          );
+        })}
+      </div>
 
       <WaterTracker water={water} goal={WATER_GOAL}
         onAdd={() => setWater(w => Math.min(w+1, WATER_GOAL))}
@@ -1083,9 +1150,7 @@ export default function NutritionPage() {
           <div className="flex items-center justify-between px-5 py-3 border-b border-[#c9a84c]/10">
             <div>
               <div className="flex items-center gap-2">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                </svg>
+                <Icon icon={Shield} size={11} strokeWidth={1.5} className="text-[#c9a84c]"/>
                 <span style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[#c9a84c]">Plan de Samuel</span>
               </div>
               <p className="text-[0.65rem] tracking-wider text-[#c9a84c]/50 mt-0.5">{mealPlan.name}</p>
@@ -1128,7 +1193,7 @@ export default function NutritionPage() {
       <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl mb-6">
         <div className="px-5 py-4 border-b border-[var(--t-border-soft)]">
           <div className="flex items-center gap-2 mb-1.5">
-            <img src={LIGHTBULB_ICON} alt="" width={18} height={18} className="shrink-0"/>
+            <RichIcon name="lightbulb" size={18}/>
             <span style={{ fontFamily:"var(--font-bebas)" }} className="text-sm tracking-wider text-[var(--t-text)]">Idée repas</span>
           </div>
           <p className="text-[0.78rem] text-[var(--t-text-60)] leading-snug mb-2">
@@ -1152,7 +1217,7 @@ export default function NutritionPage() {
             className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.72rem] font-bold tracking-[0.18em] uppercase py-3.5 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40 disabled:hover:translate-y-0 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             {ideaLoading
               ? <><div className="w-2.5 h-2.5 border border-black/50 border-t-transparent rounded-full animate-spin"/>Génération…</>
-              : <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>Générer une idée repas</>}
+              : <><Icon icon={Plus} size={12} strokeWidth={2}/>Générer une idée repas</>}
           </button>
         </div>
 
@@ -1225,10 +1290,8 @@ export default function NutritionPage() {
           </span>
           <div className="flex items-center gap-3">
             <span className="text-[0.7rem] tracking-wider text-[var(--t-text-30)]">{totals.calories} kcal</span>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-              className={`text-[var(--t-text-25)] shrink-0 transition-transform duration-300 ${showFoods ? "rotate-180" : ""}`}>
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
+            <Icon icon={ChevronDown} size={12}
+              className={`text-[var(--t-text-25)] shrink-0 transition-transform duration-300 ${showFoods ? "rotate-180" : ""}`}/>
           </div>
         </button>
         <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${showFoods ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
@@ -1247,48 +1310,7 @@ export default function NutritionPage() {
                   <p className="text-[0.62rem] text-[var(--t-text-30)]">{groupCal} kcal</p>
                 </div>
                 <div className="divide-y divide-[var(--t-border-soft)]">
-                {items.map(f => {
-                  const favMeal = savedMeals.find(s => s.name === f.name);
-                  const isFav = !!favMeal;
-                  return (
-                  <div key={f.id} className="px-4 py-3 group">
-                    <div className="flex items-center justify-between gap-2 mb-2">
-                      <p className="text-xs text-[var(--t-text-70)] truncate">{f.name}</p>
-                      <div className="flex items-center gap-3 shrink-0">
-                        <span className="text-xs text-[var(--t-text-50)]">{f.calories} kcal</span>
-                        <button onClick={() => setFoods(fs => [...fs, { ...f, id: Date.now().toString() }])}
-                          title="Reprendre cet aliment aujourd'hui"
-                          className="text-[var(--t-text-35)] hover:text-[#c9a84c] transition-colors opacity-70 group-hover:opacity-100">
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-                        </button>
-                        <button
-                          onClick={() => favMeal ? removeSavedMeal(favMeal.id) : saveMeal({ ...f, base_qty: 100, unit: "g" })}
-                          title={isFav ? "Retirer des favoris" : "Ajouter aux favoris"}
-                          className={`transition-colors ${isFav ? "text-[#c9a84c] opacity-100" : "text-[var(--t-text-35)] hover:text-[#c9a84c] opacity-70 group-hover:opacity-100"}`}>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill={isFav ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                        </button>
-                        <button
-                          onClick={() => {
-                            const index = foods.findIndex(x => x.id === f.id);
-                            setFoods(fs => fs.filter(x => x.id !== f.id));
-                            clearTimeout(undoTimer.current);
-                            setDeletedFood({ food: f, index });
-                            undoTimer.current = setTimeout(() => setDeletedFood(null), 6000);
-                          }}
-                          title="Supprimer"
-                          className="text-[#e07070]/60 hover:text-[#e07070] transition-colors opacity-70 group-hover:opacity-100">
-                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-                        </button>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap gap-x-3.5 gap-y-1">
-                      <MacroChip label="P" value={f.proteines} color="#dd8790"/>
-                      <MacroChip label="G" value={f.glucides} color="#e8a374"/>
-                      <MacroChip label="L" value={f.lipides} color="#eed37a"/>
-                      <MacroChip label="F" value={f.fibres ?? 0} color="#b6a186"/>
-                    </div>
-                  </div>
-                );})}
+                {items.map(renderFoodItem)}
                 </div>
               </div>
             );
@@ -1303,10 +1325,8 @@ export default function NutritionPage() {
         <button onClick={() => setShowWeek(v => !v)}
           className="w-full text-left flex items-center justify-between px-5 py-3 hover:bg-[var(--t-glass-bg)] transition-colors rounded-xl">
           <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Cette semaine</p>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-            className={`text-[var(--t-text-25)] shrink-0 transition-transform duration-300 ${showWeek ? "rotate-180" : ""}`}>
-            <polyline points="6 9 12 15 18 9"/>
-          </svg>
+          <Icon icon={ChevronDown} size={12}
+            className={`text-[var(--t-text-25)] shrink-0 transition-transform duration-300 ${showWeek ? "rotate-180" : ""}`}/>
         </button>
         <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${showWeek ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
           <div className="overflow-hidden">
@@ -1341,7 +1361,7 @@ export default function NutritionPage() {
             <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[var(--t-border-soft)]">
               <h3 style={{ fontFamily:"var(--font-bebas)" }} className="text-xl tracking-wider text-[var(--t-text)]">Ajouter un repas</h3>
               <button onClick={resetModal} className="text-[var(--t-text-30)] hover:text-[var(--t-text-60)] transition-colors">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <Icon icon={X} size={16} strokeWidth={1.5}/>
               </button>
             </div>
 
@@ -1377,19 +1397,19 @@ export default function NutritionPage() {
               {modalMode === "ai" && (
                 <div className="flex flex-col gap-4">
                   <div className="grid grid-cols-2 gap-2">
-                    <button onClick={() => photoRef.current?.click()} disabled={analyzing}
+                    <button onClick={() => photoRef.current?.click()} disabled={analyzing || photoProcessing}
                       className="flex items-center justify-center gap-2 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-xl text-[0.7rem] tracking-[0.1em] uppercase px-3 py-2.5 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors disabled:opacity-40">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-                        <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/>
-                      </svg>
-                      {photoPreview ? "Reprendre une photo" : "Prendre une photo"}
+                      {photoProcessing ? <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin shrink-0"/> : (
+                        <Icon icon={Camera} size={14} strokeWidth={1.5} className="shrink-0"/>
+                      )}
+                      {photoProcessing ? "Traitement…" : photoPreview ? "Reprendre une photo" : "Prendre une photo"}
                     </button>
-                    <button onClick={() => galleryRef.current?.click()} disabled={analyzing}
+                    <button onClick={() => galleryRef.current?.click()} disabled={analyzing || photoProcessing}
                       className="flex items-center justify-center gap-2 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-xl text-[0.7rem] tracking-[0.1em] uppercase px-3 py-2.5 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors disabled:opacity-40">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-                        <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
-                      </svg>
-                      {photoPreview ? "Changer la photo" : "Choisir une photo"}
+                      {photoProcessing ? <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin shrink-0"/> : (
+                        <Icon icon={ImageIcon} size={14} strokeWidth={1.5} className="shrink-0"/>
+                      )}
+                      {photoProcessing ? "Traitement…" : photoPreview ? "Changer la photo" : "Choisir une photo"}
                     </button>
                   </div>
                   <input ref={photoRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={selectPhoto}/>
@@ -1401,7 +1421,7 @@ export default function NutritionPage() {
                       <img src={photoPreview} alt="Photo du repas" className="w-full h-full object-cover rounded-xl border border-[var(--t-border)]"/>
                       <button onClick={() => { setPhotoPreview(null); setAiResult(null); try { sessionStorage.removeItem(PHOTO_DRAFT_KEY); } catch { /* ignore */ } }}
                         className="absolute -top-2 -right-2 w-5 h-5 bg-black border border-[var(--t-text-20)] rounded-full flex items-center justify-center text-[var(--t-text-60)] hover:text-[var(--t-text)] transition-colors">
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        <Icon icon={X} size={10} strokeWidth={2}/>
                       </button>
                     </div>
                   )}
@@ -1415,10 +1435,7 @@ export default function NutritionPage() {
                         value={description} onChange={e => { setDescription(e.target.value); setAiResult(null); }}/>
                       <button onClick={listening ? stopVoice : startVoice}
                         className={`absolute right-3 top-3 p-1.5 rounded-full border transition-colors ${listening?"border-[#e07070] text-[#e07070] animate-pulse":"border-[var(--t-border)] text-[var(--t-text-30)] hover:text-[var(--t-text-60)] hover:border-[var(--t-text-20)]"}`}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
-                          <path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/>
-                        </svg>
+                        <Icon icon={Mic} size={14} strokeWidth={1.5}/>
                       </button>
                     </div>
                     <p className="text-[0.65rem] text-[var(--t-text-20)] mt-1">Tu peux aussi dicter en cliquant sur le micro</p>
@@ -1493,7 +1510,7 @@ export default function NutritionPage() {
                       <div className="flex gap-2">
                         <button onClick={() => saveMeal({ ...aiResult, base_qty: 100, unit: "g" })} disabled={savedMeals.some(s => s.name === aiResult.name)}
                           className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-xl text-[0.7rem] tracking-[0.15em] uppercase py-2.5 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-1.5">
-                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                          <Icon icon={Save} size={11} strokeWidth={2}/>
                           {savedMeals.some(s => s.name === aiResult.name) ? "Déjà sauvegardé" : "Sauvegarder"}
                         </button>
                         <button onClick={addFood} className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
@@ -1541,12 +1558,7 @@ export default function NutritionPage() {
                 <div className="flex flex-col gap-4">
                   <button onClick={openScanner}
                     className="flex items-center justify-center gap-2.5 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.72rem] font-bold tracking-[0.15em] uppercase py-3.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M3 5h2M3 5v2M21 5h-2M21 5v2M3 19h2M3 19v-2M21 19h-2M21 19v-2"/>
-                      <line x1="7" y1="8" x2="7" y2="16"/><line x1="10" y1="8" x2="10" y2="16"/>
-                      <line x1="13" y1="8" x2="13" y2="16"/><line x1="16" y1="8" x2="16" y2="11"/>
-                      <line x1="16" y1="13" x2="16" y2="16"/>
-                    </svg>
+                    <Icon icon={ScanBarcode} size={16} strokeWidth={1.5}/>
                     Scanner un code-barres
                   </button>
                   <input ref={scanRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleScan}/>
@@ -1570,6 +1582,15 @@ export default function NutritionPage() {
                     {searching && <div className="absolute right-3 top-1/2 -translate-y-1/2"><div className="w-3 h-3 border border-[#c9a84c] border-t-transparent rounded-full animate-spin"/></div>}
                   </div>
                   {scanError && <p className="text-[0.7rem] text-[#e07070]">{scanError}</p>}
+
+                  {/* Attribution requise par la licence ODbL des données Open Food Facts
+                      (obligatoire pour un usage commercial de leur API, même en lecture seule). */}
+                  <p className="text-[0.58rem] text-[var(--t-text-15)] leading-relaxed -mt-1">
+                    Données alimentaires fournies par{" "}
+                    <a href="https://world.openfoodfacts.org" target="_blank" rel="noopener noreferrer" className="underline hover:text-[var(--t-text-30)] transition-colors">
+                      Open Food Facts
+                    </a>, sous licence Open Database License.
+                  </p>
 
                   {results.length > 0 && !selected && (
                     <div className="flex flex-col border border-[var(--t-border)] rounded-xl overflow-hidden divide-y divide-[var(--t-border-soft)]">
@@ -1647,7 +1668,7 @@ export default function NutritionPage() {
                       <div className="flex items-center justify-between">
                         <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c]">Nouveau produit</p>
                         <button onClick={() => { setShowNewProd(false); setNewProd(emptyProd); }} className="text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                          <Icon icon={X} size={13} strokeWidth={1.5}/>
                         </button>
                       </div>
                       <div><label className={labelCls}>Nom</label><input className={inputCls} placeholder="Skyr nature, boisson protéinée…" value={newProd.name} onChange={e => setNewProd(p => ({ ...p, name: e.target.value }))}/></div>
@@ -1707,7 +1728,7 @@ export default function NutritionPage() {
                             <span className="text-xs text-[var(--t-text-40)]">{Math.round(meal.calories)} kcal</span>
                             <button onClick={e => { e.stopPropagation(); removeSavedMeal(meal.id); if (selectedSaved?.id === meal.id) setSelectedSaved(null); }}
                               className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors p-1.5 -m-1.5">
-                              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                              <Icon icon={X} size={11} strokeWidth={2}/>
                             </button>
                           </div>
                         </div>
@@ -1758,7 +1779,7 @@ export default function NutritionPage() {
             <div className="flex items-center justify-between mb-5">
               <h3 style={{ fontFamily:"var(--font-bebas)" }} className="text-xl tracking-wider text-[var(--t-text)]">Objectifs journaliers</h3>
               <button onClick={() => setShowGoals(false)} className="text-[var(--t-text-30)] hover:text-[var(--t-text-60)] transition-colors">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <Icon icon={X} size={16} strokeWidth={1.5}/>
               </button>
             </div>
             <div className="mb-5">
@@ -1809,15 +1830,15 @@ export default function NutritionPage() {
 
           {/* Cadre de visée */}
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-8 gap-4">
-            <div className="relative w-full max-w-sm aspect-[16/10]">
+            <div className="relative w-[220px] aspect-[2.4/1]">
               <div className="absolute inset-0 border border-[#c9a84c]/40"/>
-              <div className="absolute -top-px -left-px w-7 h-7 border-t-[3px] border-l-[3px] border-[#e2c97e]"/>
-              <div className="absolute -top-px -right-px w-7 h-7 border-t-[3px] border-r-[3px] border-[#e2c97e]"/>
-              <div className="absolute -bottom-px -left-px w-7 h-7 border-b-[3px] border-l-[3px] border-[#e2c97e]"/>
-              <div className="absolute -bottom-px -right-px w-7 h-7 border-b-[3px] border-r-[3px] border-[#e2c97e]"/>
+              <div className="absolute -top-px -left-px w-5 h-5 border-t-[3px] border-l-[3px] border-[#e2c97e]"/>
+              <div className="absolute -top-px -right-px w-5 h-5 border-t-[3px] border-r-[3px] border-[#e2c97e]"/>
+              <div className="absolute -bottom-px -left-px w-5 h-5 border-b-[3px] border-l-[3px] border-[#e2c97e]"/>
+              <div className="absolute -bottom-px -right-px w-5 h-5 border-b-[3px] border-r-[3px] border-[#e2c97e]"/>
             </div>
             <p className="text-[var(--t-text-40)] text-[0.6rem] tracking-[0.12em] uppercase text-center max-w-[220px]">
-              Tiens le téléphone stable, à 15-20 cm (trop près = flou), code-barres bien à plat
+              Le code-barres doit juste tenir dans le petit cadre — pas besoin de t&apos;approcher
             </p>
             {scanTakingLong && (
               <button onClick={stopScanner}
@@ -1833,13 +1854,11 @@ export default function NutritionPage() {
               {torchAvailable && (
                 <button onClick={toggleTorch}
                   className={`p-1.5 rounded-full transition-colors ${torchOn ? "text-[#e2c97e] bg-[#c9a84c]/15" : "text-[var(--t-text-70)] hover:text-[var(--t-text)]"}`}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill={torchOn ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M9 18h6M10 22h4M15 14c1.5-1.26 2-2.5 2-4a5 5 0 0 0-10 0c0 1.5.5 2.74 2 4 .93.78 1 1.5 1 2h4c0-.5.07-1.22 1-2Z"/>
-                  </svg>
+                  <Icon icon={Lightbulb} size={18} strokeWidth={1.5} fill={torchOn ? "currentColor" : "none"}/>
                 </button>
               )}
               <button onClick={stopScanner} className="text-[var(--t-text-70)] hover:text-[var(--t-text)] transition-colors p-1">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <Icon icon={X} size={20} strokeWidth={1.5}/>
               </button>
             </div>
           </div>
