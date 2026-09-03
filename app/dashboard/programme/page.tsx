@@ -60,7 +60,9 @@ function IntensityBars({ level, color }: { level: 1 | 2 | 3; color: string }) {
 // Progression des pas façon "carte au trésor" — sentier en pointillés, la portion parcourue
 // se colore via un masque qui grandit avec pct (approximation par position en X, largement
 // suffisante pour un tracé décoratif qui ne revient jamais en arrière), une croix à l'arrivée.
-const STEPS_PATH_D = "M8,38 C70,6 90,70 150,38 C210,6 230,70 292,38";
+// Chemin raccourci avant la croix (laisse un blanc au lieu du dernier pointillé, pour que
+// la croix, plus grosse, ait sa place sans chevaucher le tracé).
+const STEPS_PATH_D = "M8,38 C70,6 90,70 150,38 C195,6 205,66 240,42";
 function StepsPath({ pct, color }: { pct: number; color: string }) {
   const clamped = Math.max(0, Math.min(100, pct));
   const maskId = useId();
@@ -76,8 +78,8 @@ function StepsPath({ pct, color }: { pct: number; color: string }) {
         <path d={STEPS_PATH_D} fill="none" stroke={color} strokeWidth="5" strokeLinecap="round" strokeDasharray="7 6"
           mask={`url(#${maskId})`}/>
       </svg>
-      <div className="absolute" style={{ left: "97.3%", top: "63.3%", transform: "translate(-50%, -50%) rotate(-10deg)" }}>
-        <Icon icon={X} size={18} strokeWidth={3.5} className="text-[#a0522d]"/>
+      <div className="absolute" style={{ left: "95%", top: "68%", transform: "translate(-50%, -50%) rotate(-10deg)" }}>
+        <Icon icon={X} size={32} strokeWidth={4} className="text-[#a0522d]"/>
       </div>
     </div>
   );
@@ -599,7 +601,7 @@ export default function ProgrammePage() {
       {/* ── Pas ── */}
       <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 mb-6">
         <div className="flex items-center gap-3 mb-5">
-          <RichIcon name="footprints" size={36}/>
+          <RichIcon name="step" size={36}/>
           <div className="flex-1 min-w-0">
             <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">
               {selectedDate === todayStr() ? "Pas aujourd'hui" : `Pas · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
@@ -613,7 +615,7 @@ export default function ProgrammePage() {
         </div>
 
         <div className="mb-2">
-          <StepsPath pct={stepsPct} color={steps >= stepGoal ? "#c9a84c" : "#7eb8a0"}/>
+          <StepsPath pct={stepsPct} color={steps >= stepGoal ? "#c9a84c" : "#f0c95c"}/>
         </div>
 
         <div className="flex items-center justify-between text-[0.62rem] text-[var(--t-text-20)] tracking-wider mb-5">

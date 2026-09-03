@@ -15,6 +15,7 @@ const RICH_ICON_SRC = {
   targetGoal: "/icons-rich/target-goal.png",
   waterBottle: "/icons-rich/water-bottle.png",
   droplet: "/icons-rich/droplet.png",
+  step: "/icons-rich/step.png",
 } as const;
 
 export type RichIconName = keyof typeof RICH_ICON_SRC;
