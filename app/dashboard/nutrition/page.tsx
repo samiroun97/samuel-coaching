@@ -216,11 +216,11 @@ function WaterBottleIcon({ size = 58 }: { size?: number }) {
 }
 
 // Ampoule lévitante avec halo jaune — même traitement que la bouteille d'eau.
-function LightbulbIcon({ size = 58 }: { size?: number }) {
+function LightbulbIcon({ size = 72 }: { size?: number }) {
   return (
     <div className="relative shrink-0 animate-levitate">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-lg pointer-events-none"
-        style={{ width: size * 0.95, height: size * 0.95, backgroundColor: "#e6b45c", opacity: 0.25 }}/>
+        style={{ width: size * 0.95, height: size * 0.95, backgroundColor: "#e8a13c", opacity: 0.4 }}/>
       <RichIcon name="lightbulb" size={size} className="relative"/>
     </div>
   );
