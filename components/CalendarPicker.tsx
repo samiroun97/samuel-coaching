@@ -69,29 +69,33 @@ export function CalendarPicker({
     setViewMonth(m); setViewYear(y);
   };
 
+  // Calendrier agrandi quand il porte les couleurs de régularité (plus d'infos à lire) —
+  // les autres usages (naissance, pesée…) gardent le format compact d'origine.
+  const big = !!statuses;
+
   return (
     <div ref={ref}
       style={{ backgroundColor: "var(--t-surface)" }}
-      className={`absolute z-[100] border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl shadow-[0_16px_40px_-8px_rgba(0,0,0,0.6)] p-4 w-[280px] ${className}`}>
-      <div className="flex items-center justify-between mb-3">
-        <button type="button" onClick={() => go(-1)} className="w-8 h-8 rounded-full border border-[var(--t-border)] flex items-center justify-center text-[var(--t-text-50)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors">
-          <Icon icon={ChevronLeft} size={13} strokeWidth={2}/>
+      className={`absolute z-[100] border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl shadow-[0_16px_40px_-8px_rgba(0,0,0,0.6)] ${big ? "p-5 w-[340px] sm:w-[380px]" : "p-4 w-[280px]"} ${className}`}>
+      <div className={`flex items-center justify-between ${big ? "mb-4" : "mb-3"}`}>
+        <button type="button" onClick={() => go(-1)} className={`${big ? "w-9 h-9" : "w-8 h-8"} rounded-full border border-[var(--t-border)] flex items-center justify-center text-[var(--t-text-50)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors`}>
+          <Icon icon={ChevronLeft} size={big ? 15 : 13} strokeWidth={2}/>
         </button>
-        <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-[0.15em] uppercase text-[var(--t-text)]">
+        <p style={{ fontFamily: "var(--font-bebas)" }} className={`${big ? "text-base" : "text-sm"} tracking-[0.15em] uppercase text-[var(--t-text)]`}>
           {MONTHS[viewMonth]} {viewYear}
         </p>
-        <button type="button" onClick={() => go(1)} className="w-8 h-8 rounded-full border border-[var(--t-border)] flex items-center justify-center text-[var(--t-text-50)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors">
-          <Icon icon={ChevronRight} size={13} strokeWidth={2}/>
+        <button type="button" onClick={() => go(1)} className={`${big ? "w-9 h-9" : "w-8 h-8"} rounded-full border border-[var(--t-border)] flex items-center justify-center text-[var(--t-text-50)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors`}>
+          <Icon icon={ChevronRight} size={big ? 15 : 13} strokeWidth={2}/>
         </button>
       </div>
 
-      <div className="grid grid-cols-7 gap-1 mb-1">
+      <div className={`grid grid-cols-7 ${big ? "gap-1.5 mb-1.5" : "gap-1 mb-1"}`}>
         {WEEKDAYS.map(w => (
-          <div key={w} className="text-[0.55rem] tracking-wider uppercase text-[var(--t-text-25)] text-center py-1">{w}</div>
+          <div key={w} className={`${big ? "text-[0.62rem]" : "text-[0.55rem]"} tracking-wider uppercase text-[var(--t-text-25)] text-center py-1`}>{w}</div>
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-1">
+      <div className={`grid grid-cols-7 ${big ? "gap-1.5" : "gap-1"}`}>
         {cells.map((d, i) => {
           if (!d) return <div key={i}/>;
           const iso = toISO(d);
@@ -103,7 +107,7 @@ export function CalendarPicker({
             <button key={i} type="button" disabled={isDisabled}
               title={status ? STATUS_LABEL[status] : undefined}
               onClick={() => { onChange(iso); onClose(); }}
-              className={`relative w-9 h-9 text-xs rounded-full transition-colors flex items-center justify-center ${
+              className={`relative ${big ? "w-11 h-11 sm:w-12 sm:h-12 text-sm" : "w-9 h-9 text-xs"} rounded-full transition-colors flex items-center justify-center ${
                 isSel ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black font-bold"
                 : isDisabled ? "text-[var(--t-text-15)] cursor-not-allowed"
                 : status ? `${STATUS_COLOR[status]} ${status === "empty" ? "text-[var(--t-text-50)]" : "text-white"} ${isToday ? "ring-2 ring-[#c9a84c] ring-offset-1 ring-offset-[var(--t-surface)]" : ""}`
@@ -112,7 +116,7 @@ export function CalendarPicker({
               }`}>
               {d.getDate()}
               {status === "exemplary" && (
-                <FlameIcon className="absolute top-0.5 right-0.5 w-2 h-2 text-white/90"/>
+                <FlameIcon className={`absolute ${big ? "top-1 right-1 w-2.5 h-2.5" : "top-0.5 right-0.5 w-2 h-2"} text-white/90`}/>
               )}
             </button>
           );
@@ -120,13 +124,13 @@ export function CalendarPicker({
       </div>
 
       {statuses && (
-        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 pt-3 mt-1 border-t border-[var(--t-border-soft)]">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 pt-4 mt-1 border-t border-[var(--t-border-soft)]">
           {STATUS_LEGEND.map(({ status, label }) => (
-            <div key={status} className="flex items-center gap-1">
-              <div className={`relative w-[9px] h-[9px] rounded-full shrink-0 ${STATUS_COLOR[status]}`}>
-                {status === "exemplary" && <FlameIcon className="absolute inset-0 w-[6px] h-[6px] m-auto text-white"/>}
+            <div key={status} className="flex items-center gap-1.5">
+              <div className={`relative w-[11px] h-[11px] rounded-full shrink-0 ${STATUS_COLOR[status]}`}>
+                {status === "exemplary" && <FlameIcon className="absolute inset-0 w-[7px] h-[7px] m-auto text-white"/>}
               </div>
-              <span className="text-[0.55rem] text-[var(--t-text-30)]">{label}</span>
+              <span className="text-[0.62rem] text-[var(--t-text-30)]">{label}</span>
             </div>
           ))}
         </div>
