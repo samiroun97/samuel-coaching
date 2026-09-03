@@ -237,6 +237,17 @@ function GlassIcon({ filled }: { filled: boolean }) {
 function WaterTracker({ water, goal, onAdd, onRemove }: { water: number; goal: number; onAdd: () => void; onRemove: () => void }) {
   const liters = (water * 0.25).toFixed(2).replace(/\.?0+$/, "");
   const goalLiters = (goal * 0.25).toFixed(1);
+  // Éclaboussure sur la goutte qui vient d'être remplie — capturée avant l'incrément
+  // (l'index de la prochaine goutte vide est toujours `water`), effacée après l'animation.
+  const [splashIndex, setSplashIndex] = useState<number | null>(null);
+  const splashTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const handleAdd = () => {
+    if (water >= goal) return;
+    clearTimeout(splashTimer.current);
+    setSplashIndex(water);
+    splashTimer.current = setTimeout(() => setSplashIndex(null), 550);
+    onAdd();
+  };
   return (
     <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 mb-6">
       <div className="flex items-center justify-between mb-4">
@@ -249,16 +260,22 @@ function WaterTracker({ water, goal, onAdd, onRemove }: { water: number; goal: n
           <div className="flex gap-1">
             <button onClick={onRemove} disabled={water === 0}
               className="w-6 h-6 rounded-full border border-[var(--t-border)] text-[var(--t-text-30)] hover:text-[var(--t-text-60)] hover:border-[var(--t-text-20)] transition-colors disabled:opacity-20 flex items-center justify-center text-sm">−</button>
-            <button onClick={onAdd} disabled={water >= goal}
+            <button onClick={handleAdd} disabled={water >= goal}
               className="w-6 h-6 rounded-full border border-[#6fa3c4]/40 text-[#6fa3c4] hover:bg-[#6fa3c4]/10 transition-colors disabled:opacity-20 flex items-center justify-center text-sm">+</button>
           </div>
         </div>
       </div>
       <div className="flex flex-wrap gap-1.5 mb-2">
         {Array.from({ length: goal }).map((_, i) => (
-          <button key={i} onClick={() => i < water ? onRemove() : onAdd()} title={`Verre ${i + 1}`}
-            className="cursor-pointer hover:opacity-70 transition-opacity">
-            <GlassIcon filled={i < water}/>
+          <button key={i} onClick={() => i < water ? onRemove() : handleAdd()} title={`Verre ${i + 1}`}
+            className="relative cursor-pointer hover:opacity-70 transition-opacity">
+            {splashIndex === i && (
+              <span className="absolute inset-0 rounded-full pointer-events-none animate-splash"
+                style={{ backgroundColor: "#6fa3c4" }}/>
+            )}
+            <span className={splashIndex === i ? "inline-block animate-drop-pop" : "inline-block"}>
+              <GlassIcon filled={i < water}/>
+            </span>
           </button>
         ))}
       </div>
