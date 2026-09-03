@@ -1,7 +1,7 @@
 "use client";
 
-import { useId, useState } from "react";
-import { OBJECTIF_TARGET_ICON } from "./objectifTargetIcon";
+import { useState } from "react";
+import { RichIcon } from "@/components/RichIcon";
 
 type Mode = "objectif" | "tdee";
 
@@ -18,23 +18,17 @@ const EXPLANATIONS: Record<Mode, { label: string; color: string; text: string }>
   },
 };
 
-function ObjectifIcon({ size = 15 }: { size?: number }) {
-  return <img src={OBJECTIF_TARGET_ICON} alt="" width={size} height={Math.round(size * (100 / 120))} className="shrink-0"/>;
+function ObjectifIcon({ size = 26, active = true }: { size?: number; active?: boolean }) {
+  return <RichIcon name="targetGoal" size={size} className={`transition-opacity ${active ? "opacity-100" : "opacity-40"}`}/>;
 }
 
-export function TdeeIcon({ size = 13 }: { size?: number }) {
-  const gradId = useId();
+export function TdeeIcon({ size = 24, active = true }: { size?: number; active?: boolean }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24">
-      <defs>
-        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#ffd873"/>
-          <stop offset="55%" stopColor="#f4a637"/>
-          <stop offset="100%" stopColor="#e0672f"/>
-        </linearGradient>
-      </defs>
-      <path fill={`url(#${gradId})`} d="M12.5 0.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C4.34 6.9 3 9.28 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9C21 6.53 17.83 2.42 12.5 0.67z"/>
-    </svg>
+    <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-md pointer-events-none transition-opacity"
+        style={{ width: size * 0.9, height: size * 0.9, backgroundColor: "#e0472f", opacity: active ? 0.6 : 0.2 }}/>
+      <RichIcon name="burn" size={size} className={`relative transition-opacity ${active ? "opacity-100" : "opacity-40"}`}/>
+    </div>
   );
 }
 
@@ -52,7 +46,7 @@ export function CalRefToggle({ value, onChange, tdeeDisabled }: { value: Mode; o
               title={key === "tdee" && tdeeDisabled ? "Profil incomplet" : undefined}
               className="relative z-10 flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-full text-[0.66rem] tracking-[0.12em] uppercase transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
               style={{ color: value === key ? EXPLANATIONS[key].color : "var(--t-text-30)" }}>
-              {key === "objectif" ? <ObjectifIcon/> : <TdeeIcon/>}
+              {key === "objectif" ? <ObjectifIcon active={value === key}/> : <TdeeIcon active={value === key}/>}
               {EXPLANATIONS[key].label}
             </button>
           ))}

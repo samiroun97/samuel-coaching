@@ -1,5 +1,7 @@
 "use client";
 import { useState } from "react";
+import { Icon } from "@/components/Icon";
+import { ChevronLeft, ChevronRight } from "@/lib/solarIcons";
 
 type PlanningSeance = { id: string; titre: string; type_seance: string | null; date_prevue: string | null; completed_at: string | null };
 
@@ -10,7 +12,7 @@ const TYPE_COLOR: Record<string, string> = {
   "Cardio": "#6fa8d8",
   "Boxe": "#e07070",
   "Natation": "#4fb8c4",
-  "CrossFit": "#a08ec9",
+  "CrossFit": "#c97ea0",
   "Yoga": "#7eb8a0",
 };
 const DEFAULT_COLOR = "#9a9a9a";
@@ -38,14 +40,14 @@ export function WeekPlanning({ seances, onOpen }: { seances: PlanningSeance[]; o
       <div className="flex items-center justify-between px-1">
         <button onClick={() => setWeekStart(d => { const n = new Date(d); n.setDate(n.getDate() - 7); return n; })}
           className="w-7 h-7 rounded-lg border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-70)] transition-colors flex items-center justify-center">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          <Icon icon={ChevronLeft} size={11} strokeWidth={2}/>
         </button>
         <p className="text-[0.62rem] tracking-[0.1em] uppercase text-[var(--t-text-40)]">
           {days[0].toLocaleDateString("fr-FR", { day: "numeric", month: "short" })} — {days[6].toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
         </p>
         <button onClick={() => setWeekStart(d => { const n = new Date(d); n.setDate(n.getDate() + 7); return n; })}
           className="w-7 h-7 rounded-lg border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-70)] transition-colors flex items-center justify-center">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          <Icon icon={ChevronRight} size={11} strokeWidth={2}/>
         </button>
       </div>
 

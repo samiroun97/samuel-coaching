@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { ACADEMY_UNITS, type AcademyLesson } from "@/lib/academyContent";
+import { Icon } from "@/components/Icon";
+import { Lock, Check, Play, X } from "@/lib/solarIcons";
 
 type LessonProgress = { completed: boolean; score: number; total: number };
 type ProgressMap = Record<string, LessonProgress>;
@@ -18,25 +20,13 @@ function loadProgress(): ProgressMap {
 }
 
 function LockIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/>
-    </svg>
-  );
+  return <Icon icon={Lock} size={22} strokeWidth={1.8}/>;
 }
 function CheckIcon() {
-  return (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="20 6 9 17 4 12"/>
-    </svg>
-  );
+  return <Icon icon={Check} size={26} strokeWidth={2.5} className="text-[#0a0a0a]"/>;
 }
 function PlayIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="#0a0a0a" stroke="none">
-      <polygon points="6 3 21 12 6 21"/>
-    </svg>
-  );
+  return <Icon icon={Play} size={22} fill="#0a0a0a" stroke="none"/>;
 }
 
 function PathNode({ lesson, offset, top, state, onClick }: {
@@ -109,7 +99,7 @@ function LessonViewer({ lesson, onClose, onComplete }: {
     <div className="flex flex-col min-h-[70vh]">
       <div className="flex items-center gap-3 mb-6">
         <button onClick={onClose} aria-label="Fermer" className="text-[var(--t-text-40)] hover:text-[var(--t-text-70)] transition-colors">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          <Icon icon={X} size={20} strokeWidth={1.8}/>
         </button>
         <div className="flex-1 h-2 rounded-full bg-[var(--t-track)] overflow-hidden">
           <div className="h-full rounded-full bg-gradient-to-r from-[#c9a84c] to-[#e2c97e] transition-all duration-300" style={{ width: `${(step / totalSteps) * 100}%` }}/>

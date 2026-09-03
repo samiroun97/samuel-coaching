@@ -12,11 +12,6 @@ const GRAY_DIM = { r: 95, g: 95, b: 95 };
 const CARD_BG = { r: 17, g: 17, b: 17 };
 const CARD_BORDER = { r: 42, g: 42, b: 42 };
 
-// jsPDF (police "helvetica" standard, encodage WinAnsi) ne sait pas afficher l'espace fine
-// insécable utilisée par `toLocaleString("fr-FR")` pour grouper les milliers (rendue en glyphe
-// cassé dans le PDF) ni le caractère flèche "→" : on formate donc les nombres nous-mêmes.
-const fmtInt = (n: number) => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "'");
-
 export function generateProgrammePdf(seances: CoachSeance[], clientName?: string, coachBusinessName?: string) {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const pageW = 210, pageH = 297, margin = 16;

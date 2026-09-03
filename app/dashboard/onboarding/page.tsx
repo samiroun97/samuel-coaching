@@ -265,7 +265,7 @@ export default function OnboardingPage() {
             <div className="flex flex-col gap-5">
               <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl tracking-wider text-[var(--t-text)] mb-2">TES OBJECTIFS</h2>
               <div>
-                <label className={labelClass}>Type d'objectif</label>
+                <label className={labelClass}>Type d&apos;objectif</label>
                 <div className="flex flex-wrap gap-2">
                   {OBJECTIF_TYPES.map(o => (
                     <button key={o.value} type="button" onClick={() => set("objectif_type", o.value)} className={chipClass(form.objectif_type === o.value)}>

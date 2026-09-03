@@ -6,6 +6,12 @@ import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
 import { CalendarPicker } from "@/components/CalendarPicker";
 import { Select } from "@/components/Select";
+import { ClientStatusDot } from "@/components/ClientStatusDot";
+import { loadClientStatuses, statusFor, type ClientStatus } from "@/lib/clientStatus";
+import { Icon } from "@/components/Icon";
+import { X, ChevronLeft, MessageSquare, Trash2, ExternalLink } from "@/lib/solarIcons";
+
+const LEVEL_RANK: Record<ClientStatus["level"], number> = { risque: 0, attention: 1, ok: 2 };
 
 const STATUS_CFG = {
   actif:   { label: "Actif",   color: "#7eb8a0" },
@@ -19,7 +25,7 @@ const STAGE_CFG = {
   actif:      { label: "Actif",      color: "#7eb8a0" },
   en_risque:  { label: "En risque",  color: "#e09070" },
   churne:     { label: "Churné",     color: "#e07070" },
-  reactive:   { label: "Réactivé",   color: "#a08ec9" },
+  reactive:   { label: "Réactivé",   color: "#6ea8d9" },
 } as const;
 type StatusKey = keyof typeof STATUS_CFG;
 type StageKey  = keyof typeof STAGE_CFG;
@@ -45,6 +51,8 @@ export default function ClientsPage() {
   const [tab,      setTab]      = useState<"profil"|"notes"|"checkin"|"repas"|"journal">("profil");
   const [loading,  setLoading]  = useState(true);
   const [pendingSignups, setPendingSignups] = useState<PendingSignup[]>([]);
+  const [statuses, setStatuses] = useState<Map<string, ClientStatus>>(new Map());
+  const [sortByStatus, setSortByStatus] = useState(false);
 
   // Detail data
   const [seances,      setSeances]      = useState<Seance[]>([]);
@@ -76,6 +84,9 @@ export default function ClientsPage() {
       .then(({ data }) => { setClients((data ?? []) as Client[]); setLoading(false); });
     supabase.rpc("get_pending_signups")
       .then(({ data }) => setPendingSignups((data ?? []) as PendingSignup[]));
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user?.email) loadClientStatuses(data.user.email).then(setStatuses).catch(() => {});
+    });
   }, []);
 
   const loadMealPlans = async (id: string) => {
@@ -189,6 +200,9 @@ export default function ClientsPage() {
     const matchStatus = filterStatus === "all" || (c.status ?? "actif") === filterStatus;
     return matchSearch && matchStage && matchStatus;
   });
+  if (sortByStatus) {
+    filtered.sort((a, b) => LEVEL_RANK[statusFor(statuses, a.email).level] - LEVEL_RANK[statusFor(statuses, b.email).level]);
+  }
 
   if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="w-5 h-5 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/></div>;
 
@@ -198,7 +212,7 @@ export default function ClientsPage() {
       {/* ── Left: list (plein écran sur mobile quand aucun client sélectionné) ── */}
       <div className={`flex-col border-r border-[var(--t-border-soft)] bg-[var(--t-bg)] ${selected ? "hidden md:flex w-72 shrink-0" : "flex flex-1"}`}>
         <div className="px-4 md:px-5 pt-5 md:pt-6 pb-4 border-b border-[var(--t-border-soft)]">
-          <p className="text-[0.5rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-1">CRM</p>
+          <p className="text-[0.5rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-1">Plateforme coaching</p>
           <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-[var(--t-text)] tracking-wide mb-3">CLIENTS</h1>
           <input className={`${inp} mb-3`} placeholder="Rechercher un client…" value={search} onChange={e => setSearch(e.target.value)}/>
           <div className="flex gap-2 flex-wrap">
@@ -208,6 +222,10 @@ export default function ClientsPage() {
             <Select value={filterStatus} onChange={setFilterStatus}
               options={[{ value: "all", label: "Tous statuts" }, ...Object.entries(STATUS_CFG).map(([k, v]) => ({ value: k, label: v.label }))]}
               triggerClassName="bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text-50)] text-[0.5rem] px-2 py-1.5"/>
+            <button onClick={() => setSortByStatus(v => !v)}
+              className={`text-[0.5rem] tracking-[0.08em] uppercase px-2 py-1.5 rounded-xl border transition-colors ${sortByStatus ? "border-[#e07070]/40 text-[#e07070] bg-[#e07070]/5" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[var(--t-text-25)]"}`}>
+              ⚠ Priorité
+            </button>
           </div>
           <p className="text-[0.45rem] text-[var(--t-text-20)] mt-2">{filtered.length} client{filtered.length !== 1 ? "s" : ""}</p>
         </div>
@@ -233,7 +251,7 @@ export default function ClientsPage() {
                     </div>
                     <button onClick={() => deletePendingSignup(p)} disabled={deletingPendingId === p.id}
                       title="Supprimer ce compte" className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors disabled:opacity-40 mt-px">
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      <Icon icon={X} size={11} strokeWidth={2}/>
                     </button>
                   </div>
                 </div>
@@ -253,7 +271,10 @@ export default function ClientsPage() {
               <button key={c.id} onClick={() => selectClient(c)}
                 className={`w-full text-left px-4 py-3 mb-1 rounded-xl border transition-all ${isSelected ? "border-[#c9a84c]/30 bg-[#c9a84c]/5" : "border-[var(--t-border-soft)] hover:border-[var(--t-border)] hover:bg-[var(--t-glass-bg)]"}`}>
                 <div className="flex items-start justify-between mb-0.5">
-                  <p className={`text-sm font-medium ${isSelected ? "text-[var(--t-text)]" : "text-[var(--t-text-70)]"}`}>{c.prenom} {c.nom}</p>
+                  <p className={`text-sm font-medium flex items-center gap-1.5 min-w-0 ${isSelected ? "text-[var(--t-text)]" : "text-[var(--t-text-70)]"}`}>
+                    {stage !== "prospect" && <ClientStatusDot status={statusFor(statuses, c.email)}/>}
+                    <span className="truncate">{c.prenom} {c.nom}</span>
+                  </p>
                   <span className="text-[0.42rem] tracking-wider uppercase px-1.5 py-0.5 rounded-full border shrink-0 ml-2"
                     style={{ color: stageCfg.color, borderColor: `${stageCfg.color}35`, backgroundColor: `${stageCfg.color}10` }}>
                     {stageCfg.label}
@@ -276,7 +297,7 @@ export default function ClientsPage() {
             <div className="flex items-start justify-between mb-3 gap-2">
               <div className="flex items-start gap-2 min-w-0">
                 <button onClick={() => setSelected(null)} className="md:hidden text-[var(--t-text-40)] hover:text-[var(--t-text-70)] transition-colors mt-1.5 shrink-0">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                  <Icon icon={ChevronLeft} size={18}/>
                 </button>
                 <div className="min-w-0">
                 <p className="text-[0.45rem] tracking-[0.2em] text-[var(--t-text-25)] uppercase truncate">{selected.email}</p>
@@ -287,16 +308,16 @@ export default function ClientsPage() {
               <div className="flex items-center gap-3 shrink-0">
                 <Link href={`/crm/inbox?client=${encodeURIComponent(selected.email)}`}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[var(--t-border)] text-[var(--t-text-30)] hover:text-[var(--t-text-70)] hover:border-[var(--t-text-25)] transition-all text-[0.45rem] tracking-[0.15em] uppercase">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                  <Icon icon={MessageSquare} size={11}/>
                   Inbox
                 </Link>
                 <button onClick={deleteClient} disabled={deleting}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#e07070]/20 text-[#e07070]/50 hover:text-[#e07070] hover:border-[#e07070]/40 transition-all text-[0.45rem] tracking-[0.15em] uppercase disabled:opacity-40">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                  <Icon icon={Trash2} size={11}/>
                   {deleting ? "Suppression…" : "Supprimer"}
                 </button>
                 <button onClick={() => setSelected(null)} className="text-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  <Icon icon={X} size={16}/>
                 </button>
               </div>
             </div>
@@ -358,7 +379,7 @@ export default function ClientsPage() {
             <Link href={`/crm/programmes?client=${encodeURIComponent(selected.email)}`}
               className="py-3 mr-5 text-[0.58rem] tracking-[0.12em] uppercase border-b-2 border-transparent text-[var(--t-text-30)] hover:text-[var(--t-text-50)] transition-colors whitespace-nowrap flex items-center gap-1">
               Programme ({seances.length})
-              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              <Icon icon={ExternalLink} size={9} strokeWidth={2}/>
             </Link>
           </div>
 
@@ -424,7 +445,7 @@ export default function ClientsPage() {
                         </p>
                         <button onClick={async () => { await supabase.from("coach_notes").delete().eq("id", n.id); setNotes(prev => prev.filter(x => x.id !== n.id)); }}
                           className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
-                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                          <Icon icon={X} size={11} strokeWidth={2}/>
                         </button>
                       </div>
                       <p className="text-sm text-[var(--t-text-60)] leading-relaxed whitespace-pre-line">{n.content}</p>
@@ -487,7 +508,7 @@ export default function ClientsPage() {
                       </div>
                       <button onClick={async () => { await supabase.from("weekly_checkins").delete().eq("id", ck.id); setCheckins(prev => prev.filter(x => x.id !== ck.id)); }}
                         className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors shrink-0">
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        <Icon icon={X} size={11} strokeWidth={2}/>
                       </button>
                     </div>
                   ))}
@@ -539,7 +560,7 @@ export default function ClientsPage() {
                           {items.map(item => (
                             <div key={item.id} className="flex items-center justify-between border border-[var(--t-text-8)] bg-[var(--t-surface)] rounded-xl px-4 py-2.5 mb-1">
                               <div><p className="text-xs text-[var(--t-text-60)]">{item.name}</p><div className="flex gap-2 mt-0.5"><span className="text-[0.42rem] text-[var(--t-text-25)]">{item.calories} kcal</span><span className="text-[0.42rem] text-[#c9a84c]/55">P {item.proteines}g</span><span className="text-[0.42rem] text-[#7eb8a0]/55">G {item.glucides}g</span><span className="text-[0.42rem] text-[#e07070]/55">L {item.lipides}g</span></div></div>
-                              <button onClick={async () => { await supabase.from("meal_plan_items").delete().eq("id", item.id); setMealItems(prev => prev.filter(x => x.id !== item.id)); }} className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                              <button onClick={async () => { await supabase.from("meal_plan_items").delete().eq("id", item.id); setMealItems(prev => prev.filter(x => x.id !== item.id)); }} className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors"><Icon icon={X} size={11} strokeWidth={2}/></button>
                             </div>
                           ))}
                         </div>

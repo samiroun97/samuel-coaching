@@ -1,30 +1,21 @@
+import { Icon } from "@/components/Icon";
+import { CheckCircle2, Target, Lightbulb } from "@/lib/solarIcons";
+
 const FEEDBACK_TYPES = {
   fort: {
     color: "#7eb8a0",
     label: "Points forts",
-    icon: (
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.3 2.3L16 10"/>
-      </svg>
-    ),
+    icon: <Icon icon={CheckCircle2} size={13} strokeWidth={2}/>,
   },
   faible: {
     color: "#d99a58",
     label: "À travailler",
-    icon: (
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/>
-      </svg>
-    ),
+    icon: <Icon icon={Target} size={13} strokeWidth={2}/>,
   },
   conseil: {
     color: "#c9a84c",
     label: "Conseils",
-    icon: (
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.5.4.9 1.1 1 1.6h5c.1-.5.5-1.2 1-1.6A6 6 0 0 0 12 3z"/>
-      </svg>
-    ),
+    icon: <Icon icon={Lightbulb} size={13} strokeWidth={2}/>,
   },
 } as const;
 

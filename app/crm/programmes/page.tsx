@@ -17,9 +17,13 @@ import { type ProgrammeTemplate, listTemplates, saveTemplate, deleteTemplate, te
 import { getMyCoachId } from "@/lib/coach";
 import { WeekPlanning } from "@/components/WeekPlanning";
 import { ConsistencyHeatmap } from "@/components/ConsistencyHeatmap";
-import { loadTrainedDates } from "@/lib/consistency";
+import { loadDayStatuses, type DayStatus } from "@/lib/consistency";
+import { MuscleVolumeChart } from "@/components/MuscleVolumeChart";
+import { loadMuscleVolume } from "@/lib/muscleVolume";
 import { type Mesocycle, loadActiveMesocycle, createMesocycle, deleteMesocycle } from "@/lib/mesocycles";
 import { MesocycleCard } from "@/components/MesocycleCard";
+import { Icon } from "@/components/Icon";
+import { ChevronLeft, ChevronDown, ChevronUp, Trash2, X, Copy, FileText } from "@/lib/solarIcons";
 
 const SEANCE_TYPES = ["Haut du corps","Bas du corps","Full body","Cardio","Boxe","Natation","CrossFit","Yoga","Autre"];
 
@@ -29,10 +33,10 @@ const STAGE_CFG: Record<string, { label: string; color: string }> = {
   actif:      { label: "Actif",      color: "#7eb8a0" },
   en_risque:  { label: "En risque",  color: "#e09070" },
   churne:     { label: "Churné",     color: "#e07070" },
-  reactive:   { label: "Réactivé",   color: "#a08ec9" },
+  reactive:   { label: "Réactivé",   color: "#6ea8d9" },
 };
 
-type Client = { id: string; email: string; prenom: string; nom: string; age: number; poids: number; taille: number; sexe: string; niveau_activite: string; experience: string; seances_par_semaine: number; duree_seance: string; lieu_entrainement: string; blessures: string; objectifs: string; pipeline_stage: string | null };
+type Client = { id: string; email: string; prenom: string; nom: string; age: number; poids: number; taille: number; sexe: string; niveau_activite: string; experience: string; seances_par_semaine: number; duree_seance: string; lieu_entrainement: string; blessures: string; objectifs: string; objectif_type: string | null; pipeline_stage: string | null };
 type SeanceDraft = { titre: string; type_seance: string; date_prevue: string; semaine: string; description: string; exercices: ExerciceItem[]; notesLibres: string[] };
 type SentSeance = { id: string; titre: string; type_seance: string | null; date_prevue: string | null; semaine: number | null; description: string | null; exercices: string | null; notes_libres: string | null; completed_at: string | null; created_by_client?: boolean };
 
@@ -60,7 +64,8 @@ export default function ProgrammesPage() {
   const [sentSeances,  setSentSeances]  = useState<SentSeance[]>([]);
   const [openSentId,   setOpenSentId]   = useState<string | null>(null);
   const [sentView,     setSentView]     = useState<"liste" | "semaine">("liste");
-  const [trainedDates, setTrainedDates] = useState<Set<string>>(new Set());
+  const [dayStatuses, setDayStatuses] = useState<Record<string, DayStatus>>({});
+  const [muscleVolume, setMuscleVolume] = useState<Record<string, number[]>>({});
   const [activeMeso,   setActiveMeso]   = useState<Mesocycle | null>(null);
   const [showMesoForm, setShowMesoForm] = useState(false);
   const [mesoForm, setMesoForm] = useState({ nom: "", objectif: "", dateDebut: "", dateFin: "" });
@@ -149,10 +154,12 @@ export default function ProgrammesPage() {
   const selectClient = (c: Client) => {
     setSelected(c); setDrafts([]); setGenError(""); setSentTo(null); setGenDescription(""); setOpenSentId(null);
     loadSentSeances(c.email);
-    setTrainedDates(new Set());
-    loadTrainedDates(c.id).then(setTrainedDates).catch(() => {});
+    setDayStatuses({});
+    loadDayStatuses(c.id, c.objectif_type).then(setDayStatuses).catch(() => {});
     setActiveMeso(null); setShowMesoForm(false);
     loadActiveMesocycle(c.id).then(setActiveMeso).catch(() => {});
+    setMuscleVolume({});
+    loadMuscleVolume(c.id).then(setMuscleVolume).catch(() => {});
   };
 
   const submitMeso = async () => {
@@ -253,7 +260,7 @@ export default function ProgrammesPage() {
       {/* ── Left: list (plein écran sur mobile quand aucun client sélectionné) ── */}
       <div className={`flex-col border-r border-[var(--t-border-soft)] bg-[var(--t-bg)] ${selected ? "hidden md:flex w-80 shrink-0" : "flex flex-1"}`}>
         <div className="px-4 md:px-5 pt-5 md:pt-6 pb-4 border-b border-[var(--t-border-soft)]">
-          <p className="text-[0.5rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-1">CRM</p>
+          <p className="text-[0.5rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-1">Plateforme coaching</p>
           <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl md:text-4xl text-[var(--t-text)] tracking-wide mb-3">PROGRAMMES</h1>
           <div className="flex gap-2">
             <button onClick={() => setFilter("sans")}
@@ -306,7 +313,7 @@ export default function ProgrammesPage() {
           <div className="px-4 md:px-8 pt-5 md:pt-6 pb-4 border-b border-[var(--t-border-soft)] shrink-0">
             <div className="flex items-start gap-2">
               <button onClick={() => setSelected(null)} className="md:hidden text-[var(--t-text-40)] hover:text-[var(--t-text-70)] transition-colors mt-1.5 shrink-0">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                <Icon icon={ChevronLeft} size={18}/>
               </button>
               <div className="min-w-0">
                 <p className="text-[0.45rem] tracking-[0.2em] text-[var(--t-text-25)] uppercase truncate">{selected.email}</p>
@@ -334,8 +341,8 @@ export default function ProgrammesPage() {
               {activeMeso ? (
                 <MesocycleCard meso={activeMeso} onDelete={removeMeso}/>
               ) : showMesoForm ? (
-                <div className="border border-[#a08ec9]/25 bg-[#a08ec9]/5 rounded-xl p-4 flex flex-col gap-3">
-                  <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#a08ec9]">Nouveau mésocycle</p>
+                <div className="border border-[#c9a84c]/25 bg-[#c9a84c]/5 rounded-xl p-4 flex flex-col gap-3">
+                  <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c]">Nouveau mésocycle</p>
                   <input className={inp} placeholder="Nom (ex : Prise de masse — bloc 1)" value={mesoForm.nom}
                     onChange={e => setMesoForm(f => ({ ...f, nom: e.target.value }))}/>
                   <input className={inp} placeholder="Objectif (optionnel)" value={mesoForm.objectif}
@@ -358,14 +365,14 @@ export default function ProgrammesPage() {
                       Annuler
                     </button>
                     <button onClick={submitMeso} disabled={mesoSaving || !mesoForm.nom.trim() || !mesoForm.dateDebut || !mesoForm.dateFin}
-                      className="flex-1 bg-gradient-to-b from-[#a08ec9] to-[#8a76b8] text-black text-[0.6rem] font-bold tracking-wider uppercase py-2.5 rounded-xl disabled:opacity-40 transition-all">
+                      className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.6rem] font-bold tracking-wider uppercase py-2.5 rounded-xl disabled:opacity-40 transition-all">
                       {mesoSaving ? "…" : "Créer →"}
                     </button>
                   </div>
                 </div>
               ) : (
                 <button onClick={() => setShowMesoForm(true)}
-                  className="border border-dashed border-[var(--t-border)] text-[var(--t-text-25)] text-[0.6rem] tracking-wider uppercase py-2.5 rounded-xl hover:border-[#a08ec9]/40 hover:text-[#a08ec9] transition-colors">
+                  className="border border-dashed border-[var(--t-border)] text-[var(--t-text-25)] text-[0.6rem] tracking-wider uppercase py-2.5 rounded-xl hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors">
                   + Démarrer un mésocycle
                 </button>
               )}
@@ -379,9 +386,15 @@ export default function ProgrammesPage() {
 
               <ProgressionSuggestions clientId={selected.id} />
 
-              {trainedDates.size > 0 && (
+              {Object.keys(dayStatuses).length > 0 && (
                 <div className="border border-[var(--t-text-8)] bg-[var(--t-bg)] rounded-xl px-4 py-3">
-                  <ConsistencyHeatmap dates={trainedDates}/>
+                  <ConsistencyHeatmap statuses={dayStatuses}/>
+                </div>
+              )}
+
+              {Object.keys(muscleVolume).length > 0 && (
+                <div className="border border-[var(--t-text-8)] bg-[var(--t-bg)] rounded-xl px-4 py-3">
+                  <MuscleVolumeChart byMuscle={muscleVolume}/>
                 </div>
               )}
 
@@ -420,21 +433,19 @@ export default function ProgrammesPage() {
                             <div className="min-w-0">
                               <div className="flex items-center gap-2">
                                 {s.completed_at && <span className="text-[0.7rem] text-[#7eb8a0] shrink-0">✓</span>}
-                                {s.created_by_client && <span className="text-[0.62rem] tracking-wider uppercase text-[#a08ec9] rounded-full border border-[#a08ec9]/25 px-1.5 py-0.5 shrink-0">Séance libre du client</span>}
+                                {s.created_by_client && <span className="text-[0.62rem] tracking-wider uppercase text-[#6ea8d9] rounded-full border border-[#6ea8d9]/25 px-1.5 py-0.5 shrink-0">Séance libre du client</span>}
                                 {s.type_seance && <span className="text-[0.62rem] tracking-wider uppercase text-[#c9a84c] rounded-full border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">{s.type_seance}</span>}
                                 {s.semaine && <span className="text-[0.62rem] tracking-wider uppercase text-[var(--t-text-30)] rounded-full border border-[var(--t-border)] px-1.5 py-0.5 shrink-0">Sem. {s.semaine}</span>}
                                 <p className="text-xs text-[var(--t-text-70)] truncate">{s.titre}</p>
                               </div>
                               {s.date_prevue && <p className="text-[0.65rem] text-[var(--t-text-25)] mt-0.5">{new Date(s.date_prevue + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</p>}
                             </div>
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-                              className={`text-[var(--t-text-25)] shrink-0 transition-transform ${open ? "rotate-180" : ""}`}><polyline points="6 9 12 15 18 9"/></svg>
+                            <Icon icon={ChevronDown} size={10}
+                              className={`text-[var(--t-text-25)] shrink-0 transition-transform ${open ? "rotate-180" : ""}`}/>
                           </button>
                           <button onClick={() => deleteSeance(s.id)} disabled={deletingId === s.id} title="Supprimer cette séance"
                             className="shrink-0 mr-3 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors disabled:opacity-30">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
-                            </svg>
+                            <Icon icon={Trash2} size={13} strokeWidth={1.8}/>
                           </button>
                         </div>
                         {open && (
@@ -459,7 +470,7 @@ export default function ProgrammesPage() {
               <div className="border border-[var(--t-text-8)] bg-[var(--t-bg)] rounded-xl">
                 <button onClick={() => setShowLibrary(v => !v)} className="w-full flex items-center justify-between px-4 py-2.5 text-left">
                   <span className="text-[0.55rem] tracking-[0.2em] uppercase text-[var(--t-text-40)]">Ma bibliothèque d&apos;exercices ({library.length})</span>
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={`text-[var(--t-text-25)] transition-transform ${showLibrary ? "rotate-180" : ""}`}><polyline points="6 9 12 15 18 9"/></svg>
+                  <Icon icon={ChevronDown} size={10} className={`text-[var(--t-text-25)] transition-transform ${showLibrary ? "rotate-180" : ""}`}/>
                 </button>
                 {showLibrary && (
                   <div className="px-4 pb-4 flex flex-col gap-2.5">
@@ -469,7 +480,7 @@ export default function ProgrammesPage() {
                           <div key={l.id} className="flex items-center justify-between gap-2 rounded-xl border border-[var(--t-border-soft)] px-2.5 py-1.5">
                             <span className="text-[0.62rem] text-[var(--t-text-50)] truncate">{l.nom}{l.type ? <span className="text-[var(--t-text-25)]"> · {l.type}</span> : null}</span>
                             <button onClick={() => removeLibItem(l.id)} className="shrink-0 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
-                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                              <Icon icon={X} size={10} strokeWidth={2}/>
                             </button>
                           </div>
                         ))}
@@ -535,7 +546,7 @@ export default function ProgrammesPage() {
                         <p className="text-[0.55rem] text-[var(--t-text-25)] truncate">{t.objectif || t.type_seance || "—"}</p>
                       </button>
                       <button onClick={() => removeTemplate(t.id)} className="shrink-0 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        <Icon icon={X} size={11} strokeWidth={2}/>
                       </button>
                     </div>
                   ))}
@@ -562,10 +573,10 @@ export default function ProgrammesPage() {
                             Modèle
                           </button>
                           <button onClick={() => duplicateDraft(i)} title="Dupliquer cette séance" className="text-[var(--t-text-25)] hover:text-[#c9a84c] transition-colors">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                            <Icon icon={Copy} size={12} strokeWidth={2}/>
                           </button>
                           <button onClick={() => setDrafts(prev => prev.filter((_, j) => j !== i))} className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            <Icon icon={X} size={12} strokeWidth={2}/>
                           </button>
                         </div>
                       </div>
@@ -590,17 +601,17 @@ export default function ProgrammesPage() {
                               <div className="shrink-0 flex flex-col border border-[var(--t-border)] rounded-md overflow-hidden mt-0.5">
                                 <button type="button" onClick={() => moveNoteLibre(i, ni, -1)} disabled={ni === 0} title="Monter"
                                   className="w-5 h-4 flex items-center justify-center text-[var(--t-text-30)] hover:text-[#c9a84c] hover:bg-[var(--t-track)] transition-colors disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-[var(--t-text-30)] border-b border-[var(--t-border)]">
-                                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+                                  <Icon icon={ChevronUp} size={10} strokeWidth={2.5}/>
                                 </button>
                                 <button type="button" onClick={() => moveNoteLibre(i, ni, 1)} disabled={ni === d.notesLibres.length - 1} title="Descendre"
                                   className="w-5 h-4 flex items-center justify-center text-[var(--t-text-30)] hover:text-[#c9a84c] hover:bg-[var(--t-track)] transition-colors disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-[var(--t-text-30)]">
-                                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                                  <Icon icon={ChevronDown} size={10} strokeWidth={2.5}/>
                                 </button>
                               </div>
                               <textarea className={`${inp} resize-none`} rows={2} placeholder="Ex : arriver 10 min en avance pour l'échauffement…"
                                 value={n} onChange={e => setNoteLibre(i, ni, e.target.value)}/>
                               <button type="button" onClick={() => removeNoteLibre(i, ni)} className="shrink-0 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors mt-2">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                <Icon icon={X} size={12} strokeWidth={2}/>
                               </button>
                             </div>
                           ))}
@@ -630,9 +641,7 @@ export default function ProgrammesPage() {
         </div>
       ) : (
         <div className="flex-1 hidden md:flex flex-col items-center justify-center gap-3">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--t-border)" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
-          </svg>
+          <Icon icon={FileText} size={36} strokeWidth={1} className="text-[var(--t-border)]"/>
           <p className="text-[var(--t-text-15)] text-sm">Sélectionne un client pour lui créer un programme</p>
         </div>
       )}

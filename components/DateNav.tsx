@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import { CalendarPicker } from "./CalendarPicker";
+import { Icon } from "@/components/Icon";
+import { ChevronLeft, ChevronRight, Calendar } from "@/lib/solarIcons";
 
 export function DateNav({ date, onChange }: { date: string; onChange: (d: string) => void }) {
   const todayD = new Date().toISOString().split("T")[0];
@@ -14,14 +16,12 @@ export function DateNav({ date, onChange }: { date: string; onChange: (d: string
   return (
     <div className="flex items-center gap-2 mb-6">
       <button onClick={() => move(-1)} className="w-9 h-9 rounded-full border border-[var(--t-border)] bg-[var(--t-surface)] text-[var(--t-text-50)] hover:text-[var(--t-text-80)] hover:border-[var(--t-text-25)] transition-colors flex items-center justify-center shrink-0">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        <Icon icon={ChevronLeft} size={14} strokeWidth={2}/>
       </button>
       <div className="flex-1 relative flex items-center justify-center">
         <button type="button" onClick={() => setOpen(o => !o)}
           className="flex items-center gap-2 px-4 py-2 rounded-full border border-[var(--t-border)] bg-[var(--t-surface)] hover:border-[#c9a84c]/40 transition-colors group">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--t-text-40)] group-hover:text-[#c9a84c] transition-colors shrink-0">
-            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-          </svg>
+          <Icon icon={Calendar} size={17} strokeWidth={1.5} className="text-[var(--t-text-40)] group-hover:text-[#c9a84c] transition-colors shrink-0"/>
           <p className="text-[0.7rem] tracking-[0.15em] uppercase text-[var(--t-text-60)] group-hover:text-[var(--t-text-80)] transition-colors capitalize select-none">{label}</p>
         </button>
         {open && (
@@ -30,7 +30,7 @@ export function DateNav({ date, onChange }: { date: string; onChange: (d: string
         )}
       </div>
       <button onClick={() => move(1)} disabled={isToday} className="w-9 h-9 rounded-full border border-[var(--t-border)] bg-[var(--t-surface)] text-[var(--t-text-50)] hover:text-[var(--t-text-80)] hover:border-[var(--t-text-25)] transition-colors flex items-center justify-center shrink-0 disabled:opacity-20 disabled:cursor-not-allowed">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        <Icon icon={ChevronRight} size={14} strokeWidth={2}/>
       </button>
       {!isToday && (
         <button onClick={() => onChange(todayD)} className="text-[0.62rem] tracking-[0.12em] uppercase text-[#c9a84c] rounded-xl border border-[#c9a84c]/30 px-2 py-1 hover:bg-[#c9a84c]/10 transition-colors shrink-0">

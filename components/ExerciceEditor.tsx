@@ -6,28 +6,26 @@ import { type CatalogueEntry, findCatalogueEntry } from "@/lib/exercicesCatalogu
 import { uploadCustomExerciceImage } from "@/lib/customExerciceImage";
 import { ExerciceLibraryBrowser } from "@/components/ExerciceLibraryBrowser";
 import { Select } from "@/components/Select";
+import { Icon } from "@/components/Icon";
+import { RichIcon } from "@/components/RichIcon";
+import { Layers, Repeat, Dumbbell, Clock, ChevronUp, ChevronDown, Camera, X, Copy, ChevronRight, Plus, NotebookPen } from "@/lib/solarIcons";
 
 const inp = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
 const inpSm = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-2.5 py-2 text-center focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
 const inpXs = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-2 py-2 text-center focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
-const lblSm = "flex items-center justify-center gap-1 text-[0.42rem] tracking-[0.18em] uppercase text-[var(--t-text-30)] mb-1";
 
-const IconSeries = () => <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M17 2v4M7 2v4M3 10h18M5 22h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>;
-const IconReps = () => <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M17 1l4 4-4 4M3 11V9a4 4 0 014-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 01-4 4H3"/></svg>;
-const IconPoids = () => <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M6.5 6.5h11a2 2 0 012 2v7a2 2 0 01-2 2h-11a2 2 0 01-2-2v-7a2 2 0 012-2zM2 9v6M22 9v6"/></svg>;
-const IconRepos = () => <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>;
-const IconUp = () => <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 15 12 9 6 15"/></svg>;
-const IconDown = () => <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>;
+const IconSeries = () => <Icon icon={Layers} size={9} strokeWidth={2.5}/>;
+const IconReps = () => <Icon icon={Repeat} size={9} strokeWidth={2.5}/>;
+const IconPoids = () => <Icon icon={Dumbbell} size={9} strokeWidth={2.5}/>;
+const IconRepos = () => <Icon icon={Clock} size={9} strokeWidth={2.5}/>;
+const IconUp = () => <Icon icon={ChevronUp} size={10} strokeWidth={2.5}/>;
+const IconDown = () => <Icon icon={ChevronDown} size={10} strokeWidth={2.5}/>;
 
 // Vignette sans photo (exercice libre, ou catalogue pas encore illustré pour cet exercice) —
 // jamais de case vide/cassée dans la carte.
-const IconDumbbellLg = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M6.5 6.5h11a2 2 0 012 2v7a2 2 0 01-2 2h-11a2 2 0 01-2-2v-7a2 2 0 012-2zM2 9v6M22 9v6"/>
-  </svg>
-);
+const IconDumbbellLg = () => <Icon icon={Dumbbell} size={18} strokeWidth={1.6}/>;
 
-const IconCamera = () => <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>;
+const IconCamera = () => <Icon icon={Camera} size={9} strokeWidth={2.5}/>;
 
 // Vignette de l'exercice : photo du catalogue si l'exercice y est répertorié (verrouillée —
 // on ne remplace pas la photo officielle), sinon photo perso uploadable par le client
@@ -72,7 +70,7 @@ function ExerciceThumb({ catalogue, ex, onChange }: { catalogue: CatalogueEntry[
           imageUrl ? (
             <button type="button" onClick={() => onChange({ imageUrl: "" })} title="Retirer la photo"
               className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[var(--t-surface)] border border-[var(--t-border)] flex items-center justify-center text-[var(--t-text-25)] hover:text-[#e07070] hover:border-[#e07070]/40 transition-colors">
-              <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              <Icon icon={X} size={8} strokeWidth={3.5}/>
             </button>
           ) : (
             <span className="absolute -bottom-1.5 -right-1.5 w-5 h-5 rounded-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black flex items-center justify-center pointer-events-none">
@@ -275,7 +273,7 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
           </div>
 
           <button type="button" onClick={() => remove(i)} className="shrink-0 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors p-2 -m-2">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+            <Icon icon={X} size={13} strokeWidth={2}/>
           </button>
         </div>
 
@@ -309,7 +307,7 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
                 </div>
                 <button type="button" onClick={() => hideField(i, f.key)} title={`Retirer le champ ${f.label}`}
                   className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[var(--t-surface)] border border-[var(--t-border)] flex items-center justify-center text-[var(--t-text-25)] hover:text-[#e07070] hover:border-[#e07070]/40 transition-colors">
-                  <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  <Icon icon={X} size={8} strokeWidth={3.5}/>
                 </button>
               </div>
             ))}
@@ -358,10 +356,10 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
                 <input className={inpXs} placeholder="3-1-2-0" value={s.tempo} onChange={e => updateSet(i, si, { tempo: e.target.value })} />
                 <div className="flex items-center justify-center gap-3 sm:gap-1">
                   <button type="button" onClick={() => duplicateSet(i, si)} title="Dupliquer cette série" className="p-1.5 -m-1.5 text-[var(--t-text-20)] hover:text-[#c9a84c] transition-colors">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                    <Icon icon={Copy} size={13} strokeWidth={2}/>
                   </button>
                   <button type="button" onClick={() => removeSet(i, si)} title="Supprimer cette série" className="p-1.5 -m-1.5 text-[var(--t-text-20)] hover:text-[#e07070] transition-colors">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                    <Icon icon={X} size={13} strokeWidth={2}/>
                   </button>
                 </div>
               </div>
@@ -432,27 +430,25 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
         <button type="button" onClick={() => setShowLibraryBrowser(true)}
           className="group flex items-center gap-4 border border-[#c9a84c]/25 bg-[#c9a84c]/[0.04] px-5 py-4 rounded-2xl shadow-[0_4px_16px_-10px_rgba(0,0,0,0.4)] hover:border-[#c9a84c]/50 hover:bg-[#c9a84c]/[0.08] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200">
           <span className="shrink-0 w-14 h-14 rounded-2xl bg-[#c9a84c]/10 flex items-center justify-center">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icons/library.svg" alt="" width={32} height={32} className="w-8 h-8 object-contain"/>
+            <RichIcon name="library" size={28}/>
           </span>
           <span className="flex-1 text-left min-w-0">
             <span className="block text-sm font-bold tracking-[0.06em] uppercase leading-tight text-[var(--t-text)]">Choisir dans la bibliothèque</span>
             <span className="block text-[0.65rem] font-medium text-[var(--t-text-35)] tracking-wide leading-tight mt-1">{catalogue.length} exercices classés par muscle</span>
           </span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-[#c9a84c] transition-transform group-hover:translate-x-1"><path d="M9 6l6 6-6 6"/></svg>
+          <Icon icon={ChevronRight} size={16} strokeWidth={2.5} className="shrink-0 text-[#c9a84c] transition-transform group-hover:translate-x-1"/>
         </button>
       )}
       <button type="button" onClick={add}
         className="group flex items-center gap-4 border border-[var(--t-border)] bg-[var(--t-surface)] px-5 py-4 rounded-2xl hover:border-[var(--t-border-15)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200">
         <span className="shrink-0 w-14 h-14 rounded-2xl bg-[var(--t-surface-2)] flex items-center justify-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/icons/entrainement-libre.svg" alt="" width={32} height={32} className="w-8 h-8 object-contain"/>
+          <Icon icon={NotebookPen} size={28} className="text-[var(--t-text-40)]"/>
         </span>
         <span className="flex-1 text-left min-w-0">
           <span className="block text-sm font-bold tracking-[0.06em] uppercase leading-tight text-[var(--t-text)]">Exercice libre</span>
           <span className="block text-[0.65rem] font-medium text-[var(--t-text-30)] tracking-wide leading-tight mt-1">Ajoute un exercice vierge à compléter toi-même</span>
         </span>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-[var(--t-text-20)] transition-transform group-hover:translate-x-1"><path d="M9 6l6 6-6 6"/></svg>
+        <Icon icon={ChevronRight} size={16} strokeWidth={2.5} className="shrink-0 text-[var(--t-text-20)] transition-transform group-hover:translate-x-1"/>
       </button>
     </div>
   );
@@ -465,13 +461,13 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
       {catalogue.length > 0 && (
         <button type="button" onClick={() => setShowLibraryBrowser(true)}
           className="flex-1 flex items-center justify-center gap-1.5 border border-dashed border-[var(--t-border-15)] text-[var(--t-text-30)] text-[0.62rem] font-bold tracking-[0.08em] uppercase py-3 rounded-xl hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <Icon icon={Plus} size={12} strokeWidth={2.5}/>
           Bibliothèque
         </button>
       )}
       <button type="button" onClick={add}
         className="flex-1 flex items-center justify-center gap-1.5 border border-dashed border-[var(--t-border-15)] text-[var(--t-text-30)] text-[0.62rem] font-bold tracking-[0.08em] uppercase py-3 rounded-xl hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <Icon icon={Plus} size={12} strokeWidth={2.5}/>
         Exercice libre
       </button>
     </div>

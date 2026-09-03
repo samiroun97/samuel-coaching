@@ -5,35 +5,21 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { startStateSync, SYNC_STATUS_EVENT } from "@/lib/syncStorage";
-import { isCoachUser } from "@/lib/coach";
+import { isCoachUser, isCoachActive, isPlatformAdmin, getMyOwnBusinessName } from "@/lib/coach";
 import ThemeToggle from "@/components/ThemeToggle";
-
-// Mêmes préfixes que app/crm/ia/page.tsx — juste pour compter les signalements en attente.
-const AI_FEEDBACK_RE = /^\[(?:NUTRITION|PROGRAMME|ACTIVITE)_FEEDBACK:/;
-
-function Icon({ name }: { name: string }) {
-  const p = { width: 15, height: 15, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.5, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
-  switch (name) {
-    case "grid":   return <svg {...p}><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>;
-    case "users":  return <svg {...p}><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>;
-    case "flow":   return <svg {...p}><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51L8.59 10.49"/></svg>;
-    case "chat":   return <svg {...p}><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>;
-    case "doc":    return <svg {...p}><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>;
-    case "logout": return <svg {...p}><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>;
-    case "eye":    return <svg {...p}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>;
-    case "sparkle": return <svg {...p}><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z"/></svg>;
-    default: return null;
-  }
-}
+import { Icon } from "@/components/Icon";
+import { LayoutGrid, Users, Share2, MessageSquare, FileText, LogOut, Eye } from "@/lib/solarIcons";
 
 export default function CRMLayout({ children }: { children: React.ReactNode }) {
   const router   = useRouter();
   const pathname = usePathname();
   const [ready,     setReady]     = useState(false);
   const [unreadSet, setUnreadSet] = useState<Set<string>>(new Set());
-  const [aiPending, setAiPending] = useState(0);
   const [syncIssue, setSyncIssue] = useState(false);
   const [myEmail,   setMyEmail]   = useState("");
+  const [businessName, setBusinessName] = useState("");
+  const [suspended, setSuspended] = useState(false);
+  const [isAdmin,   setIsAdmin]   = useState(false);
 
   useEffect(() => {
     const onSyncStatus = (e: Event) => setSyncIssue(!(e as CustomEvent<{ ok: boolean }>).detail.ok);
@@ -47,8 +33,11 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user || !(await isCoachUser(user.id))) { router.push("/login"); return; }
+      if (!(await isCoachActive(user.id))) { setSuspended(true); setReady(true); return; }
       const email = user.email ?? "";
       setMyEmail(email);
+      getMyOwnBusinessName(user.id).then(name => setBusinessName(name ?? "Mon espace coach"));
+      isPlatformAdmin(user.id).then(setIsAdmin);
 
       // Sync multi-appareils (conversations traitées, etc.)
       await startStateSync(user.id);
@@ -65,16 +54,6 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
           if (client !== email) last.set(client, m.from_email);
         }
         setUnreadSet(new Set([...last.entries()].filter(([client, from]) => from !== email && !treated.has(client)).map(([client]) => client)));
-
-        // Signalements IA (nutrition/programme/activité) pas encore corrigés depuis /crm/ia
-        // Pas de filtre from_email : seul le formulaire de signalement génère ce format,
-        // donc un signalement testé depuis le compte du coach doit aussi compter.
-        const feedbackMsgs = msgs.filter(m => AI_FEEDBACK_RE.test(m.content));
-        if (feedbackMsgs.length > 0) {
-          const { data: corrections } = await supabase.from("ai_corrections").select("message_id").not("message_id", "is", null);
-          const corrected = new Set((corrections ?? []).map(c => c.message_id));
-          setAiPending(feedbackMsgs.filter(m => !corrected.has(m.id)).length);
-        }
       }
       setReady(true);
     })();
@@ -103,11 +82,10 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
   const unread = unreadSet.size;
 
   const nav = [
-    { href: "/crm",            label: "Dashboard",  icon: "grid",  badge: 0 },
-    { href: "/crm/clients",    label: "Clients",    icon: "users", badge: 0 },
-    { href: "/crm/programmes", label: "Programmes", icon: "doc",   badge: 0 },
-    { href: "/crm/inbox",      label: "Inbox",      icon: "chat",  badge: unread },
-    { href: "/crm/ia",         label: "IA",         icon: "sparkle", badge: aiPending },
+    { href: "/crm",            label: "Dashboard",  icon: LayoutGrid,    badge: 0 },
+    { href: "/crm/clients",    label: "Clients",    icon: Users,         badge: 0 },
+    { href: "/crm/programmes", label: "Programmes", icon: FileText,      badge: 0 },
+    { href: "/crm/inbox",      label: "Inbox",      icon: MessageSquare, badge: unread },
   ];
 
   if (!ready) return (
@@ -116,12 +94,25 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
     </div>
   );
 
+  if (suspended) return (
+    <div className="min-h-screen bg-[var(--t-bg2)] flex items-center justify-center p-6">
+      <div className="max-w-sm text-center flex flex-col items-center gap-4">
+        <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl tracking-wide text-[var(--t-text)]">Compte suspendu</p>
+        <p className="text-sm text-[var(--t-text-40)]">Ton accès au CRM a été temporairement suspendu. Contacte l&apos;administrateur de la plateforme pour plus d&apos;informations.</p>
+        <button onClick={async () => { await supabase.auth.signOut(); router.push("/login"); }}
+          className="text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c] hover:text-[var(--t-text-60)] transition-colors">
+          Déconnexion
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-[var(--t-bg2)] flex w-full overflow-x-hidden">
       <aside className="w-56 bg-[var(--t-bg)] border-r border-[var(--t-border-soft)] hidden md:flex flex-col fixed h-full z-10">
         <div className="px-5 pt-6 pb-5 border-b border-[var(--t-border-soft)]">
-          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-[0.85rem] tracking-[0.22em] text-[#c9a84c] leading-none">SAMUEL.COACHING</p>
-          <p className="text-[0.42rem] tracking-[0.3em] text-[var(--t-text-20)] uppercase mt-1.5">Espace Coach — CRM</p>
+          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-[0.85rem] tracking-[0.22em] text-[#c9a84c] leading-none truncate">{businessName.toUpperCase()}</p>
+          <p className="text-[0.42rem] tracking-[0.3em] text-[var(--t-text-20)] uppercase mt-1.5">Plateforme coaching</p>
         </div>
 
         <nav className="flex-1 px-2 py-4 flex flex-col gap-0.5">
@@ -132,7 +123,7 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
                 className={`flex items-center justify-between px-3 py-2.5 text-[0.6rem] tracking-[0.1em] uppercase transition-all border-l-2 ${
                   active ? "text-[#c9a84c] bg-[#c9a84c]/5 border-[#c9a84c]" : "text-[var(--t-text-30)] hover:text-[var(--t-text-60)] hover:bg-[var(--t-glass-bg)] border-transparent"
                 }`}>
-                <div className="flex items-center gap-2.5"><Icon name={icon}/>{label}</div>
+                <div className="flex items-center gap-2.5"><Icon icon={icon} size={15}/>{label}</div>
                 {badge > 0 && <span className="bg-[#e07070] text-white text-[0.4rem] font-bold px-1.5 py-0.5 rounded-full min-w-[1.1rem] text-center">{badge}</span>}
               </Link>
             );
@@ -140,13 +131,19 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
         </nav>
 
         <div className="px-2 py-3 border-t border-[var(--t-border-soft)] flex flex-col gap-2">
+          {isAdmin && (
+            <Link href="/operateur"
+              className="flex items-center gap-2.5 px-3 py-2.5 text-[0.6rem] tracking-[0.1em] uppercase text-[#c9a84c] hover:text-[var(--t-text-70)] border-l-2 border-transparent hover:border-[#c9a84c] transition-all">
+              <Icon icon={Share2} size={15}/>CRM
+            </Link>
+          )}
           <Link href="/dashboard?preview=1"
             className="flex items-center gap-2.5 px-3 py-2.5 text-[0.6rem] tracking-[0.1em] uppercase text-[var(--t-text-20)] hover:text-[var(--t-text-50)] border-l-2 border-transparent hover:border-[var(--t-border)] transition-all">
-            <Icon name="eye"/>Mon espace perso
+            <Icon icon={Eye} size={15}/>Mon espace perso
           </Link>
           <button onClick={async () => { await supabase.auth.signOut(); router.push("/login"); }}
             className="flex items-center gap-2.5 px-3 py-2.5 text-[0.6rem] tracking-[0.1em] uppercase text-[var(--t-text-20)] hover:text-[var(--t-text-50)] border-l-2 border-transparent transition-all w-full">
-            <Icon name="logout"/>Déconnexion
+            <Icon icon={LogOut} size={15}/>Déconnexion
           </button>
           <div className="px-3 pt-1">
             <ThemeToggle/>
@@ -174,7 +171,7 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
                 active ? "text-[#c9a84c]" : "text-[var(--t-text-25)]"
               }`}>
               <div className="relative">
-                <Icon name={icon}/>
+                <Icon icon={icon} size={15}/>
                 {badge > 0 && <span className="absolute -top-1 -right-2 bg-[#e07070] text-white text-[0.4rem] font-bold px-1 py-px rounded-full min-w-[0.9rem] text-center">{badge}</span>}
               </div>
               {label}
@@ -183,9 +180,16 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
         })}
         <Link href="/dashboard?preview=1"
           className="flex-1 flex flex-col items-center gap-1 py-2.5 text-[0.45rem] tracking-[0.08em] uppercase text-[var(--t-text-25)] transition-all">
-          <Icon name="eye"/>
+          <Icon icon={Eye} size={15}/>
           Aperçu
         </Link>
+        {isAdmin && (
+          <Link href="/operateur"
+            className="flex-1 flex flex-col items-center gap-1 py-2.5 text-[0.45rem] tracking-[0.08em] uppercase text-[#c9a84c] transition-all">
+            <Icon icon={Share2} size={15}/>
+            CRM
+          </Link>
+        )}
       </nav>
     </div>
   );

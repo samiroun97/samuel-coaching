@@ -6,6 +6,8 @@ import { supabase } from "@/lib/supabase";
 import { isPushSupported, subscribeToPush, unsubscribeFromPush } from "@/lib/push";
 import { isCoachUser } from "@/lib/coach";
 import { apiPost } from "@/lib/apiClient";
+import { Icon } from "@/components/Icon";
+import { ChevronRight, X } from "@/lib/solarIcons";
 
 type SectionKey = "profil" | "notifications" | "steps" | "password";
 
@@ -21,10 +23,8 @@ function Row({ label, sublabel, open, onClick, children }: {
           <p className="text-sm text-[var(--t-text-70)]">{label}</p>
           {sublabel && <p className="text-[0.62rem] text-[var(--t-text-25)] mt-0.5">{sublabel}</p>}
         </div>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-          className={`text-[var(--t-text-25)] shrink-0 transition-transform ${open ? "rotate-90" : ""}`}>
-          <polyline points="9 18 15 12 9 6"/>
-        </svg>
+        <Icon icon={ChevronRight} size={14} strokeWidth={1.5}
+          className={`text-[var(--t-text-25)] shrink-0 transition-transform ${open ? "rotate-90" : ""}`}/>
       </button>
       {open && <div className="px-5 pb-5 border-t border-[var(--t-border-soft)] pt-5">{children}</div>}
     </div>
@@ -36,10 +36,8 @@ function LinkRow({ label, href, onClick, danger }: { label: string; href?: strin
   const content = (
     <>
       <p className={`text-sm ${danger ? "text-[#e07070]" : "text-[var(--t-text-70)]"}`}>{label}</p>
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-        className={danger ? "text-[#e07070]/50 shrink-0" : "text-[var(--t-text-25)] shrink-0"}>
-        <polyline points="9 18 15 12 9 6"/>
-      </svg>
+      <Icon icon={ChevronRight} size={14} strokeWidth={1.5}
+        className={danger ? "text-[#e07070]/50 shrink-0" : "text-[var(--t-text-25)] shrink-0"}/>
     </>
   );
   const cls = "w-full flex items-center justify-between px-5 py-4 text-left transition-colors hover:bg-[var(--t-glass-bg)]";
@@ -165,9 +163,7 @@ export default function PreferencesPage() {
       <div className="flex items-center gap-4 mb-8">
         <button onClick={() => router.push("/dashboard/profile")}
           className="w-9 h-9 border border-[var(--t-border)] rounded-full flex items-center justify-center text-[var(--t-text-40)] hover:text-[var(--t-text-70)] hover:border-[var(--t-text-25)] transition-colors shrink-0">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
+          <Icon icon={X} size={16} strokeWidth={1.5}/>
         </button>
         <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[var(--t-text)] tracking-wide">PRÉFÉRENCES</h1>
       </div>
@@ -178,7 +174,7 @@ export default function PreferencesPage() {
             <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1">Espace coach</p>
             <p className="text-[0.62rem] text-[var(--t-text-35)] tracking-wider">Tu es actuellement dans ton espace perso (aperçu adhérent)</p>
           </div>
-          <Link href="/crm"
+          <Link href="/crm/clients"
             className="shrink-0 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.65rem] font-bold tracking-[0.15em] uppercase px-4 py-2.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
             Retour espace coach →
           </Link>

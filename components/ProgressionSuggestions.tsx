@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
+import { Icon } from "@/components/Icon";
+import { ChevronDown } from "@/lib/solarIcons";
 import {
   loadRecentExerciceNoms, loadExerciceSessionOutcomes, suggestProgression,
   type ProgressionSuggestion,
@@ -53,8 +55,8 @@ export function ProgressionSuggestions({ clientId }: { clientId: string }) {
         <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[#c9a84c]">
           Suggestions de charge · {rows.length}
         </p>
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-          className={`text-[var(--t-text-25)] shrink-0 transition-transform ${open ? "rotate-180" : ""}`}><polyline points="6 9 12 15 18 9"/></svg>
+        <Icon icon={ChevronDown} size={11} strokeWidth={1.5}
+          className={`text-[var(--t-text-25)] shrink-0 transition-transform ${open ? "rotate-180" : ""}`}/>
       </button>
       {open && (
         <div className="px-4 pb-3 flex flex-col gap-2">

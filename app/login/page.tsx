@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { Icon } from "@/components/Icon";
+import { Check } from "@/lib/solarIcons";
 
 function InstallGuide() {
   const [open, setOpen] = useState(false);
@@ -255,7 +257,7 @@ export default function LoginPage() {
                 <button type="button" onClick={() => setIsCoachSignup(v => !v)}
                   className="w-full flex items-center gap-3 text-left">
                   <span className={`shrink-0 w-4 h-4 border flex items-center justify-center transition-colors ${isCoachSignup ? "bg-[#c9a84c] border-[#c9a84c]" : "border-white/20"}`}>
-                    {isCoachSignup && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7"/></svg>}
+                    {isCoachSignup && <Icon icon={Check} size={10} strokeWidth={3} className="text-black"/>}
                   </span>
                   <span className="text-xs text-white/60">Je suis un coach professionnel</span>
                 </button>

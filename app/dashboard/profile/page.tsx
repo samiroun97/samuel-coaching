@@ -7,6 +7,8 @@ import { apiPost } from "@/lib/apiClient";
 import ThemeToggle from "@/components/ThemeToggle";
 import { CalendarPicker } from "@/components/CalendarPicker";
 import { OBJECTIF_TYPES, OBJECTIF_TYPE_LABEL, type ObjectifType } from "@/lib/objectifTypes";
+import { Icon } from "@/components/Icon";
+import { Settings, ChevronRight, Pencil, MessageSquare, AlertCircle, Check } from "@/lib/solarIcons";
 
 type Profile = {
   prenom: string; nom: string; age: number | null; poids: number | null; taille: number | null; sexe: string | null;
@@ -30,12 +32,7 @@ const EXPERIENCE_OPTIONS = ["Débutant", "Intermédiaire", "Avancé"];
 const DUREE_OPTIONS = ["30 min", "45 min", "1h", "1h30+"];
 
 function GearIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="3"/>
-      <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
-    </svg>
-  );
+  return <Icon icon={Settings} size={20} strokeWidth={1.5}/>;
 }
 
 export default function ProfilePage() {
@@ -175,7 +172,7 @@ export default function ProfilePage() {
             <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1">Espace coach</p>
             <p className="text-[0.62rem] text-[var(--t-text-35)] tracking-wider">Tu es actuellement dans ton espace perso (aperçu adhérent)</p>
           </div>
-          <Link href="/crm"
+          <Link href="/crm/clients"
             className="shrink-0 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.65rem] font-bold tracking-[0.15em] uppercase px-4 py-2.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
             Retour espace coach →
           </Link>
@@ -200,9 +197,9 @@ export default function ProfilePage() {
           className="w-full text-left border border-[#c9a84c]/30 bg-[#c9a84c]/5 hover:bg-[#c9a84c]/8 rounded-xl p-4 mb-4 flex items-center justify-between gap-3 transition-colors group">
           <div>
             <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-0.5">Ton coach veut en savoir plus</p>
-            <p className="text-xs text-[var(--t-text-50)]">Précise ton objectif pour qu'on te construise un plan adapté</p>
+            <p className="text-xs text-[var(--t-text-50)]">Précise ton objectif pour qu&apos;on te construise un plan adapté</p>
           </div>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" strokeWidth="2" strokeLinecap="round" className="shrink-0 transition-transform group-hover:translate-x-0.5"><polyline points="9 18 15 12 9 6"/></svg>
+          <Icon icon={ChevronRight} size={14} strokeWidth={2} className="shrink-0 transition-transform group-hover:translate-x-0.5 text-[#c9a84c]"/>
         </button>
       )}
 
@@ -216,7 +213,7 @@ export default function ProfilePage() {
                 {OBJECTIF_TYPE_LABEL[profile.objectif_type as ObjectifType] ?? profile.objectif_type}
               </span>
             )}
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-0 group-hover:opacity-60 transition-opacity"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            <Icon icon={Pencil} size={10} strokeWidth={2} className="opacity-0 group-hover:opacity-60 transition-opacity text-[#c9a84c]"/>
           </div>
           {profile?.objectif_echeance && <p className="text-[0.62rem] text-[var(--t-text-25)] tracking-wider uppercase">Échéance : {profile.objectif_echeance}</p>}
         </div>
@@ -229,14 +226,12 @@ export default function ProfilePage() {
           className="flex items-center justify-between border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl px-5 py-4 hover:bg-[var(--t-glass-bg)] transition-colors mb-4">
           <div className="flex items-center gap-3 relative">
             <span className="text-[var(--t-text-40)]">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              <Icon icon={MessageSquare} size={18} strokeWidth={1.5}/>
               {unread && <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#e07070] ring-2 ring-[var(--t-surface)]"/>}
             </span>
             <p className="text-sm text-[var(--t-text-70)]">Messages</p>
           </div>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--t-text-25)] shrink-0">
-            <polyline points="9 18 15 12 9 6"/>
-          </svg>
+          <Icon icon={ChevronRight} size={14} strokeWidth={1.5} className="text-[var(--t-text-25)] shrink-0"/>
         </Link>
       )}
 
@@ -246,9 +241,7 @@ export default function ProfilePage() {
           <span className="text-[var(--t-text-40)]"><GearIcon/></span>
           <p className="text-sm text-[var(--t-text-70)]">Préférences</p>
         </div>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--t-text-25)] shrink-0">
-          <polyline points="9 18 15 12 9 6"/>
-        </svg>
+        <Icon icon={ChevronRight} size={14} strokeWidth={1.5} className="text-[var(--t-text-25)] shrink-0"/>
       </Link>
 
       {!isCoach && (
@@ -256,15 +249,11 @@ export default function ProfilePage() {
           <button onClick={() => setJoinOpen(o => !o)}
             className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-[var(--t-glass-bg)] transition-colors">
             <div className="flex items-center gap-3">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--t-text-40)]">
-                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-              </svg>
+              <Icon icon={MessageSquare} size={18} strokeWidth={1.5} className="text-[var(--t-text-40)]"/>
               <p className="text-sm text-[var(--t-text-70)]">Coach</p>
             </div>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-              className={`text-[var(--t-text-25)] shrink-0 transition-transform ${joinOpen ? "rotate-90" : ""}`}>
-              <polyline points="9 18 15 12 9 6"/>
-            </svg>
+            <Icon icon={ChevronRight} size={14} strokeWidth={1.5}
+              className={`text-[var(--t-text-25)] shrink-0 transition-transform ${joinOpen ? "rotate-90" : ""}`}/>
           </button>
 
           {joinOpen && (
@@ -294,15 +283,11 @@ export default function ProfilePage() {
         <button onClick={() => setFbOpen(o => !o)}
           className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-[var(--t-glass-bg)] transition-colors">
           <div className="flex items-center gap-3">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--t-text-40)]">
-              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
+            <Icon icon={AlertCircle} size={18} strokeWidth={1.5} className="text-[var(--t-text-40)]"/>
             <p className="text-sm text-[var(--t-text-70)]">Suggestion</p>
           </div>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-            className={`text-[var(--t-text-25)] shrink-0 transition-transform ${fbOpen ? "rotate-90" : ""}`}>
-            <polyline points="9 18 15 12 9 6"/>
-          </svg>
+          <Icon icon={ChevronRight} size={14} strokeWidth={1.5}
+            className={`text-[var(--t-text-25)] shrink-0 transition-transform ${fbOpen ? "rotate-90" : ""}`}/>
         </button>
 
         {fbOpen && (
@@ -324,7 +309,7 @@ export default function ProfilePage() {
               className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-xl text-[var(--t-text-70)] placeholder-[var(--t-text-20)] text-xs px-4 py-3 resize-none focus:outline-none focus:border-[#c9a84c]/40 transition-colors"/>
 
             {fbDone ? (
-              <div className="text-center py-2 text-[#7eb8a0] text-xs tracking-wider">Merci, c'est envoyé ✓</div>
+              <div className="text-center py-2 text-[#7eb8a0] text-xs tracking-wider">Merci, c&apos;est envoyé ✓</div>
             ) : (
               <button onClick={sendFeedback} disabled={!fbMsg.trim() || fbSending}
                 className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
@@ -354,7 +339,7 @@ export default function ProfilePage() {
               </div>
 
               <div>
-                <label className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-40)] block mb-1.5">Type d'objectif</label>
+                <label className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-40)] block mb-1.5">Type d&apos;objectif</label>
                 <div className="flex flex-wrap gap-2">
                   {OBJECTIF_TYPES.map(o => (
                     <button key={o.value} type="button" onClick={() => setObjForm(f => ({ ...f, objectifType: o.value }))}
@@ -403,7 +388,7 @@ export default function ProfilePage() {
               </div>
 
               <div>
-                <label className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-40)] block mb-1.5">Niveau d'activité</label>
+                <label className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-40)] block mb-1.5">Niveau d&apos;activité</label>
                 <div className="flex flex-col gap-2">
                   {NIVEAU_OPTIONS.map(o => (
                     <button key={o.label} type="button" onClick={() => setObjForm(f => ({ ...f, niveauActivite: o.label }))}
@@ -440,7 +425,7 @@ export default function ProfilePage() {
               </div>
 
               <div>
-                <label className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-40)] block mb-1.5">Où veux-tu t'entraîner ? (plusieurs choix possibles)</label>
+                <label className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-40)] block mb-1.5">Où veux-tu t&apos;entraîner ? (plusieurs choix possibles)</label>
                 <div className="flex flex-wrap gap-2">
                   {LIEUX.map(l => {
                     const checked = objForm.lieux.includes(l);
@@ -449,7 +434,7 @@ export default function ProfilePage() {
                         onClick={() => setObjForm(f => ({ ...f, lieux: checked ? f.lieux.filter(x => x !== l) : [...f.lieux, l] }))}
                         className={`flex items-center gap-1.5 text-[0.65rem] tracking-wider px-3 py-2 rounded-xl border transition-colors ${checked ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-[var(--t-border-15)] text-[var(--t-text-40)] hover:border-[var(--t-border)]"}`}>
                         <span className={`w-3 h-3 rounded-sm border flex items-center justify-center shrink-0 ${checked ? "border-black" : "border-[var(--t-text-25)]"}`}>
-                          {checked && <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                          {checked && <Icon icon={Check} size={8} strokeWidth={3}/>}
                         </span>
                         {l}
                       </button>

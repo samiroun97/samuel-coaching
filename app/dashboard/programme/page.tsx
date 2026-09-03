@@ -12,11 +12,16 @@ import { syncSteps } from "@/lib/steps";
 import { parseExercices, hasLoggableSets } from "@/lib/exercices";
 import { TdeeIcon } from "@/components/CalRefToggle";
 import { ConsistencyHeatmap } from "@/components/ConsistencyHeatmap";
-import { loadTrainedDates } from "@/lib/consistency";
+import { loadDayStatuses, type DayStatus } from "@/lib/consistency";
+import { MuscleVolumeChart } from "@/components/MuscleVolumeChart";
+import { loadMuscleVolume } from "@/lib/muscleVolume";
 import { type Mesocycle, loadActiveMesocycle } from "@/lib/mesocycles";
 import { MesocycleCard } from "@/components/MesocycleCard";
+import { Icon } from "@/components/Icon";
+import { RichIcon } from "@/components/RichIcon";
+import { Activity, X, Mic, ChevronDown, Download } from "@/lib/solarIcons";
 
-type Profile = { prenom: string; poids: number; taille: number; age: number; sexe: string };
+type Profile = { prenom: string; poids: number; taille: number; age: number; sexe: string; objectif_type: string | null };
 type LoggedWorkout = {
   id: string; date: string; activity: string;
   duration_minutes: number; description: string;
@@ -58,9 +63,7 @@ function WorkoutCard({ w, onRemove }: { w: LoggedWorkout; onRemove: () => void }
   return (
     <div className="flex items-center gap-3 rounded-xl border border-[var(--t-border-soft)] bg-[var(--t-bg)] px-4 py-3 group">
       <div className="w-9 h-9 rounded-full bg-[#c9a84c]/10 text-[#c9a84c] flex items-center justify-center shrink-0">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="3 12 8 12 10 6 14 18 16 12 21 12"/>
-        </svg>
+        <Icon icon={Activity} size={15} strokeWidth={1.8}/>
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-xs text-[var(--t-text-70)] truncate">{w.activity}</p>
@@ -69,9 +72,7 @@ function WorkoutCard({ w, onRemove }: { w: LoggedWorkout; onRemove: () => void }
       <span className="text-xs text-[var(--t-text-50)] shrink-0">{w.calories_burned} kcal</span>
       <button onClick={onRemove}
         className="text-[var(--t-text-20)] hover:text-[#e07070] transition-colors shrink-0 opacity-70 group-hover:opacity-100">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
+        <Icon icon={X} size={12} strokeWidth={2}/>
       </button>
     </div>
   );
@@ -98,7 +99,8 @@ export default function ProgrammePage() {
   const [openHistDates,   setOpenHistDates]   = useState<Set<string>>(new Set());
   const [exportingPdf, setExportingPdf] = useState(false);
   const [deletingSeanceId, setDeletingSeanceId] = useState<string | null>(null);
-  const [trainedDates, setTrainedDates] = useState<Set<string>>(new Set());
+  const [dayStatuses, setDayStatuses] = useState<Record<string, DayStatus>>({});
+  const [muscleVolume, setMuscleVolume] = useState<Record<string, number[]>>({});
   const [activeMeso,   setActiveMeso]   = useState<Mesocycle | null>(null);
 
   const deleteSeance = async (s: CoachSeance) => {
@@ -144,7 +146,8 @@ export default function ProgrammePage() {
   const coachBusinessNameRef = useRef<string | null>(null);
 
   // Signalement d'une estimation d'activité qui semble fausse — envoyée à Samuel via
-  // l'Inbox, pour recalibrer l'IA depuis la rubrique IA du CRM (cf. app/crm/ia).
+  // l'Inbox, pour recalibrer l'IA depuis l'onglet Corrections IA de l'opérateur
+  // (cf. components/OperateurIaCorrections.tsx).
   const [showActReportForm, setShowActReportForm] = useState(false);
   const [actReportComment,  setActReportComment]  = useState("");
   const [actReportSending,  setActReportSending]  = useState(false);
@@ -165,15 +168,16 @@ export default function ProgrammePage() {
       userEmailRef.current = user.email ?? "";
       getMyCoachEmail(user.id).then(email => { coachEmailRef.current = email; });
       getMyCoachBusinessName(user.id).then(name => { coachBusinessNameRef.current = name; });
-      const { data: p } = await supabase.from("profiles").select("prenom,poids,taille,age,sexe").eq("id", user.id).single();
+      const { data: p } = await supabase.from("profiles").select("prenom,poids,taille,age,sexe,objectif_type").eq("id", user.id).single();
       if (p) setProfile(p as Profile);
       if (user.email) {
         const { data: cs } = await supabase.from("programme_seances").select("*")
           .eq("assigned_to_email", user.email).order("created_at", { ascending: true });
         setCoachSeances((cs ?? []) as CoachSeance[]);
       }
-      loadTrainedDates(user.id).then(setTrainedDates).catch(() => {});
+      loadDayStatuses(user.id, p?.objectif_type).then(setDayStatuses).catch(() => {});
       loadActiveMesocycle(user.id).then(setActiveMeso).catch(() => {});
+      loadMuscleVolume(user.id).then(setMuscleVolume).catch(() => {});
     })();
     const saved  = localStorage.getItem("programme_logs");
     const savedG = localStorage.getItem("steps_goal");
@@ -458,10 +462,7 @@ export default function ProgrammePage() {
             />
             <button onClick={listening ? stopVoice : startVoice}
               className={`absolute right-3 top-3 p-1.5 rounded-full border transition-colors ${listening ? "border-[#e07070] text-[#e07070] animate-pulse" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:text-[var(--t-text-60)] hover:border-[var(--t-text-20)]"}`}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
-                <path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/>
-              </svg>
+              <Icon icon={Mic} size={14} strokeWidth={1.5}/>
             </button>
           </div>
         </div>
@@ -540,7 +541,7 @@ export default function ProgrammePage() {
       {/* ── Pas ── */}
       <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 mb-6">
         <div className="flex items-center gap-3 mb-5">
-          <img src="/icons/steps.svg" alt="" width={40} height={40} className="shrink-0"/>
+          <RichIcon name="footprints" size={36}/>
           <div className="flex-1 min-w-0">
             <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">
               {selectedDate === todayStr() ? "Pas aujourd'hui" : `Pas · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
@@ -621,10 +622,8 @@ export default function ProgrammePage() {
                 <span style={{ fontFamily: "var(--font-bebas)" }} className="text-lg text-[#c9a84c] tracking-wide">{eatCal}</span>
                 <span className="text-[0.62rem] text-[var(--t-text-25)] uppercase tracking-wider">kcal</span>
               </div>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-                className={`text-[var(--t-text-25)] shrink-0 transition-transform ${seancesJourOpen ? "rotate-180" : ""}`}>
-                <polyline points="6 9 12 15 18 9"/>
-              </svg>
+              <Icon icon={ChevronDown} size={12}
+                className={`text-[var(--t-text-25)] shrink-0 transition-transform ${seancesJourOpen ? "rotate-180" : ""}`}/>
             </div>
           </button>
           {seancesJourOpen && (
@@ -641,10 +640,8 @@ export default function ProgrammePage() {
           <button onClick={() => setHistSectionOpen(v => !v)}
             className="w-full flex items-center justify-between mb-4 hover:opacity-70 transition-opacity">
             <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Historique</p>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-              className={`text-[#c9a84c]/60 shrink-0 transition-transform ${histSectionOpen ? "rotate-180" : ""}`}>
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
+            <Icon icon={ChevronDown} size={12}
+              className={`text-[#c9a84c]/60 shrink-0 transition-transform ${histSectionOpen ? "rotate-180" : ""}`}/>
           </button>
           {histSectionOpen && pastDates.map(date => {
             const dayWorkouts = workouts.filter(w => w.date.startsWith(date));
@@ -663,10 +660,8 @@ export default function ProgrammePage() {
                   <span className="text-[0.7rem] tracking-wider text-[var(--t-text-40)] capitalize">{label}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-[0.7rem] tracking-wider text-[var(--t-text-30)]">{dayCal} kcal</span>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-                      className={`text-[var(--t-text-25)] shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`}>
-                      <polyline points="6 9 12 15 18 9"/>
-                    </svg>
+                    <Icon icon={ChevronDown} size={12}
+                      className={`text-[var(--t-text-25)] shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`}/>
                   </div>
                 </button>
                 {isOpen && (
@@ -688,9 +683,16 @@ export default function ProgrammePage() {
       )}
 
       {/* ── Régularité ── */}
-      {trainedDates.size > 0 && (
+      {Object.keys(dayStatuses).length > 0 && (
         <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 mb-6">
-          <ConsistencyHeatmap dates={trainedDates}/>
+          <ConsistencyHeatmap statuses={dayStatuses}/>
+        </div>
+      )}
+
+      {/* ── Volume par muscle ── */}
+      {Object.keys(muscleVolume).length > 0 && (
+        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 mb-6">
+          <MuscleVolumeChart byMuscle={muscleVolume}/>
         </div>
       )}
 
@@ -707,7 +709,7 @@ export default function ProgrammePage() {
               {exportingPdf ? (
                 <div className="w-3 h-3 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>
               ) : (
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <Icon icon={Download} size={12} strokeWidth={2}/>
               )}
               <span className="hidden sm:inline">PDF</span>
             </button>
@@ -731,10 +733,8 @@ export default function ProgrammePage() {
                     </div>
                     {s.date_prevue && <p className="text-[0.7rem] text-[var(--t-text-25)] mt-0.5">{new Date(s.date_prevue + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</p>}
                   </div>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-                    className={`text-[var(--t-text-25)] shrink-0 transition-transform ${open ? "rotate-180" : ""}`}>
-                    <polyline points="6 9 12 15 18 9"/>
-                  </svg>
+                  <Icon icon={ChevronDown} size={12}
+                    className={`text-[var(--t-text-25)] shrink-0 transition-transform ${open ? "rotate-180" : ""}`}/>
                 </button>
                 {open && (
                   <div className="px-5 pb-4">

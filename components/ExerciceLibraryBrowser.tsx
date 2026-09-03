@@ -4,6 +4,8 @@ import Model, { type IExerciseData, type Muscle } from "react-body-highlighter";
 import { type CatalogueEntry } from "@/lib/exercicesCatalogue";
 import { getRecentExerciceNoms, pushRecentExerciceNom } from "@/lib/recentExercices";
 import { useDragScroll } from "@/lib/useDragScroll";
+import { Icon } from "@/components/Icon";
+import { Filter, Dumbbell, X, LayoutGrid, PersonStanding } from "@/lib/solarIcons";
 
 // Bouton icône seul (pas de texte visible) avec pastille dorée quand un filtre est actif —
 // plus discret qu'un menu déroulant classique et plus proche des conventions mobiles
@@ -26,7 +28,7 @@ function FilterDropdown({ value, onChange, options }: { value: string; onChange:
     <div ref={ref} className="relative shrink-0">
       <button type="button" onClick={() => setOpen(o => !o)} title="Équipement"
         className={`relative w-9 h-9 rounded-full border flex items-center justify-center transition-colors ${active ? "border-[#c9a84c]/50 text-[#c9a84c] bg-[#c9a84c]/10" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[#c9a84c]/40 hover:text-[#c9a84c]"}`}>
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        <Icon icon={Filter} size={13} strokeWidth={2}/>
         {active && <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#c9a84c] ring-2 ring-[var(--t-bg)]"/>}
       </button>
       {open && (
@@ -100,9 +102,7 @@ const HIDDEN_EQUIPMENT = new Set(["swiss ball", "corde ondulatoire", "traîneau"
 // une grille visuelle ne doit jamais rendre une case vide/cassée, même sans média.
 function DumbbellIcon() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6.5 6.5h11a2 2 0 012 2v7a2 2 0 01-2 2h-11a2 2 0 01-2-2v-7a2 2 0 012-2zM2 9v6M22 9v6"/>
-    </svg>
+    <Icon icon={Dumbbell} size={22} strokeWidth={1.6}/>
   );
 }
 
@@ -192,7 +192,7 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
           {!detailEntry && <p className="text-[0.6rem] text-[var(--t-text-25)] tracking-wider">{results.length} exercice{results.length > 1 ? "s" : ""}</p>}
         </div>
         <button onClick={onClose} className="shrink-0 text-[var(--t-text-30)] hover:text-[var(--t-text)] transition-colors">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <Icon icon={X} size={16} strokeWidth={2}/>
         </button>
       </div>
 
@@ -207,11 +207,11 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
             <div className="shrink-0 flex border border-[var(--t-border)] rounded-full p-0.5">
               <button type="button" onClick={() => setViewMode("grid")} title="Vue grille"
                 className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${viewMode === "grid" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-[var(--t-text-30)] hover:text-[#c9a84c]"}`}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+                <Icon icon={LayoutGrid} size={13} strokeWidth={2}/>
               </button>
               <button type="button" onClick={() => setViewMode("silhouette")} title="Vue silhouette"
                 className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${viewMode === "silhouette" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-[var(--t-text-30)] hover:text-[#c9a84c]"}`}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="5" r="2.5"/><path d="M12 8v6M9 22l1.5-8M15 22l-1.5-8M8 12l4-1 4 1"/></svg>
+                <Icon icon={PersonStanding} size={13} strokeWidth={2}/>
               </button>
             </div>
           </div>
@@ -245,7 +245,7 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                     ? "top-3 right-3 w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm text-white hover:bg-black/70"
                     : "top-4 right-5 text-[var(--t-text-25)] hover:text-[var(--t-text)]"
                 }`}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <Icon icon={X} size={14} strokeWidth={2.5}/>
               </button>
               {detailEntry.video_url || detailEntry.image_url ? (
                 <div className="relative bg-[radial-gradient(circle_at_center,var(--t-surface),var(--t-bg2))]">
@@ -378,7 +378,7 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                 <button type="button" onClick={() => setCategory(null)}
                   className="flex items-center gap-1.5 text-[0.6rem] font-bold tracking-[0.15em] uppercase capitalize text-black bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] rounded-full pl-3.5 pr-2.5 py-1.5 shadow-[0_3px_14px_-4px_rgba(201,168,76,0.6)] hover:shadow-[0_4px_18px_-3px_rgba(201,168,76,0.8)] transition-shadow">
                   {category}
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  <Icon icon={X} size={10} strokeWidth={3}/>
                 </button>
               )}
             </div>

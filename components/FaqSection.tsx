@@ -2,6 +2,8 @@
 import { useState } from "react";
 import ScrollReveal from "./ScrollReveal";
 import Title from "./Title";
+import { Icon } from "@/components/Icon";
+import { Plus } from "@/lib/solarIcons";
 
 const FAQ = [
   {
@@ -37,10 +39,7 @@ function Item({ q, a }: { q: string; a: string }) {
       <button onClick={() => setOpen(o => !o)}
         className="w-full flex items-center justify-between gap-4 py-5 text-left group">
         <span className="text-white/85 text-sm sm:text-base font-medium group-hover:text-[#c9a84c] transition-colors">{q}</span>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-          className={`shrink-0 transition-transform duration-300 ${open ? "rotate-45" : ""}`}>
-          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
+        <Icon icon={Plus} size={18} strokeWidth={1.5} className={`shrink-0 transition-transform duration-300 text-[#c9a84c] ${open ? "rotate-45" : ""}`}/>
       </button>
       <div className="overflow-hidden transition-all duration-300" style={{ maxHeight: open ? "300px" : "0" }}>
         <p className="text-white/50 text-sm leading-relaxed pb-5 pr-8">{a}</p>

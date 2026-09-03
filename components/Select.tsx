@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { Icon } from "@/components/Icon";
+import { ChevronDown } from "@/lib/solarIcons";
 
 export type SelectOption = { value: string; label: string };
 
@@ -38,8 +40,8 @@ export function Select({
       <button type="button" disabled={disabled} onClick={() => setOpen(o => !o)}
         className={`flex items-center justify-between gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${triggerClassName}`}>
         <span className={`truncate ${current ? "" : "text-[var(--t-text-20)]"}`}>{current?.label ?? placeholder ?? "—"}</span>
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-          className={`shrink-0 transition-transform ${open ? "rotate-180" : ""}`}><polyline points="6 9 12 15 18 9"/></svg>
+        <Icon icon={ChevronDown} size={10} strokeWidth={2}
+          className={`shrink-0 transition-transform ${open ? "rotate-180" : ""}`}/>
       </button>
       {open && (
         <div className={`absolute z-[100] mt-1 border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl shadow-[0_16px_40px_-8px_rgba(0,0,0,0.6)] py-1 max-h-64 overflow-y-auto ${align === "right" ? "right-0" : "left-0"} ${panelClassName || "min-w-full"}`}>

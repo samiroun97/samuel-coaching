@@ -2,6 +2,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { WeeklyReport, type WeeklyReportData } from "@/components/WeeklyReport";
+import { Icon } from "@/components/Icon";
+import { ChevronLeft } from "@/lib/solarIcons";
 
 export default function BilanPage() {
   const [data, setData] = useState<WeeklyReportData | null | undefined>(undefined);
@@ -43,7 +45,7 @@ export default function BilanPage() {
     <div>
       <div className="print:hidden flex items-center justify-between gap-4 flex-wrap px-4 sm:px-8 pt-6">
         <Link href="/dashboard/suivi" className="text-[var(--t-text-40)] hover:text-[var(--t-text-70)] transition-colors text-[0.7rem] tracking-[0.15em] uppercase flex items-center gap-1.5">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          <Icon icon={ChevronLeft} size={12} strokeWidth={2}/>
           Retour
         </Link>
         <button onClick={() => window.print()}

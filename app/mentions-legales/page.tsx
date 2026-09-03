@@ -43,6 +43,15 @@ export default function MentionsLegalesPage() {
               Tous les contenus présents sur ce site (textes, images, logo) sont la propriété exclusive de Samuel Coaching et sont protégés par les lois en vigueur sur la propriété intellectuelle.
             </p>
           </section>
+
+          <section>
+            <h2 className="text-white font-semibold text-base mb-3 uppercase tracking-widest text-[0.75rem] text-[#c9a84c]">Données Alimentaires Tierces</h2>
+            <p>
+              La recherche et le scan de code-barres dans la rubrique Nutrition utilisent les données du projet{" "}
+              <a href="https://world.openfoodfacts.org" target="_blank" rel="noopener noreferrer" className="text-[#c9a84c] hover:text-white transition-colors underline">Open Food Facts</a>,
+              mises à disposition sous licence Open Database License (ODbL).
+            </p>
+          </section>
         </div>
       </div>
     </div>

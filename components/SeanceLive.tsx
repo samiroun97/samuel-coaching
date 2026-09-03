@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useRef, useState, type TouchEvent } from "react";
 import { supabase } from "@/lib/supabase";
-import { type ExerciceItem, type SetDetail, parseExercices, groupExerciceRuns, targetSetsFor, effectiveLoad } from "@/lib/exercices";
+import { type ExerciceItem, type SetDetail, parseExercices, serializeExercices, emptyExercice, groupExerciceRuns, targetSetsFor, effectiveLoad } from "@/lib/exercices";
 import { useWakeLock } from "@/lib/useWakeLock";
 import { Select } from "@/components/Select";
 import { getMyCoachEmail } from "@/lib/coach";
@@ -10,6 +10,8 @@ import {
   loadSeanceLogs, saveSetLog, deleteSetLog, loadExerciceHistory, type LastPerformance,
 } from "@/lib/workoutLog";
 import { loadExerciceSessionOutcomes, suggestProgression, type ProgressionSuggestion } from "@/lib/progression";
+import { Icon } from "@/components/Icon";
+import { Check, X, Plus, ChevronLeft, ChevronRight } from "@/lib/solarIcons";
 
 type LiveSeance = { id: string; titre: string; exercices: string | null };
 type SetLogState = { poids: string; reps: string; rir: string; done: boolean };
@@ -87,7 +89,7 @@ function SetRow({ target, idx, log, prev, isExtra, bodyweight, onToggle, onChang
         panelClassName="w-16"/>
       <button onClick={onToggle}
         className={`w-8 h-8 rounded-full border-2 shrink-0 flex items-center justify-center transition-all mx-auto active:scale-90 ${log?.done ? "bg-[#7eb8a0] border-[#7eb8a0] text-black" : "border-[var(--t-border)] text-transparent hover:border-[#7eb8a0]/50"}`}>
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+        <Icon icon={Check} size={15} strokeWidth={3}/>
       </button>
     </div>
   );
@@ -159,13 +161,18 @@ function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle,
 export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish, onClose }: {
   seance: LiveSeance; clientId: string; clientBodyweight?: number | null; onFinish: () => void; onClose: () => void;
 }) {
-  const exercices = useMemo(() => parseExercices(seance.exercices), [seance.exercices]);
+  // Séance mutable en mémoire : on part de la liste planifiée, mais le client peut vouloir
+  // ajouter un exercice non prévu en cours de séance (improvisation, machine libre trouvée
+  // sur place…) — géré comme un état local plutôt qu'un simple useMemo dérivé de la prop.
+  const [exercices, setExercices] = useState<ExerciceItem[]>(() => parseExercices(seance.exercices));
   const runs = useMemo(() => groupExerciceRuns(exercices), [exercices]);
 
   // Un exercice (ou superset) à la fois, avec flèches/points pour naviguer — plutôt qu'une
   // longue liste à faire défiler, façon Liftoff/Hevy : on sait toujours où on en est.
   const [runIdx, setRunIdx] = useState(0);
   const touchStartX = useRef<number | null>(null);
+  const [addingExercice, setAddingExercice] = useState(false);
+  const [newExerciceNom, setNewExerciceNom] = useState("");
 
   const [logs, setLogs] = useState<Record<string, SetLogState>>({});
   const [historyByNom, setHistoryByNom] = useState<Record<string, LastPerformance>>({});
@@ -294,6 +301,22 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
 
   const onAddSet = (exIdx: number) => setExtraSets(prev => ({ ...prev, [exIdx]: (prev[exIdx] ?? 0) + 1 }));
 
+  // Exercice ajouté en cours de séance (non prévu par le coach) — series: "1" pour qu'il ait
+  // tout de suite une ligne de série loggable (un exercice sans cible ni texte libre ne
+  // s'afficherait sinon pas du tout, cf. ExerciceLiveBlock). Persisté immédiatement en base
+  // pour survivre à un rafraîchissement, en best-effort : un échec réseau ne doit pas bloquer
+  // l'ajout local, la séance reste utilisable et le prochain toggle de série retentera l'écriture.
+  const addExercice = async () => {
+    const nom = newExerciceNom.trim();
+    if (!nom) return;
+    const next = [...exercices, { ...emptyExercice(), nom, series: "1" }];
+    setExercices(next);
+    setNewExerciceNom("");
+    setAddingExercice(false);
+    setRunIdx(groupExerciceRuns(next).length - 1);
+    await supabase.from("programme_seances").update({ exercices: serializeExercices(next) }).eq("id", seance.id);
+  };
+
   const onToggle = async (exIdx: number, setIdx: number, target: SetDetail) => {
     const k = `${exIdx}-${setIdx}`;
     const ex = exercices[exIdx];
@@ -377,7 +400,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
       <div className="fixed inset-0 bg-[var(--t-bg)] z-50 flex flex-col overflow-y-auto">
         <div className="flex-1 px-6 py-10 max-w-md mx-auto w-full flex flex-col items-center text-center gap-6">
           <div className="w-16 h-16 rounded-full bg-[#7eb8a0]/10 border border-[#7eb8a0]/30 flex items-center justify-center">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7eb8a0" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+            <Icon icon={Check} size={28} strokeWidth={2.5} className="text-[#7eb8a0]"/>
           </div>
           <div>
             <p className="text-[0.7rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-2">Séance terminée</p>
@@ -461,7 +484,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
     <div className="fixed inset-0 bg-[var(--t-bg)] z-50 flex flex-col">
       <div className="flex items-center justify-between px-5 py-3.5 shrink-0 gap-3 max-w-lg mx-auto w-full">
         <button onClick={onClose} className="text-[var(--t-text-30)] hover:text-[var(--t-text)] transition-colors shrink-0 w-8 h-8 flex items-center justify-center -ml-1.5">
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <Icon icon={X} size={19} strokeWidth={2}/>
         </button>
         <p style={{ fontFamily: "var(--font-bebas)" }} className="text-lg tracking-wider text-[var(--t-text)] truncate flex-1 text-center">{seance.titre}</p>
         <button onClick={finish} disabled={finishing}
@@ -495,7 +518,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
         <div className="flex items-center justify-between gap-2 px-4 py-2.5 shrink-0 max-w-lg mx-auto w-full">
           <button onClick={goPrev} disabled={runIdx === 0}
             className="w-9 h-9 rounded-full border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-70)] active:scale-90 transition-all disabled:opacity-20 flex items-center justify-center shrink-0">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            <Icon icon={ChevronLeft} size={16} strokeWidth={2}/>
           </button>
           <div className="flex flex-col items-center gap-1.5 min-w-0">
             <p className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-30)]">Exercice {runIdx + 1}/{runs.length}</p>
@@ -508,8 +531,36 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
           </div>
           <button onClick={goNext} disabled={runIdx === runs.length - 1}
             className="w-9 h-9 rounded-full border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-70)] active:scale-90 transition-all disabled:opacity-20 flex items-center justify-center shrink-0">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            <Icon icon={ChevronRight} size={16} strokeWidth={2}/>
           </button>
+        </div>
+      )}
+
+      {/* Ajouter un exercice non prévu, à tout moment de la séance (improvisation, machine
+          libre trouvée sur place…) — pas seulement des séries à un exercice déjà planifié. */}
+      {loaded && (
+        <div className="px-4 pb-2 shrink-0 max-w-lg mx-auto w-full">
+          {addingExercice ? (
+            <div className="flex items-center gap-2">
+              <input autoFocus value={newExerciceNom} onChange={e => setNewExerciceNom(e.target.value)}
+                onKeyDown={e => { if (e.key === "Enter") addExercice(); if (e.key === "Escape") { setAddingExercice(false); setNewExerciceNom(""); } }}
+                placeholder="Nom de l'exercice"
+                className="flex-1 min-w-0 bg-[var(--t-surface)] border border-[#c9a84c]/40 rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2 focus:outline-none"/>
+              <button onClick={addExercice} disabled={!newExerciceNom.trim()}
+                className="shrink-0 w-9 h-9 rounded-xl bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black flex items-center justify-center disabled:opacity-40 transition-opacity">
+                <Icon icon={Check} size={15} strokeWidth={2.5}/>
+              </button>
+              <button onClick={() => { setAddingExercice(false); setNewExerciceNom(""); }}
+                className="shrink-0 w-9 h-9 rounded-xl border border-[var(--t-border)] text-[var(--t-text-30)] hover:text-[var(--t-text-60)] flex items-center justify-center transition-colors">
+                <Icon icon={X} size={14} strokeWidth={2}/>
+              </button>
+            </div>
+          ) : (
+            <button onClick={() => setAddingExercice(true)}
+              className="w-full flex items-center justify-center gap-1.5 text-[0.65rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[#c9a84c] transition-colors py-1.5 font-medium">
+              <Icon icon={Plus} size={12} strokeWidth={2.5}/> Ajouter un exercice
+            </button>
+          )}
         </div>
       )}
 

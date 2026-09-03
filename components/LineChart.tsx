@@ -3,6 +3,9 @@
 // devenait illisible en thème clair), tendance chiffrée au-dessus, point le plus récent
 // mis en avant avec sa valeur, et espacement des dates qui s'adapte au nombre de points
 // pour ne pas se chevaucher quand l'historique s'allonge.
+import { Icon } from "@/components/Icon";
+import { TrendingUp, TrendingDown } from "@/lib/solarIcons";
+
 export function LineChart({ data, unit, color, glow, lowerIsBetter = true }: {
   data: { id: string; date: string; val: number }[];
   unit: string;
@@ -97,11 +100,7 @@ export function LineChart({ data, unit, color, glow, lowerIsBetter = true }: {
       </svg>
       {data.length > 1 && (
         <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[var(--t-border-soft)]">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={trendColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-            {trend >= 0
-              ? <path d="M3 17 L10 10 L14 14 L21 6 M15 6 h6 v6"/>
-              : <path d="M3 7 L10 14 L14 10 L21 18 M15 18 h6 v-6"/>}
-          </svg>
+          <Icon icon={trend >= 0 ? TrendingUp : TrendingDown} size={14} strokeWidth={2.5} className="shrink-0" style={{ color: trendColor }}/>
           <div className="leading-tight">
             <p className="text-[0.72rem] font-semibold" style={{ color: trendColor }}>
               {trend > 0 ? "+" : ""}{trend}{unit} sur la période

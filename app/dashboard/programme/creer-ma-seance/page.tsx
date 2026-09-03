@@ -8,6 +8,8 @@ import { useSelectedDate } from "@/lib/useSelectedDate";
 import { serializeExercices, type ExerciceItem } from "@/lib/exercices";
 import { loadCatalogue, type CatalogueEntry } from "@/lib/exercicesCatalogue";
 import { loadPersonalRecords, type PRCard } from "@/lib/personalRecords";
+import { Icon } from "@/components/Icon";
+import { ChevronLeft, ChevronRight, Trash2 } from "@/lib/solarIcons";
 import { Sparkline } from "@/components/Sparkline";
 
 type MySeance = { id: string; titre: string; type_seance: string | null; date_prevue: string | null; completed_at: string | null; created_by_client?: boolean };
@@ -83,7 +85,7 @@ export default function CreerMaSeancePage() {
     <div className="p-4 sm:p-8 max-w-2xl">
       <Link href="/dashboard/programme"
         className="text-[var(--t-text-40)] hover:text-[var(--t-text-70)] transition-colors text-[0.7rem] tracking-[0.15em] uppercase flex items-center gap-1.5 mb-6">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        <Icon icon={ChevronLeft} size={12} strokeWidth={2}/>
         Retour
       </Link>
 
@@ -122,15 +124,12 @@ export default function CreerMaSeancePage() {
                   <Link href={`/dashboard/programme?live=${s.id}`}
                     className="flex-1 min-w-0 flex items-center justify-between gap-2 px-4 py-2.5 hover:bg-[var(--t-glass-bg)] transition-colors">
                     {label}
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-                      className="text-[var(--t-text-25)] shrink-0"><polyline points="9 18 15 12 9 6"/></svg>
+                    <Icon icon={ChevronRight} size={10} strokeWidth={1.5} className="text-[var(--t-text-25)] shrink-0"/>
                   </Link>
                 )}
                 <button onClick={() => deleteSeance(s.id)} disabled={deletingId === s.id} title="Supprimer cette séance"
                   className="shrink-0 mr-3 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors disabled:opacity-30">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
-                  </svg>
+                  <Icon icon={Trash2} size={13} strokeWidth={1.8}/>
                 </button>
               </div>
             );

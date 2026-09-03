@@ -5,11 +5,12 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
 const STAGE_LABEL: Record<string, string> = { prospect: "Prospect", onboarding: "Onboarding", actif: "Actif", en_risque: "En risque", churne: "Churné", reactive: "Réactivé" };
-const STAGE_COLOR: Record<string, string> = { prospect: "#888", onboarding: "#c9a84c", actif: "#7eb8a0", en_risque: "#e09070", churne: "#e07070", reactive: "#a08ec9" };
+const STAGE_COLOR: Record<string, string> = { prospect: "#888", onboarding: "#c9a84c", actif: "#7eb8a0", en_risque: "#e09070", churne: "#e07070", reactive: "#6ea8d9" };
 
 type Client = { id: string; email: string; prenom: string; nom: string; status: string | null; subscription_end: string | null; pipeline_stage: string | null; updated_at: string };
 type Msg    = { from_email: string; to_email: string; content: string; created_at: string };
 type Ck     = { client_id: string; week_date: string; weight: number | null; compliance: number | null; created_at: string; profiles?: { prenom: string; nom: string } };
+type MesoEnding = { client_id: string; nom: string; date_fin: string };
 
 function KPI({ label, value, color, href }: { label: string; value: number | string; color?: string; href?: string }) {
   const inner = (
@@ -26,6 +27,8 @@ export default function CRMDashboard() {
   const [clients,  setClients]  = useState<Client[]>([]);
   const [msgs,     setMsgs]     = useState<Msg[]>([]);
   const [checkins, setCheckins] = useState<Ck[]>([]);
+  const [seanceCounts, setSeanceCounts] = useState<Map<string, number>>(new Map());
+  const [mesosEnding, setMesosEnding]   = useState<MesoEnding[]>([]);
   const [loading,  setLoading]  = useState(true);
   const [treated,  setTreated]  = useState<Set<string>>(new Set());
   const [myEmail,  setMyEmail]  = useState("");
@@ -40,14 +43,25 @@ export default function CRMDashboard() {
         const { data: coach } = await supabase.from("coaches").select("code").eq("profile_id", user.id).single();
         if (coach?.code) setInviteCode(coach.code);
       }
-      const [{ data: c }, { data: m }, { data: ck }] = await Promise.all([
+      const todayISO = new Date().toISOString().split("T")[0];
+      const in7ISO   = new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0];
+      const [{ data: c }, { data: m }, { data: ck }, { data: s }, { data: mesos }] = await Promise.all([
         supabase.from("profiles").select("id,email,prenom,nom,status,subscription_end,pipeline_stage,updated_at").order("updated_at", { ascending: false }),
         supabase.from("messages").select("from_email,to_email,content,created_at").order("created_at", { ascending: true }),
         supabase.from("weekly_checkins").select("client_id,week_date,weight,compliance,created_at").order("created_at", { ascending: false }).limit(20),
+        supabase.from("programme_seances").select("assigned_to_email"),
+        supabase.from("mesocycles").select("client_id,nom,date_fin").gte("date_fin", todayISO).lte("date_fin", in7ISO),
       ]);
       setClients((c ?? []) as Client[]);
       setMsgs((m ?? []) as Msg[]);
       setCheckins((ck ?? []) as Ck[]);
+      const counts = new Map<string, number>();
+      for (const row of s ?? []) {
+        const email = (row as { assigned_to_email: string | null }).assigned_to_email;
+        if (email) counts.set(email, (counts.get(email) ?? 0) + 1);
+      }
+      setSeanceCounts(counts);
+      setMesosEnding((mesos ?? []) as MesoEnding[]);
       setLoading(false);
     })();
 
@@ -79,6 +93,9 @@ export default function CRMDashboard() {
   const churne    = clients.filter(c => (c.pipeline_stage ?? "actif") === "churne").length;
   const now       = Date.now();
   const in14      = clients.filter(c => { if (!c.subscription_end) return false; const d = new Date(c.subscription_end).getTime(); return d > now && d < now + 14 * 86400000; }).length;
+  // Onboarding/actif sans aucune séance envoyée : un prospect n'a pas encore de programme à
+  // recevoir, ça ne compte donc pas comme un oubli à corriger.
+  const sansProgramme = clients.filter(c => ["onboarding", "actif"].includes(c.pipeline_stage ?? "actif") && !(seanceCounts.get(c.email) ?? 0));
 
   // Unread convs: last message from client (pas moi)
   const convLastFrom = new Map<string, Msg>();
@@ -92,7 +109,7 @@ export default function CRMDashboard() {
   const ckThisWeek = checkins.filter(c => c.week_date >= weekAgo).length;
 
   // ── Alerts ──
-  type Alert = { type: "message" | "risque" | "abonnement" | "churn"; label: string; sub: string; href: string; color: string };
+  type Alert = { type: "message" | "risque" | "abonnement" | "churn" | "sans_programme" | "mesocycle"; label: string; sub: string; href: string; color: string };
   const alerts: Alert[] = [];
 
   for (const [email, m] of convLastFrom) {
@@ -112,6 +129,15 @@ export default function CRMDashboard() {
   });
   clients.filter(c => (c.pipeline_stage ?? "actif") === "en_risque").forEach(c => {
     alerts.push({ type: "risque", label: `${c.prenom} ${c.nom} — en risque`, sub: "Stage : En risque", href: "/crm/pipeline", color: "#e09070" });
+  });
+  sansProgramme.forEach(c => {
+    alerts.push({ type: "sans_programme", label: `${c.prenom} ${c.nom} — sans programme`, sub: "Aucune séance envoyée", href: `/crm/programmes?client=${encodeURIComponent(c.email)}`, color: "#c9a84c" });
+  });
+  mesosEnding.forEach(me => {
+    const p = clients.find(c => c.id === me.client_id);
+    const name = p ? `${p.prenom} ${p.nom}` : "Client";
+    const daysLeft = Math.ceil((new Date(me.date_fin).getTime() - now) / 86400000);
+    alerts.push({ type: "mesocycle", label: `${name} — mésocycle "${me.nom}"`, sub: daysLeft <= 0 ? "Se termine aujourd'hui" : `Se termine dans ${daysLeft}j`, href: p ? `/crm/programmes?client=${encodeURIComponent(p.email)}` : "/crm/clients", color: "#c9a84c" });
   });
 
   // Recent check-ins enriched with client name
@@ -148,7 +174,7 @@ export default function CRMDashboard() {
     <div className="p-4 md:p-8 max-w-6xl">
       {/* Header */}
       <div className="mb-6 md:mb-8">
-        <p className="text-[0.65rem] tracking-[0.35em] text-[#c9a84c] uppercase mb-1">CRM — Vue globale</p>
+        <p className="text-[0.65rem] tracking-[0.35em] text-[#c9a84c] uppercase mb-1">Plateforme coaching</p>
         <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl md:text-5xl text-[var(--t-text)] tracking-wide">DASHBOARD</h1>
         <p className="text-[var(--t-text-30)] text-xs mt-1 capitalize">
           {new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
@@ -181,7 +207,8 @@ export default function CRMDashboard() {
         <KPI label="En risque"         value={enRisque}     color="#e09070" href="/crm/pipeline"/>
         <KPI label="Churné"            value={churne}       color="#e07070" href="/crm/pipeline"/>
         <KPI label="Exp. < 14j"        value={in14}         color="#c9a84c" href="/crm/clients"/>
-        <KPI label="Non répondus"      value={nonRepondus}  color="#a08ec9" href="/crm/inbox"/>
+        <KPI label="Non répondus"      value={nonRepondus}  color="#c9a84c" href="/crm/inbox"/>
+        <KPI label="Sans programme"    value={sansProgramme.length} color="#c9a84c" href="/crm/programmes"/>
         <KPI label="Check-ins / 7j"    value={ckThisWeek}  />
       </div>
 

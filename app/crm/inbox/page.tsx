@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getMyCoachId } from "@/lib/coach";
+import { Icon } from "@/components/Icon";
+import { ChevronLeft, Check, MessageSquare } from "@/lib/solarIcons";
 
 type Msg    = { id: string; from_email: string; to_email: string; content: string; created_at: string };
 
@@ -11,7 +13,7 @@ const FEEDBACK_RE = /^\[FEEDBACK:(bug|suggestion|idee)\]\n([\s\S]*)/;
 const FEEDBACK_CFG: Record<string, { label: string; color: string; emoji: string }> = {
   bug:        { label: "Bug",        color: "#e07070", emoji: "🐛" },
   suggestion: { label: "Suggestion", color: "#c9a84c", emoji: "💡" },
-  idee:       { label: "Idée",       color: "#a08ec9", emoji: "✨" },
+  idee:       { label: "Idée",       color: "#8ec9c0", emoji: "✨" },
 };
 function parseFeedback(content: string) {
   const m = content.match(FEEDBACK_RE);
@@ -49,7 +51,7 @@ const STAGE_CFG: Record<string, { label: string; color: string }> = {
   actif:      { label: "Actif",      color: "#7eb8a0" },
   en_risque:  { label: "En risque",  color: "#e09070" },
   churne:     { label: "Churné",     color: "#e07070" },
-  reactive:   { label: "Réactivé",   color: "#a08ec9" },
+  reactive:   { label: "Réactivé",   color: "#6ea8d9" },
 };
 
 const buildTemplates = (businessName: string | null) => [
@@ -205,7 +207,7 @@ export default function InboxPage() {
       {/* ── Left: conversation list (plein écran sur mobile quand aucune conv ouverte) ── */}
       <div className={`${activeConv ? "hidden md:flex" : "flex"} w-full md:w-72 shrink-0 border-r border-[var(--t-border-soft)] flex-col bg-[var(--t-bg)]`}>
         <div className="px-4 md:px-5 pt-5 md:pt-6 pb-4 border-b border-[var(--t-border-soft)]">
-          <p className="text-[0.65rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-1">CRM</p>
+          <p className="text-[0.65rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-1">Plateforme coaching</p>
           <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-[var(--t-text)] tracking-wide">INBOX</h1>
           <p className="text-[var(--t-text-30)] text-xs mt-1">
             {convs.filter(c => c.unread).length} non répondu{convs.filter(c => c.unread).length !== 1 ? "s" : ""}
@@ -252,7 +254,7 @@ export default function InboxPage() {
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-start gap-2 min-w-0">
                 <button onClick={() => setActiveEmail(null)} className="md:hidden text-[var(--t-text-40)] hover:text-[var(--t-text-70)] transition-colors mt-1 shrink-0">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                  <Icon icon={ChevronLeft} size={18} strokeWidth={1.5}/>
                 </button>
                 <div className="min-w-0">
                   <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl md:text-3xl text-[var(--t-text)] tracking-wide truncate">{activeConv.name}</h2>
@@ -268,7 +270,7 @@ export default function InboxPage() {
                         ? "border-[#7eb8a0]/40 text-[#7eb8a0] bg-[#7eb8a0]/8 hover:opacity-70"
                         : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[#7eb8a0]/40 hover:text-[#7eb8a0]/70"
                     }`}>
-                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={isTreated ? 2.5 : 1.5} strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <Icon icon={Check} size={9} strokeWidth={isTreated ? 2.5 : 1.5}/>
                     {isTreated ? "Traité" : "Marquer traité"}
                   </button>
                 );
@@ -492,9 +494,7 @@ export default function InboxPage() {
         </div>
       ) : (
         <div className="flex-1 hidden md:flex flex-col items-center justify-center gap-3">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--t-border)" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-          </svg>
+          <Icon icon={MessageSquare} size={36} strokeWidth={1} className="text-[var(--t-border)]"/>
           <p className="text-[var(--t-text-15)] text-sm">Sélectionne une conversation</p>
         </div>
       )}

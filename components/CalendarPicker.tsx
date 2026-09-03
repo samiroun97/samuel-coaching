@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { Icon } from "@/components/Icon";
+import { ChevronLeft, ChevronRight } from "@/lib/solarIcons";
 
 const WEEKDAYS = ["Lu", "Ma", "Me", "Je", "Ve", "Sa", "Di"];
 const MONTHS = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
@@ -65,13 +67,13 @@ export function CalendarPicker({
       className={`absolute z-[100] border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl shadow-[0_16px_40px_-8px_rgba(0,0,0,0.6)] p-4 w-[280px] ${className}`}>
       <div className="flex items-center justify-between mb-3">
         <button type="button" onClick={() => go(-1)} className="w-8 h-8 rounded-full border border-[var(--t-border)] flex items-center justify-center text-[var(--t-text-50)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          <Icon icon={ChevronLeft} size={13} strokeWidth={2}/>
         </button>
         <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-[0.15em] uppercase text-[var(--t-text)]">
           {MONTHS[viewMonth]} {viewYear}
         </p>
         <button type="button" onClick={() => go(1)} className="w-8 h-8 rounded-full border border-[var(--t-border)] flex items-center justify-center text-[var(--t-text-50)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          <Icon icon={ChevronRight} size={13} strokeWidth={2}/>
         </button>
       </div>
 
@@ -106,7 +108,7 @@ export function CalendarPicker({
       {!disabled(today) && (
         <button type="button" onClick={() => { onChange(todayISO); onClose(); }}
           className="mt-3 w-full text-center text-[0.6rem] tracking-[0.15em] uppercase text-[#c9a84c]/70 hover:text-[#c9a84c] transition-colors py-1.5 border-t border-[var(--t-border-soft)]">
-          Aujourd'hui
+          Aujourd&apos;hui
         </button>
       )}
     </div>

@@ -6,7 +6,9 @@ import { DateNav } from "@/components/DateNav";
 import { CalRefToggle, TdeeIcon } from "@/components/CalRefToggle";
 import { useSelectedDate } from "@/lib/useSelectedDate";
 import { syncSteps } from "@/lib/steps";
-import { BALANCE_ICON } from "@/components/balanceIcon";
+import { Icon } from "@/components/Icon";
+import { RichIcon } from "@/components/RichIcon";
+import { Check, Pencil, ChevronRight } from "@/lib/solarIcons";
 
 type Profile = {
   prenom: string; nom: string; age: number; poids: number; taille: number; sexe: string;
@@ -280,7 +282,7 @@ export default function AccueilPage() {
 
       {/* ── Pesée ── */}
       <div className={`rounded-xl border p-4 mb-4 flex items-center gap-4 ${entryForDate ? "border-[var(--t-border-soft)] bg-[var(--t-surface-2)]" : "border-[#c9a84c]/25 bg-[#c9a84c]/5"}`}>
-        <img src={BALANCE_ICON} alt="" width={34} height={34} className="shrink-0"/>
+        <RichIcon name="scale" size={34}/>
         <div className="flex-1 min-w-0">
           <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-0.5">
             Pesée {selectedDate === today() ? "du jour" : `· ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
@@ -308,11 +310,11 @@ export default function AccueilPage() {
               weightSaved ? "bg-[#7eb8a0] text-black" : "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black hover:brightness-110"
             }`}>
             {weightSaved ? (
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <Icon icon={Check} size={15} strokeWidth={2.5}/>
             ) : entryForDate ? (
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+              <Icon icon={Pencil} size={14} strokeWidth={2}/>
             ) : (
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <Icon icon={Check} size={15} strokeWidth={2.5}/>
             )}
           </button>
         </div>
@@ -387,7 +389,7 @@ export default function AccueilPage() {
         <Link href="/dashboard/suivi" className={`border rounded-xl p-4 flex flex-col justify-between group transition-colors ${needsBF ? "border-[#c9a84c]/25 bg-[#c9a84c]/5 hover:bg-[#c9a84c]/8" : "border-[var(--t-border)] bg-[var(--t-surface)] hover:border-[var(--t-border-15)]"}`}>
           <div className="flex items-center justify-between">
             <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c]">Body fat</p>
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={needsBF ? "#c9a84c" : "var(--t-text-20)"} strokeWidth="2" strokeLinecap="round" className="transition-transform group-hover:translate-x-0.5"><polyline points="9 18 15 12 9 6"/></svg>
+            <Icon icon={ChevronRight} size={10} strokeWidth={2} className="transition-transform group-hover:translate-x-0.5" style={{ color: needsBF ? "#c9a84c" : "var(--t-text-20)" }}/>
           </div>
           <p style={{ fontFamily: "var(--font-bebas)", color: needsBF && bodyFat === null ? "#c9a84c" : "var(--t-text)" }} className="text-2xl tracking-wide mt-1.5">
             {bodyFat !== null ? `${bodyFat}%` : "—"}

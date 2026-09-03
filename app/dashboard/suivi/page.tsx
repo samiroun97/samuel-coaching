@@ -10,10 +10,12 @@ import { CalendarPicker } from "@/components/CalendarPicker";
 import { isCoachUser, getMyCoachEmail } from "@/lib/coach";
 import { useSelectedDate } from "@/lib/useSelectedDate";
 import { syncSteps } from "@/lib/steps";
-import { BALANCE_ICON } from "@/components/balanceIcon";
+import { type WeightEntry, loadWeightHistory, upsertWeightEntry, deleteWeightEntry } from "@/lib/weightHistory";
+import { Icon } from "@/components/Icon";
+import { RichIcon } from "@/components/RichIcon";
+import { ChevronDown, ChevronLeft, ChevronRight, Check, Pencil, Plus, X } from "@/lib/solarIcons";
 
 type Profile      = { prenom?: string; sexe?: string; poids?: number; taille?: number; age?: number; objectifs?: string; objectif_type?: string; seances_par_semaine?: number; experience?: string; niveau_activite?: string };
-type WeightEntry  = { id: string; date: string; weight: number };
 type BodyFatEntry = {
   id: string; date: string; body_fat: number; note: string;
   points_forts?: string; points_faibles?: string; conseils?: string; shared?: boolean;
@@ -145,6 +147,7 @@ export default function SuiviPage() {
   const [showManual,     setShowManual]     = useState(false);
   const [showBFInfo,     setShowBFInfo]     = useState(false);
   const [weightHistOpen, setWeightHistOpen] = useState(false);
+  const [bfHistOpen,     setBfHistOpen]     = useState(false);
   const [manualVal,      setManualVal]      = useState("");
   const [manualDate,     setManualDate]     = useState("");
   const [weightInput,    setWeightInput]    = useState("");
@@ -201,8 +204,19 @@ export default function SuiviPage() {
       const { data: p } = await supabase.from("profiles").select("prenom,poids,taille,age,sexe,objectifs,objectif_type,seances_par_semaine,experience,niveau_activite").eq("id", user.id).single();
       if (p) setProfile(p as Profile);
 
-      const wRaw = localStorage.getItem(`weight_history_${user.id}`);
-      const wh: WeightEntry[]  = wRaw ? JSON.parse(wRaw) : [];
+      // Le poids était jusqu'ici seulement en localStorage (perdu au changement d'appareil,
+      // invisible du coach). Migration ponctuelle et best-effort : si Supabase n'a encore rien
+      // mais qu'un historique local existe, on le pousse une fois puis Supabase devient la
+      // seule source de vérité, comme pour le body fat.
+      let wh = await loadWeightHistory(user.id);
+      if (wh.length === 0) {
+        const wRaw = localStorage.getItem(`weight_history_${user.id}`);
+        const localHist: WeightEntry[] = wRaw ? JSON.parse(wRaw) : [];
+        if (localHist.length > 0) {
+          await Promise.all(localHist.map(e => upsertWeightEntry(user.id, e)));
+          wh = localHist;
+        }
+      }
       setWeightHist(wh);
       const bh = await loadBodyFatHistory(user.id);
       setBfHist(bh);
@@ -375,9 +389,10 @@ export default function SuiviPage() {
     if (isNaN(val) || val < 20 || val > 300 || !userId) return;
     setWeightSaving(true);
     const entry: WeightEntry = { id: Date.now().toString(), date: selectedDate, weight: +val.toFixed(1) };
+    const ok = await upsertWeightEntry(userId, entry);
+    if (!ok) { setError("Enregistrement impossible, réessaie."); setWeightSaving(false); return; }
     const next = [entry, ...weightHist.filter(e => e.date !== selectedDate)].sort((a, b) => b.date.localeCompare(a.date));
     setWeightHist(next);
-    localStorage.setItem(`weight_history_${userId}`, JSON.stringify(next));
     await supabase.from("profiles").update({ poids: val }).eq("id", userId);
     setWeightSaving(false); setWeightSaved(true);
     setTimeout(() => setWeightSaved(false), 2000);
@@ -507,10 +522,11 @@ export default function SuiviPage() {
     setBfPhotos(prev => Object.fromEntries(Object.entries(prev).filter(([key]) => key !== id)));
   };
 
-  const deleteWeight = (id: string) => {
-    const next = weightHist.filter(e => e.id !== id);
-    setWeightHist(next);
-    localStorage.setItem(`weight_history_${userId}`, JSON.stringify(next));
+  const deleteWeight = async (id: string) => {
+    if (!userId) return;
+    const ok = await deleteWeightEntry(userId, id);
+    if (!ok) { setError("Suppression impossible, réessaie."); return; }
+    setWeightHist(weightHist.filter(e => e.id !== id));
   };
 
   const saveBFEdit = async (id: string) => {
@@ -557,6 +573,7 @@ export default function SuiviPage() {
   };
 
   const bfChartData = [...bfHist].reverse().slice(-10);
+  const weightChartData = [...weightHist].reverse().slice(-15);
 
   return (
     <div className="p-4 sm:p-8 max-w-2xl">
@@ -595,8 +612,8 @@ export default function SuiviPage() {
                 {ckDoneThisWeek ? "✓ Envoyé à Samuel cette semaine — modifier" : "Fais ton point du dimanche : poids, énergie, adhérence"}
               </p>
             </div>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-              className={`text-[var(--t-text-30)] shrink-0 transition-transform ${ckOpen ? "rotate-180" : ""}`}><polyline points="6 9 12 15 18 9"/></svg>
+            <Icon icon={ChevronDown} size={14}
+              className={`text-[var(--t-text-30)] shrink-0 transition-transform ${ckOpen ? "rotate-180" : ""}`}/>
           </button>
           {ckOpen && (
             <div className="px-5 pb-5 flex flex-col gap-4 border-t border-[var(--t-border-soft)] pt-4">
@@ -648,8 +665,7 @@ export default function SuiviPage() {
       <div className="border border-[#c9a84c]/20 bg-[var(--t-surface)] rounded-xl overflow-hidden mb-4 shadow-[0_4px_20px_rgba(0,0,0,0.06)]">
         <div className="flex items-center gap-3 px-5 py-4 border-b border-[#c9a84c]/10">
           <div className="w-14 h-14 flex items-center justify-center shrink-0">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icons/bilan.svg" alt="" width={34} height={34} className="shrink-0"/>
+            <RichIcon name="clipboardCheck" size={30}/>
           </div>
           <div className="min-w-0">
             <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[#c9a84c]">Bilan de la semaine</p>
@@ -663,7 +679,7 @@ export default function SuiviPage() {
           <button
             onClick={() => { const d = new Date(reportWeekMonday + "T12:00:00"); d.setDate(d.getDate() - 7); setReportWeekMonday(d.toISOString().split("T")[0]); }}
             className="w-9 h-9 rounded-xl border border-[#c9a84c]/20 bg-[#c9a84c]/8 text-[var(--t-text-50)] hover:bg-[#c9a84c]/15 hover:text-[var(--t-text-80)] active:bg-[#c9a84c]/25 active:scale-90 transition-all duration-150 flex items-center justify-center shrink-0">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            <Icon icon={ChevronLeft} size={14} strokeWidth={2}/>
           </button>
           <p className="flex-1 text-center text-[0.65rem] tracking-[0.12em] uppercase font-semibold text-[var(--t-text-70)] border border-[var(--t-border)] bg-[var(--t-bg)] rounded-xl py-2 px-3">
             {new Date(reportWeekMonday + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}
@@ -674,7 +690,7 @@ export default function SuiviPage() {
             onClick={() => { const d = new Date(reportWeekMonday + "T12:00:00"); d.setDate(d.getDate() + 7); const next = d.toISOString().split("T")[0]; if (next <= weekMonday) setReportWeekMonday(next); }}
             disabled={reportWeekMonday === weekMonday}
             className="w-9 h-9 rounded-xl border border-[#c9a84c]/20 bg-[#c9a84c]/8 text-[var(--t-text-50)] hover:bg-[#c9a84c]/15 hover:text-[var(--t-text-80)] active:bg-[#c9a84c]/25 active:scale-90 transition-all duration-150 flex items-center justify-center shrink-0 disabled:opacity-20 disabled:cursor-not-allowed disabled:active:scale-100">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            <Icon icon={ChevronRight} size={14} strokeWidth={2}/>
           </button>
           {reportWeekMonday !== weekMonday && (
             <button onClick={() => setReportWeekMonday(weekMonday)}
@@ -695,7 +711,7 @@ export default function SuiviPage() {
 
       {/* ── Pesée ── */}
       <div className={`rounded-xl border p-4 mb-4 flex items-center gap-4 ${alreadySelected ? "border-[var(--t-border-soft)] bg-[var(--t-surface-2)]" : "border-[#c9a84c]/25 bg-[#c9a84c]/5"}`}>
-        <img src={BALANCE_ICON} alt="" width={34} height={34} className="shrink-0"/>
+        <RichIcon name="scale" size={34}/>
         <div className="flex-1 min-w-0">
           <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-0.5">
             {selectedDate === today() ? "Pesée du jour" : `Pesée · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
@@ -720,11 +736,11 @@ export default function SuiviPage() {
               weightSaved ? "bg-[#7eb8a0] text-black" : "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black hover:brightness-110"
             }`}>
             {weightSaved ? (
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <Icon icon={Check} size={15} strokeWidth={2.5}/>
             ) : alreadySelected ? (
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+              <Icon icon={Pencil} size={14} strokeWidth={2}/>
             ) : (
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <Icon icon={Check} size={15} strokeWidth={2.5}/>
             )}
           </button>
         </div>
@@ -767,10 +783,8 @@ export default function SuiviPage() {
         <button onClick={() => setShowBFInfo(v => !v)}
           className="w-full flex items-center justify-between gap-2 border-t border-[var(--t-border-soft)] px-5 py-3 hover:bg-[var(--t-bg)]/40 transition-colors">
           <span className="text-[0.62rem] tracking-[0.12em] uppercase text-[var(--t-text-30)]">Pourquoi suivre le body fat plutôt que le poids ?</span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-            className={`text-[var(--t-text-25)] shrink-0 transition-transform duration-300 ${showBFInfo ? "rotate-180" : ""}`}>
-            <polyline points="6 9 12 15 18 9"/>
-          </svg>
+          <Icon icon={ChevronDown} size={12}
+            className={`text-[var(--t-text-25)] shrink-0 transition-transform duration-300 ${showBFInfo ? "rotate-180" : ""}`}/>
         </button>
         <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${showBFInfo ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
           <div className="overflow-hidden">
@@ -826,7 +840,7 @@ export default function SuiviPage() {
             <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Photos corporelles</p>
             <span className="text-[0.62rem] text-[var(--t-text-20)] tracking-wider">Conservées dans ton historique privé</span>
           </div>
-          <p className="text-[0.65rem] text-[var(--t-text-20)] mb-5 tracking-wider">Plus il y a de photos, plus l'estimation est précise</p>
+          <p className="text-[0.65rem] text-[var(--t-text-20)] mb-5 tracking-wider">Plus il y a de photos, plus l&apos;estimation est précise</p>
 
           <div className="grid grid-cols-5 gap-2 mb-5">
             {SLOTS.map(slot => (
@@ -838,11 +852,11 @@ export default function SuiviPage() {
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={photos[slot.key]} alt={slot.label} className="absolute inset-0 w-full h-full object-cover"/>
                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                        <Icon icon={Plus} size={14} strokeWidth={2} className="text-white"/>
                       </div>
                     </>
                   ) : (
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="text-[var(--t-text-15)]"><path d="M12 5v14M5 12h14"/></svg>
+                    <Icon icon={Plus} size={14} strokeWidth={1.5} className="text-[var(--t-text-15)]"/>
                   )}
                 </button>
                 <span className="text-[0.6rem] tracking-wider text-[var(--t-text-20)] text-center uppercase leading-tight">{slot.label}</span>
@@ -978,9 +992,15 @@ export default function SuiviPage() {
 
       {/* ── Historique body fat avec feedback ── */}
       {bfHist.length > 0 && (
-        <div className="mb-4">
-          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[var(--t-text)] mb-3 px-0.5">Historique body fat</p>
-          <div className="space-y-3">
+        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl mb-4">
+          <button onClick={() => setBfHistOpen(v => !v)}
+            className="w-full text-left flex items-center justify-between px-5 py-3 hover:bg-[var(--t-glass-bg)] transition-colors">
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[var(--t-text)]">Historique body fat</p>
+            <Icon icon={ChevronDown} size={12}
+              className={`text-[var(--t-text-25)] shrink-0 transition-transform ${bfHistOpen ? "rotate-180" : ""}`}/>
+          </button>
+          {bfHistOpen && (
+          <div className="border-t border-[var(--t-border-soft)] p-3 space-y-3">
             {bfHist.map((entry, i) => {
               const prev = bfHist[i + 1];
               const diff = prev ? +(entry.body_fat - prev.body_fat).toFixed(1) : null;
@@ -1055,7 +1075,7 @@ export default function SuiviPage() {
                         )}
                       </div>
                       <button onClick={() => deleteBF(entry.id)} className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        <Icon icon={X} size={11} strokeWidth={2}/>
                       </button>
                     </div>
                   </div>
@@ -1072,6 +1092,19 @@ export default function SuiviPage() {
               );
             })}
           </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Graphique évolution poids ── */}
+      {weightChartData.length > 1 && (
+        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-4 mb-4">
+          <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1">Évolution du poids</p>
+          <p className="text-[0.62rem] text-[var(--t-text-30)] mb-3">
+            {weightChartData.length} pesée{weightChartData.length > 1 ? "s" : ""} enregistrée{weightChartData.length > 1 ? "s" : ""}
+          </p>
+          <LineChart data={weightChartData.map(e => ({ id: e.id, date: `${e.date}T12:00:00`, val: e.weight }))} unit=" kg" color="#7eb8a0"
+            lowerIsBetter={profile?.objectif_type !== "prise_muscle"}/>
         </div>
       )}
 
@@ -1081,10 +1114,8 @@ export default function SuiviPage() {
           <button onClick={() => setWeightHistOpen(v => !v)}
             className="w-full text-left flex items-center justify-between px-5 py-3 hover:bg-[var(--t-glass-bg)] transition-colors">
             <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[var(--t-text)]">Historique pesées</p>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-              className={`text-[var(--t-text-25)] shrink-0 transition-transform ${weightHistOpen ? "rotate-180" : ""}`}>
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
+            <Icon icon={ChevronDown} size={12}
+              className={`text-[var(--t-text-25)] shrink-0 transition-transform ${weightHistOpen ? "rotate-180" : ""}`}/>
           </button>
           {weightHistOpen && (
             <div className="border-t border-[var(--t-border-soft)]">
@@ -1104,7 +1135,7 @@ export default function SuiviPage() {
                       )}
                       <span className={`text-sm font-medium ${i === 0 ? "text-[var(--t-text)]" : "text-[var(--t-text-40)]"}`}>{entry.weight} kg</span>
                       <button onClick={() => deleteWeight(entry.id)} className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        <Icon icon={X} size={10} strokeWidth={2}/>
                       </button>
                     </div>
                   </div>
@@ -1121,7 +1152,7 @@ export default function SuiviPage() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={viewingPhoto} alt="" className="max-w-full max-h-full object-contain"/>
           <button onClick={() => setViewingPhoto(null)} className="absolute top-4 right-4 text-[var(--t-text-60)] hover:text-[var(--t-text)] transition-colors">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <Icon icon={X} size={22} strokeWidth={1.5}/>
           </button>
         </div>
       )}

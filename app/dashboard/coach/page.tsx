@@ -3,6 +3,8 @@ import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
 import { getMyCoachEmail, getMyCoachBusinessName } from "@/lib/coach";
+import { Icon } from "@/components/Icon";
+import { MessageSquare, Bot, User } from "@/lib/solarIcons";
 
 type AiMessage  = { role: "user" | "assistant"; content: string };
 type DirectMsg  = { id: string; from_email: string; to_email: string; content: string; created_at: string };
@@ -110,9 +112,7 @@ export default function CoachPage() {
       <div className="border-b border-[var(--t-border-soft)] px-8 py-5 shrink-0">
         <div className="flex items-center gap-4 mb-4">
           <div className="w-8 h-8 border border-[#c9a84c]/40 rounded-full flex items-center justify-center">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-            </svg>
+            <Icon icon={MessageSquare} size={15} strokeWidth={1.5} className="text-[#c9a84c]"/>
           </div>
           <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-xl tracking-wider text-[var(--t-text)] leading-none">MESSAGES</h1>
         </div>
@@ -124,16 +124,12 @@ export default function CoachPage() {
               }`}>
               {t === "ia" ? (
                 <>
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="11" width="18" height="10" rx="2"/><path d="M12 11V7"/><circle cx="12" cy="5" r="2"/><line x1="8" y1="15" x2="8" y2="15"/><line x1="12" y1="15" x2="12" y2="15"/><line x1="16" y1="15" x2="16" y2="15"/>
-                  </svg>
+                  <Icon icon={Bot} size={11} strokeWidth={2}/>
                   Assistant IA
                 </>
               ) : (
                 <>
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
-                  </svg>
+                  <Icon icon={User} size={11} strokeWidth={2}/>
                   Samuel
                 </>
               )}
@@ -150,9 +146,7 @@ export default function CoachPage() {
               <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                 {m.role === "assistant" && (
                   <div className="w-6 h-6 border border-[#c9a84c]/30 bg-[#c9a84c]/5 rounded-full flex items-center justify-center mr-2.5 mt-0.5 shrink-0">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="11" width="18" height="10" rx="2"/><path d="M12 11V7"/><circle cx="12" cy="5" r="2"/><line x1="8" y1="15" x2="8" y2="15"/><line x1="12" y1="15" x2="12" y2="15"/><line x1="16" y1="15" x2="16" y2="15"/>
-                    </svg>
+                    <Icon icon={Bot} size={13} strokeWidth={1.5} className="text-[#c9a84c]"/>
                   </div>
                 )}
                 <div className={`max-w-sm px-4 py-3 rounded-xl text-xs leading-relaxed whitespace-pre-line ${
@@ -165,9 +159,7 @@ export default function CoachPage() {
             {aiLoading && (
               <div className="flex justify-start">
                 <div className="w-6 h-6 border border-[#c9a84c]/30 bg-[#c9a84c]/5 rounded-full flex items-center justify-center mr-2.5 mt-0.5 shrink-0">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="11" width="18" height="10" rx="2"/><path d="M12 11V7"/><circle cx="12" cy="5" r="2"/><line x1="8" y1="15" x2="8" y2="15"/><line x1="12" y1="15" x2="12" y2="15"/><line x1="16" y1="15" x2="16" y2="15"/>
-                  </svg>
+                  <Icon icon={Bot} size={13} strokeWidth={1.5} className="text-[#c9a84c]"/>
                 </div>
                 <div className="bg-[var(--t-surface)] border border-[var(--t-border)] rounded-xl px-4 py-3 flex items-center gap-1.5">
                   {[0,1,2].map(j => <div key={j} className="w-1.5 h-1.5 rounded-full bg-[var(--t-text-20)] animate-bounce" style={{ animationDelay: `${j*0.15}s` }}/>)}
@@ -198,9 +190,7 @@ export default function CoachPage() {
               <div className="flex-1 flex items-center justify-center">
                 <div className="text-center">
                   <div className="w-10 h-10 border border-[var(--t-border)] rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--t-text-20)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-                    </svg>
+                    <Icon icon={MessageSquare} size={18} strokeWidth={1.5} className="text-[var(--t-text-20)]"/>
                   </div>
                   <p className="text-[var(--t-text-20)] text-xs">Aucun message pour l&apos;instant</p>
                   <p className="text-[var(--t-text-10)] text-[0.68rem] mt-1">Envoie un message à Samuel ci-dessous</p>
