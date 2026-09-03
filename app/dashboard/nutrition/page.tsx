@@ -215,6 +215,17 @@ function WaterBottleIcon({ size = 58 }: { size?: number }) {
   );
 }
 
+// Ampoule lévitante avec halo jaune — même traitement que la bouteille d'eau.
+function LightbulbIcon({ size = 34 }: { size?: number }) {
+  return (
+    <div className="relative shrink-0 animate-levitate">
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-lg pointer-events-none"
+        style={{ width: size * 0.95, height: size * 0.95, backgroundColor: "#e6b45c", opacity: 0.25 }}/>
+      <RichIcon name="lightbulb" size={size} className="relative"/>
+    </div>
+  );
+}
+
 // Petite goutte : pleine une fois ce cran d'hydratation atteint, estompée sinon.
 function GlassIcon({ filled }: { filled: boolean }) {
   return (
@@ -1190,7 +1201,7 @@ export default function NutritionPage() {
       <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl mb-6">
         <div className="px-5 py-4 border-b border-[var(--t-border-soft)]">
           <div className="flex items-center gap-2 mb-1.5">
-            <RichIcon name="lightbulb" size={18}/>
+            <LightbulbIcon/>
             <span style={{ fontFamily:"var(--font-bebas)" }} className="text-sm tracking-wider text-[var(--t-text)]">Idée repas</span>
           </div>
           <p className="text-[0.78rem] text-[var(--t-text-60)] leading-snug mb-2">
