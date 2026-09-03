@@ -95,7 +95,7 @@ export function CalendarPicker({
         ))}
       </div>
 
-      <div className={`grid grid-cols-7 ${big ? "gap-1.5" : "gap-1"}`}>
+      <div className={`grid grid-cols-7 ${big ? "gap-2" : "gap-1"}`}>
         {cells.map((d, i) => {
           if (!d) return <div key={i}/>;
           const iso = toISO(d);
@@ -107,7 +107,7 @@ export function CalendarPicker({
             <button key={i} type="button" disabled={isDisabled}
               title={status ? STATUS_LABEL[status] : undefined}
               onClick={() => { onChange(iso); onClose(); }}
-              className={`relative ${big ? "w-11 h-11 sm:w-12 sm:h-12 text-sm rounded-xl" : "w-9 h-9 text-xs rounded-full"} transition-colors flex items-center justify-center ${
+              className={`relative ${big ? "w-9 h-9 sm:w-10 sm:h-10 text-xs rounded-lg" : "w-9 h-9 text-xs rounded-full"} transition-colors flex items-center justify-center ${
                 isDisabled ? "text-[var(--t-text-15)] cursor-not-allowed"
                 : status ? `${STATUS_COLOR[status]} ${status === "empty" ? "text-[var(--t-text-50)]" : "text-white"} ${isSel ? "font-bold ring-2 ring-[#c9a84c]" : isToday ? "ring-2 ring-[var(--t-text)]/70" : ""}`
                 : isSel ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black font-bold"
@@ -116,7 +116,7 @@ export function CalendarPicker({
               }`}>
               {d.getDate()}
               {status === "exemplary" && (
-                <FlameIcon className={`absolute ${big ? "top-1 right-1 w-2.5 h-2.5" : "top-0.5 right-0.5 w-2 h-2"} text-white/90`}/>
+                <FlameIcon className="absolute top-0.5 right-0.5 w-2 h-2 text-white/90"/>
               )}
             </button>
           );
