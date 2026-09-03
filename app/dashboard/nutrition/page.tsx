@@ -12,7 +12,7 @@ import type { IScannerControls } from "@zxing/browser";
 import { BarcodeFormat, DecodeHintType } from "@zxing/library";
 import { Icon } from "@/components/Icon";
 import { RichIcon, type RichIconName } from "@/components/RichIcon";
-import { Plus, Shield, ChevronDown, Copy, Star, Trash2, X, Camera, ImageIcon, Mic, Save, ScanBarcode, Lightbulb, MoreHorizontal, Droplet } from "@/lib/solarIcons";
+import { Plus, Shield, ChevronDown, Copy, Star, Trash2, X, Camera, ImageIcon, Mic, Save, ScanBarcode, Lightbulb, MoreHorizontal } from "@/lib/solarIcons";
 
 // BarcodeDetector (API native) n'existe pas sur Safari/iOS — ZXing décode en JS pur
 // via canvas, donc ça marche identiquement sur iPhone et Android.
@@ -204,15 +204,22 @@ function MacroBar({ label, consumed, goal, color }: { label: string; consumed: n
   );
 }
 
-function WaterDropIcon({ size = 15 }: { size?: number }) {
-  return <Icon icon={Droplet} size={size} className="text-[#6fa3c4]"/>;
+// Bouteille lévitante avec halo bleu — même traitement que les icônes de repas.
+function WaterBottleIcon({ size = 34 }: { size?: number }) {
+  return (
+    <div className="relative shrink-0 animate-levitate">
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-lg pointer-events-none"
+        style={{ width: size * 0.95, height: size * 0.95, backgroundColor: "#6fa3c4", opacity: 0.5 }}/>
+      <RichIcon name="waterBottle" size={size} className="relative"/>
+    </div>
+  );
 }
 
-// Petit verre : plein une fois ce cran d'hydratation atteint, estompé sinon.
+// Petite goutte : pleine une fois ce cran d'hydratation atteint, estompée sinon.
 function GlassIcon({ filled }: { filled: boolean }) {
   return (
-    <Icon icon={Droplet} size={16}
-      className={`shrink-0 transition-opacity ${filled ? "opacity-100 text-[#6fa3c4]" : "opacity-25 text-[var(--t-text-30)]"}`}/>
+    <RichIcon name="droplet" size={16}
+      className={`shrink-0 transition-opacity ${filled ? "opacity-100" : "opacity-25 grayscale"}`}/>
   );
 }
 
@@ -223,7 +230,7 @@ function WaterTracker({ water, goal, onAdd, onRemove }: { water: number; goal: n
     <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 mb-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <WaterDropIcon/>
+          <WaterBottleIcon/>
           <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Hydratation</p>
         </div>
         <div className="flex items-center gap-3">
