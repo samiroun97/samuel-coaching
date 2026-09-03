@@ -124,7 +124,7 @@ export function CalendarPicker({
                 </span>
                 {!isDisabled && status && (
                   <FlameIcon className={
-                    status === "exemplary" ? "w-[22px] h-[22px] text-[#f0c95c]"
+                    status === "exemplary" ? "w-[22px] h-[22px] text-[#6ea8d9]"
                     : status === "ok" ? "w-5 h-5 text-[#e8a13c]"
                     : "w-5 h-5 text-[var(--t-text-15)]"
                   }/>
@@ -153,7 +153,7 @@ export function CalendarPicker({
           {STATUS_LEGEND.map(({ status, label }) => (
             <div key={status} className={`flex items-center gap-1.5 ${status === "off" ? "rounded border border-[#e07070]/30 px-1" : ""}`}>
               <FlameIcon className={
-                status === "exemplary" ? "w-[13px] h-[13px] text-[#f0c95c]"
+                status === "exemplary" ? "w-[13px] h-[13px] text-[#6ea8d9]"
                 : status === "ok" ? "w-[11px] h-[11px] text-[#e8a13c]"
                 : "w-[11px] h-[11px] text-[var(--t-text-15)]"
               }/>
