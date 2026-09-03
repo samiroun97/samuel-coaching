@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
-import { ChevronLeft, ChevronRight, Flame, Check } from "@/lib/solarIcons";
+import { ChevronLeft, ChevronRight, Flame } from "@/lib/solarIcons";
 import { STATUS_LABEL, STATUS_LEGEND, type DayStatus } from "@/lib/consistency";
 
 function FlameIcon({ className }: { className?: string }) {
@@ -104,9 +104,9 @@ export function CalendarPicker({
           const isDisabled = disabled(d);
           const status = statuses && !isDisabled ? (statuses[iso] ?? "empty") : null;
 
-          // Vue "table" pour le calendrier de régularité : bordure fine + numéro en coin,
-          // un check pour les jours réussis plutôt qu'un remplissage plein — plus lisible
-          // qu'une case de couleur unie.
+          // Vue "flamme" façon Duolingo : bordure fine + numéro en coin, une flamme allumée
+          // (orange/or) pour les jours réussis, éteinte (grise) sinon — plus lisible qu'une
+          // case de couleur unie ou une simple coche.
           if (big) {
             return (
               <button key={i} type="button" disabled={isDisabled}
@@ -116,19 +116,18 @@ export function CalendarPicker({
                   isDisabled ? "border-[var(--t-border-soft)] cursor-not-allowed"
                   : isSel ? "border-[#c9a84c] bg-[#c9a84c]/10"
                   : isToday ? "border-[#c9a84c]/50"
+                  : status === "off" ? "border-[#e07070]/30 hover:border-[#e07070]/50"
                   : "border-[var(--t-border)] hover:border-[var(--t-text-20)]"
                 }`}>
                 <span className={`absolute top-1 left-1.5 text-[0.55rem] leading-none ${isDisabled ? "text-[var(--t-text-15)]" : "text-[var(--t-text-30)]"}`}>
                   {d.getDate()}
                 </span>
-                {!isDisabled && (status === "ok" || status === "exemplary") && (
-                  <Icon icon={Check} size={big ? 17 : 14} strokeWidth={2.5} className="text-[#7eb8a0]"/>
-                )}
-                {!isDisabled && status === "off" && (
-                  <span className="w-[7px] h-[7px] rounded-full bg-[#e07070]"/>
-                )}
-                {!isDisabled && status === "exemplary" && (
-                  <FlameIcon className="absolute top-1 right-1 w-2.5 h-2.5 text-[#e8a13c]"/>
+                {!isDisabled && status && (
+                  <FlameIcon className={
+                    status === "exemplary" ? "w-[18px] h-[18px] text-[#f0c95c]"
+                    : status === "ok" ? "w-4 h-4 text-[#e8a13c]"
+                    : "w-4 h-4 text-[var(--t-text-15)]"
+                  }/>
                 )}
               </button>
             );
@@ -152,12 +151,12 @@ export function CalendarPicker({
       {statuses && (
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 pt-4 mt-1 border-t border-[var(--t-border-soft)]">
           {STATUS_LEGEND.map(({ status, label }) => (
-            <div key={status} className="flex items-center gap-1.5">
-              <div className="relative w-[14px] h-[14px] rounded-[4px] border border-[var(--t-border)] shrink-0 flex items-center justify-center">
-                {(status === "ok" || status === "exemplary") && <Icon icon={Check} size={10} strokeWidth={3} className="text-[#7eb8a0]"/>}
-                {status === "off" && <span className="w-[5px] h-[5px] rounded-full bg-[#e07070]"/>}
-                {status === "exemplary" && <FlameIcon className="absolute -top-0.5 -right-0.5 w-2 h-2 text-[#e8a13c]"/>}
-              </div>
+            <div key={status} className={`flex items-center gap-1.5 ${status === "off" ? "rounded border border-[#e07070]/30 px-1" : ""}`}>
+              <FlameIcon className={
+                status === "exemplary" ? "w-[13px] h-[13px] text-[#f0c95c]"
+                : status === "ok" ? "w-[11px] h-[11px] text-[#e8a13c]"
+                : "w-[11px] h-[11px] text-[var(--t-text-15)]"
+              }/>
               <span className="text-[0.62rem] text-[var(--t-text-30)]">{label}</span>
             </div>
           ))}
