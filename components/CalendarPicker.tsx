@@ -107,10 +107,10 @@ export function CalendarPicker({
             <button key={i} type="button" disabled={isDisabled}
               title={status ? STATUS_LABEL[status] : undefined}
               onClick={() => { onChange(iso); onClose(); }}
-              className={`relative ${big ? "w-11 h-11 sm:w-12 sm:h-12 text-sm" : "w-9 h-9 text-xs"} rounded-full transition-colors flex items-center justify-center ${
+              className={`relative ${big ? "w-11 h-11 sm:w-12 sm:h-12 text-sm rounded-xl" : "w-9 h-9 text-xs rounded-full"} transition-colors flex items-center justify-center ${
                 isSel ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black font-bold"
                 : isDisabled ? "text-[var(--t-text-15)] cursor-not-allowed"
-                : status ? `${STATUS_COLOR[status]} ${status === "empty" ? "text-[var(--t-text-50)]" : "text-white"} ${isToday ? "ring-2 ring-[#c9a84c] ring-offset-1 ring-offset-[var(--t-surface)]" : ""}`
+                : status ? `${STATUS_COLOR[status]} ${status === "empty" ? "text-[var(--t-text-50)]" : "text-white"} ${isToday ? "ring-2 ring-[var(--t-text)]/70" : ""}`
                 : isToday ? "text-[#c9a84c] border border-[#c9a84c]/40 hover:bg-[#c9a84c]/10"
                 : "text-[var(--t-text-70)] hover:bg-[var(--t-glass-bg)]"
               }`}>
