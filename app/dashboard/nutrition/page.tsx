@@ -53,15 +53,6 @@ function MealTypeIcon({ type, className, size = 48 }: { type: string; className?
   return <RichIcon name={name} size={size} className={className}/>;
 }
 
-// Rond plein (badge circulaire) — léger fond neutre pour asseoir l'icône illustrée sans
-// entrer en conflit avec ses propres couleurs (rendus 3D pleine couleur, pas currentColor).
-function MealTypeBadge({ type, size = 42 }: { type: string; size?: number }) {
-  return (
-    <div className="relative z-10 rounded-full flex items-center justify-center shrink-0 overflow-hidden bg-[var(--t-glass-bg)]" style={{ width: size, height: size }}>
-      <MealTypeIcon type={type} size={size * 0.8}/>
-    </div>
-  );
-}
 
 function MacroChip({ label, value, color }: { label: string; value: number; color: string }) {
   return (
@@ -336,7 +327,6 @@ export default function NutritionPage() {
   const [dietaryPrefs, setDietaryPrefs] = useState("");
   const [mealPlan,    setMealPlan]    = useState<MealPlan | null>(null);
   const [description, setDescription] = useState("");
-  const [showFoods,   setShowFoods]   = useState(true);
   const [showWeek,    setShowWeek]    = useState(false);
   const userIdRef       = useRef("");
   const userEmailRef    = useRef("");
@@ -1279,45 +1269,6 @@ export default function NutritionPage() {
             ))}
           </div>
         )}
-      </div>
-
-      {/* ── Aliments du jour ── */}
-      <div className="mb-6">
-        <button onClick={() => setShowFoods(v => !v)}
-          className="w-full text-left flex items-center justify-between px-1 py-2 hover:opacity-80 transition-opacity">
-          <span style={{ fontFamily:"var(--font-bebas)" }} className="text-sm tracking-wider text-[var(--t-text)]">
-            {selectedDate === realToday ? "Aliments du jour" : `Aliments · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
-          </span>
-          <div className="flex items-center gap-3">
-            <span className="text-[0.7rem] tracking-wider text-[var(--t-text-30)]">{totals.calories} kcal</span>
-            <Icon icon={ChevronDown} size={12}
-              className={`text-[var(--t-text-25)] shrink-0 transition-transform duration-300 ${showFoods ? "rotate-180" : ""}`}/>
-          </div>
-        </button>
-        <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${showFoods ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
-          <div className="overflow-hidden pt-3">
-        {foods.length === 0
-          ? <p className="px-1 py-4 text-[0.7rem] tracking-wider text-[var(--t-text-20)] uppercase">Aucun aliment ajouté</p>
-          : [...MEAL_TYPES, "Autres"].map(type => {
-            const items = foods.filter(f => (f.repas ?? "Autres") === type);
-            if (!items.length) return null;
-            const groupCal = items.reduce((s, f) => s + f.calories, 0);
-            return (
-              <div key={type} className="rounded-xl border border-[var(--t-border)] bg-[var(--t-surface)] mb-3 last:mb-0 overflow-hidden">
-                <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--t-border-soft)]">
-                  <MealTypeBadge type={type} size={44}/>
-                  <p className="flex-1 text-[0.65rem] tracking-[0.15em] uppercase text-[var(--t-text-50)]">{type}</p>
-                  <p className="text-[0.62rem] text-[var(--t-text-30)]">{groupCal} kcal</p>
-                </div>
-                <div className="divide-y divide-[var(--t-border-soft)]">
-                {items.map(renderFoodItem)}
-                </div>
-              </div>
-            );
-          })
-        }
-          </div>
-        </div>
       </div>
 
       {/* ── Week history ── */}
