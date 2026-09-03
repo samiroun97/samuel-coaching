@@ -76,7 +76,7 @@ export function CalendarPicker({
   return (
     <div ref={ref}
       style={{ backgroundColor: "var(--t-surface)" }}
-      className={`absolute z-[100] border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl shadow-[0_16px_40px_-8px_rgba(0,0,0,0.6)] ${big ? "p-5 w-[340px] sm:w-[380px]" : "p-4 w-[280px]"} ${className}`}>
+      className={`absolute z-[100] border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl shadow-[0_16px_40px_-8px_rgba(0,0,0,0.6)] ${big ? "p-6 w-[390px] sm:w-[440px]" : "p-4 w-[280px]"} ${className}`}>
       <div className={`flex items-center justify-between ${big ? "mb-4" : "mb-3"}`}>
         <button type="button" onClick={() => go(-1)} className={`${big ? "w-9 h-9" : "w-8 h-8"} rounded-full border border-[var(--t-border)] flex items-center justify-center text-[var(--t-text-50)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors`}>
           <Icon icon={ChevronLeft} size={big ? 15 : 13} strokeWidth={2}/>
@@ -89,13 +89,13 @@ export function CalendarPicker({
         </button>
       </div>
 
-      <div className={`grid grid-cols-7 ${big ? "gap-2.5 mb-1.5" : "gap-1 mb-1"}`}>
+      <div className={`grid grid-cols-7 ${big ? "gap-3 mb-2" : "gap-1 mb-1"}`}>
         {WEEKDAYS.map(w => (
           <div key={w} className={`${big ? "text-[0.62rem]" : "text-[0.55rem]"} tracking-wider uppercase text-[var(--t-text-25)] text-center py-1`}>{w}</div>
         ))}
       </div>
 
-      <div className={`grid grid-cols-7 ${big ? "gap-2.5" : "gap-1"}`}>
+      <div className={`grid grid-cols-7 ${big ? "gap-3" : "gap-1"}`}>
         {cells.map((d, i) => {
           if (!d) return <div key={i}/>;
           const iso = toISO(d);
@@ -119,14 +119,14 @@ export function CalendarPicker({
                   : status === "off" ? "border-[#e07070]/30 hover:border-[#e07070]/50"
                   : "border-[var(--t-border)] hover:border-[var(--t-text-20)]"
                 }`}>
-                <span className={`absolute top-1 left-1.5 text-[0.55rem] leading-none ${isDisabled ? "text-[var(--t-text-15)]" : "text-[var(--t-text-30)]"}`}>
+                <span className={`absolute top-1.5 left-2 text-[0.62rem] leading-none ${isDisabled ? "text-[var(--t-text-15)]" : "text-[var(--t-text-30)]"}`}>
                   {d.getDate()}
                 </span>
                 {!isDisabled && status && (
                   <FlameIcon className={
-                    status === "exemplary" ? "w-[18px] h-[18px] text-[#f0c95c]"
-                    : status === "ok" ? "w-4 h-4 text-[#e8a13c]"
-                    : "w-4 h-4 text-[var(--t-text-15)]"
+                    status === "exemplary" ? "w-[22px] h-[22px] text-[#f0c95c]"
+                    : status === "ok" ? "w-5 h-5 text-[#e8a13c]"
+                    : "w-5 h-5 text-[var(--t-text-15)]"
                   }/>
                 )}
               </button>
