@@ -634,6 +634,13 @@ export default function ProgrammePage() {
         </div>
       )}
 
+      {/* ── Régularité ── */}
+      {Object.keys(dayStatuses).length > 0 && (
+        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 mb-6">
+          <ConsistencyHeatmap statuses={dayStatuses}/>
+        </div>
+      )}
+
       {/* ── Historique ── */}
       {pastDates.length > 0 && (
         <div>
@@ -679,13 +686,6 @@ export default function ProgrammePage() {
       {activeMeso && (
         <div className="mb-6">
           <MesocycleCard meso={activeMeso}/>
-        </div>
-      )}
-
-      {/* ── Régularité ── */}
-      {Object.keys(dayStatuses).length > 0 && (
-        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 mb-6">
-          <ConsistencyHeatmap statuses={dayStatuses}/>
         </div>
       )}
 

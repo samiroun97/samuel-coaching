@@ -56,7 +56,9 @@ async function loadTrainedDays(clientId: string, since: Date): Promise<Set<strin
 // Alimente le calendrier de régularité : croise le journal nutrition (daily_summaries, avec le
 // snapshot de l'objectif du jour) et les séances complétées, en tenant compte du type d'objectif
 // du client pour juger si un surplus/déficit calorique va dans le bon sens.
-export async function loadDayStatuses(clientId: string, objectifType: string | null | undefined, days = 84): Promise<Record<string, DayStatus>> {
+// 370 jours (un peu plus d'un an) pour que le calendrier de régularité, navigable mois par
+// mois, ait des données réelles même en remontant sur les mois précédents.
+export async function loadDayStatuses(clientId: string, objectifType: string | null | undefined, days = 370): Promise<Record<string, DayStatus>> {
   const since = new Date();
   since.setDate(since.getDate() - (days - 1));
   const sinceISO = since.toISOString().split("T")[0];
