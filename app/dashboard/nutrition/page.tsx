@@ -204,10 +204,10 @@ function MacroBar({ label, consumed, goal, color }: { label: string; consumed: n
   );
 }
 
-// Bouteille lévitante avec halo bleu — même traitement que les icônes de repas.
+// Bouteille avec halo bleu.
 function WaterBottleIcon({ size = 58 }: { size?: number }) {
   return (
-    <div className="relative shrink-0 animate-levitate">
+    <div className="relative shrink-0">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-lg pointer-events-none"
         style={{ width: size * 0.95, height: size * 0.95, backgroundColor: "#6fa3c4", opacity: 0.14 }}/>
       <RichIcon name="waterBottle" size={size} className="relative"/>
@@ -215,10 +215,10 @@ function WaterBottleIcon({ size = 58 }: { size?: number }) {
   );
 }
 
-// Ampoule lévitante avec halo jaune — même traitement que la bouteille d'eau.
+// Ampoule avec halo jaune.
 function LightbulbIcon({ size = 65 }: { size?: number }) {
   return (
-    <div className="relative shrink-0 animate-levitate">
+    <div className="relative shrink-0">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-lg pointer-events-none"
         style={{ width: size * 0.95, height: size * 0.95, backgroundColor: "#e8a13c", opacity: 0.4 }}/>
       <RichIcon name="lightbulb" size={size} className="relative"/>
