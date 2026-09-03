@@ -57,6 +57,21 @@ function IntensityBars({ level, color }: { level: 1 | 2 | 3; color: string }) {
   );
 }
 
+// Progression des pas façon "chemin" plutôt qu'une barre plate — le tracé (fond) reste fixe,
+// le tracé coloré par-dessus se révèle via pathLength/dashoffset, proportionnel à pct.
+const STEPS_PATH_D = "M8,38 C70,6 90,70 150,38 C210,6 230,70 292,38";
+function StepsPath({ pct, color }: { pct: number; color: string }) {
+  const clamped = Math.max(0, Math.min(100, pct));
+  return (
+    <svg viewBox="0 0 300 60" preserveAspectRatio="none" className="w-full h-[52px]">
+      <path d={STEPS_PATH_D} fill="none" stroke="var(--t-track)" strokeWidth="6" strokeLinecap="round"/>
+      <path d={STEPS_PATH_D} fill="none" stroke={color} strokeWidth="6" strokeLinecap="round"
+        pathLength={100} strokeDasharray="100" strokeDashoffset={100 - clamped}
+        style={{ transition: "stroke-dashoffset 0.6s ease" }}/>
+    </svg>
+  );
+}
+
 const neatFromSteps = (steps: number, poids: number) =>
   Math.round(steps * 0.04 * (poids / 70));
 
@@ -586,8 +601,8 @@ export default function ProgrammePage() {
           </div>
         </div>
 
-        <div className="h-2 bg-[var(--t-track)] rounded-full overflow-hidden mb-2">
-          <div className="h-full transition-all duration-500 rounded-full" style={{ width: `${stepsPct}%`, backgroundColor: steps >= stepGoal ? "#c9a84c" : "#7eb8a0" }}/>
+        <div className="mb-2">
+          <StepsPath pct={stepsPct} color={steps >= stepGoal ? "#c9a84c" : "#7eb8a0"}/>
         </div>
 
         <div className="flex items-center justify-between text-[0.62rem] text-[var(--t-text-20)] tracking-wider mb-5">
