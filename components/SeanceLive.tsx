@@ -12,16 +12,12 @@ import {
 import { loadExerciceSessionOutcomes, suggestProgression, type ProgressionSuggestion } from "@/lib/progression";
 import { loadCatalogue, type CatalogueEntry } from "@/lib/exercicesCatalogue";
 import { ExerciceLibraryBrowser } from "@/components/ExerciceLibraryBrowser";
+import { NumberStepper, numOr } from "@/components/NumberStepper";
 import { Icon } from "@/components/Icon";
 import { Check, X, ChevronLeft, ChevronRight, Dumbbell, NotebookPen } from "@/lib/solarIcons";
 
 type LiveSeance = { id: string; titre: string; exercices: string | null };
 type SetLogState = { poids: string; reps: string; rir: string; done: boolean };
-
-const numOr = (s: string): number | null => {
-  const n = parseFloat(s.replace(",", "."));
-  return Number.isFinite(n) ? n : null;
-};
 
 const genId = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`);
 
@@ -45,29 +41,6 @@ function displaySetsFor(ex: ExerciceItem, extra: number): { target: SetDetail; i
   const lastRepos = base.length ? base[base.length - 1].target.repos : "";
   const extras = Array.from({ length: extra }, () => ({ target: { reps: "", poids: "", repos: lastRepos, rpe: "", tempo: "" }, isExtra: true }));
   return [...base, ...extras];
-}
-
-// Stepper numérique tactile (Liftoff/Hevy-style) : +/- pour ajuster vite au poker/à la
-// série suivante sans ouvrir le clavier, tap sur le nombre pour saisir une valeur précise.
-function NumberStepper({ value, placeholder, step, onChange, accent }: {
-  value: string; placeholder: string; step: number; onChange: (v: string) => void; accent?: boolean;
-}) {
-  const bump = (dir: 1 | -1) => {
-    const n = numOr(value) ?? numOr(placeholder) ?? 0;
-    const next = Math.max(0, Math.round((n + dir * step) * 100) / 100);
-    onChange(String(next));
-  };
-  return (
-    <div className={`flex items-center rounded-xl border overflow-hidden ${accent && value ? "border-[#c9a84c]/40 bg-[#c9a84c]/[0.06]" : "border-[var(--t-border)] bg-[var(--t-bg)]"}`}>
-      <button type="button" onClick={() => bump(-1)} tabIndex={-1}
-        className="w-7 h-9 shrink-0 flex items-center justify-center text-[var(--t-text-30)] hover:text-[var(--t-text-60)] active:bg-[var(--t-track)] transition-colors text-base leading-none">−</button>
-      <input type="number" inputMode="decimal" placeholder={placeholder} value={value}
-        onChange={e => onChange(e.target.value)}
-        className="w-full min-w-0 bg-transparent text-center text-sm font-semibold py-2 text-[var(--t-text)] placeholder-[var(--t-text-20)] focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"/>
-      <button type="button" onClick={() => bump(1)} tabIndex={-1}
-        className="w-7 h-9 shrink-0 flex items-center justify-center text-[var(--t-text-30)] hover:text-[var(--t-text-60)] active:bg-[var(--t-track)] transition-colors text-base leading-none">+</button>
-    </div>
-  );
 }
 
 function SetRow({ target, idx, log, prev, isExtra, bodyweight, onToggle, onChange, onCopyPrev }: {

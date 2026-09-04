@@ -5,6 +5,7 @@ import { type LibraryEntry } from "@/lib/exerciceLibrary";
 import { type CatalogueEntry, findCatalogueEntry } from "@/lib/exercicesCatalogue";
 import { uploadCustomExerciceImage } from "@/lib/customExerciceImage";
 import { ExerciceLibraryBrowser } from "@/components/ExerciceLibraryBrowser";
+import { NumberStepper } from "@/components/NumberStepper";
 import { Select } from "@/components/Select";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
@@ -99,10 +100,10 @@ const MODES: { key: ExerciceMode; label: string }[] = [
 // à la main pour rester cohérent d'une séance à l'autre.
 const GROUP_LABELS = ["Superset", "Biset", "Triset", "Circuit"];
 
-const SIMPLE_FIELDS: { key: SimpleField; label: string; icon: () => React.ReactNode; placeholder: string }[] = [
-  { key: "series",      label: "Séries", icon: IconSeries, placeholder: "4" },
-  { key: "repetitions", label: "Reps",   icon: IconReps,   placeholder: "12" },
-  { key: "poids",       label: "Poids",  icon: IconPoids,  placeholder: "20 kg" },
+const SIMPLE_FIELDS: { key: SimpleField; label: string; icon: () => React.ReactNode; placeholder: string; step?: number }[] = [
+  { key: "series",      label: "Séries", icon: IconSeries, placeholder: "4",     step: 1 },
+  { key: "repetitions", label: "Reps",   icon: IconReps,   placeholder: "12",    step: 1 },
+  { key: "poids",       label: "Poids",  icon: IconPoids,  placeholder: "20 kg", step: 2.5 },
   { key: "repos",       label: "Repos",  icon: IconRepos,  placeholder: "90 sec" },
 ];
 
@@ -301,12 +302,17 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
               </div>
             )}
             {SIMPLE_FIELDS.filter(f => !ex.hiddenFields.includes(f.key)).map(f => (
-              <div key={f.key} className="relative flex-1 min-w-[5.5rem]">
-                <div className="bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-2xl px-3 py-2.5 text-center focus-within:border-[#c9a84c]/40 transition-colors">
-                  <p className="text-[0.5rem] tracking-[0.14em] uppercase text-[var(--t-text-25)] mb-1">{f.label}</p>
-                  <input className="w-full bg-transparent text-center text-[0.85rem] text-[var(--t-text)] placeholder-[var(--t-text-15)] outline-none"
-                    placeholder={f.placeholder} value={ex[f.key]} onChange={e => update(i, { [f.key]: e.target.value })} />
-                </div>
+              <div key={f.key} className={`relative flex-1 ${f.step != null ? "min-w-[8rem]" : "min-w-[5.5rem]"}`}>
+                {f.step != null ? (
+                  <NumberStepper value={ex[f.key]} placeholder={f.placeholder} step={f.step} label={f.label}
+                    onChange={v => update(i, { [f.key]: v })}/>
+                ) : (
+                  <div className="bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-2xl px-3 py-2.5 text-center focus-within:border-[#c9a84c]/40 transition-colors">
+                    <p className="text-[0.5rem] tracking-[0.14em] uppercase text-[var(--t-text-25)] mb-1">{f.label}</p>
+                    <input className="w-full bg-transparent text-center text-[0.85rem] text-[var(--t-text)] placeholder-[var(--t-text-15)] outline-none"
+                      placeholder={f.placeholder} value={ex[f.key]} onChange={e => update(i, { [f.key]: e.target.value })} />
+                  </div>
+                )}
                 <button type="button" onClick={() => hideField(i, f.key)} title={`Retirer le champ ${f.label}`}
                   className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[var(--t-surface)] border border-[var(--t-border)] flex items-center justify-center text-[var(--t-text-25)] hover:text-[#e07070] hover:border-[#e07070]/40 transition-colors">
                   <Icon icon={X} size={8} strokeWidth={3.5}/>
@@ -346,17 +352,17 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
               )}
             </div>
             {ex.sets.length > 0 && (
-              <div className="grid grid-cols-3 sm:grid-cols-[1fr_1fr_1fr_1fr_auto] gap-1.5 text-[0.4rem] tracking-[0.15em] uppercase text-[var(--t-text-25)] px-0.5">
+              <div className="grid grid-cols-2 sm:grid-cols-[1fr_1fr_1fr_1fr_auto] gap-1.5 text-[0.4rem] tracking-[0.15em] uppercase text-[var(--t-text-25)] px-0.5">
                 <span>Reps</span><span>Poids</span><span>RPE</span><span>Tempo</span><span></span>
               </div>
             )}
             {ex.sets.map((s, si) => (
-              <div key={si} className="grid grid-cols-3 sm:grid-cols-[1fr_1fr_1fr_1fr_auto] gap-1.5 items-center pb-2 sm:pb-0 border-b border-[var(--t-border-soft)] sm:border-0 last:border-0">
-                <input className={inpXs} placeholder="12" value={s.reps} onChange={e => updateSet(i, si, { reps: e.target.value })} />
-                <input className={inpXs} placeholder="20 kg" value={s.poids} onChange={e => updateSet(i, si, { poids: e.target.value })} />
+              <div key={si} className="grid grid-cols-2 sm:grid-cols-[1fr_1fr_1fr_1fr_auto] gap-1.5 items-center pb-2 sm:pb-0 border-b border-[var(--t-border-soft)] sm:border-0 last:border-0">
+                <NumberStepper value={s.reps} placeholder="12" step={1} onChange={v => updateSet(i, si, { reps: v })}/>
+                <NumberStepper value={s.poids} placeholder="20 kg" step={2.5} onChange={v => updateSet(i, si, { poids: v })}/>
                 <input className={inpXs} placeholder="8" value={s.rpe} onChange={e => updateSet(i, si, { rpe: e.target.value })} />
                 <input className={inpXs} placeholder="3-1-2-0" value={s.tempo} onChange={e => updateSet(i, si, { tempo: e.target.value })} />
-                <div className="flex items-center justify-center gap-3 sm:gap-1">
+                <div className="col-span-2 sm:col-span-1 flex items-center justify-end sm:justify-center gap-3 sm:gap-1">
                   <button type="button" onClick={() => duplicateSet(i, si)} title="Dupliquer cette série" className="p-1.5 -m-1.5 text-[var(--t-text-20)] hover:text-[#c9a84c] transition-colors">
                     <Icon icon={Copy} size={13} strokeWidth={2}/>
                   </button>
