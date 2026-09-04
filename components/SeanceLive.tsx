@@ -10,8 +10,10 @@ import {
   loadSeanceLogs, saveSetLog, deleteSetLog, loadExerciceHistory, type LastPerformance,
 } from "@/lib/workoutLog";
 import { loadExerciceSessionOutcomes, suggestProgression, type ProgressionSuggestion } from "@/lib/progression";
+import { loadCatalogue, type CatalogueEntry } from "@/lib/exercicesCatalogue";
+import { ExerciceLibraryBrowser } from "@/components/ExerciceLibraryBrowser";
 import { Icon } from "@/components/Icon";
-import { Check, X, Plus, ChevronLeft, ChevronRight } from "@/lib/solarIcons";
+import { Check, X, ChevronLeft, ChevronRight, Dumbbell, NotebookPen } from "@/lib/solarIcons";
 
 type LiveSeance = { id: string; titre: string; exercices: string | null };
 type SetLogState = { poids: string; reps: string; rir: string; done: boolean };
@@ -173,6 +175,9 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
   const touchStartX = useRef<number | null>(null);
   const [addingExercice, setAddingExercice] = useState(false);
   const [newExerciceNom, setNewExerciceNom] = useState("");
+  const [showLibrary, setShowLibrary] = useState(false);
+  const [catalogue, setCatalogue] = useState<CatalogueEntry[]>([]);
+  useEffect(() => { loadCatalogue().then(setCatalogue).catch(() => {}); }, []);
 
   const [logs, setLogs] = useState<Record<string, SetLogState>>({});
   const [historyByNom, setHistoryByNom] = useState<Record<string, LastPerformance>>({});
@@ -306,15 +311,24 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
   // s'afficherait sinon pas du tout, cf. ExerciceLiveBlock). Persisté immédiatement en base
   // pour survivre à un rafraîchissement, en best-effort : un échec réseau ne doit pas bloquer
   // l'ajout local, la séance reste utilisable et le prochain toggle de série retentera l'écriture.
+  const pushExercice = async (nom: string) => {
+    const next = [...exercices, { ...emptyExercice(), nom, series: "1" }];
+    setExercices(next);
+    setRunIdx(groupExerciceRuns(next).length - 1);
+    await supabase.from("programme_seances").update({ exercices: serializeExercices(next) }).eq("id", seance.id);
+  };
+
   const addExercice = async () => {
     const nom = newExerciceNom.trim();
     if (!nom) return;
-    const next = [...exercices, { ...emptyExercice(), nom, series: "1" }];
-    setExercices(next);
     setNewExerciceNom("");
     setAddingExercice(false);
-    setRunIdx(groupExerciceRuns(next).length - 1);
-    await supabase.from("programme_seances").update({ exercices: serializeExercices(next) }).eq("id", seance.id);
+    await pushExercice(nom);
+  };
+
+  const addFromCatalogue = async (entry: CatalogueEntry) => {
+    setShowLibrary(false);
+    await pushExercice(entry.nom);
   };
 
   const onToggle = async (exIdx: number, setIdx: number, target: SetDetail) => {
@@ -556,11 +570,25 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
               </button>
             </div>
           ) : (
-            <button onClick={() => setAddingExercice(true)}
-              className="w-full flex items-center justify-center gap-1.5 text-[0.65rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[#c9a84c] transition-colors py-1.5 font-medium">
-              <Icon icon={Plus} size={12} strokeWidth={2.5}/> Ajouter un exercice
-            </button>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setShowLibrary(true)}
+                className="flex-1 flex items-center justify-center gap-1.5 border border-[var(--t-border)] rounded-xl text-[0.65rem] tracking-wider uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors py-2 font-medium">
+                <Icon icon={Dumbbell} size={12} strokeWidth={2}/> Bibliothèque
+              </button>
+              <button onClick={() => setAddingExercice(true)}
+                className="flex-1 flex items-center justify-center gap-1.5 border border-[var(--t-border)] rounded-xl text-[0.65rem] tracking-wider uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors py-2 font-medium">
+                <Icon icon={NotebookPen} size={12} strokeWidth={2}/> Nom libre
+              </button>
+            </div>
           )}
+        </div>
+      )}
+
+      {showLibrary && (
+        <div className="fixed inset-0 bg-black/75 z-[60] flex items-center justify-center px-4" onClick={() => setShowLibrary(false)}>
+          <div className="w-full max-w-lg" onClick={e => e.stopPropagation()}>
+            <ExerciceLibraryBrowser catalogue={catalogue} onPick={addFromCatalogue} onClose={() => setShowLibrary(false)}/>
+          </div>
         </div>
       )}
 
