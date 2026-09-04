@@ -724,9 +724,9 @@ export default function SuiviPage() {
         </div>
 
         <button onClick={downloadWeeklyReport} disabled={reportLoading}
-          className="w-full bg-gradient-to-br from-[#f0dfa4] via-[#e2c97e] to-[#b8933f] text-black text-[0.72rem] font-bold tracking-[0.2em] uppercase py-4 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] active:scale-[0.98] active:brightness-95 transition-all duration-150 disabled:opacity-40 flex items-center justify-center gap-2">
+          className="w-full bg-gradient-to-br from-[#f0dfa4] via-[#e2c97e] to-[#b8933f] text-black text-[0.85rem] font-bold tracking-[0.2em] uppercase py-5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] active:scale-[0.98] active:brightness-95 transition-all duration-150 disabled:opacity-40 flex items-center justify-center gap-2">
           {reportLoading
-            ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Préparation…</>
+            ? <><div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"/>Préparation…</>
             : "Voir le bilan PDF →"}
         </button>
       </div>
