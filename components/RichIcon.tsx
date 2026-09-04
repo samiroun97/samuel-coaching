@@ -3,7 +3,7 @@
 // sont fixes (pas de currentColor), donc inadaptées aux endroits avec état actif/thème dynamique.
 const RICH_ICON_SRC = {
   scale: "/icons-rich/scale.png",
-  clipboardCheck: "/icons-rich/clipboard-check.svg",
+  clipboardCheck: "/icons-rich/clipboard-check.png",
   footprints: "/icons-rich/footprints.svg",
   library: "/icons-rich/library.png",
   lightbulb: "/icons-rich/lightbulb.png",
