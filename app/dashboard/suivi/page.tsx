@@ -687,8 +687,10 @@ export default function SuiviPage() {
       {/* ── Bilan hebdomadaire PDF ── */}
       <div className="border border-[#c9a84c]/20 bg-[var(--t-surface)] rounded-xl overflow-hidden mb-4 shadow-[0_4px_20px_rgba(0,0,0,0.06)]">
         <div className="flex items-center gap-3 px-5 py-4 border-b border-[#c9a84c]/10">
-          <div className="w-16 h-16 flex items-center justify-center shrink-0">
-            <RichIcon name="clipboardCheck" size={65}/>
+          <div className="relative w-16 h-16 flex items-center justify-center shrink-0">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-lg pointer-events-none"
+              style={{ width: 50, height: 50, backgroundColor: "#c9a84c", opacity: 0.35 }}/>
+            <RichIcon name="clipboardCheck" size={65} className="relative"/>
           </div>
           <div className="min-w-0">
             <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[#c9a84c]">Bilan de la semaine</p>
