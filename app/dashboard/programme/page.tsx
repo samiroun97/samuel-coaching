@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef, useId } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
@@ -54,32 +54,6 @@ function IntensityBars({ level, color }: { level: 1 | 2 | 3; color: string }) {
         <rect key={i} x={i * 5} y={12 - h} width="3" height={h} rx="1" fill={i < level ? color : "var(--t-border)"}/>
       ))}
     </svg>
-  );
-}
-
-// Progression des pas façon "carte au trésor" — trait en pointillés, la portion parcourue se
-// colore via un masque qui grandit avec pct, une croix à l'arrivée. Chemin raccourci avant la
-// croix (laisse un blanc au lieu du dernier pointillé, pour qu'elle ait sa place).
-const STEPS_PATH_D = "M8,15 L616,15";
-function StepsPath({ pct, color }: { pct: number; color: string }) {
-  const clamped = Math.max(0, Math.min(100, pct));
-  const maskId = useId();
-  return (
-    <div className="relative">
-      <svg viewBox="0 0 660 30" preserveAspectRatio="none" className="w-full h-8">
-        <defs>
-          <mask id={maskId}>
-            <rect x="0" y="0" width={clamped * 6.6} height="30" fill="white" style={{ transition: "width 0.6s ease" }}/>
-          </mask>
-        </defs>
-        <path d={STEPS_PATH_D} fill="none" stroke="var(--t-border)" strokeWidth="5" strokeLinecap="round" strokeDasharray="7 6"/>
-        <path d={STEPS_PATH_D} fill="none" stroke={color} strokeWidth="5" strokeLinecap="round" strokeDasharray="7 6"
-          mask={`url(#${maskId})`}/>
-      </svg>
-      <div className="absolute" style={{ left: "95%", top: "50%", transform: "translate(-50%, -50%) rotate(-10deg)" }}>
-        <Icon icon={X} size={32} strokeWidth={4} className="text-[#a0522d]"/>
-      </div>
-    </div>
   );
 }
 
@@ -612,8 +586,8 @@ export default function ProgrammePage() {
           </div>
         </div>
 
-        <div className="mb-2">
-          <StepsPath pct={stepsPct} color={steps >= stepGoal ? "#c9a84c" : "#f0c95c"}/>
+        <div className="h-2 bg-[var(--t-track)] rounded-full overflow-hidden mb-2">
+          <div className="h-full transition-all duration-500 rounded-full" style={{ width: `${stepsPct}%`, backgroundColor: steps >= stepGoal ? "#c9a84c" : "#f0c95c" }}/>
         </div>
 
         <div className="flex items-center justify-between text-[0.62rem] text-[var(--t-text-20)] tracking-wider mb-5">
