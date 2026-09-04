@@ -257,11 +257,13 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
                 </div>
               </div>
             )}
-            {!simplified && (
+            {(!simplified || (i > 0 && !isGrouped)) && (
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-2">
-                <Select value={ex.type} onChange={v => update(i, { type: v })} placeholder="Type d'exercice…"
-                  options={EXERCICE_TYPES.map(t => ({ value: t, label: t }))} align="right"
-                  triggerClassName="text-[0.62rem] text-[var(--t-text-30)] hover:text-[var(--t-text-60)] transition-colors"/>
+                {!simplified && (
+                  <Select value={ex.type} onChange={v => update(i, { type: v })} placeholder="Type d'exercice…"
+                    options={EXERCICE_TYPES.map(t => ({ value: t, label: t }))} align="right"
+                    triggerClassName="text-[0.62rem] text-[var(--t-text-30)] hover:text-[var(--t-text-60)] transition-colors"/>
+                )}
                 {i > 0 && !isGrouped && (
                   <button type="button" onClick={() => linkWithPrevious(i)}
                     className="text-[0.58rem] tracking-[0.05em] text-[var(--t-text-25)] hover:text-[#c9a84c] transition-colors">
