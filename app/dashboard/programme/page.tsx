@@ -57,29 +57,26 @@ function IntensityBars({ level, color }: { level: 1 | 2 | 3; color: string }) {
   );
 }
 
-// Progression des pas façon "carte au trésor" — sentier en pointillés, la portion parcourue
-// se colore via un masque qui grandit avec pct (approximation par position en X, largement
-// suffisante pour un tracé décoratif qui ne revient jamais en arrière), une croix à l'arrivée.
-// Chemin raccourci avant la croix (laisse un blanc au lieu du dernier pointillé, pour que
-// la croix, plus grosse, ait sa place sans chevaucher le tracé). Quatre ondulations au lieu
-// de deux — viewBox élargie en conséquence, le masque de révélation suit (largeur = pct * 6.6).
-const STEPS_PATH_D = "M8,40 C70,4 90,76 150,40 C210,4 230,76 292,40 C354,4 374,76 434,40 C479,4 605,74 616,44";
+// Progression des pas façon "carte au trésor" — trait en pointillés, la portion parcourue se
+// colore via un masque qui grandit avec pct, une croix à l'arrivée. Chemin raccourci avant la
+// croix (laisse un blanc au lieu du dernier pointillé, pour qu'elle ait sa place).
+const STEPS_PATH_D = "M8,15 L616,15";
 function StepsPath({ pct, color }: { pct: number; color: string }) {
   const clamped = Math.max(0, Math.min(100, pct));
   const maskId = useId();
   return (
     <div className="relative">
-      <svg viewBox="0 0 660 80" preserveAspectRatio="none" className="w-full h-16">
+      <svg viewBox="0 0 660 30" preserveAspectRatio="none" className="w-full h-8">
         <defs>
           <mask id={maskId}>
-            <rect x="0" y="0" width={clamped * 6.6} height="80" fill="white" style={{ transition: "width 0.6s ease" }}/>
+            <rect x="0" y="0" width={clamped * 6.6} height="30" fill="white" style={{ transition: "width 0.6s ease" }}/>
           </mask>
         </defs>
         <path d={STEPS_PATH_D} fill="none" stroke="var(--t-border)" strokeWidth="5" strokeLinecap="round" strokeDasharray="7 6"/>
         <path d={STEPS_PATH_D} fill="none" stroke={color} strokeWidth="5" strokeLinecap="round" strokeDasharray="7 6"
           mask={`url(#${maskId})`}/>
       </svg>
-      <div className="absolute" style={{ left: "95%", top: "60%", transform: "translate(-50%, -50%) rotate(-10deg)" }}>
+      <div className="absolute" style={{ left: "95%", top: "50%", transform: "translate(-50%, -50%) rotate(-10deg)" }}>
         <Icon icon={X} size={32} strokeWidth={4} className="text-[#a0522d]"/>
       </div>
     </div>
