@@ -92,6 +92,23 @@ async function loadBFPhotos(entryIds: string[]): Promise<Record<string, string[]
   return out;
 }
 
+// Photos du dernier check-in, indexées par emplacement (face/dos/profil...) — sert de
+// repère "fantôme" en transparence pendant la prise des nouvelles photos, pour se replacer
+// dans la même position/distance que la dernière fois sans matériel de pose spécifique.
+async function loadLastPhotosBySlot(userId: string, entryId: string): Promise<Record<string, string>> {
+  const { data: rows } = await supabase.from("body_photos").select("photo_path").eq("session_id", entryId).eq("user_id", userId);
+  if (!rows?.length) return {};
+  const { data: signed } = await supabase.storage.from("body-photos")
+    .createSignedUrls(rows.map(r => r.photo_path), 3600);
+  const out: Record<string, string> = {};
+  for (const s of signed ?? []) {
+    if (!s.signedUrl || !s.path) continue;
+    const slot = s.path.split("/").pop()?.replace(/\.jpg$/, "");
+    if (slot) out[slot] = s.signedUrl;
+  }
+  return out;
+}
+
 function deleteBFPhotosRemote(userId: string, entryId: string) {
   void (async () => {
     const { data: rows } = await supabase.from("body_photos").select("photo_path").eq("session_id", entryId).eq("user_id", userId);
@@ -161,6 +178,7 @@ export default function SuiviPage() {
   const [showManualDatePicker, setShowManualDatePicker] = useState(false);
   const [showEstimateDatePicker, setShowEstimateDatePicker] = useState(false);
   const [bfPhotos,       setBfPhotos]       = useState<Record<string, string[]>>({});
+  const [lastPhotosBySlot, setLastPhotosBySlot] = useState<Record<string, string>>({});
   const [viewingPhoto,   setViewingPhoto]   = useState<string | null>(null);
   const [estimateDate,   setEstimateDate]   = useState(today());
   const fileRefs = useRef<Record<string, HTMLInputElement | null>>({});
@@ -221,6 +239,7 @@ export default function SuiviPage() {
       const bh = await loadBodyFatHistory(user.id);
       setBfHist(bh);
       loadBFPhotos(bh.map(e => e.id)).then(setBfPhotos);
+      if (bh[0]) loadLastPhotosBySlot(user.id, bh[0].id).then(setLastPhotosBySlot);
       const lastWeight = wh[0]?.weight ?? (p as Profile | null)?.poids;
       if (lastWeight) setWeightInput(String(lastWeight));
       if (lastWeight) setCkWeight(String(lastWeight));
@@ -446,6 +465,10 @@ export default function SuiviPage() {
     localStorage.setItem(`bodyfat_history_${userId}`, JSON.stringify(next));
     if (userId) {
       if (Object.keys(photos).length > 0) {
+        // Repère fantôme du prochain check-in : les data URI déjà en main évitent un aller-retour
+        // réseau, seuls les emplacements retenus cette fois sont mis à jour, les autres gardent
+        // leur dernière référence.
+        setLastPhotosBySlot(prev => ({ ...prev, ...photos }));
         uploadBFPhotos(userId, entryId, photos, shareWithCoach)
           .then(() => loadBFPhotos([entryId]))
           .then(urls => setBfPhotos(prev => ({ ...prev, ...urls })))
@@ -846,13 +869,23 @@ export default function SuiviPage() {
             {SLOTS.map(slot => (
               <div key={slot.key} className="flex flex-col items-center gap-1.5">
                 <button onClick={() => fileRefs.current[slot.key]?.click()}
-                  className={`w-full aspect-[3/4] rounded-xl border flex items-center justify-center relative overflow-hidden transition-colors ${photos[slot.key] ? "border-[#7eb8a0]/40" : "border-[var(--t-border)] hover:border-[var(--t-text-25)]"}`}>
+                  className={`w-full aspect-[3/4] rounded-xl border flex items-center justify-center relative overflow-hidden transition-colors ${photos[slot.key] ? "border-[#7eb8a0]/40" : lastPhotosBySlot[slot.key] ? "border-dashed border-[var(--t-text-20)]" : "border-[var(--t-border)] hover:border-[var(--t-text-25)]"}`}>
                   {photos[slot.key] ? (
                     <>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={photos[slot.key]} alt={slot.label} className="absolute inset-0 w-full h-full object-cover"/>
                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                         <Icon icon={Plus} size={14} strokeWidth={2} className="text-white"/>
+                      </div>
+                    </>
+                  ) : lastPhotosBySlot[slot.key] ? (
+                    <>
+                      {/* Fantôme du dernier check-in — repère pour se replacer dans la même
+                          position/distance, pas la photo réellement enregistrée cette fois. */}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={lastPhotosBySlot[slot.key]} alt="" className="absolute inset-0 w-full h-full object-cover opacity-30"/>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Icon icon={Plus} size={14} strokeWidth={1.5} className="text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"/>
                       </div>
                     </>
                   ) : (
