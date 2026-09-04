@@ -23,6 +23,8 @@ const numOr = (s: string): number | null => {
   return Number.isFinite(n) ? n : null;
 };
 
+const genId = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`);
+
 const fmtClock = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
 const fmtDuration = (s: number) => {
@@ -178,6 +180,10 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
   const [showLibrary, setShowLibrary] = useState(false);
   const [catalogue, setCatalogue] = useState<CatalogueEntry[]>([]);
   useEffect(() => { loadCatalogue().then(setCatalogue).catch(() => {}); }, []);
+  // Lier le prochain exercice ajouté à celui actuellement affiché — même mécanisme que
+  // "superset/biset/triset/circuit" en préparation (ExerciceEditor), mais construit à la
+  // volée en direct plutôt qu'en éditant une liste complète.
+  const [linkSuperset, setLinkSuperset] = useState(false);
 
   const [logs, setLogs] = useState<Record<string, SetLogState>>({});
   const [historyByNom, setHistoryByNom] = useState<Record<string, LastPerformance>>({});
@@ -311,10 +317,33 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
   // s'afficherait sinon pas du tout, cf. ExerciceLiveBlock). Persisté immédiatement en base
   // pour survivre à un rafraîchissement, en best-effort : un échec réseau ne doit pas bloquer
   // l'ajout local, la séance reste utilisable et le prochain toggle de série retentera l'écriture.
+  //
+  // Si linkSuperset est actif, le nouvel exercice rejoint le run actuellement affiché
+  // (groupId partagé) au lieu d'être ajouté isolé en fin de liste — même mécanisme que
+  // "superset/biset/triset/circuit" en préparation, construit à la volée : rappeler cette
+  // fonction plusieurs fois sur le même run l'étend en triset, quadset, etc.
   const pushExercice = async (nom: string) => {
-    const next = [...exercices, { ...emptyExercice(), nom, series: "1" }];
+    const newItem = { ...emptyExercice(), nom, series: "1" };
+    const targetRun = linkSuperset ? runs[runIdx] : null;
+    let next: ExerciceItem[];
+    let insertAt: number;
+
+    if (targetRun) {
+      const gid = targetRun.groupId ?? genId();
+      const label = targetRun.groupLabel || "Superset";
+      insertAt = targetRun.indices[targetRun.indices.length - 1] + 1;
+      const relabeled = exercices.map((it, j) => targetRun.indices.includes(j) ? { ...it, groupId: gid, groupLabel: label } : it);
+      next = [...relabeled.slice(0, insertAt), { ...newItem, groupId: gid, groupLabel: label }, ...relabeled.slice(insertAt)];
+    } else {
+      insertAt = exercices.length;
+      next = [...exercices, newItem];
+    }
+
     setExercices(next);
-    setRunIdx(groupExerciceRuns(next).length - 1);
+    setLinkSuperset(false);
+    const newRuns = groupExerciceRuns(next);
+    const landingRunIdx = newRuns.findIndex(r => r.indices.includes(insertAt));
+    setRunIdx(landingRunIdx >= 0 ? landingRunIdx : newRuns.length - 1);
     await supabase.from("programme_seances").update({ exercices: serializeExercices(next) }).eq("id", seance.id);
   };
 
@@ -553,7 +582,18 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
       {/* Ajouter un exercice non prévu, à tout moment de la séance (improvisation, machine
           libre trouvée sur place…) — pas seulement des séries à un exercice déjà planifié. */}
       {loaded && (
-        <div className="px-4 pb-2 shrink-0 max-w-lg mx-auto w-full">
+        <div className="px-4 pb-2 shrink-0 max-w-lg mx-auto w-full flex flex-col gap-2">
+          {runs.length > 0 && (
+            <button type="button" onClick={() => setLinkSuperset(v => !v)}
+              className="w-full flex items-center gap-2 text-left px-1 py-1">
+              <span className={`w-4 h-4 rounded shrink-0 border flex items-center justify-center transition-colors ${linkSuperset ? "bg-[#c9a84c] border-[#c9a84c]" : "border-[var(--t-border)]"}`}>
+                {linkSuperset && <Icon icon={Check} size={10} strokeWidth={3} className="text-black"/>}
+              </span>
+              <span className={`text-[0.62rem] tracking-wide transition-colors ${linkSuperset ? "text-[#c9a84c]" : "text-[var(--t-text-25)]"}`}>
+                En superset avec &laquo; {exercices[runs[runIdx].indices[0]]?.nom || "cet exercice"} &raquo;{runs[runIdx].indices.length > 1 ? " (déjà groupé)" : ""}
+              </span>
+            </button>
+          )}
           {addingExercice ? (
             <div className="flex items-center gap-2">
               <input autoFocus value={newExerciceNom} onChange={e => setNewExerciceNom(e.target.value)}
