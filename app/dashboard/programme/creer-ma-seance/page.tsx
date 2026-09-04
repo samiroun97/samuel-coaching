@@ -34,6 +34,7 @@ export default function CreerMaSeancePage() {
   const [mesSeances, setMesSeances] = useState<MySeance[]>([]);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [records, setRecords] = useState<PRCard[]>([]);
+  const [startingFreeform, setStartingFreeform] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -55,19 +56,40 @@ export default function CreerMaSeancePage() {
   const validCount = useMemo(() => items.filter(it => it.nom.trim()).length, [items]);
   const canSave = validCount > 0 && !saving;
 
+  // Option "Préparer" : enregistre la séance pour plus tard, sans lancer le chrono —
+  // elle apparaît dans "Mon programme" (page Activité), démarrable quand le client est prêt.
   const save = async () => {
     if (!userId || !canSave) return;
     const validItems = items.filter(it => it.nom.trim());
     setSaving(true);
-    const { data, error } = await supabase.from("programme_seances").insert({
+    const { error } = await supabase.from("programme_seances").insert({
       client_id: userId,
       assigned_to_email: userEmailRef.current,
       titre: titre.trim() || "Séance libre",
       date_prevue: selectedDate,
       exercices: serializeExercices(validItems),
       created_by_client: true,
-    }).select("*").single();
+    });
     setSaving(false);
+    if (error) return;
+    router.push("/dashboard/programme");
+  };
+
+  // Option "Créer pendant l'entraînement" : aucune préparation, la séance démarre en direct
+  // immédiatement (chrono lancé, exercices/séries/reps/poids ajoutés au fur et à mesure dans
+  // SeanceLive — cf. son bouton "+ Ajouter un exercice", déjà pensé pour l'improvisation).
+  const startFreeform = async () => {
+    if (!userId || startingFreeform) return;
+    setStartingFreeform(true);
+    const { data, error } = await supabase.from("programme_seances").insert({
+      client_id: userId,
+      assigned_to_email: userEmailRef.current,
+      titre: "Séance libre",
+      date_prevue: selectedDate,
+      exercices: serializeExercices([]),
+      created_by_client: true,
+    }).select("*").single();
+    setStartingFreeform(false);
     if (error || !data) return;
     router.push(`/dashboard/programme?live=${data.id}`);
   };
@@ -97,6 +119,31 @@ export default function CreerMaSeancePage() {
             ? "Pioche dans la bibliothèque ou ajoute tes propres exercices pour commencer."
             : `${validCount} exercice${validCount > 1 ? "s" : ""} ajouté${validCount > 1 ? "s" : ""} — ajuste séries, reps et poids si besoin.`}
         </p>
+      </div>
+
+      {/* Deux façons de faire une séance libre : la préparer à l'avance (étapes ci-dessous),
+          ou l'improviser en direct — chrono lancé tout de suite, exercices/séries/reps/poids
+          ajoutés au fur et à mesure dans SeanceLive plutôt que planifiés avant coup. */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
+        <div className="border border-[var(--t-border-soft)] bg-[var(--t-surface)] rounded-2xl p-5">
+          <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[var(--t-text-30)] mb-1.5">Option 1</p>
+          <p className="text-sm text-[var(--t-text-70)] font-medium mb-1.5">Préparer à l&apos;avance</p>
+          <p className="text-[0.65rem] text-[var(--t-text-30)] leading-relaxed">
+            Choisis tes exercices, séries et charges cibles maintenant — la séance attend dans &ldquo;Mon programme&rdquo;, prête à démarrer plus tard.
+          </p>
+          <p className="text-[0.6rem] text-[var(--t-text-20)] tracking-wider mt-3">↓ Continue ci-dessous</p>
+        </div>
+        <button onClick={startFreeform} disabled={!userId || startingFreeform}
+          className="text-left border-2 border-dashed border-[#c9a84c]/40 bg-[#c9a84c]/[0.04] rounded-2xl p-5 hover:bg-[#c9a84c]/10 active:scale-[0.99] transition-all disabled:opacity-50 disabled:pointer-events-none">
+          <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1.5">Option 2</p>
+          <p className="text-sm text-[var(--t-text-70)] font-medium mb-1.5">Créer pendant l&apos;entraînement</p>
+          <p className="text-[0.65rem] text-[var(--t-text-30)] leading-relaxed">
+            Le chrono démarre tout de suite : ajoute chaque exercice et logue séries, reps et poids au fur et à mesure.
+          </p>
+          <p className="text-[0.68rem] text-[#c9a84c] font-bold tracking-[0.1em] uppercase mt-3">
+            {startingFreeform ? "Démarrage…" : "Démarrer maintenant →"}
+          </p>
+        </button>
       </div>
 
       {/* Séances existantes — reprendre ou consulter avant d'en créer une nouvelle */}
@@ -185,7 +232,7 @@ export default function CreerMaSeancePage() {
         <button onClick={save} disabled={!canSave}
           title={validCount === 0 ? "Ajoute au moins un exercice pour enregistrer" : undefined}
           className="w-full flex items-center justify-center gap-2 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-sm font-bold tracking-[0.1em] uppercase py-4 rounded-2xl shadow-[0_6px_24px_-8px_rgba(201,168,76,0.6)] disabled:opacity-40 disabled:shadow-none hover:shadow-[0_8px_30px_-6px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all disabled:hover:translate-y-0">
-          {saving ? "Enregistrement…" : <>Enregistrer et démarrer <span aria-hidden>→</span></>}
+          {saving ? "Enregistrement…" : <>Enregistrer pour plus tard <span aria-hidden>→</span></>}
         </button>
         {validCount === 0 && (
           <p className="text-[0.62rem] text-[var(--t-text-20)] tracking-wide mt-3 text-center">Ajoute au moins un exercice pour pouvoir enregistrer.</p>
