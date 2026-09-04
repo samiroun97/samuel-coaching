@@ -769,6 +769,56 @@ export default function SuiviPage() {
         </div>
       </div>
 
+      {/* ── Graphique évolution poids ── */}
+      {weightChartData.length > 1 && (
+        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-4 mb-4">
+          <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1">Évolution du poids</p>
+          <p className="text-[0.62rem] text-[var(--t-text-30)] mb-3">
+            {weightChartData.length} pesée{weightChartData.length > 1 ? "s" : ""} enregistrée{weightChartData.length > 1 ? "s" : ""}
+          </p>
+          <LineChart data={weightChartData.map(e => ({ id: e.id, date: `${e.date}T12:00:00`, val: e.weight }))} unit=" kg" color="#7eb8a0"
+            lowerIsBetter={profile?.objectif_type !== "prise_muscle"}/>
+        </div>
+      )}
+
+      {/* ── Historique poids ── */}
+      {weightHist.length > 1 && (
+        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl mb-6">
+          <button onClick={() => setWeightHistOpen(v => !v)}
+            className="w-full text-left flex items-center justify-between px-5 py-3 hover:bg-[var(--t-glass-bg)] transition-colors">
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[var(--t-text)]">Historique pesées</p>
+            <Icon icon={ChevronDown} size={12}
+              className={`text-[var(--t-text-25)] shrink-0 transition-transform ${weightHistOpen ? "rotate-180" : ""}`}/>
+          </button>
+          {weightHistOpen && (
+            <div className="border-t border-[var(--t-border-soft)]">
+              {weightHist.slice(0, 10).map((entry, i) => {
+                const prev = weightHist[i + 1];
+                const diff = prev ? +(entry.weight - prev.weight).toFixed(1) : null;
+                return (
+                  <div key={entry.id} className="flex items-center justify-between px-5 py-3 border-b border-[var(--t-border-soft)] last:border-0">
+                    <p className="text-[0.65rem] text-[var(--t-text-40)] capitalize">
+                      {new Date(entry.date + "T12:00:00").toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" })}
+                    </p>
+                    <div className="flex items-center gap-3">
+                      {diff !== null && (
+                        <span className={`text-[0.6rem] tracking-wider ${diff < 0 ? "text-[#7eb8a0]" : diff > 0 ? "text-[#e07070]" : "text-[var(--t-text-20)]"}`}>
+                          {diff > 0 ? "+" : ""}{diff} kg
+                        </span>
+                      )}
+                      <span className={`text-sm font-medium ${i === 0 ? "text-[var(--t-text)]" : "text-[var(--t-text-40)]"}`}>{entry.weight} kg</span>
+                      <button onClick={() => deleteWeight(entry.id)} className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
+                        <Icon icon={X} size={10} strokeWidth={2}/>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ── Carte Body fat + explication ── */}
       <div className={`border rounded-xl mb-4 ${!needsBF ? "border-[var(--t-border)] bg-[var(--t-surface)]" : "border-[var(--t-border-soft)] bg-[var(--t-surface-2)]"}`}>
         <div className="p-5">
@@ -1125,56 +1175,6 @@ export default function SuiviPage() {
               );
             })}
           </div>
-          )}
-        </div>
-      )}
-
-      {/* ── Graphique évolution poids ── */}
-      {weightChartData.length > 1 && (
-        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-4 mb-4">
-          <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1">Évolution du poids</p>
-          <p className="text-[0.62rem] text-[var(--t-text-30)] mb-3">
-            {weightChartData.length} pesée{weightChartData.length > 1 ? "s" : ""} enregistrée{weightChartData.length > 1 ? "s" : ""}
-          </p>
-          <LineChart data={weightChartData.map(e => ({ id: e.id, date: `${e.date}T12:00:00`, val: e.weight }))} unit=" kg" color="#7eb8a0"
-            lowerIsBetter={profile?.objectif_type !== "prise_muscle"}/>
-        </div>
-      )}
-
-      {/* ── Historique poids ── */}
-      {weightHist.length > 1 && (
-        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl">
-          <button onClick={() => setWeightHistOpen(v => !v)}
-            className="w-full text-left flex items-center justify-between px-5 py-3 hover:bg-[var(--t-glass-bg)] transition-colors">
-            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[var(--t-text)]">Historique pesées</p>
-            <Icon icon={ChevronDown} size={12}
-              className={`text-[var(--t-text-25)] shrink-0 transition-transform ${weightHistOpen ? "rotate-180" : ""}`}/>
-          </button>
-          {weightHistOpen && (
-            <div className="border-t border-[var(--t-border-soft)]">
-              {weightHist.slice(0, 10).map((entry, i) => {
-                const prev = weightHist[i + 1];
-                const diff = prev ? +(entry.weight - prev.weight).toFixed(1) : null;
-                return (
-                  <div key={entry.id} className="flex items-center justify-between px-5 py-3 border-b border-[var(--t-border-soft)] last:border-0">
-                    <p className="text-[0.65rem] text-[var(--t-text-40)] capitalize">
-                      {new Date(entry.date + "T12:00:00").toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" })}
-                    </p>
-                    <div className="flex items-center gap-3">
-                      {diff !== null && (
-                        <span className={`text-[0.6rem] tracking-wider ${diff < 0 ? "text-[#7eb8a0]" : diff > 0 ? "text-[#e07070]" : "text-[var(--t-text-20)]"}`}>
-                          {diff > 0 ? "+" : ""}{diff} kg
-                        </span>
-                      )}
-                      <span className={`text-sm font-medium ${i === 0 ? "text-[var(--t-text)]" : "text-[var(--t-text-40)]"}`}>{entry.weight} kg</span>
-                      <button onClick={() => deleteWeight(entry.id)} className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
-                        <Icon icon={X} size={10} strokeWidth={2}/>
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
           )}
         </div>
       )}
