@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
 import { DateNav } from "@/components/DateNav";
 import { LineChart } from "@/components/LineChart";
+import { CorrelationChart } from "@/components/CorrelationChart";
 import { FeedbackRow } from "@/components/FeedbackRow";
 import { CalendarPicker } from "@/components/CalendarPicker";
 import { isCoachUser, getMyCoachEmail } from "@/lib/coach";
@@ -142,21 +143,6 @@ const resizeImage = (dataUrl: string, maxW = 512, maxH = 768): Promise<string> =
 
 const today = () => new Date().toISOString().split("T")[0];
 
-// Delta neutre (pas de rouge/vert) : "mieux" dépend de l'objectif du client (prise de muscle
-// vs perte de gras), qu'on ne présume pas ici — juste informer de la variation, sans jugement.
-function CorrelationStat({ label, value, delta, unit }: { label: string; value: string; delta: number | null; unit: string }) {
-  return (
-    <div>
-      <p style={{ fontFamily: "var(--font-bebas)" }} className="text-base text-[var(--t-text)] tracking-wide leading-none">{value}</p>
-      <p className="text-[0.55rem] tracking-[0.12em] uppercase text-[var(--t-text-25)] mt-1.5">{label}</p>
-      {delta != null && (
-        <p className="text-[0.58rem] text-[var(--t-text-25)] mt-0.5">
-          {delta > 0 ? "▲" : delta < 0 ? "▼" : "—"} {Math.abs(delta)}{unit}
-        </p>
-      )}
-    </div>
-  );
-}
 
 export default function SuiviPage() {
   const router = useRouter();
@@ -613,44 +599,6 @@ export default function SuiviPage() {
 
   const bfChartData = [...bfHist].reverse().slice(-10);
   const weightChartData = [...weightHist].reverse().slice(-15);
-
-  // Corrélation poids / body fat : pour chaque check-in body fat, on rattache le poids le
-  // plus proche dans le temps (les deux ne sont pas forcément loggués le même jour) pour
-  // estimer masse grasse et masse maigre — ça révèle une recomposition (poids stable, gras
-  // qui baisse) que le poids seul ne montre jamais.
-  const correlationRows = bfHist.map((bf, idx) => {
-    const bfDay = bf.date.slice(0, 10);
-    let closest: WeightEntry | null = null;
-    let closestDiff = Infinity;
-    for (const w of weightHist) {
-      const diff = Math.abs(new Date(w.date + "T12:00:00").getTime() - new Date(bfDay + "T12:00:00").getTime());
-      if (diff < closestDiff) { closestDiff = diff; closest = w; }
-    }
-    const poids = closest?.weight ?? null;
-    const sameDay = closest?.date === bfDay;
-    const fatMass = poids != null ? +(poids * bf.body_fat / 100).toFixed(1) : null;
-    const leanMass = poids != null && fatMass != null ? +(poids - fatMass).toFixed(1) : null;
-    const prev = bfHist[idx + 1];
-    let prevPoids: number | null = null;
-    if (prev) {
-      let pc: WeightEntry | null = null, pd = Infinity;
-      const prevDay = prev.date.slice(0, 10);
-      for (const w of weightHist) {
-        const diff = Math.abs(new Date(w.date + "T12:00:00").getTime() - new Date(prevDay + "T12:00:00").getTime());
-        if (diff < pd) { pd = diff; pc = w; }
-      }
-      prevPoids = pc?.weight ?? null;
-    }
-    const prevFatMass = prev && prevPoids != null ? +(prevPoids * prev.body_fat / 100).toFixed(1) : null;
-    const prevLeanMass = prev && prevPoids != null && prevFatMass != null ? +(prevPoids - prevFatMass).toFixed(1) : null;
-    return {
-      id: bf.id, date: bf.date, bodyFat: bf.body_fat, poids, sameDay, fatMass, leanMass,
-      deltaBf: prev ? +(bf.body_fat - prev.body_fat).toFixed(1) : null,
-      deltaPoids: prevPoids != null && poids != null ? +(poids - prevPoids).toFixed(1) : null,
-      deltaFatMass: prevFatMass != null && fatMass != null ? +(fatMass - prevFatMass).toFixed(1) : null,
-      deltaLeanMass: prevLeanMass != null && leanMass != null ? +(leanMass - prevLeanMass).toFixed(1) : null,
-    };
-  });
 
   return (
     <div className="p-4 sm:p-8 max-w-2xl">
@@ -1236,34 +1184,15 @@ export default function SuiviPage() {
       )}
 
       {/* ── Corrélation poids / body fat ── */}
-      {bfHist.length > 0 && weightHist.length > 0 && (
-        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl mb-6">
-          <div className="px-5 pt-4 pb-3 border-b border-[var(--t-border-soft)]">
-            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[var(--t-text)] mb-2">Poids & body fat, mis en relation</p>
-            <p className="text-[0.68rem] text-[var(--t-text-35)] leading-relaxed">
-              Ton poids peut rester le même alors que ton corps change vraiment — moins de gras, plus de muscle. En croisant les deux, tu vois cette évolution même quand la balance ne bouge pas.
-            </p>
-          </div>
-          <div className="divide-y divide-[var(--t-border-soft)]">
-            {correlationRows.map(r => (
-              <div key={r.id} className="px-5 py-4">
-                <div className="flex items-center justify-between gap-2 mb-3">
-                  <p className="text-[0.65rem] tracking-wider text-[var(--t-text-40)] capitalize">
-                    {new Date(r.date).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
-                  </p>
-                  {r.poids != null && !r.sameDay && (
-                    <span className="text-[0.58rem] text-[var(--t-text-15)]">poids le plus proche</span>
-                  )}
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-                  <CorrelationStat label="Poids" value={r.poids != null ? `${r.poids} kg` : "—"} delta={r.deltaPoids} unit=" kg"/>
-                  <CorrelationStat label="Body fat" value={`${r.bodyFat}%`} delta={r.deltaBf} unit="%"/>
-                  <CorrelationStat label="Masse grasse" value={r.fatMass != null ? `${r.fatMass} kg` : "—"} delta={r.deltaFatMass} unit=" kg"/>
-                  <CorrelationStat label="Masse maigre" value={r.leanMass != null ? `${r.leanMass} kg` : "—"} delta={r.deltaLeanMass} unit=" kg"/>
-                </div>
-              </div>
-            ))}
-          </div>
+      {weightChartData.length > 0 && bfChartData.length > 0 && (
+        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-4 mb-6">
+          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[var(--t-text)] mb-2">Poids & body fat, mis en relation</p>
+          <p className="text-[0.68rem] text-[var(--t-text-35)] leading-relaxed mb-3">
+            Ton poids peut rester le même alors que ton corps change vraiment — moins de gras, plus de muscle. En superposant les deux courbes, tu vois si elles évoluent ensemble ou pas, même quand la balance ne bouge pas.
+          </p>
+          <CorrelationChart
+            weightData={weightChartData.map(e => ({ date: `${e.date}T12:00:00`, val: e.weight }))}
+            bfData={bfChartData.map(e => ({ date: e.date, val: e.body_fat }))}/>
         </div>
       )}
 
