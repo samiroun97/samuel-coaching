@@ -9,7 +9,7 @@ import { NumberStepper } from "@/components/NumberStepper";
 import { Select } from "@/components/Select";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
-import { Layers, Repeat, Dumbbell, Clock, ChevronUp, ChevronDown, Camera, X, Copy, ChevronRight, Plus, NotebookPen } from "@/lib/solarIcons";
+import { Layers, Repeat, Dumbbell, Clock, ChevronUp, ChevronDown, Camera, X, Copy, ChevronRight, Plus } from "@/lib/solarIcons";
 
 const inp = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
 const inpSm = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-2.5 py-2 text-center focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
@@ -450,7 +450,7 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
       <button type="button" onClick={add}
         className="group flex items-center gap-4 border border-[var(--t-border)] bg-[var(--t-surface)] px-5 py-4 rounded-2xl hover:border-[var(--t-border-15)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200">
         <span className="shrink-0 w-14 h-14 rounded-2xl bg-[var(--t-surface-2)] flex items-center justify-center">
-          <Icon icon={NotebookPen} size={28} className="text-[var(--t-text-40)]"/>
+          <RichIcon name="calendar" size={28}/>
         </span>
         <span className="flex-1 text-left min-w-0">
           <span className="block text-sm font-bold tracking-[0.06em] uppercase leading-tight text-[var(--t-text)]">Exercice libre</span>

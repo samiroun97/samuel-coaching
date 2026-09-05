@@ -16,6 +16,7 @@ const RICH_ICON_SRC = {
   waterBottle: "/icons-rich/water-bottle.png",
   droplet: "/icons-rich/droplet.png",
   step: "/icons-rich/step.png",
+  calendar: "/icons-rich/calendar.png",
 } as const;
 
 export type RichIconName = keyof typeof RICH_ICON_SRC;
