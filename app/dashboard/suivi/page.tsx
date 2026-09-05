@@ -167,6 +167,7 @@ export default function SuiviPage() {
   const [showBFInfo,     setShowBFInfo]     = useState(false);
   const [weightHistOpen, setWeightHistOpen] = useState(false);
   const [bfHistOpen,     setBfHistOpen]     = useState(false);
+  const [chartTab, setChartTab] = useState<"poids" | "bodyfat" | "correlation">("poids");
   const [manualVal,      setManualVal]      = useState("");
   const [manualDate,     setManualDate]     = useState("");
   const [weightInput,    setWeightInput]    = useState("");
@@ -599,6 +600,8 @@ export default function SuiviPage() {
 
   const bfChartData = [...bfHist].reverse().slice(-10);
   const weightChartData = [...weightHist].reverse().slice(-15);
+  const chartTabCls = (active: boolean, border = true) =>
+    `flex-1 py-2 text-[0.65rem] tracking-[0.1em] uppercase transition-colors ${border ? "border-r border-[var(--t-border)]" : ""} ${active ? "bg-[#c9a84c]/10 text-[#c9a84c]" : "text-[var(--t-text-30)] hover:text-[var(--t-text-50)]"}`;
 
   return (
     <div className="p-4 sm:p-8 max-w-2xl">
@@ -772,18 +775,6 @@ export default function SuiviPage() {
           </button>
         </div>
       </div>
-
-      {/* ── Graphique évolution poids ── */}
-      {weightChartData.length > 1 && (
-        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-4 mb-4">
-          <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1">Évolution du poids</p>
-          <p className="text-[0.62rem] text-[var(--t-text-30)] mb-3">
-            {weightChartData.length} pesée{weightChartData.length > 1 ? "s" : ""} enregistrée{weightChartData.length > 1 ? "s" : ""}
-          </p>
-          <LineChart data={weightChartData.map(e => ({ id: e.id, date: `${e.date}T12:00:00`, val: e.weight }))} unit=" kg" color="#7eb8a0"
-            lowerIsBetter={profile?.objectif_type !== "prise_muscle"}/>
-        </div>
-      )}
 
       {/* ── Historique poids ── */}
       {weightHist.length > 1 && (
@@ -1066,16 +1057,6 @@ export default function SuiviPage() {
         </div>
       )}
 
-      {/* ── Graphique évolution body fat ── */}
-      {bfChartData.length > 1 && (
-        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-4 mb-4">
-          <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1">Évolution body fat</p>
-          <p className="text-[0.62rem] text-[var(--t-text-30)] mb-3">
-            {bfChartData.length} mesure{bfChartData.length > 1 ? "s" : ""} enregistrée{bfChartData.length > 1 ? "s" : ""}
-          </p>
-          <LineChart data={bfChartData.map(e => ({ id: e.id, date: e.date, val: e.body_fat }))} unit="%" color="#c9a84c" glow/>
-        </div>
-      )}
 
       {/* ── Historique body fat avec feedback ── */}
       {bfHist.length > 0 && (
@@ -1183,16 +1164,50 @@ export default function SuiviPage() {
         </div>
       )}
 
-      {/* ── Corrélation poids / body fat ── */}
-      {weightChartData.length > 0 && bfChartData.length > 0 && (
+      {/* ── Graphiques (poids / body fat / corrélation), un sélecteur pour les trois ── */}
+      {(weightChartData.length > 1 || bfChartData.length > 1) && (
         <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-4 mb-6">
-          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[var(--t-text)] mb-2">Poids & body fat, mis en relation</p>
-          <p className="text-[0.68rem] text-[var(--t-text-35)] leading-relaxed mb-3">
-            Ton poids peut rester le même alors que ton corps change vraiment — moins de gras, plus de muscle. En superposant les deux courbes, tu vois si elles évoluent ensemble ou pas, même quand la balance ne bouge pas.
-          </p>
-          <CorrelationChart
-            weightData={weightChartData.map(e => ({ date: `${e.date}T12:00:00`, val: e.weight }))}
-            bfData={bfChartData.map(e => ({ date: e.date, val: e.body_fat }))}/>
+          <div className="flex border border-[var(--t-border)] rounded-xl overflow-hidden mb-4">
+            <button onClick={() => setChartTab("poids")} className={chartTabCls(chartTab === "poids")}>Poids</button>
+            <button onClick={() => setChartTab("bodyfat")} className={chartTabCls(chartTab === "bodyfat")}>Body fat</button>
+            <button onClick={() => setChartTab("correlation")} className={chartTabCls(chartTab === "correlation", false)}>Corrélation</button>
+          </div>
+
+          {chartTab === "poids" && (
+            weightChartData.length > 1 ? (
+              <>
+                <p className="text-[0.62rem] text-[var(--t-text-30)] mb-3">
+                  {weightChartData.length} pesée{weightChartData.length > 1 ? "s" : ""} enregistrée{weightChartData.length > 1 ? "s" : ""}
+                </p>
+                <LineChart data={weightChartData.map(e => ({ id: e.id, date: `${e.date}T12:00:00`, val: e.weight }))} unit=" kg" color="#7eb8a0"
+                  lowerIsBetter={profile?.objectif_type !== "prise_muscle"}/>
+              </>
+            ) : <p className="text-[0.68rem] text-[var(--t-text-25)] text-center py-6">Pas encore assez de pesées enregistrées.</p>
+          )}
+
+          {chartTab === "bodyfat" && (
+            bfChartData.length > 1 ? (
+              <>
+                <p className="text-[0.62rem] text-[var(--t-text-30)] mb-3">
+                  {bfChartData.length} mesure{bfChartData.length > 1 ? "s" : ""} enregistrée{bfChartData.length > 1 ? "s" : ""}
+                </p>
+                <LineChart data={bfChartData.map(e => ({ id: e.id, date: e.date, val: e.body_fat }))} unit="%" color="#c9a84c" glow/>
+              </>
+            ) : <p className="text-[0.68rem] text-[var(--t-text-25)] text-center py-6">Pas encore assez de mesures body fat enregistrées.</p>
+          )}
+
+          {chartTab === "correlation" && (
+            weightChartData.length > 0 && bfChartData.length > 0 ? (
+              <>
+                <p className="text-[0.68rem] text-[var(--t-text-35)] leading-relaxed mb-3">
+                  Ton poids peut rester le même alors que ton corps change vraiment — moins de gras, plus de muscle. En superposant les deux courbes, tu vois si elles évoluent ensemble ou pas, même quand la balance ne bouge pas.
+                </p>
+                <CorrelationChart
+                  weightData={weightChartData.map(e => ({ date: `${e.date}T12:00:00`, val: e.weight }))}
+                  bfData={bfChartData.map(e => ({ date: e.date, val: e.body_fat }))}/>
+              </>
+            ) : <p className="text-[0.68rem] text-[var(--t-text-25)] text-center py-6">Il faut au moins une pesée et une mesure body fat pour comparer.</p>
+          )}
         </div>
       )}
 
