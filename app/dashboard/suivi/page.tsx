@@ -690,7 +690,7 @@ export default function SuiviPage() {
       )}
 
       {/* ── Bilan hebdomadaire PDF ── */}
-      <div className="border border-[#c9a84c]/20 bg-[var(--t-surface)] rounded-xl overflow-hidden mb-4 shadow-[0_4px_20px_rgba(0,0,0,0.06)]">
+      <div className="border border-[#c9a84c]/20 bg-[var(--t-surface)] rounded-xl overflow-hidden mb-4 shadow-[0_4px_20px_rgba(0,0,0,0.06),0_0_30px_-6px_rgba(201,168,76,0.4)]">
         <div className="flex items-center gap-3 px-5 py-4 border-b border-[#c9a84c]/10">
           <div className="relative w-16 h-16 flex items-center justify-center shrink-0">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-lg pointer-events-none"
@@ -775,44 +775,6 @@ export default function SuiviPage() {
           </button>
         </div>
       </div>
-
-      {/* ── Historique poids ── */}
-      {weightHist.length > 1 && (
-        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl mb-6">
-          <button onClick={() => setWeightHistOpen(v => !v)}
-            className="w-full text-left flex items-center justify-between px-5 py-3 hover:bg-[var(--t-glass-bg)] transition-colors">
-            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[var(--t-text)]">Historique pesées</p>
-            <Icon icon={ChevronDown} size={12}
-              className={`text-[var(--t-text-25)] shrink-0 transition-transform ${weightHistOpen ? "rotate-180" : ""}`}/>
-          </button>
-          {weightHistOpen && (
-            <div className="border-t border-[var(--t-border-soft)]">
-              {weightHist.slice(0, 10).map((entry, i) => {
-                const prev = weightHist[i + 1];
-                const diff = prev ? +(entry.weight - prev.weight).toFixed(1) : null;
-                return (
-                  <div key={entry.id} className="flex items-center justify-between px-5 py-3 border-b border-[var(--t-border-soft)] last:border-0">
-                    <p className="text-[0.65rem] text-[var(--t-text-40)] capitalize">
-                      {new Date(entry.date + "T12:00:00").toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" })}
-                    </p>
-                    <div className="flex items-center gap-3">
-                      {diff !== null && (
-                        <span className={`text-[0.6rem] tracking-wider ${diff < 0 ? "text-[#7eb8a0]" : diff > 0 ? "text-[#e07070]" : "text-[var(--t-text-20)]"}`}>
-                          {diff > 0 ? "+" : ""}{diff} kg
-                        </span>
-                      )}
-                      <span className={`text-sm font-medium ${i === 0 ? "text-[var(--t-text)]" : "text-[var(--t-text-40)]"}`}>{entry.weight} kg</span>
-                      <button onClick={() => deleteWeight(entry.id)} className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
-                        <Icon icon={X} size={10} strokeWidth={2}/>
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
 
       {/* ── Carte Body fat + explication ── */}
       <div className={`border rounded-xl mb-4 ${!needsBF ? "border-[var(--t-border)] bg-[var(--t-surface)]" : "border-[var(--t-border-soft)] bg-[var(--t-surface-2)]"}`}>
@@ -1058,9 +1020,95 @@ export default function SuiviPage() {
       )}
 
 
+
+      {/* ── Graphiques (poids / body fat / corrélation), un sélecteur pour les trois ── */}
+      {(weightChartData.length > 1 || bfChartData.length > 1) && (
+        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-4 mb-6">
+          <div className="flex border border-[var(--t-border)] rounded-xl overflow-hidden mb-4">
+            <button onClick={() => setChartTab("poids")} className={chartTabCls(chartTab === "poids")}>Poids</button>
+            <button onClick={() => setChartTab("bodyfat")} className={chartTabCls(chartTab === "bodyfat")}>Body fat</button>
+            <button onClick={() => setChartTab("correlation")} className={chartTabCls(chartTab === "correlation", false)}>Corrélation</button>
+          </div>
+
+          {chartTab === "poids" && (
+            weightChartData.length > 1 ? (
+              <>
+                <p className="text-[0.62rem] text-[var(--t-text-30)] mb-3">
+                  {weightChartData.length} pesée{weightChartData.length > 1 ? "s" : ""} enregistrée{weightChartData.length > 1 ? "s" : ""}
+                </p>
+                <LineChart data={weightChartData.map(e => ({ id: e.id, date: `${e.date}T12:00:00`, val: e.weight }))} unit=" kg" color="#7eb8a0"
+                  lowerIsBetter={profile?.objectif_type !== "prise_muscle"}/>
+              </>
+            ) : <p className="text-[0.68rem] text-[var(--t-text-25)] text-center py-6">Pas encore assez de pesées enregistrées.</p>
+          )}
+
+          {chartTab === "bodyfat" && (
+            bfChartData.length > 1 ? (
+              <>
+                <p className="text-[0.62rem] text-[var(--t-text-30)] mb-3">
+                  {bfChartData.length} mesure{bfChartData.length > 1 ? "s" : ""} enregistrée{bfChartData.length > 1 ? "s" : ""}
+                </p>
+                <LineChart data={bfChartData.map(e => ({ id: e.id, date: e.date, val: e.body_fat }))} unit="%" color="#c9a84c" glow/>
+              </>
+            ) : <p className="text-[0.68rem] text-[var(--t-text-25)] text-center py-6">Pas encore assez de mesures body fat enregistrées.</p>
+          )}
+
+          {chartTab === "correlation" && (
+            weightChartData.length > 0 && bfChartData.length > 0 ? (
+              <>
+                <p className="text-[0.68rem] text-[var(--t-text-35)] leading-relaxed mb-3">
+                  Ton poids peut rester le même alors que ton corps change vraiment — moins de gras, plus de muscle. En superposant les deux courbes, tu vois si elles évoluent ensemble ou pas, même quand la balance ne bouge pas.
+                </p>
+                <CorrelationChart
+                  weightData={weightChartData.map(e => ({ date: `${e.date}T12:00:00`, val: e.weight }))}
+                  bfData={bfChartData.map(e => ({ date: e.date, val: e.body_fat }))}/>
+              </>
+            ) : <p className="text-[0.68rem] text-[var(--t-text-25)] text-center py-6">Il faut au moins une pesée et une mesure body fat pour comparer.</p>
+          )}
+        </div>
+      )}
+
+      {/* ── Historique poids ── */}
+      {weightHist.length > 1 && (
+        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl mb-4">
+          <button onClick={() => setWeightHistOpen(v => !v)}
+            className="w-full text-left flex items-center justify-between px-5 py-3 hover:bg-[var(--t-glass-bg)] transition-colors">
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[var(--t-text)]">Historique pesées</p>
+            <Icon icon={ChevronDown} size={12}
+              className={`text-[var(--t-text-25)] shrink-0 transition-transform ${weightHistOpen ? "rotate-180" : ""}`}/>
+          </button>
+          {weightHistOpen && (
+            <div className="border-t border-[var(--t-border-soft)]">
+              {weightHist.slice(0, 10).map((entry, i) => {
+                const prev = weightHist[i + 1];
+                const diff = prev ? +(entry.weight - prev.weight).toFixed(1) : null;
+                return (
+                  <div key={entry.id} className="flex items-center justify-between px-5 py-3 border-b border-[var(--t-border-soft)] last:border-0">
+                    <p className="text-[0.65rem] text-[var(--t-text-40)] capitalize">
+                      {new Date(entry.date + "T12:00:00").toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" })}
+                    </p>
+                    <div className="flex items-center gap-3">
+                      {diff !== null && (
+                        <span className={`text-[0.6rem] tracking-wider ${diff < 0 ? "text-[#7eb8a0]" : diff > 0 ? "text-[#e07070]" : "text-[var(--t-text-20)]"}`}>
+                          {diff > 0 ? "+" : ""}{diff} kg
+                        </span>
+                      )}
+                      <span className={`text-sm font-medium ${i === 0 ? "text-[var(--t-text)]" : "text-[var(--t-text-40)]"}`}>{entry.weight} kg</span>
+                      <button onClick={() => deleteWeight(entry.id)} className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
+                        <Icon icon={X} size={10} strokeWidth={2}/>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ── Historique body fat avec feedback ── */}
       {bfHist.length > 0 && (
-        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl mb-4">
+        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl mb-6">
           <button onClick={() => setBfHistOpen(v => !v)}
             className="w-full text-left flex items-center justify-between px-5 py-3 hover:bg-[var(--t-glass-bg)] transition-colors">
             <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[var(--t-text)]">Historique body fat</p>
@@ -1160,53 +1208,6 @@ export default function SuiviPage() {
               );
             })}
           </div>
-          )}
-        </div>
-      )}
-
-      {/* ── Graphiques (poids / body fat / corrélation), un sélecteur pour les trois ── */}
-      {(weightChartData.length > 1 || bfChartData.length > 1) && (
-        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-4 mb-6">
-          <div className="flex border border-[var(--t-border)] rounded-xl overflow-hidden mb-4">
-            <button onClick={() => setChartTab("poids")} className={chartTabCls(chartTab === "poids")}>Poids</button>
-            <button onClick={() => setChartTab("bodyfat")} className={chartTabCls(chartTab === "bodyfat")}>Body fat</button>
-            <button onClick={() => setChartTab("correlation")} className={chartTabCls(chartTab === "correlation", false)}>Corrélation</button>
-          </div>
-
-          {chartTab === "poids" && (
-            weightChartData.length > 1 ? (
-              <>
-                <p className="text-[0.62rem] text-[var(--t-text-30)] mb-3">
-                  {weightChartData.length} pesée{weightChartData.length > 1 ? "s" : ""} enregistrée{weightChartData.length > 1 ? "s" : ""}
-                </p>
-                <LineChart data={weightChartData.map(e => ({ id: e.id, date: `${e.date}T12:00:00`, val: e.weight }))} unit=" kg" color="#7eb8a0"
-                  lowerIsBetter={profile?.objectif_type !== "prise_muscle"}/>
-              </>
-            ) : <p className="text-[0.68rem] text-[var(--t-text-25)] text-center py-6">Pas encore assez de pesées enregistrées.</p>
-          )}
-
-          {chartTab === "bodyfat" && (
-            bfChartData.length > 1 ? (
-              <>
-                <p className="text-[0.62rem] text-[var(--t-text-30)] mb-3">
-                  {bfChartData.length} mesure{bfChartData.length > 1 ? "s" : ""} enregistrée{bfChartData.length > 1 ? "s" : ""}
-                </p>
-                <LineChart data={bfChartData.map(e => ({ id: e.id, date: e.date, val: e.body_fat }))} unit="%" color="#c9a84c" glow/>
-              </>
-            ) : <p className="text-[0.68rem] text-[var(--t-text-25)] text-center py-6">Pas encore assez de mesures body fat enregistrées.</p>
-          )}
-
-          {chartTab === "correlation" && (
-            weightChartData.length > 0 && bfChartData.length > 0 ? (
-              <>
-                <p className="text-[0.68rem] text-[var(--t-text-35)] leading-relaxed mb-3">
-                  Ton poids peut rester le même alors que ton corps change vraiment — moins de gras, plus de muscle. En superposant les deux courbes, tu vois si elles évoluent ensemble ou pas, même quand la balance ne bouge pas.
-                </p>
-                <CorrelationChart
-                  weightData={weightChartData.map(e => ({ date: `${e.date}T12:00:00`, val: e.weight }))}
-                  bfData={bfChartData.map(e => ({ date: e.date, val: e.body_fat }))}/>
-              </>
-            ) : <p className="text-[0.68rem] text-[var(--t-text-25)] text-center py-6">Il faut au moins une pesée et une mesure body fat pour comparer.</p>
           )}
         </div>
       )}
