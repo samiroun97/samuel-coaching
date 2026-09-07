@@ -483,28 +483,29 @@ export default function ProgrammePage() {
           </div>
         </div>
 
-        {/* Séance(s) prévues pour la date sélectionnée */}
+        {/* Séance(s) prévues pour la date sélectionnée — carte + gros bouton pleine largeur
+            empilés (plutôt que côte à côte compressés) pour une vraie cible tactile. */}
         {pendingSelectedDate.length > 0 ? (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-3">
             {pendingSelectedDate.map(s => (
-              <div key={s.id} className="border border-[var(--t-border-soft)] bg-[var(--t-bg)] rounded-xl p-3.5 flex items-center justify-between gap-3">
+              <div key={s.id} className="border border-[var(--t-border-soft)] bg-[var(--t-bg)] rounded-2xl p-4 flex flex-col gap-3">
                 <div className="min-w-0">
-                  <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                  <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
                     {s.created_by_client
-                      ? <span className="text-[0.58rem] tracking-wider uppercase text-[var(--t-text-30)] rounded-full border border-[var(--t-border)] px-1.5 py-0.5 shrink-0">Toi</span>
-                      : <span className="text-[0.58rem] tracking-wider uppercase text-[#c9a84c] rounded-full border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">Samuel</span>}
-                    {s.type_seance && <span className="text-[0.58rem] tracking-wider uppercase text-[#c9a84c] rounded-full border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">{s.type_seance}</span>}
+                      ? <span className="text-[0.6rem] tracking-wider uppercase text-[var(--t-text-30)] rounded-full border border-[var(--t-border)] px-1.5 py-0.5 shrink-0">Toi</span>
+                      : <span className="text-[0.6rem] tracking-wider uppercase text-[#c9a84c] rounded-full border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">Samuel</span>}
+                    {s.type_seance && <span className="text-[0.6rem] tracking-wider uppercase text-[#c9a84c] rounded-full border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">{s.type_seance}</span>}
                   </div>
-                  <p className="text-sm text-[var(--t-text-70)] truncate">{s.titre}</p>
+                  <p className="text-base text-[var(--t-text-70)] font-medium truncate">{s.titre}</p>
                 </div>
                 {hasLoggableSets(parseExercices(s.exercices)) ? (
                   <button onClick={() => setLiveSeance(s)}
-                    className="shrink-0 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.65rem] font-bold tracking-[0.12em] uppercase px-4 py-2.5 rounded-xl shadow-[0_4px_16px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_20px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all">
+                    className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-base font-bold tracking-[0.08em] uppercase py-4 rounded-xl shadow-[0_6px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_8px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all">
                     ▶ Démarrer
                   </button>
                 ) : (
                   <button onClick={() => toggleSeanceDone(s)}
-                    className="shrink-0 border border-[var(--t-border)] text-[var(--t-text-40)] text-[0.65rem] tracking-[0.12em] uppercase px-4 py-2.5 rounded-xl hover:border-[#7eb8a0]/40 hover:text-[#7eb8a0] transition-colors">
+                    className="w-full border-2 border-[var(--t-border)] text-[var(--t-text-40)] text-base font-bold tracking-[0.08em] uppercase py-4 rounded-xl hover:border-[#7eb8a0]/40 hover:text-[#7eb8a0] transition-colors">
                     Marquer fait
                   </button>
                 )}
@@ -521,8 +522,8 @@ export default function ProgrammePage() {
 
         {!createOpen && (
           <button onClick={() => setCreateOpen(true)}
-            className="w-full mt-3 flex items-center justify-center gap-2 border-2 border-dashed border-[#c9a84c]/40 text-[#c9a84c] text-[0.65rem] font-bold tracking-[0.15em] uppercase py-3 rounded-xl hover:bg-[#c9a84c]/5 transition-colors">
-            <Icon icon={Plus} size={14} strokeWidth={2.5}/>
+            className="w-full mt-3 flex items-center justify-center gap-2.5 border-2 border-dashed border-[#c9a84c]/40 text-[#c9a84c] text-base font-bold tracking-[0.08em] uppercase py-4 rounded-xl hover:bg-[#c9a84c]/5 active:scale-[0.99] transition-all">
+            <Icon icon={Plus} size={20} strokeWidth={2.5}/>
             Créer ma séance
           </button>
         )}
@@ -533,17 +534,17 @@ export default function ProgrammePage() {
           <div className="mt-3 border-t border-[#c9a84c]/15 pt-4 flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <p className="text-[0.62rem] tracking-[0.2em] uppercase text-[var(--t-text-30)]">Nouvelle séance</p>
-              <button onClick={resetCreatePanel} className="text-[var(--t-text-25)] hover:text-[var(--t-text-60)] transition-colors">
-                <Icon icon={X} size={14} strokeWidth={2}/>
+              <button onClick={resetCreatePanel} className="text-[var(--t-text-25)] hover:text-[var(--t-text-60)] transition-colors p-1">
+                <Icon icon={X} size={18} strokeWidth={2}/>
               </button>
             </div>
 
             <button onClick={startFreeformInline} disabled={!userId || startingFreeform}
-              className="text-left border border-[#c9a84c]/30 bg-[#c9a84c]/[0.04] rounded-xl p-3.5 hover:bg-[#c9a84c]/10 active:scale-[0.99] transition-all disabled:opacity-50">
-              <p className="text-[0.72rem] text-[var(--t-text-70)] font-medium mb-0.5">
+              className="text-left border-2 border-[#c9a84c]/30 bg-[#c9a84c]/[0.04] rounded-xl p-4 hover:bg-[#c9a84c]/10 active:scale-[0.99] transition-all disabled:opacity-50">
+              <p className="text-base text-[var(--t-text-70)] font-bold mb-1">
                 {startingFreeform ? "Démarrage…" : "Démarrer en direct →"}
               </p>
-              <p className="text-[0.62rem] text-[var(--t-text-30)] leading-relaxed">Le chrono démarre tout de suite, ajoute tes exercices et logue séries/reps/poids au fur et à mesure.</p>
+              <p className="text-[0.68rem] text-[var(--t-text-30)] leading-relaxed">Le chrono démarre tout de suite, ajoute tes exercices et logue séries/reps/poids au fur et à mesure.</p>
             </button>
 
             <p className="text-[0.58rem] tracking-[0.2em] uppercase text-[var(--t-text-20)] text-center">— ou prépare-la à l&apos;avance —</p>
@@ -552,10 +553,10 @@ export default function ProgrammePage() {
 
             {createValidCount > 0 && (
               <>
-                <input className={inputCls} placeholder="Nom de la séance (optionnel)"
+                <input className={`${inputCls} py-3.5 text-base`} placeholder="Nom de la séance (optionnel)"
                   value={createTitre} onChange={e => setCreateTitre(e.target.value)}/>
                 <button onClick={saveCreatedSeance} disabled={createSaving}
-                  className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.15em] uppercase py-3 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] transition-all disabled:opacity-40">
+                  className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-base font-bold tracking-[0.08em] uppercase py-4 rounded-xl shadow-[0_6px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_8px_26px_-4px_rgba(201,168,76,0.8)] transition-all disabled:opacity-40">
                   {createSaving ? "Enregistrement…" : "Enregistrer pour plus tard →"}
                 </button>
               </>
