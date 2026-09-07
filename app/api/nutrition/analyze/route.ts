@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@supabase/supabase-js";
 import { requireUser } from "@/lib/apiAuth";
+import { buildIngredientReferences } from "@/lib/foodLookup";
 
 const PROMPT = `Tu es un nutritionniste expert. Analyse ce repas.
 
@@ -14,6 +15,10 @@ Une fois ce calcul écrit, termine ta réponse — et seulement à la toute fin 
 Si la photo montre un tableau/étiquette de valeurs nutritionnelles (emballage produit), c'est ta source prioritaire et la plus fiable : lis les chiffres exacts imprimés dessus plutôt que d'estimer à partir de l'apparence du produit ou de son nom. Ces tableaux sont généralement donnés "pour 100g" — vérifie l'unité de référence indiquée, puis calcule pour la quantité réellement consommée (poids/portion précisé par l'utilisateur, ou la portion de référence de l'étiquette si rien n'est précisé). N'ignore jamais un tableau de valeurs nutritionnelles visible au profit d'une estimation générique.
 
 Attention à l'ambiguïté du mot "tacos" en contexte francophone/suisse : il désigne presque toujours le tacos français de restauration rapide (galette garnie de viande, frites, fromage fondu et sauces, façon O'Tacos) et NON le petit taco mexicain. Ce plat est très calorique : compte environ 700-900 kcal en taille S/M, 1000-1400 kcal en taille L/XL selon les viandes, fromage et sauces visibles. Ne le confonds jamais avec un taco mexicain léger. Plus largement, pour tout plat de restauration rapide ou de restaurant (burger, kebab, pizza, tacos, sandwich…), ne sous-estime pas : l'huile de cuisson, le fromage fondu et les sauces ajoutent des calories significatives par rapport à une préparation maison — vise une estimation réaliste plutôt que prudente.`;
+
+const IDENTIFY_PROMPT = `Identifie chaque ingrédient distinct de ce repas, avec ton estimation de son poids en grammes. Réponds UNIQUEMENT avec un tableau JSON, sans texte ni markdown autour, au format exact [{"ingredient": string, "grams": integer}, ...]. Utilise des noms d'ingrédients courts et génériques en français (ex: "riz blanc cuit", "escalope de poulet grillée", "huile d'olive"), pas le nom du plat entier. Maximum 6 ingrédients : garde les plus significatifs en poids/calories si le plat en compte plus.`;
+
+type ImageBlock = { type: "image"; source: { type: "base64"; media_type: "image/jpeg" | "image/png" | "image/gif" | "image/webp"; data: string } };
 
 export async function POST(req: NextRequest) {
   try {
@@ -36,6 +41,42 @@ export async function POST(req: NextRequest) {
     const weightInstruction = exactWeight
       ? `\n\nPoids total du repas précisé par l'utilisateur : ${exactWeight}g. Utilise cette valeur exacte comme base de ton calcul plutôt que d'estimer le poids toi-même.`
       : "";
+
+    let imageBlock: ImageBlock | null = null;
+    if (type === "photo" && image) {
+      const comma = image.indexOf(",");
+      const mediaType = (image.slice(0, comma).match(/:(.*?);/)?.[1] ?? "image/jpeg") as ImageBlock["source"]["media_type"];
+      imageBlock = { type: "image", source: { type: "base64", media_type: mediaType, data: image.slice(comma + 1) } };
+    } else if (!(type === "text" && text)) {
+      return NextResponse.json({ error: "Paramètres invalides" }, { status: 400 });
+    }
+
+    // Étape 1 (best-effort) : fait identifier les ingrédients par l'IA, puis cherche leurs
+    // vraies valeurs nutritionnelles dans Open Food Facts / la base suisse (BLV), pour ancrer
+    // l'estimation finale sur des données réelles plutôt que sur la seule mémoire du modèle.
+    // Toute erreur ici ne doit jamais empêcher l'estimation principale de se faire.
+    let referencesBlock = "";
+    try {
+      const identifyText = type === "photo"
+        ? [text?.trim() ? `Précisions de l'utilisateur : "${text.trim()}".` : "", IDENTIFY_PROMPT].filter(Boolean).join("\n\n")
+        : `Repas décrit par l'utilisateur : "${text}".\n\n${IDENTIFY_PROMPT}`;
+      const identifyContent: Anthropic.Messages.MessageParam["content"] = imageBlock
+        ? [imageBlock, { type: "text", text: identifyText }]
+        : [{ type: "text", text: identifyText }];
+
+      const identifyResponse = await client.messages.create({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 500,
+        temperature: 0.2,
+        messages: [{ role: "user", content: identifyContent }],
+      });
+      const identifyRaw = identifyResponse.content[0].type === "text" ? identifyResponse.content[0].text.trim() : "";
+      const arrayMatch = identifyRaw.match(/\[[\s\S]*\]/);
+      if (arrayMatch) {
+        const ingredients = JSON.parse(arrayMatch[0]) as { ingredient: string; grams: number }[];
+        referencesBlock = await buildIngredientReferences(ingredients);
+      }
+    } catch { /* best-effort : l'estimation continue sans données de référence */ }
 
     // Corrections apportées par le coach sur d'anciennes estimations jugées fausses (via la
     // rubrique IA du CRM) — réinjectées comme contexte pour calibrer l'estimation actuelle.
@@ -64,23 +105,18 @@ export async function POST(req: NextRequest) {
       }
     } catch { /* best-effort : l'estimation continue sans le contexte de calibration */ }
 
-    const promptWithCorrections = PROMPT + weightInstruction + correctionsBlock;
+    const promptWithCorrections = PROMPT + weightInstruction + correctionsBlock + referencesBlock;
 
     let content: Anthropic.Messages.MessageParam["content"];
 
-    if (type === "photo" && image) {
-      const comma = image.indexOf(",");
-      const mediaType = (image.slice(0, comma).match(/:(.*?);/)?.[1] ?? "image/jpeg") as
-        "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+    if (type === "photo" && imageBlock) {
       const precisions = text?.trim() ? `Précisions données par l'utilisateur : "${text.trim()}".` : "";
       content = [
-        { type: "image", source: { type: "base64", media_type: mediaType, data: image.slice(comma + 1) } },
+        imageBlock,
         { type: "text", text: [precisions, promptWithCorrections].filter(Boolean).join("\n") },
       ];
-    } else if (type === "text" && text) {
-      content = [{ type: "text", text: [`Repas : "${text}"`, promptWithCorrections].filter(Boolean).join("\n") }];
     } else {
-      return NextResponse.json({ error: "Paramètres invalides" }, { status: 400 });
+      content = [{ type: "text", text: [`Repas : "${text}"`, promptWithCorrections].filter(Boolean).join("\n") }];
     }
 
     const response = await client.messages.create({
