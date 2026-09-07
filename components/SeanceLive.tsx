@@ -49,24 +49,24 @@ function SetRow({ target, idx, log, prev, isExtra, bodyweight, onToggle, onChang
 }) {
   const hasPrev = prev && (prev.poids != null || prev.reps != null);
   return (
-    <div className={`grid grid-cols-[28px_60px_1fr_1fr_52px_36px] items-center gap-2 rounded-xl px-2 py-1.5 transition-colors ${log?.done ? "bg-[#7eb8a0]/12" : isExtra ? "bg-[#c9a84c]/[0.05]" : ""}`}>
+    <div className={`grid grid-cols-[24px_44px_1fr_1fr_42px_44px] items-center gap-1.5 rounded-xl px-1.5 py-1.5 transition-colors ${log?.done ? "bg-[#7eb8a0]/12" : isExtra ? "bg-[#c9a84c]/[0.05]" : ""}`}>
       <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[0.68rem] font-bold shrink-0 ${log?.done ? "bg-[#7eb8a0] text-black" : "bg-[var(--t-track)] text-[var(--t-text-40)]"}`}>{idx + 1}</span>
       {hasPrev && !log?.done ? (
-        <button onClick={onCopyPrev} className="text-[0.7rem] text-[var(--t-text-30)] truncate text-left hover:text-[#c9a84c] transition-colors underline decoration-dotted decoration-[var(--t-text-15)]">
+        <button onClick={onCopyPrev} className="text-[0.68rem] text-[var(--t-text-30)] truncate text-left hover:text-[#c9a84c] transition-colors underline decoration-dotted decoration-[var(--t-text-15)]">
           {fmtPrev(prev)}
         </button>
       ) : (
-        <span className="text-[0.7rem] text-[var(--t-text-15)] truncate">{hasPrev ? fmtPrev(prev) : "—"}</span>
+        <span className="text-[0.68rem] text-[var(--t-text-15)] truncate">{hasPrev ? fmtPrev(prev) : "—"}</span>
       )}
       <NumberStepper value={log?.poids ?? ""} placeholder={bodyweight ? (target.poids || "+kg") : (target.poids || "kg")} step={2.5} onChange={v => onChange("poids", v)} accent/>
       <NumberStepper value={log?.reps ?? ""} placeholder={target.reps || "reps"} step={1} onChange={v => onChange("reps", v)}/>
       <Select value={log?.rir ?? ""} onChange={v => onChange("rir", v)} placeholder="RIR"
         options={[0, 1, 2, 3, 4].map(n => ({ value: String(n), label: `${n}${n === 4 ? "+" : ""}` }))}
-        triggerClassName="bg-[var(--t-bg)] border border-[var(--t-border)] rounded-xl text-[0.65rem] text-[var(--t-text-40)] px-1 py-2 w-full justify-center"
+        triggerClassName="bg-[var(--t-bg)] border border-[var(--t-border)] rounded-xl text-[0.62rem] text-[var(--t-text-40)] px-0.5 py-2.5 w-full justify-center"
         panelClassName="w-16"/>
       <button onClick={onToggle}
-        className={`w-8 h-8 rounded-full border-2 shrink-0 flex items-center justify-center transition-all mx-auto active:scale-90 ${log?.done ? "bg-[#7eb8a0] border-[#7eb8a0] text-black" : "border-[var(--t-border)] text-transparent hover:border-[#7eb8a0]/50"}`}>
-        <Icon icon={Check} size={15} strokeWidth={3}/>
+        className={`w-11 h-11 rounded-full border-2 shrink-0 flex items-center justify-center transition-all mx-auto active:scale-90 ${log?.done ? "bg-[#7eb8a0] border-[#7eb8a0] text-black" : "border-[var(--t-border)] text-transparent hover:border-[#7eb8a0]/50"}`}>
+        <Icon icon={Check} size={18} strokeWidth={3}/>
       </button>
     </div>
   );
@@ -105,7 +105,7 @@ function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle,
 
       {rows.length > 0 ? (
         <>
-          <div className="grid grid-cols-[28px_60px_1fr_1fr_52px_36px] items-center gap-2 px-2">
+          <div className="grid grid-cols-[24px_44px_1fr_1fr_42px_44px] items-center gap-1.5 px-1.5">
             <span className="text-[0.58rem] tracking-[0.1em] uppercase text-[var(--t-text-20)] text-center">Série</span>
             <span className="text-[0.58rem] tracking-[0.1em] uppercase text-[var(--t-text-20)]">Préc.</span>
             <span className="text-[0.58rem] tracking-[0.1em] uppercase text-[var(--t-text-20)] text-center">Kg</span>
@@ -123,7 +123,7 @@ function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle,
             ))}
           </div>
           <button onClick={() => onAddSet(exIdx)}
-            className="text-[0.65rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[#c9a84c] transition-colors text-left px-2 py-1.5 font-medium">
+            className="text-[0.7rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[#c9a84c] transition-colors text-left px-2 py-3 font-medium">
             + Ajouter une série
           </button>
         </>
@@ -499,12 +499,12 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
   return (
     <div className="fixed inset-0 bg-[var(--t-bg)] z-50 flex flex-col">
       <div className="flex items-center justify-between px-5 py-3.5 shrink-0 gap-3 max-w-lg mx-auto w-full">
-        <button onClick={onClose} className="text-[var(--t-text-30)] hover:text-[var(--t-text)] transition-colors shrink-0 w-8 h-8 flex items-center justify-center -ml-1.5">
-          <Icon icon={X} size={19} strokeWidth={2}/>
+        <button onClick={onClose} className="text-[var(--t-text-30)] hover:text-[var(--t-text)] transition-colors shrink-0 w-11 h-11 flex items-center justify-center -ml-2.5">
+          <Icon icon={X} size={20} strokeWidth={2}/>
         </button>
         <p style={{ fontFamily: "var(--font-bebas)" }} className="text-lg tracking-wider text-[var(--t-text)] truncate flex-1 text-center">{seance.titre}</p>
         <button onClick={finish} disabled={finishing}
-          className="shrink-0 rounded-full text-[0.65rem] font-bold tracking-[0.12em] uppercase px-4 py-2.5 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black shadow-[0_3px_12px_-4px_rgba(201,168,76,0.6)] transition-all disabled:opacity-50">
+          className="shrink-0 rounded-full text-xs font-bold tracking-[0.12em] uppercase px-5 py-3 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black shadow-[0_3px_12px_-4px_rgba(201,168,76,0.6)] transition-all disabled:opacity-50">
           {finishing ? "…" : "Terminer"}
         </button>
       </div>
@@ -533,8 +533,8 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
       {loaded && runs.length > 0 && (
         <div className="flex items-center justify-between gap-2 px-4 py-2.5 shrink-0 max-w-lg mx-auto w-full">
           <button onClick={goPrev} disabled={runIdx === 0}
-            className="w-9 h-9 rounded-full border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-70)] active:scale-90 transition-all disabled:opacity-20 flex items-center justify-center shrink-0">
-            <Icon icon={ChevronLeft} size={16} strokeWidth={2}/>
+            className="w-11 h-11 rounded-full border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-70)] active:scale-90 transition-all disabled:opacity-20 flex items-center justify-center shrink-0">
+            <Icon icon={ChevronLeft} size={18} strokeWidth={2}/>
           </button>
           <div className="flex flex-col items-center gap-1.5 min-w-0">
             <p className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-30)]">Exercice {runIdx + 1}/{runs.length}</p>
@@ -546,8 +546,8 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
             </div>
           </div>
           <button onClick={goNext} disabled={runIdx === runs.length - 1}
-            className="w-9 h-9 rounded-full border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-70)] active:scale-90 transition-all disabled:opacity-20 flex items-center justify-center shrink-0">
-            <Icon icon={ChevronRight} size={16} strokeWidth={2}/>
+            className="w-11 h-11 rounded-full border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-70)] active:scale-90 transition-all disabled:opacity-20 flex items-center justify-center shrink-0">
+            <Icon icon={ChevronRight} size={18} strokeWidth={2}/>
           </button>
         </div>
       )}
@@ -574,23 +574,23 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
                 placeholder="Nom de l'exercice"
                 className="flex-1 min-w-0 bg-[var(--t-surface)] border border-[#c9a84c]/40 rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2 focus:outline-none"/>
               <button onClick={addExercice} disabled={!newExerciceNom.trim()}
-                className="shrink-0 w-9 h-9 rounded-xl bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black flex items-center justify-center disabled:opacity-40 transition-opacity">
-                <Icon icon={Check} size={15} strokeWidth={2.5}/>
+                className="shrink-0 w-11 h-11 rounded-xl bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black flex items-center justify-center disabled:opacity-40 transition-opacity">
+                <Icon icon={Check} size={17} strokeWidth={2.5}/>
               </button>
               <button onClick={() => { setAddingExercice(false); setNewExerciceNom(""); }}
-                className="shrink-0 w-9 h-9 rounded-xl border border-[var(--t-border)] text-[var(--t-text-30)] hover:text-[var(--t-text-60)] flex items-center justify-center transition-colors">
-                <Icon icon={X} size={14} strokeWidth={2}/>
+                className="shrink-0 w-11 h-11 rounded-xl border border-[var(--t-border)] text-[var(--t-text-30)] hover:text-[var(--t-text-60)] flex items-center justify-center transition-colors">
+                <Icon icon={X} size={16} strokeWidth={2}/>
               </button>
             </div>
           ) : (
             <div className="flex items-center gap-2">
               <button onClick={() => setShowLibrary(true)}
-                className="flex-1 flex items-center justify-center gap-1.5 border border-[var(--t-border)] rounded-xl text-[0.65rem] tracking-wider uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors py-2 font-medium">
-                <Icon icon={Dumbbell} size={12} strokeWidth={2}/> Bibliothèque
+                className="flex-1 flex items-center justify-center gap-1.5 border border-[var(--t-border)] rounded-xl text-[0.7rem] tracking-wider uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors py-3 font-medium">
+                <Icon icon={Dumbbell} size={14} strokeWidth={2}/> Bibliothèque
               </button>
               <button onClick={() => setAddingExercice(true)}
-                className="flex-1 flex items-center justify-center gap-1.5 border border-[var(--t-border)] rounded-xl text-[0.65rem] tracking-wider uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors py-2 font-medium">
-                <Icon icon={NotebookPen} size={12} strokeWidth={2}/> Nom libre
+                className="flex-1 flex items-center justify-center gap-1.5 border border-[var(--t-border)] rounded-xl text-[0.7rem] tracking-wider uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors py-3 font-medium">
+                <Icon icon={NotebookPen} size={14} strokeWidth={2}/> Nom libre
               </button>
             </div>
           )}
@@ -631,7 +631,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
 
               {runIdx < runs.length - 1 ? (
                 <button onClick={goNext}
-                  className={`w-full py-3.5 rounded-2xl text-[0.7rem] font-bold tracking-[0.15em] uppercase transition-all duration-200 flex items-center justify-center gap-2 ${
+                  className={`w-full py-4 rounded-2xl text-sm font-bold tracking-[0.1em] uppercase transition-all duration-200 flex items-center justify-center gap-2 ${
                     complete ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black shadow-[0_4px_16px_-6px_rgba(201,168,76,0.6)] hover:-translate-y-0.5"
                              : "border border-[var(--t-border)] text-[var(--t-text-30)] hover:text-[var(--t-text-60)] hover:border-[var(--t-text-20)]"}`}>
                   Exercice suivant <span aria-hidden>→</span>
@@ -657,11 +657,11 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
               </div>
               <div className="flex items-center gap-2">
                 <button onClick={() => setRest(r => r ? { ...r, left: Math.max(0, r.left - 15) } : r)}
-                  className="w-9 h-9 rounded-full border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-70)] active:scale-90 transition-all text-sm font-medium">−15</button>
+                  className="w-11 h-11 rounded-full border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-70)] active:scale-90 transition-all text-sm font-medium">−15</button>
                 <button onClick={() => setRest(r => r ? { left: r.left + 15, total: Math.max(r.total, r.left + 15) } : r)}
-                  className="w-9 h-9 rounded-full border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-70)] active:scale-90 transition-all text-sm font-medium">+15</button>
+                  className="w-11 h-11 rounded-full border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-70)] active:scale-90 transition-all text-sm font-medium">+15</button>
                 <button onClick={() => setRest(null)}
-                  className="text-[0.62rem] uppercase tracking-wider font-medium text-[var(--t-text-30)] hover:text-[var(--t-text-60)] transition-colors ml-1.5">Passer</button>
+                  className="text-[0.65rem] uppercase tracking-wider font-medium text-[var(--t-text-30)] hover:text-[var(--t-text-60)] transition-colors ml-1 px-2 py-3">Passer</button>
               </div>
             </div>
           </div>
