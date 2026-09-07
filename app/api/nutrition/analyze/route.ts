@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
           .order("created_at", { ascending: false })
           .limit(20) : { data: null };
         if (corrections?.length) {
-          correctionsBlock = `\n\nRetours d'ajustement d'un coach humain expert sur des estimations précédentes de CE MÊME système — prends-les en compte pour calibrer ton estimation actuelle si les cas se ressemblent :\n${
+          correctionsBlock = `\n\nRetours d'ajustement d'un coach humain expert sur des estimations précédentes de CE MÊME système. Chaque retour illustre une erreur réelle de calibration (poids sous/surestimé, teneur en graisse de cuisson, sucre d'un fruit, etc.) : dégage-en le principe général et applique-le au plat actuel s'il est pertinent, même si ce n'est pas exactement le même plat — ne te limite pas aux cas visuellement identiques :\n${
             corrections.map((c, i) => `${i + 1}. ${c.original_data ? `Estimation IA initiale : ${JSON.stringify(c.original_data)}. ` : ""}Retour du coach : ${c.coach_comment}`).join("\n")
           }`;
         }
@@ -105,6 +105,19 @@ export async function POST(req: NextRequest) {
     }
 
     const parsed = JSON.parse(lastObject);
+
+    // Le modèle donne parfois un total "calories" qui ne correspond pas exactement à
+    // 4*proteines + 4*glucides + 9*lipides qu'il vient de calculer (plusieurs corrections
+    // coach en base pointent cette incohérence, ex: 768 affiché vs 720 recalculé) — on
+    // recalcule ici pour garantir la cohérence interne, la formule énergétique étant exacte.
+    if (
+      typeof parsed.proteines === "number" &&
+      typeof parsed.glucides === "number" &&
+      typeof parsed.lipides === "number"
+    ) {
+      parsed.calories = Math.round(parsed.proteines * 4 + parsed.glucides * 4 + parsed.lipides * 9);
+    }
+
     if (portionMultiplier !== 1) {
       for (const key of ["calories", "proteines", "glucides", "lipides", "fibres"] as const) {
         if (typeof parsed[key] === "number") parsed[key] = Math.round(parsed[key] * portionMultiplier);
