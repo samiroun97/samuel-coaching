@@ -9,7 +9,9 @@ import { SeanceLive } from "@/components/SeanceLive";
 import { DateNav } from "@/components/DateNav";
 import { useSelectedDate, todayStr } from "@/lib/useSelectedDate";
 import { syncSteps } from "@/lib/steps";
-import { parseExercices, hasLoggableSets } from "@/lib/exercices";
+import { parseExercices, hasLoggableSets, serializeExercices, type ExerciceItem } from "@/lib/exercices";
+import { loadCatalogue, type CatalogueEntry } from "@/lib/exercicesCatalogue";
+import ExerciceEditor from "@/components/ExerciceEditor";
 import { TdeeIcon } from "@/components/CalRefToggle";
 import { loadDayStatuses, type DayStatus } from "@/lib/consistency";
 import { MuscleVolumeChart } from "@/components/MuscleVolumeChart";
@@ -20,7 +22,7 @@ import { loadPersonalRecords, type PRCard } from "@/lib/personalRecords";
 import { Sparkline } from "@/components/Sparkline";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
-import { Activity, X, Mic, ChevronDown, Download } from "@/lib/solarIcons";
+import { Activity, X, Mic, ChevronDown, Download, Flame, Plus } from "@/lib/solarIcons";
 
 type Profile = { prenom: string; poids: number; taille: number; age: number; sexe: string; objectif_type: string | null };
 type LoggedWorkout = {
@@ -104,6 +106,15 @@ export default function ProgrammePage() {
   const [muscleVolume, setMuscleVolume] = useState<Record<string, number[]>>({});
   const [activeMeso,   setActiveMeso]   = useState<Mesocycle | null>(null);
   const [records,      setRecords]      = useState<PRCard[]>([]);
+  const [progressionOpen, setProgressionOpen] = useState(false);
+
+  // ── Création de séance inline (remplace la navigation vers /creer-ma-seance) ──
+  const [catalogue,      setCatalogue]      = useState<CatalogueEntry[]>([]);
+  const [createOpen,     setCreateOpen]     = useState(false);
+  const [createTitre,    setCreateTitre]    = useState("");
+  const [createItems,    setCreateItems]    = useState<ExerciceItem[]>([]);
+  const [createSaving,   setCreateSaving]   = useState(false);
+  const [startingFreeform, setStartingFreeform] = useState(false);
 
   const deleteSeance = async (s: CoachSeance) => {
     if (!window.confirm("Supprimer définitivement cette séance ?")) return;
@@ -119,6 +130,50 @@ export default function ProgrammePage() {
     const done = s.completed_at ? null : new Date().toISOString();
     setCoachSeances(prev => prev.map(x => x.id === s.id ? { ...x, completed_at: done } : x));
     await supabase.from("programme_seances").update({ completed_at: done }).eq("id", s.id);
+  };
+
+  const resetCreatePanel = () => { setCreateOpen(false); setCreateTitre(""); setCreateItems([]); };
+
+  // Option "Préparer" : enregistre la séance pour la date sélectionnée sans lancer le
+  // chrono — elle apparaît dans la liste ci-dessous, démarrable quand le client est prêt.
+  const saveCreatedSeance = async () => {
+    if (!userId) return;
+    const validItems = createItems.filter(it => it.nom.trim());
+    if (!validItems.length || createSaving) return;
+    setCreateSaving(true);
+    const { data, error } = await supabase.from("programme_seances").insert({
+      client_id: userId,
+      assigned_to_email: userEmailRef.current,
+      titre: createTitre.trim() || "Séance libre",
+      date_prevue: selectedDate,
+      exercices: serializeExercices(validItems),
+      created_by_client: true,
+    }).select("*").single();
+    setCreateSaving(false);
+    if (error || !data) return;
+    setCoachSeances(prev => [...prev, data as CoachSeance]);
+    resetCreatePanel();
+  };
+
+  // Option "Créer en direct" : aucune préparation, la séance démarre tout de suite
+  // (chrono lancé, exercices/séries/reps/poids ajoutés au fur et à mesure dans SeanceLive).
+  const startFreeformInline = async () => {
+    if (!userId || startingFreeform) return;
+    setStartingFreeform(true);
+    const { data, error } = await supabase.from("programme_seances").insert({
+      client_id: userId,
+      assigned_to_email: userEmailRef.current,
+      titre: "Séance libre",
+      date_prevue: selectedDate,
+      exercices: serializeExercices([]),
+      created_by_client: true,
+    }).select("*").single();
+    setStartingFreeform(false);
+    if (error || !data) return;
+    const created = data as CoachSeance;
+    setCoachSeances(prev => [...prev, created]);
+    resetCreatePanel();
+    setLiveSeance(created);
   };
 
   const downloadPdf = async () => {
@@ -182,6 +237,7 @@ export default function ProgrammePage() {
       loadMuscleVolume(user.id).then(setMuscleVolume).catch(() => {});
       loadPersonalRecords(user.id).then(r => setRecords(r.slice(0, 6))).catch(() => {});
     })();
+    loadCatalogue().then(setCatalogue).catch(() => {});
     const saved  = localStorage.getItem("programme_logs");
     const savedG = localStorage.getItem("steps_goal");
     const savedP = localStorage.getItem("perf_history");
@@ -348,19 +404,49 @@ export default function ProgrammePage() {
     workouts.filter(w => !w.date.startsWith(selectedDate)).map(w => w.date.split("T")[0])
   )].sort().reverse().slice(0, 30);
 
-  // Résumé de la semaine (lundi → aujourd'hui) affiché avant le détail du jour — séances
-  // assignées cochées + activités loggées à la main, dédupliquées par jour.
+  // Lundi de la semaine en cours — base du strip de flammes et du calcul de série.
   const weekStartISO = (() => {
     const d = new Date(); const day = (d.getDay() + 6) % 7; d.setDate(d.getDate() - day);
     return d.toISOString().slice(0, 10);
   })();
-  const weekActiveDays = new Set([
-    ...workouts.filter(w => w.date.slice(0, 10) >= weekStartISO).map(w => w.date.slice(0, 10)),
-    ...coachSeances.filter(s => s.completed_at && s.completed_at.slice(0, 10) >= weekStartISO).map(s => s.completed_at!.slice(0, 10)),
+
+  // Jours "entraînés" (toutes dates confondues) : séance coach/libre complétée OU
+  // activité cardio loggée à la main — même logique que le calendrier de régularité,
+  // pour que la flamme et le calendrier racontent toujours la même histoire.
+  const trainedDaysSet = new Set([
+    ...workouts.map(w => w.date.slice(0, 10)),
+    ...coachSeances.filter(s => s.completed_at).map(s => s.completed_at!.slice(0, 10)),
   ]);
-  const weekKcal = workouts
-    .filter(w => w.date.slice(0, 10) >= weekStartISO)
-    .reduce((s, w) => s + w.calories_burned, 0);
+
+  // Série en cours façon Duolingo : jours consécutifs entraînés en remontant depuis
+  // aujourd'hui. Si rien n'est encore loggé aujourd'hui, on part d'hier pour ne pas casser
+  // une série en cours simplement parce que la journée n'est pas terminée.
+  const currentStreak = (() => {
+    let streak = 0;
+    const cursor = new Date(`${todayStr()}T12:00:00`);
+    if (!trainedDaysSet.has(todayStr())) cursor.setDate(cursor.getDate() - 1);
+    for (;;) {
+      const iso = cursor.toISOString().slice(0, 10);
+      if (!trainedDaysSet.has(iso)) break;
+      streak++;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+    return streak;
+  })();
+
+  const WEEK_LABELS = ["L", "M", "M", "J", "V", "S", "D"];
+  const weekDaysInfo = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(`${weekStartISO}T12:00:00`); d.setDate(d.getDate() + i);
+    const iso = d.toISOString().slice(0, 10);
+    return { iso, label: WEEK_LABELS[i], trained: trainedDaysSet.has(iso), isToday: iso === todayStr() };
+  });
+
+  // Séances (coach + libres) prévues pour la date sélectionnée — mises en avant dans le
+  // bloc "Entraînement" plutôt que noyées dans la liste complète plus bas.
+  const seancesSelectedDate = coachSeances.filter(s => s.date_prevue === selectedDate);
+  const pendingSelectedDate = seancesSelectedDate.filter(s => !s.completed_at);
+  const doneSelectedDate    = seancesSelectedDate.filter(s => s.completed_at);
+  const createValidCount    = createItems.filter(it => it.nom.trim()).length;
 
   return (
     <div className="p-4 sm:p-8 max-w-2xl">
@@ -373,19 +459,109 @@ export default function ProgrammePage() {
 
       <DateNav date={selectedDate} onChange={setSelectedDate} statuses={dayStatuses}/>
 
-      {/* ── Résumé de la semaine ── */}
-      <div className="flex items-stretch border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl mb-6 overflow-hidden">
-        <div className="flex-1 text-center py-4">
-          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[var(--t-text)] tracking-wide leading-none">{weekActiveDays.size}</p>
-          <p className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mt-1.5">
-            Séance{weekActiveDays.size > 1 ? "s" : ""} cette semaine
-          </p>
+      {/* ══ ENTRAÎNEMENT — série, séance du jour, création inline ══ */}
+      <div className="border border-[#c9a84c]/25 bg-[var(--t-surface-gold)] rounded-2xl p-5 mb-6">
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <div className="flex items-center gap-2.5">
+            <Icon icon={Flame} fill="currentColor" stroke="none"
+              className={`w-8 h-8 shrink-0 ${currentStreak > 0 ? "text-[#e8a13c]" : "text-[var(--t-text-15)]"}`}/>
+            <div>
+              <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[var(--t-text)] tracking-wide leading-none">{currentStreak}</p>
+              <p className="text-[0.58rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mt-0.5">
+                {currentStreak > 1 ? "jours de suite" : "jour de suite"}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-end gap-1.5 shrink-0">
+            {weekDaysInfo.map(d => (
+              <div key={d.iso} className="flex flex-col items-center gap-1">
+                <Icon icon={Flame} fill="currentColor" stroke="none"
+                  className={`w-3.5 h-3.5 ${d.trained ? "text-[#e8a13c]" : "text-[var(--t-text-15)]"}`}/>
+                <span className={`text-[0.5rem] uppercase ${d.isToday ? "text-[#c9a84c]" : "text-[var(--t-text-20)]"}`}>{d.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="w-px bg-[var(--t-border-soft)]"/>
-        <div className="flex-1 text-center py-4">
-          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[var(--t-text)] tracking-wide leading-none">{weekKcal.toLocaleString("fr-FR")}</p>
-          <p className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mt-1.5">Kcal brûlées cette semaine</p>
-        </div>
+
+        {/* Séance(s) prévues pour la date sélectionnée */}
+        {pendingSelectedDate.length > 0 ? (
+          <div className="flex flex-col gap-2">
+            {pendingSelectedDate.map(s => (
+              <div key={s.id} className="border border-[var(--t-border-soft)] bg-[var(--t-bg)] rounded-xl p-3.5 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                    {s.created_by_client
+                      ? <span className="text-[0.58rem] tracking-wider uppercase text-[var(--t-text-30)] rounded-full border border-[var(--t-border)] px-1.5 py-0.5 shrink-0">Toi</span>
+                      : <span className="text-[0.58rem] tracking-wider uppercase text-[#c9a84c] rounded-full border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">Samuel</span>}
+                    {s.type_seance && <span className="text-[0.58rem] tracking-wider uppercase text-[#c9a84c] rounded-full border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">{s.type_seance}</span>}
+                  </div>
+                  <p className="text-sm text-[var(--t-text-70)] truncate">{s.titre}</p>
+                </div>
+                {hasLoggableSets(parseExercices(s.exercices)) ? (
+                  <button onClick={() => setLiveSeance(s)}
+                    className="shrink-0 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.65rem] font-bold tracking-[0.12em] uppercase px-4 py-2.5 rounded-xl shadow-[0_4px_16px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_20px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all">
+                    ▶ Démarrer
+                  </button>
+                ) : (
+                  <button onClick={() => toggleSeanceDone(s)}
+                    className="shrink-0 border border-[var(--t-border)] text-[var(--t-text-40)] text-[0.65rem] tracking-[0.12em] uppercase px-4 py-2.5 rounded-xl hover:border-[#7eb8a0]/40 hover:text-[#7eb8a0] transition-colors">
+                    Marquer fait
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="border border-dashed border-[var(--t-border)] rounded-xl py-4 text-center">
+            <p className="text-[0.7rem] text-[var(--t-text-30)]">
+              {doneSelectedDate.length > 0 ? "Séance du jour terminée ✓" : "Aucune séance prévue pour ce jour."}
+            </p>
+          </div>
+        )}
+
+        {!createOpen && (
+          <button onClick={() => setCreateOpen(true)}
+            className="w-full mt-3 flex items-center justify-center gap-2 border-2 border-dashed border-[#c9a84c]/40 text-[#c9a84c] text-[0.65rem] font-bold tracking-[0.15em] uppercase py-3 rounded-xl hover:bg-[#c9a84c]/5 transition-colors">
+            <Icon icon={Plus} size={14} strokeWidth={2.5}/>
+            Créer ma séance
+          </button>
+        )}
+
+        {/* Panneau de création inline — même logique que l'ancienne page /creer-ma-seance,
+            fusionnée ici pour ne plus avoir à naviguer ailleurs pour démarrer. */}
+        {createOpen && (
+          <div className="mt-3 border-t border-[#c9a84c]/15 pt-4 flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <p className="text-[0.62rem] tracking-[0.2em] uppercase text-[var(--t-text-30)]">Nouvelle séance</p>
+              <button onClick={resetCreatePanel} className="text-[var(--t-text-25)] hover:text-[var(--t-text-60)] transition-colors">
+                <Icon icon={X} size={14} strokeWidth={2}/>
+              </button>
+            </div>
+
+            <button onClick={startFreeformInline} disabled={!userId || startingFreeform}
+              className="text-left border border-[#c9a84c]/30 bg-[#c9a84c]/[0.04] rounded-xl p-3.5 hover:bg-[#c9a84c]/10 active:scale-[0.99] transition-all disabled:opacity-50">
+              <p className="text-[0.72rem] text-[var(--t-text-70)] font-medium mb-0.5">
+                {startingFreeform ? "Démarrage…" : "Démarrer en direct →"}
+              </p>
+              <p className="text-[0.62rem] text-[var(--t-text-30)] leading-relaxed">Le chrono démarre tout de suite, ajoute tes exercices et logue séries/reps/poids au fur et à mesure.</p>
+            </button>
+
+            <p className="text-[0.58rem] tracking-[0.2em] uppercase text-[var(--t-text-20)] text-center">— ou prépare-la à l&apos;avance —</p>
+
+            <ExerciceEditor items={createItems} onChange={setCreateItems} catalogue={catalogue} simplified/>
+
+            {createValidCount > 0 && (
+              <>
+                <input className={inputCls} placeholder="Nom de la séance (optionnel)"
+                  value={createTitre} onChange={e => setCreateTitre(e.target.value)}/>
+                <button onClick={saveCreatedSeance} disabled={createSaving}
+                  className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.15em] uppercase py-3 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] transition-all disabled:opacity-40">
+                  {createSaving ? "Enregistrement…" : "Enregistrer pour plus tard →"}
+                </button>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ── EAT / NEAT / TOTAL ── */}
@@ -707,42 +883,6 @@ export default function ProgrammePage() {
         </div>
       )}
 
-      {/* ── Records personnels ── */}
-      {records.length > 0 && (
-        <div className="mb-6">
-          <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[var(--t-text-30)] mb-3">Mes records</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {records.map(r => (
-              <div key={r.nom} className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-2xl p-3.5 flex flex-col gap-2">
-                <p className="text-[0.68rem] text-[var(--t-text-60)] font-medium capitalize truncate">{r.nom}</p>
-                <div className="flex items-baseline gap-1">
-                  <span style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[var(--t-text)] tracking-wide leading-none">{r.currentKg}</span>
-                  <span className="text-[0.62rem] text-[var(--t-text-30)]">kg</span>
-                </div>
-                <Sparkline points={r.points} color="#c9a84c"/>
-                <p className="text-[0.58rem] text-[var(--t-text-20)] tracking-wide">
-                  {new Date(r.date + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── Mésocycle en cours ── */}
-      {activeMeso && (
-        <div className="mb-6">
-          <MesocycleCard meso={activeMeso}/>
-        </div>
-      )}
-
-      {/* ── Volume par muscle ── */}
-      {Object.keys(muscleVolume).length > 0 && (
-        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 mb-6">
-          <MuscleVolumeChart byMuscle={muscleVolume}/>
-        </div>
-      )}
-
       {/* ── Mon programme (séances envoyées par Samuel + séances libres) ── */}
       {coachSeances.length > 0 && (
         <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-xl mb-6">
@@ -835,6 +975,44 @@ export default function ProgrammePage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* ── Progression (records, mésocycle, volume) — repliée par défaut pour désencombrer ── */}
+      {(records.length > 0 || activeMeso || Object.keys(muscleVolume).length > 0) && (
+        <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl mb-6">
+          <button onClick={() => setProgressionOpen(v => !v)}
+            className="w-full text-left flex items-center justify-between px-5 py-3.5 hover:bg-[var(--t-glass-bg)] transition-colors">
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[var(--t-text)]">Progression</p>
+            <Icon icon={ChevronDown} size={12}
+              className={`text-[var(--t-text-25)] shrink-0 transition-transform ${progressionOpen ? "rotate-180" : ""}`}/>
+          </button>
+          {progressionOpen && (
+            <div className="border-t border-[var(--t-border-soft)] p-5 flex flex-col gap-6">
+              {activeMeso && <MesocycleCard meso={activeMeso}/>}
+              {Object.keys(muscleVolume).length > 0 && <MuscleVolumeChart byMuscle={muscleVolume}/>}
+              {records.length > 0 && (
+                <div>
+                  <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[var(--t-text-30)] mb-3">Mes records</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {records.map(r => (
+                      <div key={r.nom} className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-2xl p-3.5 flex flex-col gap-2">
+                        <p className="text-[0.68rem] text-[var(--t-text-60)] font-medium capitalize truncate">{r.nom}</p>
+                        <div className="flex items-baseline gap-1">
+                          <span style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[var(--t-text)] tracking-wide leading-none">{r.currentKg}</span>
+                          <span className="text-[0.62rem] text-[var(--t-text-30)]">kg</span>
+                        </div>
+                        <Sparkline points={r.points} color="#c9a84c"/>
+                        <p className="text-[0.58rem] text-[var(--t-text-20)] tracking-wide">
+                          {new Date(r.date + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
