@@ -7,6 +7,7 @@ import { DateNav } from "@/components/DateNav";
 import { CalRefToggle, TdeeIcon } from "@/components/CalRefToggle";
 import { useSelectedDate, todayStr } from "@/lib/useSelectedDate";
 import { syncSteps } from "@/lib/steps";
+import { searchNaehrwertdaten } from "@/lib/naehrwertdaten";
 import { BrowserCodeReader, BrowserMultiFormatReader } from "@zxing/browser";
 import type { IScannerControls } from "@zxing/browser";
 import { BarcodeFormat, DecodeHintType } from "@zxing/library";
@@ -912,11 +913,19 @@ export default function NutritionPage() {
 
   const doSearch = useCallback(async (q: string) => {
     setSearching(true);
-    try {
-      const res = await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&json=1&page_size=8&fields=product_name,brands,nutriments&search_simple=1&action=process&lc=fr`);
-      const data = await res.json();
-      setResults((data.products as OFFProduct[])?.filter(p => p.product_name && p.nutriments?.["energy-kcal_100g"]) ?? []);
-    } catch { setResults([]); }
+    // Open Food Facts couvre bien les produits emballés/marques ; la base suisse (BLV)
+    // couvre mieux les aliments génériques (viandes, légumes, plats faits maison...) —
+    // les deux tournent en parallèle, l'échec de l'une n'empêche pas d'afficher l'autre.
+    const [off, ch] = await Promise.allSettled([
+      fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&json=1&page_size=8&fields=product_name,brands,nutriments&search_simple=1&action=process&lc=fr`)
+        .then(res => res.json())
+        .then(data => (data.products as OFFProduct[])?.filter(p => p.product_name && p.nutriments?.["energy-kcal_100g"]) ?? []),
+      searchNaehrwertdaten(q),
+    ]);
+    setResults([
+      ...(off.status === "fulfilled" ? off.value : []),
+      ...(ch.status === "fulfilled" ? ch.value : []),
+    ]);
     setSearching(false);
   }, []);
 
@@ -1558,7 +1567,10 @@ export default function NutritionPage() {
                     Données alimentaires fournies par{" "}
                     <a href="https://world.openfoodfacts.org" target="_blank" rel="noopener noreferrer" className="underline hover:text-[var(--t-text-30)] transition-colors">
                       Open Food Facts
-                    </a>, sous licence Open Database License.
+                    </a>{" "}et la{" "}
+                    <a href="https://naehrwertdaten.ch" target="_blank" rel="noopener noreferrer" className="underline hover:text-[var(--t-text-30)] transition-colors">
+                      base suisse des valeurs nutritives
+                    </a> (BLV/OSAV).
                   </p>
 
                   {results.length > 0 && !selected && (
