@@ -3,7 +3,6 @@ import { useEffect, useMemo, useRef, useState, type TouchEvent } from "react";
 import { supabase } from "@/lib/supabase";
 import { type ExerciceItem, type SetDetail, parseExercices, serializeExercices, emptyExercice, groupExerciceRuns, targetSetsFor, effectiveLoad } from "@/lib/exercices";
 import { useWakeLock } from "@/lib/useWakeLock";
-import { Select } from "@/components/Select";
 import { getMyCoachEmail } from "@/lib/coach";
 import {
   estimate1RM, isNewRecord, parseRestSeconds,
@@ -14,7 +13,7 @@ import { loadCatalogue, type CatalogueEntry } from "@/lib/exercicesCatalogue";
 import { ExerciceLibraryBrowser } from "@/components/ExerciceLibraryBrowser";
 import { NumberStepper, numOr } from "@/components/NumberStepper";
 import { Icon } from "@/components/Icon";
-import { Check, X, ChevronLeft, ChevronRight, Dumbbell, NotebookPen } from "@/lib/solarIcons";
+import { Check, X, ChevronLeft, ChevronRight, Dumbbell, NotebookPen, Plus } from "@/lib/solarIcons";
 
 type LiveSeance = { id: string; titre: string; exercices: string | null };
 type SetLogState = { poids: string; reps: string; rir: string; done: boolean };
@@ -43,31 +42,64 @@ function displaySetsFor(ex: ExerciceItem, extra: number): { target: SetDetail; i
   return [...base, ...extras];
 }
 
+// Chips plutôt qu'un menu déroulant : 5 options seulement, autant les rendre toutes
+// visibles et tapables d'un coup — plus rapide et plus "gros bouton" qu'ouvrir un select.
+function RirChips({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-25)] shrink-0">RIR</span>
+      <div className="flex items-center gap-1 flex-1">
+        {[0, 1, 2, 3, 4].map(n => {
+          const v = String(n);
+          const active = value === v;
+          return (
+            <button key={n} type="button" onClick={() => onChange(active ? "" : v)}
+              className={`flex-1 h-9 rounded-lg text-xs font-bold transition-all ${
+                active ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "bg-[var(--t-bg)] border border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[var(--t-text-20)]"}`}>
+              {n}{n === 4 ? "+" : ""}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// Chaque série est sa propre carte (plutôt qu'une ligne de tableau compressée) : les
+// chiffres poids/reps — l'info la plus regardée pendant l'effort — ont la place d'être
+// gros, et le bouton de validation devient une vraie cible tactile plutôt qu'un point.
 function SetRow({ target, idx, log, prev, isExtra, bodyweight, onToggle, onChange, onCopyPrev }: {
   target: SetDetail; idx: number; log: SetLogState | undefined; prev: { poids: number | null; reps: number | null } | undefined;
   isExtra: boolean; bodyweight?: boolean; onToggle: () => void; onChange: (field: "poids" | "reps" | "rir", val: string) => void; onCopyPrev: () => void;
 }) {
   const hasPrev = prev && (prev.poids != null || prev.reps != null);
+  const done = !!log?.done;
   return (
-    <div className={`grid grid-cols-[24px_44px_1fr_1fr_42px_44px] items-center gap-1.5 rounded-xl px-1.5 py-1.5 transition-colors ${log?.done ? "bg-[#7eb8a0]/12" : isExtra ? "bg-[#c9a84c]/[0.05]" : ""}`}>
-      <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[0.68rem] font-bold shrink-0 ${log?.done ? "bg-[#7eb8a0] text-black" : "bg-[var(--t-track)] text-[var(--t-text-40)]"}`}>{idx + 1}</span>
-      {hasPrev && !log?.done ? (
-        <button onClick={onCopyPrev} className="text-[0.68rem] text-[var(--t-text-30)] truncate text-left hover:text-[#c9a84c] transition-colors underline decoration-dotted decoration-[var(--t-text-15)]">
-          {fmtPrev(prev)}
+    <div className={`rounded-2xl border p-3.5 flex flex-col gap-3 transition-colors ${
+      done ? "border-[#7eb8a0]/40 bg-[#7eb8a0]/[0.08]" : isExtra ? "border-[#c9a84c]/25 bg-[#c9a84c]/[0.04]" : "border-[var(--t-border-soft)] bg-[var(--t-bg)]"}`}>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${done ? "bg-[#7eb8a0] text-black" : "bg-[var(--t-track)] text-[var(--t-text-40)]"}`}>{idx + 1}</span>
+          {hasPrev && (
+            done ? (
+              <span className="text-xs text-[var(--t-text-20)] truncate">Préc. {fmtPrev(prev)}</span>
+            ) : (
+              <button onClick={onCopyPrev} className="text-xs text-[var(--t-text-30)] truncate hover:text-[#c9a84c] transition-colors underline decoration-dotted decoration-[var(--t-text-15)]">
+                Préc. {fmtPrev(prev)}
+              </button>
+            )
+          )}
+        </div>
+        <button onClick={onToggle}
+          className={`w-12 h-12 rounded-full border-2 shrink-0 flex items-center justify-center transition-all active:scale-90 ${done ? "bg-[#7eb8a0] border-[#7eb8a0] text-black" : "border-[var(--t-border)] text-transparent hover:border-[#7eb8a0]/50"}`}>
+          <Icon icon={Check} size={22} strokeWidth={3}/>
         </button>
-      ) : (
-        <span className="text-[0.68rem] text-[var(--t-text-15)] truncate">{hasPrev ? fmtPrev(prev) : "—"}</span>
-      )}
-      <NumberStepper value={log?.poids ?? ""} placeholder={bodyweight ? (target.poids || "+kg") : (target.poids || "kg")} step={2.5} onChange={v => onChange("poids", v)} accent/>
-      <NumberStepper value={log?.reps ?? ""} placeholder={target.reps || "reps"} step={1} onChange={v => onChange("reps", v)}/>
-      <Select value={log?.rir ?? ""} onChange={v => onChange("rir", v)} placeholder="RIR"
-        options={[0, 1, 2, 3, 4].map(n => ({ value: String(n), label: `${n}${n === 4 ? "+" : ""}` }))}
-        triggerClassName="bg-[var(--t-bg)] border border-[var(--t-border)] rounded-xl text-[0.62rem] text-[var(--t-text-40)] px-0.5 py-2.5 w-full justify-center"
-        panelClassName="w-16"/>
-      <button onClick={onToggle}
-        className={`w-11 h-11 rounded-full border-2 shrink-0 flex items-center justify-center transition-all mx-auto active:scale-90 ${log?.done ? "bg-[#7eb8a0] border-[#7eb8a0] text-black" : "border-[var(--t-border)] text-transparent hover:border-[#7eb8a0]/50"}`}>
-        <Icon icon={Check} size={18} strokeWidth={3}/>
-      </button>
+      </div>
+      <div className="grid grid-cols-2 gap-2.5">
+        <NumberStepper size="lg" value={log?.poids ?? ""} placeholder={bodyweight ? (target.poids || "+kg") : (target.poids || "kg")} step={2.5} onChange={v => onChange("poids", v)} accent/>
+        <NumberStepper size="lg" value={log?.reps ?? ""} placeholder={target.reps || "reps"} step={1} onChange={v => onChange("reps", v)}/>
+      </div>
+      <RirChips value={log?.rir ?? ""} onChange={v => onChange("rir", v)}/>
     </div>
   );
 }
@@ -83,37 +115,29 @@ function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle,
   const pct = rows.length ? Math.round((doneCount / rows.length) * 100) : 0;
   const complete = rows.length > 0 && doneCount === rows.length;
   return (
-    <div className={`border rounded-2xl p-4 flex flex-col gap-3 transition-colors ${complete ? "border-[#7eb8a0]/30 bg-[#7eb8a0]/[0.04]" : "border-[var(--t-border-soft)] bg-[var(--t-surface)]"}`}>
+    <div className={`border rounded-2xl p-4 flex flex-col gap-4 transition-colors ${complete ? "border-[#7eb8a0]/30 bg-[#7eb8a0]/[0.04]" : "border-[var(--t-border-soft)] bg-[var(--t-surface)]"}`}>
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <p className="text-sm font-semibold text-[var(--t-text)] truncate">{ex.nom}</p>
-            {ex.bodyweight && <span className="text-[0.58rem] text-[var(--t-text-30)] shrink-0" title="Charge = poids de corps + lest">🏋️ PDC</span>}
-            {prBadge && <span className="text-[0.62rem] text-[#c9a84c] shrink-0">🏆 Record</span>}
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="text-lg font-bold text-[var(--t-text)] truncate">{ex.nom}</p>
+            {ex.bodyweight && <span className="text-[0.6rem] text-[var(--t-text-30)] shrink-0" title="Charge = poids de corps + lest">🏋️ PDC</span>}
+            {prBadge && <span className="text-xs text-[#c9a84c] shrink-0 font-medium">🏆 Record</span>}
           </div>
           {rows.length > 0 && (
-            <div className="flex items-center gap-2 mt-1.5">
-              <div className="h-1.5 w-24 bg-[var(--t-track)] rounded-full overflow-hidden">
+            <div className="flex items-center gap-2.5 mt-2">
+              <div className="h-2 w-28 bg-[var(--t-track)] rounded-full overflow-hidden">
                 <div className={`h-full rounded-full transition-all duration-300 ${complete ? "bg-[#7eb8a0]" : "bg-[#c9a84c]"}`} style={{ width: `${pct}%` }}/>
               </div>
-              <span className={`text-[0.65rem] tracking-wider shrink-0 font-medium ${complete ? "text-[#7eb8a0]" : "text-[var(--t-text-30)]"}`}>{doneCount}/{rows.length}</span>
+              <span className={`text-xs tracking-wider shrink-0 font-bold ${complete ? "text-[#7eb8a0]" : "text-[var(--t-text-30)]"}`}>{doneCount}/{rows.length}</span>
             </div>
           )}
         </div>
-        {complete && <span className="text-[#7eb8a0] shrink-0 text-lg">✓</span>}
+        {complete && <span className="text-[#7eb8a0] shrink-0 text-2xl">✓</span>}
       </div>
 
       {rows.length > 0 ? (
         <>
-          <div className="grid grid-cols-[24px_44px_1fr_1fr_42px_44px] items-center gap-1.5 px-1.5">
-            <span className="text-[0.58rem] tracking-[0.1em] uppercase text-[var(--t-text-20)] text-center">Série</span>
-            <span className="text-[0.58rem] tracking-[0.1em] uppercase text-[var(--t-text-20)]">Préc.</span>
-            <span className="text-[0.58rem] tracking-[0.1em] uppercase text-[var(--t-text-20)] text-center">Kg</span>
-            <span className="text-[0.58rem] tracking-[0.1em] uppercase text-[var(--t-text-20)] text-center">Reps</span>
-            <span className="text-[0.58rem] tracking-[0.1em] uppercase text-[var(--t-text-20)] text-center">Rir</span>
-            <span/>
-          </div>
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-2.5">
             {rows.map((row, setIdx) => (
               <SetRow key={setIdx} target={row.target} idx={setIdx} isExtra={row.isExtra} bodyweight={ex.bodyweight}
                 log={logs[`${exIdx}-${setIdx}`]} prev={history[setIdx]}
@@ -123,8 +147,8 @@ function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle,
             ))}
           </div>
           <button onClick={() => onAddSet(exIdx)}
-            className="text-[0.7rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[#c9a84c] transition-colors text-left px-2 py-3 font-medium">
-            + Ajouter une série
+            className="w-full flex items-center justify-center gap-2 border-2 border-dashed border-[var(--t-border)] rounded-xl text-xs tracking-wider uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors py-3 font-bold">
+            <Icon icon={Plus} size={14} strokeWidth={2.5}/> Ajouter une série
           </button>
         </>
       ) : ex.texteLibre ? (
@@ -502,29 +526,29 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
         <button onClick={onClose} className="text-[var(--t-text-30)] hover:text-[var(--t-text)] transition-colors shrink-0 w-11 h-11 flex items-center justify-center -ml-2.5">
           <Icon icon={X} size={20} strokeWidth={2}/>
         </button>
-        <p style={{ fontFamily: "var(--font-bebas)" }} className="text-lg tracking-wider text-[var(--t-text)] truncate flex-1 text-center">{seance.titre}</p>
+        <p style={{ fontFamily: "var(--font-bebas)" }} className="text-xl tracking-wider text-[var(--t-text)] truncate flex-1 text-center">{seance.titre}</p>
         <button onClick={finish} disabled={finishing}
           className="shrink-0 rounded-full text-xs font-bold tracking-[0.12em] uppercase px-5 py-3 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black shadow-[0_3px_12px_-4px_rgba(201,168,76,0.6)] transition-all disabled:opacity-50">
           {finishing ? "…" : "Terminer"}
         </button>
       </div>
 
-      <div className="h-1 bg-[var(--t-track)] shrink-0">
+      <div className="h-1.5 bg-[var(--t-track)] shrink-0">
         <div className="h-full bg-gradient-to-r from-[#e2c97e] to-[#c9a84c] transition-all duration-500 max-w-lg mx-auto" style={{ width: `${overallPct}%` }}/>
       </div>
 
       <div className="border-b border-[var(--t-border-soft)] shrink-0">
         <div className="grid grid-cols-3 max-w-lg mx-auto">
-          <div className="text-center py-3.5 border-r border-[var(--t-border-soft)]">
-            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[var(--t-text)] tracking-wide leading-none">{fmtDuration(elapsed)}</p>
+          <div className="text-center py-4 border-r border-[var(--t-border-soft)]">
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[var(--t-text)] tracking-wide leading-none">{fmtDuration(elapsed)}</p>
             <p className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-25)] mt-1.5">Durée</p>
           </div>
-          <div className="text-center py-3.5 border-r border-[var(--t-border-soft)]">
-            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[#c9a84c] tracking-wide leading-none">{Math.round(volume).toLocaleString("fr-FR")}</p>
+          <div className="text-center py-4 border-r border-[var(--t-border-soft)]">
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[#c9a84c] tracking-wide leading-none">{Math.round(volume).toLocaleString("fr-FR")}</p>
             <p className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-25)] mt-1.5">Volume kg</p>
           </div>
-          <div className="text-center py-3.5">
-            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[var(--t-text)] tracking-wide leading-none">{doneSets}/{totalSets}</p>
+          <div className="text-center py-4">
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[var(--t-text)] tracking-wide leading-none">{doneSets}/{totalSets}</p>
             <p className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-25)] mt-1.5">Séries</p>
           </div>
         </div>
