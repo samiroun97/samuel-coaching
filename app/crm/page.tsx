@@ -3,6 +3,8 @@ export const dynamic = "force-dynamic";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { Icon } from "@/components/Icon";
+import { MessageCircle, Clock, AlertCircle, FileText, TrendingUp, CheckCircle2 } from "@/lib/solarIcons";
 
 const STAGE_LABEL: Record<string, string> = { prospect: "Prospect", onboarding: "Onboarding", actif: "Actif", en_risque: "En risque", churne: "Churné", reactive: "Réactivé" };
 const STAGE_COLOR: Record<string, string> = { prospect: "#888", onboarding: "#c9a84c", actif: "#7eb8a0", en_risque: "#e09070", churne: "#e07070", reactive: "#6ea8d9" };
@@ -108,37 +110,46 @@ export default function CRMDashboard() {
   const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().split("T")[0];
   const ckThisWeek = checkins.filter(c => c.week_date >= weekAgo).length;
 
-  // ── Alerts ──
-  type Alert = { type: "message" | "risque" | "abonnement" | "churn" | "sans_programme" | "mesocycle"; label: string; sub: string; href: string; color: string };
+  // ── Alerts — tout ce qui attend une action du coach aujourd'hui, trié par urgence réelle
+  // (temps depuis un message client / temps restant avant une échéance) plutôt que par type,
+  // pour que "message vieux de 3 jours" passe devant "abonnement qui expire dans 10 jours". ──
+  type AlertType = "message" | "risque" | "abonnement" | "churn" | "sans_programme" | "mesocycle";
+  type Alert = { type: AlertType; label: string; sub: string; href: string; color: string; urgency: number };
   const alerts: Alert[] = [];
 
   for (const [email, m] of convLastFrom) {
     if (m.from_email !== myEmail && !treated.has(email)) {
       const profile = clients.find(c => c.email === email);
       const name = profile ? `${profile.prenom} ${profile.nom}` : email;
-      const ago = Math.floor((now - new Date(m.created_at).getTime()) / 3600000);
-      alerts.push({ type: "message", label: `Message de ${name}`, sub: ago < 1 ? "À l'instant" : `Il y a ${ago}h`, href: "/crm/inbox", color: "#e07070" });
+      const agoHours = Math.floor((now - new Date(m.created_at).getTime()) / 3600000);
+      alerts.push({ type: "message", label: `Message de ${name}`, sub: agoHours < 1 ? "À l'instant" : `Il y a ${agoHours}h`, href: "/crm/inbox", color: "#e07070", urgency: agoHours / 24 });
     }
   }
   clients.filter(c => c.subscription_end).forEach(c => {
     const d = new Date(c.subscription_end!).getTime();
     const daysLeft = Math.ceil((d - now) / 86400000);
     if (daysLeft > 0 && daysLeft <= 14) {
-      alerts.push({ type: "abonnement", label: `${c.prenom} ${c.nom} — abonnement`, sub: `Expire dans ${daysLeft}j`, href: `/crm/clients`, color: daysLeft <= 3 ? "#e07070" : "#c9a84c" });
+      alerts.push({ type: "abonnement", label: `${c.prenom} ${c.nom} — abonnement`, sub: `Expire dans ${daysLeft}j`, href: `/crm/clients`, color: daysLeft <= 3 ? "#e07070" : "#c9a84c", urgency: daysLeft });
     }
   });
   clients.filter(c => (c.pipeline_stage ?? "actif") === "en_risque").forEach(c => {
-    alerts.push({ type: "risque", label: `${c.prenom} ${c.nom} — en risque`, sub: "Stage : En risque", href: "/crm/pipeline", color: "#e09070" });
+    alerts.push({ type: "risque", label: `${c.prenom} ${c.nom} — en risque`, sub: "Stage : En risque", href: "/crm/pipeline", color: "#e09070", urgency: 6 });
   });
   sansProgramme.forEach(c => {
-    alerts.push({ type: "sans_programme", label: `${c.prenom} ${c.nom} — sans programme`, sub: "Aucune séance envoyée", href: `/crm/programmes?client=${encodeURIComponent(c.email)}`, color: "#c9a84c" });
+    alerts.push({ type: "sans_programme", label: `${c.prenom} ${c.nom} — sans programme`, sub: "Aucune séance envoyée", href: `/crm/programmes?client=${encodeURIComponent(c.email)}`, color: "#c9a84c", urgency: 8 });
   });
   mesosEnding.forEach(me => {
     const p = clients.find(c => c.id === me.client_id);
     const name = p ? `${p.prenom} ${p.nom}` : "Client";
     const daysLeft = Math.ceil((new Date(me.date_fin).getTime() - now) / 86400000);
-    alerts.push({ type: "mesocycle", label: `${name} — mésocycle "${me.nom}"`, sub: daysLeft <= 0 ? "Se termine aujourd'hui" : `Se termine dans ${daysLeft}j`, href: p ? `/crm/programmes?client=${encodeURIComponent(p.email)}` : "/crm/clients", color: "#c9a84c" });
+    alerts.push({ type: "mesocycle", label: `${name} — mésocycle "${me.nom}"`, sub: daysLeft <= 0 ? "Se termine aujourd'hui" : `Se termine dans ${daysLeft}j`, href: p ? `/crm/programmes?client=${encodeURIComponent(p.email)}` : "/crm/clients", color: "#c9a84c", urgency: Math.max(daysLeft, 0) });
   });
+  alerts.sort((a, b) => a.urgency - b.urgency);
+
+  const ALERT_ICON: Record<AlertType, typeof MessageCircle> = {
+    message: MessageCircle, abonnement: Clock, risque: AlertCircle,
+    churn: AlertCircle, sans_programme: FileText, mesocycle: TrendingUp,
+  };
 
   // Recent check-ins enriched with client name
   const recentCks = checkins.slice(0, 6).map(ck => {
@@ -181,11 +192,58 @@ export default function CRMDashboard() {
         </p>
       </div>
 
-      {/* Inviter un client */}
-      {inviteCode && (
-        <div className="border border-[#c9a84c]/20 bg-[#c9a84c]/5 rounded-xl p-4 md:p-5 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      {/* ══ Aujourd'hui — ce qui attend une action, trié par urgence réelle ══ */}
+      <div className="border border-[#c9a84c]/25 bg-[var(--t-surface-gold)] rounded-2xl p-4 md:p-5 mb-8">
+        <div className="flex items-center gap-3 mb-4">
+          <span style={{ fontFamily: "var(--font-bebas)" }} className={`text-3xl tracking-wide leading-none ${alerts.length > 0 ? "text-[#c9a84c]" : "text-[#7eb8a0]"}`}>{alerts.length}</span>
           <div>
-            <p className="text-[0.65rem] tracking-[0.22em] uppercase text-[#c9a84c] mb-1">Inviter un client</p>
+            <p className="text-sm font-bold text-[var(--t-text)]">
+              {alerts.length === 0 ? "Rien ne presse aujourd'hui" : `Client${alerts.length > 1 ? "s" : ""} qui attend${alerts.length > 1 ? "ent" : ""} une action`}
+            </p>
+            <p className="text-[0.6rem] tracking-[0.1em] uppercase text-[var(--t-text-25)] mt-0.5">Trié par urgence</p>
+          </div>
+        </div>
+        {alerts.length === 0 ? (
+          <div className="flex items-center gap-2 rounded-xl border border-[#7eb8a0]/25 bg-[#7eb8a0]/5 px-4 py-3">
+            <Icon icon={CheckCircle2} size={16} strokeWidth={2} className="text-[#7eb8a0] shrink-0"/>
+            <p className="text-xs text-[var(--t-text-50)]">Messages répondus, abonnements et programmes à jour. Reviens plus tard.</p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {alerts.slice(0, 8).map((a, i) => (
+              <Link key={i} href={a.href}
+                className="flex items-center gap-3 rounded-xl border px-3 md:px-4 py-3 hover:bg-[var(--t-glass-bg)] transition-colors"
+                style={{ borderColor: `${a.color}25`, backgroundColor: `${a.color}07` }}>
+                <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: `${a.color}18`, color: a.color }}>
+                  <Icon icon={ALERT_ICON[a.type]} size={16} strokeWidth={2}/>
+                </div>
+                <p className="text-xs md:text-sm text-[var(--t-text-70)] truncate flex-1">{a.label}</p>
+                <span className="text-[0.55rem] md:text-[0.6rem] tracking-wider text-[var(--t-text-30)] shrink-0 font-medium">{a.sub}</span>
+              </Link>
+            ))}
+            {alerts.length > 8 && (
+              <p className="text-[0.6rem] tracking-wider text-[var(--t-text-20)] text-center pt-1">+ {alerts.length - 8} autre{alerts.length - 8 > 1 ? "s" : ""}</p>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* KPIs — vue d'ensemble secondaire, sous l'action du jour */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 md:gap-3 mb-8">
+        <KPI label="Clients actifs"    value={actifs}       color="#7eb8a0" href="/crm/clients"/>
+        <KPI label="En risque"         value={enRisque}     color="#e09070" href="/crm/pipeline"/>
+        <KPI label="Churné"            value={churne}       color="#e07070" href="/crm/pipeline"/>
+        <KPI label="Exp. < 14j"        value={in14}         color="#c9a84c" href="/crm/clients"/>
+        <KPI label="Non répondus"      value={nonRepondus}  color="#c9a84c" href="/crm/inbox"/>
+        <KPI label="Sans programme"    value={sansProgramme.length} color="#c9a84c" href="/crm/programmes"/>
+        <KPI label="Check-ins / 7j"    value={ckThisWeek}  />
+      </div>
+
+      {/* Inviter un client — utilitaire occasionnel, pas une action urgente du jour */}
+      {inviteCode && (
+        <div className="border border-[var(--t-border-soft)] bg-[var(--t-surface-2)] rounded-xl p-4 md:p-5 mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <p className="text-[0.6rem] tracking-[0.22em] uppercase text-[var(--t-text-30)] mb-1">Inviter un client</p>
             <p className="text-xs text-[var(--t-text-40)]">Code coach : <span style={{ fontFamily: "var(--font-bebas)" }} className="text-[var(--t-text)] tracking-[0.2em] text-sm">{inviteCode}</span></p>
           </div>
           <div className="flex gap-2 shrink-0">
@@ -197,37 +255,6 @@ export default function CRMDashboard() {
               className="px-3 py-2 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.1em] uppercase shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
               {copied === "link" ? "Copié ✓" : "Copier le lien"}
             </button>
-          </div>
-        </div>
-      )}
-
-      {/* KPIs */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 md:gap-3 mb-6 md:mb-8">
-        <KPI label="Clients actifs"    value={actifs}       color="#7eb8a0" href="/crm/clients"/>
-        <KPI label="En risque"         value={enRisque}     color="#e09070" href="/crm/pipeline"/>
-        <KPI label="Churné"            value={churne}       color="#e07070" href="/crm/pipeline"/>
-        <KPI label="Exp. < 14j"        value={in14}         color="#c9a84c" href="/crm/clients"/>
-        <KPI label="Non répondus"      value={nonRepondus}  color="#c9a84c" href="/crm/inbox"/>
-        <KPI label="Sans programme"    value={sansProgramme.length} color="#c9a84c" href="/crm/programmes"/>
-        <KPI label="Check-ins / 7j"    value={ckThisWeek}  />
-      </div>
-
-      {/* Alertes */}
-      {alerts.length > 0 && (
-        <div className="mb-8">
-          <p className="text-[0.65rem] tracking-[0.25em] uppercase text-[var(--t-text-25)] mb-3">Alertes ({alerts.length})</p>
-          <div className="flex flex-col gap-2">
-            {alerts.slice(0, 8).map((a, i) => (
-              <Link key={i} href={a.href}
-                className="flex items-center justify-between gap-2 rounded-xl border px-3 md:px-4 py-3 hover:bg-[var(--t-glass-bg)] transition-colors"
-                style={{ borderColor: `${a.color}25`, backgroundColor: `${a.color}07` }}>
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-1 h-5 shrink-0" style={{ backgroundColor: a.color }}/>
-                  <p className="text-xs text-[var(--t-text-70)] truncate">{a.label}</p>
-                </div>
-                <span className="text-[0.48rem] tracking-wider text-[var(--t-text-30)] shrink-0">{a.sub}</span>
-              </Link>
-            ))}
           </div>
         </div>
       )}
