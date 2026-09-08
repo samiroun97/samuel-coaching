@@ -13,7 +13,8 @@ import { loadCatalogue, type CatalogueEntry } from "@/lib/exercicesCatalogue";
 import { ExerciceLibraryBrowser } from "@/components/ExerciceLibraryBrowser";
 import { NumberStepper, numOr } from "@/components/NumberStepper";
 import { Icon } from "@/components/Icon";
-import { Check, X, ChevronLeft, ChevronRight, Dumbbell, NotebookPen, Plus, Trash2 } from "@/lib/solarIcons";
+import { Check, X, ChevronLeft, ChevronRight, Dumbbell, NotebookPen, Plus, Trash2, Clock } from "@/lib/solarIcons";
+import { RoundTimer } from "@/components/RoundTimer";
 
 type LiveSeance = { id: string; titre: string; exercices: string | null };
 type SetLogState = { poids: string; reps: string; rir: string; done: boolean };
@@ -182,6 +183,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
   const [addingExercice, setAddingExercice] = useState(false);
   const [newExerciceNom, setNewExerciceNom] = useState("");
   const [showLibrary, setShowLibrary] = useState(false);
+  const [showTimer, setShowTimer] = useState(false);
   const [catalogue, setCatalogue] = useState<CatalogueEntry[]>([]);
   useEffect(() => { loadCatalogue().then(setCatalogue).catch(() => {}); }, []);
   // Lier le prochain exercice ajouté à celui actuellement affiché — même mécanisme que
@@ -554,6 +556,10 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
             className="text-[var(--t-text-20)] hover:text-[#e07070] transition-colors w-11 h-11 flex items-center justify-center disabled:opacity-40">
             <Icon icon={Trash2} size={18} strokeWidth={2}/>
           </button>
+          <button onClick={() => setShowTimer(true)} title="Minuteur par rounds"
+            className="text-[var(--t-text-20)] hover:text-[#c9a84c] transition-colors w-11 h-11 flex items-center justify-center">
+            <Icon icon={Clock} size={19} strokeWidth={2}/>
+          </button>
         </div>
         <p style={{ fontFamily: "var(--font-bebas)" }} className="text-xl tracking-wider text-[var(--t-text)] truncate flex-1 text-center">{seance.titre}</p>
         <button onClick={finish} disabled={finishing}
@@ -657,6 +663,8 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
           </div>
         </div>
       )}
+
+      {showTimer && <RoundTimer onClose={() => setShowTimer(false)}/>}
 
       <div className="flex-1 overflow-y-auto px-4 pb-28 max-w-lg mx-auto w-full" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         {!loaded ? (
