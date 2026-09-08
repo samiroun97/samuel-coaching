@@ -22,7 +22,7 @@ import { loadPersonalRecords, type PRCard } from "@/lib/personalRecords";
 import { Sparkline } from "@/components/Sparkline";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
-import { Activity, X, Mic, ChevronDown, Download, Flame, Plus } from "@/lib/solarIcons";
+import { Activity, X, Mic, ChevronDown, Download, Flame, Plus, Trash2 } from "@/lib/solarIcons";
 
 type Profile = { prenom: string; poids: number; taille: number; age: number; sexe: string; objectif_type: string | null };
 type LoggedWorkout = {
@@ -539,14 +539,20 @@ export default function ProgrammePage() {
           <div className="flex flex-col gap-3">
             {pendingSelectedDate.map(s => (
               <div key={s.id} className="border border-[var(--t-border-soft)] bg-[var(--t-bg)] rounded-2xl p-4 flex flex-col gap-3">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
-                    {s.created_by_client
-                      ? <span className="text-[0.6rem] tracking-wider uppercase text-[var(--t-text-30)] rounded-full border border-[var(--t-border)] px-1.5 py-0.5 shrink-0">Toi</span>
-                      : <span className="text-[0.6rem] tracking-wider uppercase text-[#c9a84c] rounded-full border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">Samuel</span>}
-                    {s.type_seance && <span className="text-[0.6rem] tracking-wider uppercase text-[#c9a84c] rounded-full border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">{s.type_seance}</span>}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
+                      {s.created_by_client
+                        ? <span className="text-[0.6rem] tracking-wider uppercase text-[var(--t-text-30)] rounded-full border border-[var(--t-border)] px-1.5 py-0.5 shrink-0">Toi</span>
+                        : <span className="text-[0.6rem] tracking-wider uppercase text-[#c9a84c] rounded-full border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">Samuel</span>}
+                      {s.type_seance && <span className="text-[0.6rem] tracking-wider uppercase text-[#c9a84c] rounded-full border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">{s.type_seance}</span>}
+                    </div>
+                    <p className="text-base text-[var(--t-text-70)] font-medium truncate">{s.titre}</p>
                   </div>
-                  <p className="text-base text-[var(--t-text-70)] font-medium truncate">{s.titre}</p>
+                  <button onClick={() => deleteSeance(s)} disabled={deletingSeanceId === s.id} title="Supprimer cette séance"
+                    className="shrink-0 text-[var(--t-text-20)] hover:text-[#e07070] transition-colors w-9 h-9 -mr-1.5 -mt-1 flex items-center justify-center disabled:opacity-40">
+                    <Icon icon={Trash2} size={16} strokeWidth={2}/>
+                  </button>
                 </div>
                 {hasLoggableSets(parseExercices(s.exercices)) ? (
                   <button onClick={() => setLiveSeance(s)}
