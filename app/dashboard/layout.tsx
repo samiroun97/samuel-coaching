@@ -8,14 +8,17 @@ import { startStateSync, SYNC_STATUS_EVENT } from "@/lib/syncStorage";
 import { isCoachUser, getMyCoachBusinessName, getMyOwnBusinessName } from "@/lib/coach";
 import { apiPost } from "@/lib/apiClient";
 import { Icon } from "@/components/Icon";
-import { Home, UtensilsCrossed, Dumbbell, TrendingUp, Play, UserCircle, LogOut } from "@/lib/solarIcons";
+import { Home, UtensilsCrossed, Dumbbell, TrendingUp, UserCircle, LogOut } from "@/lib/solarIcons";
 
+// "Séance" pointait autrefois vers /dashboard/programme/creer-ma-seance (page indépendante,
+// jamais retouchée lors de la refonte de l'écran d'entraînement) — un client qui partait de
+// ce lien n'a donc jamais vu la refonte, alors que tout le monde passant par "Activité" la
+// voyait. Les deux couvrent maintenant exactement la même page : un seul lien suffit.
 const navItems = [
   { label: "Accueil",   href: "/dashboard",            icon: Home },
   { label: "Nutrition", href: "/dashboard/nutrition",  icon: UtensilsCrossed },
   { label: "Activité",  href: "/dashboard/programme",  icon: Dumbbell },
   { label: "Suivi",     href: "/dashboard/suivi",      icon: TrendingUp },
-  { label: "Séance",    href: "/dashboard/programme/creer-ma-seance", icon: Play },
   { label: "Compte",    href: "/dashboard/profile",    icon: UserCircle },
 ];
 
