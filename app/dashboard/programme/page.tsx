@@ -116,13 +116,20 @@ export default function ProgrammePage() {
   const [createSaving,   setCreateSaving]   = useState(false);
   const [startingFreeform, setStartingFreeform] = useState(false);
 
+  // Sans confirmation propre : réutilisé par deleteSeance (confirm avant appel) et par
+  // l'écran de séance live (qui affiche sa propre confirmation, pour ne pas en demander deux).
+  const deleteSeanceSilent = async (id: string) => {
+    const { error } = await supabase.from("programme_seances").delete().eq("id", id);
+    if (error) return false;
+    setCoachSeances(prev => prev.filter(x => x.id !== id));
+    return true;
+  };
+
   const deleteSeance = async (s: CoachSeance) => {
     if (!window.confirm("Supprimer définitivement cette séance ?")) return;
     setDeletingSeanceId(s.id);
-    const { error } = await supabase.from("programme_seances").delete().eq("id", s.id);
+    await deleteSeanceSilent(s.id);
     setDeletingSeanceId(null);
-    if (error) return;
-    setCoachSeances(prev => prev.filter(x => x.id !== s.id));
     if (openSeance === s.id) setOpenSeance(null);
   };
 
@@ -1026,6 +1033,10 @@ export default function ProgrammePage() {
           onFinish={() => {
             setCoachSeances(prev => prev.map(x => x.id === liveSeance.id ? { ...x, completed_at: new Date().toISOString() } : x));
             setLiveSeance(null);
+          }}
+          onDelete={async () => {
+            const ok = await deleteSeanceSilent(liveSeance.id);
+            if (ok) setLiveSeance(null);
           }}
         />
       )}

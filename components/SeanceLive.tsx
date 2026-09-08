@@ -13,7 +13,7 @@ import { loadCatalogue, type CatalogueEntry } from "@/lib/exercicesCatalogue";
 import { ExerciceLibraryBrowser } from "@/components/ExerciceLibraryBrowser";
 import { NumberStepper, numOr } from "@/components/NumberStepper";
 import { Icon } from "@/components/Icon";
-import { Check, X, ChevronLeft, ChevronRight, Dumbbell, NotebookPen, Plus } from "@/lib/solarIcons";
+import { Check, X, ChevronLeft, ChevronRight, Dumbbell, NotebookPen, Plus, Trash2 } from "@/lib/solarIcons";
 
 type LiveSeance = { id: string; titre: string; exercices: string | null };
 type SetLogState = { poids: string; reps: string; rir: string; done: boolean };
@@ -166,8 +166,8 @@ function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle,
   );
 }
 
-export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish, onClose }: {
-  seance: LiveSeance; clientId: string; clientBodyweight?: number | null; onFinish: () => void; onClose: () => void;
+export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish, onClose, onDelete }: {
+  seance: LiveSeance; clientId: string; clientBodyweight?: number | null; onFinish: () => void; onClose: () => void; onDelete: () => void | Promise<void>;
 }) {
   // Séance mutable en mémoire : on part de la liste planifiée, mais le client peut vouloir
   // ajouter un exercice non prévu en cours de séance (improvisation, machine libre trouvée
@@ -403,6 +403,21 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
     }
   };
 
+  const [deleting, setDeleting] = useState(false);
+  // Annule l'entraînement : contrairement à onClose (qui laisse la séance intacte pour la
+  // reprendre plus tard), ça la supprime pour de bon — utile pour une séance libre lancée
+  // par erreur, ou qu'on ne veut finalement pas garder dans l'historique.
+  const cancelSeance = async () => {
+    if (deleting) return;
+    if (!window.confirm(doneSets > 0
+      ? `Annuler et supprimer définitivement cet entraînement ? Les ${doneSets} série${doneSets > 1 ? "s" : ""} déjà loguée${doneSets > 1 ? "s" : ""} seront perdues.`
+      : "Annuler et supprimer définitivement cet entraînement ?")) return;
+    setDeleting(true);
+    localStorage.removeItem(`seance_start_${seance.id}`);
+    await onDelete();
+    setDeleting(false);
+  };
+
   const finish = async () => {
     setFinishing(true);
     await supabase.from("programme_seances").update({ completed_at: new Date().toISOString() }).eq("id", seance.id);
@@ -530,9 +545,16 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
   return (
     <div className="fixed inset-0 bg-[var(--t-bg)] z-50 flex flex-col">
       <div className="flex items-center justify-between px-5 py-3.5 shrink-0 gap-3 max-w-lg mx-auto w-full">
-        <button onClick={onClose} className="text-[var(--t-text-30)] hover:text-[var(--t-text)] transition-colors shrink-0 w-11 h-11 flex items-center justify-center -ml-2.5">
-          <Icon icon={X} size={20} strokeWidth={2}/>
-        </button>
+        <div className="flex items-center -ml-2.5 shrink-0">
+          <button onClick={onClose} title="Fermer — reprendre plus tard"
+            className="text-[var(--t-text-30)] hover:text-[var(--t-text)] transition-colors w-11 h-11 flex items-center justify-center">
+            <Icon icon={X} size={20} strokeWidth={2}/>
+          </button>
+          <button onClick={cancelSeance} disabled={deleting} title="Annuler et supprimer cet entraînement"
+            className="text-[var(--t-text-20)] hover:text-[#e07070] transition-colors w-11 h-11 flex items-center justify-center disabled:opacity-40">
+            <Icon icon={Trash2} size={18} strokeWidth={2}/>
+          </button>
+        </div>
         <p style={{ fontFamily: "var(--font-bebas)" }} className="text-xl tracking-wider text-[var(--t-text)] truncate flex-1 text-center">{seance.titre}</p>
         <button onClick={finish} disabled={finishing}
           className="shrink-0 rounded-full text-xs font-bold tracking-[0.12em] uppercase px-5 py-3 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black shadow-[0_3px_12px_-4px_rgba(201,168,76,0.6)] transition-all disabled:opacity-50">
