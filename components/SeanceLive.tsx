@@ -638,12 +638,12 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
           ) : (
             <div className="flex items-center gap-2">
               <button onClick={() => setShowLibrary(true)}
-                className="flex-1 flex items-center justify-center gap-1.5 border border-[var(--t-border)] rounded-xl text-[0.7rem] tracking-wider uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors py-3 font-medium">
-                <Icon icon={Dumbbell} size={14} strokeWidth={2}/> Bibliothèque
+                className="flex-1 flex items-center justify-center gap-2 border border-[var(--t-border)] rounded-xl text-[0.7rem] tracking-wider uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors py-3 font-medium">
+                <Icon icon={Dumbbell} size={20} strokeWidth={2}/> Bibliothèque
               </button>
               <button onClick={() => setAddingExercice(true)}
-                className="flex-1 flex items-center justify-center gap-1.5 border border-[var(--t-border)] rounded-xl text-[0.7rem] tracking-wider uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors py-3 font-medium">
-                <Icon icon={NotebookPen} size={14} strokeWidth={2}/> Nom libre
+                className="flex-1 flex items-center justify-center gap-2 border border-[var(--t-border)] rounded-xl text-[0.7rem] tracking-wider uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors py-3 font-medium">
+                <Icon icon={NotebookPen} size={20} strokeWidth={2}/> Nom libre
               </button>
             </div>
           )}
