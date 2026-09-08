@@ -10,6 +10,14 @@ import { ClientStatusDot } from "@/components/ClientStatusDot";
 import { loadClientStatuses, statusFor, type ClientStatus } from "@/lib/clientStatus";
 import { Icon } from "@/components/Icon";
 import { X, ChevronLeft, MessageSquare, Trash2, ExternalLink } from "@/lib/solarIcons";
+import { ConsistencyHeatmap } from "@/components/ConsistencyHeatmap";
+import { loadDayStatuses, type DayStatus } from "@/lib/consistency";
+import { MuscleVolumeChart } from "@/components/MuscleVolumeChart";
+import { loadMuscleVolume } from "@/lib/muscleVolume";
+import { type Mesocycle, loadActiveMesocycle } from "@/lib/mesocycles";
+import { MesocycleCard } from "@/components/MesocycleCard";
+import { loadPersonalRecords, type PRCard } from "@/lib/personalRecords";
+import { Sparkline } from "@/components/Sparkline";
 
 const LEVEL_RANK: Record<ClientStatus["level"], number> = { risque: 0, attention: 1, ok: 2 };
 
@@ -30,7 +38,7 @@ const STAGE_CFG = {
 type StatusKey = keyof typeof STATUS_CFG;
 type StageKey  = keyof typeof STAGE_CFG;
 
-type Client   = { id: string; email: string; prenom: string; nom: string; age: number; poids: number; taille: number; sexe: string; niveau_activite: string; experience: string; seances_par_semaine: number; lieu_entrainement: string; blessures: string; alimentation: string; sommeil_stress: string; objectifs: string; objectif_echeance: string | null; objectif_pending: boolean; updated_at: string; status: StatusKey | null; subscription_end: string | null; pipeline_stage: StageKey | null };
+type Client   = { id: string; email: string; prenom: string; nom: string; age: number; poids: number; taille: number; sexe: string; niveau_activite: string; experience: string; seances_par_semaine: number; lieu_entrainement: string; blessures: string; alimentation: string; sommeil_stress: string; objectifs: string; objectif_echeance: string | null; objectif_pending: boolean; objectif_type: string | null; updated_at: string; status: StatusKey | null; subscription_end: string | null; pipeline_stage: StageKey | null };
 type PendingSignup = { id: string; email: string; full_name: string | null; created_at: string; email_confirmed_at: string | null };
 type Seance   = { id: string; titre: string; type_seance: string | null; date_prevue: string | null; semaine: number | null; description: string | null; exercices: string | null; completed_at: string | null };
 type Note     = { id: string; client_id: string; content: string; created_at: string };
@@ -48,7 +56,7 @@ export default function ClientsPage() {
   const [filterStage,  setFilterStage]  = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [selected, setSelected] = useState<Client | null>(null);
-  const [tab,      setTab]      = useState<"profil"|"notes"|"checkin"|"repas"|"journal">("profil");
+  const [tab,      setTab]      = useState<"apercu"|"profil"|"notes"|"checkin"|"repas"|"journal">("apercu");
   const [loading,  setLoading]  = useState(true);
   const [pendingSignups, setPendingSignups] = useState<PendingSignup[]>([]);
   const [statuses, setStatuses] = useState<Map<string, ClientStatus>>(new Map());
@@ -63,6 +71,13 @@ export default function ClientsPage() {
   const [activePlanId, setActivePlanId] = useState<string | null>(null);
   const [journal,      setJournal]      = useState<DaySummary[]>([]);
   const [bodyFat,      setBodyFat]      = useState<number | null>(null);
+  // Vue d'ensemble : mêmes sources que côté client (régularité, records, volume,
+  // mésocycle), jamais montrées au coach jusqu'ici — d'où la navigation éclatée
+  // entre cette page (nutrition/poids) et /crm/programmes (séances) pour tout voir.
+  const [dayStatuses,  setDayStatuses]  = useState<Record<string, DayStatus>>({});
+  const [records,      setRecords]      = useState<PRCard[]>([]);
+  const [muscleVolume, setMuscleVolume] = useState<Record<string, number[]>>({});
+  const [activeMeso,   setActiveMeso]   = useState<Mesocycle | null>(null);
 
   // Forms
   const [noteInput,    setNoteInput]    = useState("");
@@ -100,8 +115,9 @@ export default function ClientsPage() {
   };
 
   const selectClient = async (c: Client) => {
-    setSelected(c); setTab("profil"); setBodyFat(null);
+    setSelected(c); setTab("apercu"); setBodyFat(null);
     setNoteInput(""); setCkForm({ week_date: todayStr(), weight: "", body_fat: "", compliance: 0, notes: "" });
+    setDayStatuses({}); setRecords([]); setMuscleVolume({}); setActiveMeso(null);
     const [{ data: s }, { data: n }, { data: ck }, { data: js }, { data: bf }] = await Promise.all([
       supabase.from("programme_seances").select("*").eq("assigned_to_email", c.email).order("created_at", { ascending: false }),
       supabase.from("coach_notes").select("*").eq("client_id", c.id).order("created_at", { ascending: false }),
@@ -113,6 +129,13 @@ export default function ClientsPage() {
     setJournal((js ?? []) as DaySummary[]);
     setBodyFat(bf?.[0]?.body_fat ?? null);
     await loadMealPlans(c.id);
+
+    // Best-effort, en tâche de fond : la vue d'ensemble ne doit jamais bloquer le
+    // reste de la fiche client si une de ces sources échoue.
+    loadDayStatuses(c.id, c.objectif_type).then(setDayStatuses).catch(() => {});
+    loadPersonalRecords(c.id).then(r => setRecords(r.slice(0, 6))).catch(() => {});
+    loadMuscleVolume(c.id).then(setMuscleVolume).catch(() => {});
+    loadActiveMesocycle(c.id).then(setActiveMeso).catch(() => {});
   };
 
   const updateField = async (fields: Record<string, string | boolean | null>) => {
@@ -363,6 +386,7 @@ export default function ClientsPage() {
           {/* Tabs */}
           <div className="flex border-b border-[var(--t-border-soft)] px-4 md:px-8 shrink-0 overflow-x-auto">
             {([
+              { key: "apercu",     label: "Vue d'ensemble" },
               { key: "profil",     label: "Profil" },
               { key: "notes",      label: `Notes (${notes.length})` },
               { key: "checkin",    label: `Check-ins (${checkins.length})` },
@@ -385,6 +409,72 @@ export default function ClientsPage() {
 
           {/* Tab content */}
           <div className="flex-1 overflow-y-auto px-4 md:px-8 py-5 md:py-6">
+
+            {/* VUE D'ENSEMBLE — régularité, records, volume, mésocycle, poids : tout ce qui
+                était éclaté entre cette page et /crm/programmes, réuni en un seul écran. */}
+            {tab === "apercu" && (
+              <div className="flex flex-col gap-6 max-w-2xl">
+                <div>
+                  <p className="text-[0.62rem] tracking-[0.2em] uppercase text-[var(--t-text-30)] mb-3">Régularité (nutrition + séances)</p>
+                  {Object.keys(dayStatuses).length > 0 ? (
+                    <ConsistencyHeatmap statuses={dayStatuses}/>
+                  ) : (
+                    <p className="text-[var(--t-text-20)] text-xs">Pas encore assez de données.</p>
+                  )}
+                </div>
+
+                {(() => {
+                  const weightPoints = [...checkins].reverse().map(c => c.weight).filter((w): w is number => w != null);
+                  return weightPoints.length > 1 ? (
+                    <div className="border border-[var(--t-text-8)] bg-[var(--t-surface-2)] rounded-xl p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c]">Poids</p>
+                        <p style={{ fontFamily: "var(--font-bebas)" }} className="text-xl text-[var(--t-text)] tracking-wide">{weightPoints[weightPoints.length - 1]} kg</p>
+                      </div>
+                      <Sparkline points={weightPoints} color="#c9a84c"/>
+                    </div>
+                  ) : null;
+                })()}
+
+                {activeMeso && <MesocycleCard meso={activeMeso}/>}
+
+                {Object.keys(muscleVolume).length > 0 && (
+                  <div className="border border-[var(--t-text-8)] bg-[var(--t-surface-2)] rounded-xl p-4">
+                    <MuscleVolumeChart byMuscle={muscleVolume}/>
+                  </div>
+                )}
+
+                {records.length > 0 && (
+                  <div>
+                    <p className="text-[0.62rem] tracking-[0.2em] uppercase text-[var(--t-text-30)] mb-3">Records personnels</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {records.map(r => (
+                        <div key={r.nom} className="border border-[var(--t-text-8)] bg-[var(--t-surface-2)] rounded-2xl p-3.5 flex flex-col gap-2">
+                          <p className="text-[0.68rem] text-[var(--t-text-60)] font-medium capitalize truncate">{r.nom}</p>
+                          <div className="flex items-baseline gap-1">
+                            <span style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[var(--t-text)] tracking-wide leading-none">{r.currentKg}</span>
+                            <span className="text-[0.62rem] text-[var(--t-text-30)]">kg</span>
+                          </div>
+                          <Sparkline points={r.points} color="#c9a84c"/>
+                          <p className="text-[0.58rem] text-[var(--t-text-20)] tracking-wide">
+                            {new Date(r.date + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {!activeMeso && Object.keys(muscleVolume).length === 0 && records.length === 0 && (
+                  <p className="text-[var(--t-text-20)] text-xs">Aucune séance loguée par ce client pour l&apos;instant.</p>
+                )}
+
+                <Link href={`/crm/programmes?client=${encodeURIComponent(selected.email)}`}
+                  className="flex items-center gap-1.5 text-[0.62rem] tracking-wider uppercase text-[#c9a84c] hover:text-[var(--t-text-70)] transition-colors">
+                  Gérer le programme et les séances <Icon icon={ExternalLink} size={10} strokeWidth={2}/>
+                </Link>
+              </div>
+            )}
 
             {/* PROFIL */}
             {tab === "profil" && (
