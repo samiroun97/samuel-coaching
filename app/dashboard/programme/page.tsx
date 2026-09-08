@@ -466,6 +466,49 @@ export default function ProgrammePage() {
 
       <DateNav date={selectedDate} onChange={setSelectedDate} statuses={dayStatuses}/>
 
+      {/* ── EAT / NEAT / TOTAL ── */}
+      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 mb-6">
+        <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Dépense du jour</p>
+        <div className="grid grid-cols-3 gap-3 mb-4">
+          {/* EAT */}
+          <div className="border border-[var(--t-border-soft)] bg-[var(--t-bg)] rounded-xl py-4 px-3 text-center">
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[#c9a84c] tracking-wide leading-none">{eatCal}</p>
+            <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mt-1.5">EAT</p>
+            <p className="text-[0.62rem] text-[var(--t-text-15)] mt-0.5">Exercice intentionnel</p>
+          </div>
+          {/* NEAT */}
+          <div className="border border-[var(--t-border-soft)] bg-[var(--t-bg)] rounded-xl py-4 px-3 text-center">
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[#7eb8a0] tracking-wide leading-none">{neatCal}</p>
+            <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mt-1.5">NEAT</p>
+            <p className="text-[0.62rem] text-[var(--t-text-15)] mt-0.5">Activité quotidienne</p>
+          </div>
+          {/* Total */}
+          <div className="border border-[#c9a84c]/15 bg-[#c9a84c]/5 rounded-xl py-4 px-3 text-center">
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[var(--t-text)] tracking-wide leading-none">{totalCal}</p>
+            <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mt-1.5">Total</p>
+            <p className="text-[0.62rem] text-[var(--t-text-15)] mt-0.5">kcal brûlées</p>
+          </div>
+        </div>
+
+        {/* Barre EAT / NEAT */}
+        {totalCal > 0 && (
+          <div className="mb-3">
+            <div className="flex h-1.5 w-full overflow-hidden">
+              <div className="h-full transition-all duration-700" style={{ width: `${totalCal > 0 ? (eatCal / totalCal) * 100 : 0}%`, backgroundColor: "#c9a84c" }}/>
+              <div className="h-full transition-all duration-700" style={{ width: `${totalCal > 0 ? (neatCal / totalCal) * 100 : 0}%`, backgroundColor: "#7eb8a0" }}/>
+            </div>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between text-[0.62rem] text-[var(--t-text-20)] tracking-wider">
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1"><span className="w-2 h-2 inline-block" style={{ backgroundColor: "#c9a84c" }}/>EAT : exercice</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 inline-block" style={{ backgroundColor: "#7eb8a0" }}/>NEAT : {steps.toLocaleString("fr-FR")} pas</span>
+          </div>
+          {!profile && <span className="text-[var(--t-text-15)]">Complète ton profil pour personnaliser</span>}
+        </div>
+      </div>
+
       {/* ══ ENTRAÎNEMENT — série, séance du jour, création inline ══ */}
       <div className="border border-[#c9a84c]/25 bg-[var(--t-surface-gold)] rounded-2xl p-5 mb-6">
         <div className="flex items-center justify-between gap-3 mb-4">
@@ -570,49 +613,6 @@ export default function ProgrammePage() {
             )}
           </div>
         )}
-      </div>
-
-      {/* ── EAT / NEAT / TOTAL ── */}
-      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 mb-6">
-        <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Dépense du jour</p>
-        <div className="grid grid-cols-3 gap-3 mb-4">
-          {/* EAT */}
-          <div className="border border-[var(--t-border-soft)] bg-[var(--t-bg)] rounded-xl py-4 px-3 text-center">
-            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[#c9a84c] tracking-wide leading-none">{eatCal}</p>
-            <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mt-1.5">EAT</p>
-            <p className="text-[0.62rem] text-[var(--t-text-15)] mt-0.5">Exercice intentionnel</p>
-          </div>
-          {/* NEAT */}
-          <div className="border border-[var(--t-border-soft)] bg-[var(--t-bg)] rounded-xl py-4 px-3 text-center">
-            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[#7eb8a0] tracking-wide leading-none">{neatCal}</p>
-            <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mt-1.5">NEAT</p>
-            <p className="text-[0.62rem] text-[var(--t-text-15)] mt-0.5">Activité quotidienne</p>
-          </div>
-          {/* Total */}
-          <div className="border border-[#c9a84c]/15 bg-[#c9a84c]/5 rounded-xl py-4 px-3 text-center">
-            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[var(--t-text)] tracking-wide leading-none">{totalCal}</p>
-            <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mt-1.5">Total</p>
-            <p className="text-[0.62rem] text-[var(--t-text-15)] mt-0.5">kcal brûlées</p>
-          </div>
-        </div>
-
-        {/* Barre EAT / NEAT */}
-        {totalCal > 0 && (
-          <div className="mb-3">
-            <div className="flex h-1.5 w-full overflow-hidden">
-              <div className="h-full transition-all duration-700" style={{ width: `${totalCal > 0 ? (eatCal / totalCal) * 100 : 0}%`, backgroundColor: "#c9a84c" }}/>
-              <div className="h-full transition-all duration-700" style={{ width: `${totalCal > 0 ? (neatCal / totalCal) * 100 : 0}%`, backgroundColor: "#7eb8a0" }}/>
-            </div>
-          </div>
-        )}
-
-        <div className="flex items-center justify-between text-[0.62rem] text-[var(--t-text-20)] tracking-wider">
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1"><span className="w-2 h-2 inline-block" style={{ backgroundColor: "#c9a84c" }}/>EAT : exercice</span>
-            <span className="flex items-center gap-1"><span className="w-2 h-2 inline-block" style={{ backgroundColor: "#7eb8a0" }}/>NEAT : {steps.toLocaleString("fr-FR")} pas</span>
-          </div>
-          {!profile && <span className="text-[var(--t-text-15)]">Complète ton profil pour personnaliser</span>}
-        </div>
       </div>
 
       {/* ── Formulaire séance ── */}
