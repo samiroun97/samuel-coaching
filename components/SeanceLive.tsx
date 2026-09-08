@@ -44,22 +44,29 @@ function displaySetsFor(ex: ExerciceItem, extra: number): { target: SetDetail; i
 
 // Chips plutôt qu'un menu déroulant : 5 options seulement, autant les rendre toutes
 // visibles et tapables d'un coup — plus rapide et plus "gros bouton" qu'ouvrir un select.
-function RirChips({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+// Barre défilante (slider natif) plutôt que des chips figées à 0-4 : la plage complète
+// RIR/RPE (0-10) reste accessible d'un glissement, et le chiffre au-dessus est un vrai
+// champ éditable — on peut taper directement une valeur précise plutôt que de scruter le
+// curseur.
+const RIR_MAX = 10;
+function RirSlider({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const n = numOr(value);
+  const pct = n == null ? 0 : Math.min(100, Math.max(0, (n / RIR_MAX) * 100));
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-25)] shrink-0">RIR</span>
-      <div className="flex items-center gap-1 flex-1">
-        {[0, 1, 2, 3, 4].map(n => {
-          const v = String(n);
-          const active = value === v;
-          return (
-            <button key={n} type="button" onClick={() => onChange(active ? "" : v)}
-              className={`flex-1 h-9 rounded-lg text-xs font-bold transition-all ${
-                active ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "bg-[var(--t-bg)] border border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[var(--t-text-20)]"}`}>
-              {n}{n === 4 ? "+" : ""}
-            </button>
-          );
-        })}
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center justify-between">
+        <span className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-25)]">RIR / RPE</span>
+        <input type="number" inputMode="decimal" min={0} max={RIR_MAX} step={0.5} placeholder="—" value={value}
+          onChange={e => onChange(e.target.value)}
+          className="w-14 bg-transparent text-right text-sm font-bold text-[var(--t-text)] placeholder-[var(--t-text-20)] focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"/>
+      </div>
+      <div className="relative h-6 flex items-center">
+        <div className="absolute inset-x-0 h-2 rounded-full bg-[var(--t-track)] overflow-hidden pointer-events-none">
+          <div className="h-full bg-gradient-to-r from-[#e2c97e] to-[#c9a84c] rounded-full transition-all" style={{ width: `${pct}%` }}/>
+        </div>
+        <input type="range" min={0} max={RIR_MAX} step={0.5} value={n ?? 0}
+          onChange={e => onChange(e.target.value)}
+          className="relative w-full appearance-none bg-transparent cursor-pointer [&::-webkit-slider-runnable-track]:bg-transparent [&::-moz-range-track]:bg-transparent [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#c9a84c] [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[var(--t-bg)] [&::-webkit-slider-thumb]:shadow-[0_2px_6px_rgba(0,0,0,0.3)] [&::-moz-range-thumb]:w-6 [&::-moz-range-thumb]:h-6 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-[var(--t-bg)] [&::-moz-range-thumb]:bg-[#c9a84c]"/>
       </div>
     </div>
   );
@@ -99,7 +106,7 @@ function SetRow({ target, idx, log, prev, isExtra, bodyweight, onToggle, onChang
         <NumberStepper size="lg" value={log?.poids ?? ""} placeholder={bodyweight ? (target.poids || "+kg") : (target.poids || "kg")} step={2.5} onChange={v => onChange("poids", v)} accent/>
         <NumberStepper size="lg" value={log?.reps ?? ""} placeholder={target.reps || "reps"} step={1} onChange={v => onChange("reps", v)}/>
       </div>
-      <RirChips value={log?.rir ?? ""} onChange={v => onChange("rir", v)}/>
+      <RirSlider value={log?.rir ?? ""} onChange={v => onChange("rir", v)}/>
     </div>
   );
 }
