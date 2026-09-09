@@ -494,8 +494,8 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
       {catalogue.length > 0 && (
         <button type="button" onClick={() => setShowLibraryBrowser(true)}
           className="group flex items-center gap-4 border border-[#c9a84c]/25 bg-[#c9a84c]/[0.04] px-5 py-4 rounded-2xl shadow-[0_4px_16px_-10px_rgba(0,0,0,0.4)] hover:border-[#c9a84c]/50 hover:bg-[#c9a84c]/[0.08] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200">
-          <span className="shrink-0 w-20 h-20 rounded-2xl bg-[#c9a84c]/10 flex items-center justify-center">
-            <RichIcon name="library" size={58}/>
+          <span className="shrink-0 w-20 h-20 flex items-center justify-center">
+            <RichIcon name="library" size={58} className="drop-shadow-[0_8px_14px_rgba(201,168,76,0.35)]"/>
           </span>
           <span className="flex-1 text-left min-w-0">
             <span className="block text-sm font-bold tracking-[0.06em] uppercase leading-tight text-[var(--t-text)]">Choisir dans la bibliothèque</span>
@@ -506,8 +506,8 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
       )}
       <button type="button" onClick={add}
         className="group flex items-center gap-4 border border-[var(--t-border)] bg-[var(--t-surface)] px-5 py-4 rounded-2xl hover:border-[var(--t-border-15)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200">
-        <span className="shrink-0 w-20 h-20 rounded-2xl bg-[var(--t-surface-2)] flex items-center justify-center">
-          <RichIcon name="notebookPen" size={58}/>
+        <span className="shrink-0 w-20 h-20 flex items-center justify-center">
+          <RichIcon name="notebookPen" size={58} className="drop-shadow-[0_8px_14px_rgba(0,0,0,0.22)]"/>
         </span>
         <span className="flex-1 text-left min-w-0">
           <span className="block text-sm font-bold tracking-[0.06em] uppercase leading-tight text-[var(--t-text)]">Exercice libre</span>
