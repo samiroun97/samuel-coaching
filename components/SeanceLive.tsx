@@ -666,8 +666,47 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
         {!loaded ? (
           <p className="text-xs text-[var(--t-text-30)] text-center py-8">Chargement…</p>
         ) : (() => {
+          // Bloc Bibliothèque/Nom libre — extrait car nécessaire à deux endroits : après
+          // l'exercice affiché quand la séance en a déjà, et seul quand elle est encore vide
+          // (aucun exercice sur lequel greffer le bouton, sinon on n'a jamais de premier
+          // exercice possible en partant d'une séance libre démarrée en direct).
+          const addExerciceBlock = (
+            addingExercice ? (
+              <div className="flex items-center gap-2">
+                <input autoFocus value={newExerciceNom} onChange={e => setNewExerciceNom(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter") addExercice(); if (e.key === "Escape") { setAddingExercice(false); setNewExerciceNom(""); } }}
+                  placeholder="Nom de l'exercice"
+                  className="flex-1 min-w-0 bg-[var(--t-surface)] border border-[#c9a84c]/40 rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2 focus:outline-none"/>
+                <button onClick={addExercice} disabled={!newExerciceNom.trim()}
+                  className="shrink-0 w-11 h-11 rounded-xl bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black flex items-center justify-center disabled:opacity-40 transition-opacity">
+                  <Icon icon={Check} size={17} strokeWidth={2.5}/>
+                </button>
+                <button onClick={() => { setAddingExercice(false); setNewExerciceNom(""); }}
+                  className="shrink-0 w-11 h-11 rounded-xl border border-[var(--t-border)] text-[var(--t-text-30)] hover:text-[var(--t-text-60)] flex items-center justify-center transition-colors">
+                  <Icon icon={X} size={16} strokeWidth={2}/>
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <button onClick={() => setShowLibrary(true)}
+                  className="flex-1 flex items-center justify-center gap-2 border border-[var(--t-border)] rounded-xl text-[0.7rem] tracking-wider uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors py-3 font-medium">
+                  <Icon icon={Dumbbell} size={20} strokeWidth={2}/> Bibliothèque
+                </button>
+                <button onClick={() => setAddingExercice(true)}
+                  className="flex-1 flex items-center justify-center gap-2 border border-[var(--t-border)] rounded-xl text-[0.7rem] tracking-wider uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors py-3 font-medium">
+                  <Icon icon={NotebookPen} size={20} strokeWidth={2}/> Nom libre
+                </button>
+              </div>
+            )
+          );
+
           const run = runs[runIdx];
-          if (!run) return null;
+          if (!run) return (
+            <div className="flex flex-col gap-3 pt-6">
+              <p className="text-center text-[0.7rem] text-[var(--t-text-30)] mb-1">Aucun exercice pour l&apos;instant — ajoute le premier :</p>
+              {addExerciceBlock}
+            </div>
+          );
           const complete = runIsComplete(run);
           return (
             <div className="flex flex-col gap-3">
@@ -709,33 +748,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
                     Le prochain exercice ajouté rejoint « {exercices[run.indices[0]]?.nom || "cet exercice"} »{run.indices.length > 1 ? " (déjà groupé)" : ""}
                   </span>
                 </button>
-                {addingExercice ? (
-                  <div className="flex items-center gap-2">
-                    <input autoFocus value={newExerciceNom} onChange={e => setNewExerciceNom(e.target.value)}
-                      onKeyDown={e => { if (e.key === "Enter") addExercice(); if (e.key === "Escape") { setAddingExercice(false); setNewExerciceNom(""); } }}
-                      placeholder="Nom de l'exercice"
-                      className="flex-1 min-w-0 bg-[var(--t-surface)] border border-[#c9a84c]/40 rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2 focus:outline-none"/>
-                    <button onClick={addExercice} disabled={!newExerciceNom.trim()}
-                      className="shrink-0 w-11 h-11 rounded-xl bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black flex items-center justify-center disabled:opacity-40 transition-opacity">
-                      <Icon icon={Check} size={17} strokeWidth={2.5}/>
-                    </button>
-                    <button onClick={() => { setAddingExercice(false); setNewExerciceNom(""); }}
-                      className="shrink-0 w-11 h-11 rounded-xl border border-[var(--t-border)] text-[var(--t-text-30)] hover:text-[var(--t-text-60)] flex items-center justify-center transition-colors">
-                      <Icon icon={X} size={16} strokeWidth={2}/>
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <button onClick={() => setShowLibrary(true)}
-                      className="flex-1 flex items-center justify-center gap-2 border border-[var(--t-border)] rounded-xl text-[0.7rem] tracking-wider uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors py-3 font-medium">
-                      <Icon icon={Dumbbell} size={20} strokeWidth={2}/> Bibliothèque
-                    </button>
-                    <button onClick={() => setAddingExercice(true)}
-                      className="flex-1 flex items-center justify-center gap-2 border border-[var(--t-border)] rounded-xl text-[0.7rem] tracking-wider uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors py-3 font-medium">
-                      <Icon icon={NotebookPen} size={20} strokeWidth={2}/> Nom libre
-                    </button>
-                  </div>
-                )}
+                {addExerciceBlock}
               </div>
             </div>
           );
