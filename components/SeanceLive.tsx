@@ -14,7 +14,7 @@ import { ExerciceLibraryBrowser } from "@/components/ExerciceLibraryBrowser";
 import { NumberStepper, numOr } from "@/components/NumberStepper";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
-import { Check, X, ChevronLeft, ChevronRight, Dumbbell, NotebookPen, Plus, Trash2, Clock, Layers } from "@/lib/solarIcons";
+import { Check, X, ChevronLeft, ChevronRight, Plus, Trash2, Clock, Layers } from "@/lib/solarIcons";
 import { RoundTimer } from "@/components/RoundTimer";
 
 type LiveSeance = { id: string; titre: string; exercices: string | null };
@@ -605,7 +605,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
 
       <div className="border-b border-[var(--t-border-soft)] shrink-0">
         <div className="flex items-center justify-center gap-3 py-4 max-w-lg mx-auto">
-          <RichIcon name="chrono" size={72}/>
+          <RichIcon name="chrono" size={72} className="drop-shadow-[0_8px_14px_rgba(0,0,0,0.25)]"/>
           <p style={{ fontFamily: "var(--font-bebas)" }} className="text-5xl text-[var(--t-text)] tracking-wide leading-none">{fmtDuration(elapsed)}</p>
         </div>
         <div className="grid grid-cols-3 max-w-lg mx-auto border-t border-[var(--t-border-soft)]">
@@ -705,11 +705,11 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
               <div className="flex items-center gap-2">
                 <button onClick={() => setShowLibrary(true)}
                   className="flex-1 flex items-center justify-center gap-2 border border-[var(--t-border)] rounded-xl text-[0.7rem] tracking-wider uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors py-3 font-medium">
-                  <Icon icon={Dumbbell} size={20} strokeWidth={2}/> Bibliothèque
+                  <RichIcon name="library" size={26} className="drop-shadow-[0_4px_8px_rgba(201,168,76,0.35)]"/> Bibliothèque
                 </button>
                 <button onClick={() => setAddingExercice(true)}
                   className="flex-1 flex items-center justify-center gap-2 border border-[var(--t-border)] rounded-xl text-[0.7rem] tracking-wider uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors py-3 font-medium">
-                  <Icon icon={NotebookPen} size={20} strokeWidth={2}/> Nom libre
+                  <RichIcon name="notebookPen" size={26} className="drop-shadow-[0_4px_8px_rgba(0,0,0,0.22)]"/> Nom libre
                 </button>
               </div>
             )
