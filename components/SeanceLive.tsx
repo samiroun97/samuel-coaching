@@ -19,7 +19,7 @@ import { Check, X, ChevronLeft, ChevronRight, Plus, Trash2, Clock, Layers } from
 import { RoundTimer } from "@/components/RoundTimer";
 
 type LiveSeance = { id: string; titre: string; exercices: string | null };
-type SetLogState = { poids: string; reps: string; rir: string; done: boolean };
+type SetLogState = { poids: string; reps: string; rir: string; done: boolean; warmup?: boolean };
 
 const genId = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`);
 
@@ -75,50 +75,99 @@ function RirSlider({ value, onChange }: { value: string; onChange: (v: string) =
   );
 }
 
+// Swipe pour supprimer, façon Forge : évite d'ajouter un bouton "supprimer" en plus dans une
+// carte déjà dense — seule la dernière série "extra" d'un exercice est swipeable (canRemove),
+// les séries prévues par le coach restent fixes. Le tirage suit le doigt (dragX), un relâcher
+// au-delà du seuil déclenche la suppression, sinon la carte revient à sa place.
+const SWIPE_THRESHOLD = -60;
+const SWIPE_MAX = -88;
+
 // Chaque série est sa propre carte (plutôt qu'une ligne de tableau compressée) : les
 // chiffres poids/reps — l'info la plus regardée pendant l'effort — ont la place d'être
 // gros, et le bouton de validation devient une vraie cible tactile plutôt qu'un point.
-function SetRow({ target, idx, log, prev, isExtra, bodyweight, onToggle, onChange, onCopyPrev }: {
+function SetRow({ target, idx, log, prev, isExtra, canRemove, bodyweight, onToggle, onChange, onCopyPrev, onToggleWarmup, onRemove }: {
   target: SetDetail; idx: number; log: SetLogState | undefined; prev: { poids: number | null; reps: number | null } | undefined;
-  isExtra: boolean; bodyweight?: boolean; onToggle: () => void; onChange: (field: "poids" | "reps" | "rir", val: string) => void; onCopyPrev: () => void;
+  isExtra: boolean; canRemove: boolean; bodyweight?: boolean; onToggle: () => void; onChange: (field: "poids" | "reps" | "rir", val: string) => void;
+  onCopyPrev: () => void; onToggleWarmup: () => void; onRemove: () => void;
 }) {
   const hasPrev = prev && (prev.poids != null || prev.reps != null);
   const done = !!log?.done;
+  const warmup = !!log?.warmup;
+  const [dragX, setDragX] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const dragStartX = useRef(0);
+
+  const onTouchStart = (e: TouchEvent) => { e.stopPropagation(); setDragging(true); dragStartX.current = e.touches[0].clientX; };
+  const onTouchMove = (e: TouchEvent) => {
+    e.stopPropagation();
+    setDragX(Math.max(SWIPE_MAX, Math.min(0, e.touches[0].clientX - dragStartX.current)));
+  };
+  const onTouchEndSwipe = (e: TouchEvent) => {
+    e.stopPropagation();
+    setDragging(false);
+    if (dragX <= SWIPE_THRESHOLD) onRemove();
+    setDragX(0);
+  };
+
+  // Placeholder "fantôme" : la valeur de la dernière fois plutôt qu'un simple libellé
+  // générique — visible directement dans le champ sans avoir à taper sur le lien "Préc.",
+  // et le +/- du stepper part de cette valeur (numOr retombe déjà sur le placeholder).
+  const kgPlaceholder = prev?.poids != null ? String(prev.poids) : (bodyweight ? "+kg" : target.poids || "kg");
+  const repsPlaceholder = prev?.reps != null ? String(prev.reps) : (target.reps || "reps");
+
   return (
-    <div className={`rounded-2xl border p-3.5 flex flex-col gap-3 transition-colors ${
-      done ? "border-[#7eb8a0]/40 bg-[#7eb8a0]/[0.08]" : isExtra ? "border-[#c9a84c]/25 bg-[#c9a84c]/[0.04]" : "border-[var(--t-border-soft)] bg-[var(--t-bg)]"}`}>
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${done ? "bg-[#7eb8a0] text-black" : "bg-[var(--t-track)] text-[var(--t-text-40)]"}`}>{idx + 1}</span>
-          {hasPrev && (
-            done ? (
-              <span className="text-xs text-[var(--t-text-20)] truncate">Préc. {fmtPrev(prev)}</span>
-            ) : (
-              <button onClick={onCopyPrev} className="text-xs text-[var(--t-text-30)] truncate hover:text-[#c9a84c] transition-colors underline decoration-dotted decoration-[var(--t-text-15)]">
-                Préc. {fmtPrev(prev)}
-              </button>
-            )
-          )}
+    <div className="relative">
+      {canRemove && (
+        <div className="absolute inset-y-0 right-0 w-20 rounded-2xl bg-[#e07070] flex flex-col items-center justify-center gap-0.5 text-white">
+          <Icon icon={Trash2} size={17} strokeWidth={2}/>
+          <span className="text-[0.55rem] tracking-wide uppercase">Suppr.</span>
         </div>
-        <button onClick={onToggle}
-          className={`w-12 h-12 rounded-full border-2 shrink-0 flex items-center justify-center transition-all active:scale-90 ${done ? "bg-[#7eb8a0] border-[#7eb8a0] text-black" : "border-[var(--t-border)] text-transparent hover:border-[#7eb8a0]/50"}`}>
-          <Icon icon={Check} size={22} strokeWidth={3}/>
-        </button>
+      )}
+      <div {...(canRemove ? { onTouchStart, onTouchMove, onTouchEnd: onTouchEndSwipe } : {})}
+        style={{ transform: `translateX(${dragX}px)` }}
+        className={`relative rounded-2xl border p-3.5 flex flex-col gap-3 ${dragging ? "" : "transition-[transform,background-color,border-color] duration-200"} ${
+          done ? "border-[#7eb8a0]/40 bg-[#7eb8a0]/[0.08]" : warmup ? "border-[#e0834a]/35 bg-[#e0834a]/[0.06]" : isExtra ? "border-[#c9a84c]/25 bg-[#c9a84c]/[0.04]" : "border-[var(--t-border-soft)] bg-[var(--t-bg)]"}`}>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${done ? "bg-[#7eb8a0] text-black" : "bg-[var(--t-track)] text-[var(--t-text-40)]"}`}>{idx + 1}</span>
+            {hasPrev && (
+              done ? (
+                <span className="text-xs text-[var(--t-text-20)] truncate">Préc. {fmtPrev(prev)}</span>
+              ) : (
+                <button onClick={onCopyPrev} className="text-xs text-[var(--t-text-30)] truncate hover:text-[#c9a84c] transition-colors underline decoration-dotted decoration-[var(--t-text-15)]">
+                  Préc. {fmtPrev(prev)}
+                </button>
+              )
+            )}
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button onClick={onToggleWarmup} title="Série d'échauffement — exclue du volume et des records"
+              className={`text-[0.58rem] tracking-wide uppercase px-2 py-2 rounded-full border transition-colors ${warmup ? "border-[#e0834a]/50 bg-[#e0834a]/10 text-[#e0834a]" : "border-[var(--t-border)] text-[var(--t-text-20)] hover:text-[var(--t-text-50)]"}`}>
+              Éch.
+            </button>
+            <button onClick={onToggle}
+              className={`w-12 h-12 rounded-full border-2 shrink-0 flex items-center justify-center transition-all active:scale-90 ${done ? "bg-[#7eb8a0] border-[#7eb8a0] text-black" : "border-[var(--t-border)] text-transparent hover:border-[#7eb8a0]/50"}`}>
+              <Icon icon={Check} size={22} strokeWidth={3}/>
+            </button>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-2.5">
+          <NumberStepper size="lg" label={bodyweight ? "Kg additionnels" : "Kg"} value={log?.poids ?? ""} placeholder={kgPlaceholder} step={2.5} onChange={v => onChange("poids", v)} accent/>
+          <NumberStepper size="lg" label="Reps" value={log?.reps ?? ""} placeholder={repsPlaceholder} step={1} onChange={v => onChange("reps", v)}/>
+        </div>
+        <RirSlider value={log?.rir ?? ""} onChange={v => onChange("rir", v)}/>
       </div>
-      <div className="grid grid-cols-2 gap-2.5">
-        <NumberStepper size="lg" label={bodyweight ? "Kg additionnels" : "Kg"} value={log?.poids ?? ""} placeholder={bodyweight ? (target.poids || "+kg") : (target.poids || "kg")} step={2.5} onChange={v => onChange("poids", v)} accent/>
-        <NumberStepper size="lg" label="Reps" value={log?.reps ?? ""} placeholder={target.reps || "reps"} step={1} onChange={v => onChange("reps", v)}/>
-      </div>
-      <RirSlider value={log?.rir ?? ""} onChange={v => onChange("rir", v)}/>
     </div>
   );
 }
 
-function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle, onChange, onAddSet }: {
+function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle, onChange, onAddSet, onToggleWarmup, onRemoveExtra }: {
   ex: ExerciceItem; exIdx: number; logs: Record<string, SetLogState>; history: LastPerformance; prBadge: boolean; extra: number;
   onToggle: (exIdx: number, setIdx: number, target: SetDetail) => void;
   onChange: (exIdx: number, setIdx: number, field: "poids" | "reps" | "rir", val: string) => void;
   onAddSet: (exIdx: number) => void;
+  onToggleWarmup: (exIdx: number, setIdx: number) => void;
+  onRemoveExtra: (exIdx: number) => void;
 }) {
   const rows = displaySetsFor(ex, extra);
   const doneCount = rows.filter((_, i) => logs[`${exIdx}-${i}`]?.done).length;
@@ -149,11 +198,13 @@ function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle,
         <>
           <div className="flex flex-col gap-2.5">
             {rows.map((row, setIdx) => (
-              <SetRow key={setIdx} target={row.target} idx={setIdx} isExtra={row.isExtra} bodyweight={ex.bodyweight}
+              <SetRow key={setIdx} target={row.target} idx={setIdx} isExtra={row.isExtra} canRemove={row.isExtra && setIdx === rows.length - 1} bodyweight={ex.bodyweight}
                 log={logs[`${exIdx}-${setIdx}`]} prev={history[setIdx]}
                 onToggle={() => onToggle(exIdx, setIdx, row.target)}
                 onChange={(field, val) => onChange(exIdx, setIdx, field, val)}
-                onCopyPrev={() => { const p = history[setIdx]; if (p?.poids != null) onChange(exIdx, setIdx, "poids", String(p.poids)); if (p?.reps != null) onChange(exIdx, setIdx, "reps", String(p.reps)); }}/>
+                onCopyPrev={() => { const p = history[setIdx]; if (p?.poids != null) onChange(exIdx, setIdx, "poids", String(p.poids)); if (p?.reps != null) onChange(exIdx, setIdx, "reps", String(p.reps)); }}
+                onToggleWarmup={() => onToggleWarmup(exIdx, setIdx)}
+                onRemove={() => onRemoveExtra(exIdx)}/>
             ))}
           </div>
           <button onClick={() => onAddSet(exIdx)}
@@ -288,7 +339,11 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
   // Le volume compte la charge réelle : pour un exercice au poids du corps, "poids" n'est que
   // le lest additionnel loggué — effectiveLoad y ajoute la fraction de poids de corps configurée
   // pour ne pas sous-évaluer le travail réel d'une série de tractions ou de dips.
+  // Une série d'échauffement (warmup) est cochée comme les autres pour le compte de séries
+  // faites, mais exclue du volume/calories/records — elle ne reflète pas l'effort de travail
+  // réel de la séance, inclure sa charge y fausserait le chiffre.
   const volume = doneEntries.reduce((s, [k, l]) => {
+    if (l.warmup) return s;
     const exIdx = parseInt(k.split("-")[0], 10);
     const load = effectiveLoad(exercices[exIdx], numOr(l.poids), clientBodyweight);
     return s + (load ?? 0) * (numOr(l.reps) ?? 0);
@@ -303,6 +358,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
   // qui réagit vraiment à la séance loguée.
   const bodyweightForCalc = clientBodyweight ?? 75;
   const estimatedCalories = Math.round(doneEntries.reduce((sum, [k, l]) => {
+    if (l.warmup) return sum;
     const exIdx = parseInt(k.split("-")[0], 10);
     const load = effectiveLoad(exercices[exIdx], numOr(l.poids), clientBodyweight) ?? 0;
     const reps = numOr(l.reps) ?? 0;
@@ -432,7 +488,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
     // l'époque. Comparer un 1RM "poids de corps inclus" à cet historique brut donnerait de
     // faux records à chaque série ; on désactive donc juste ce badge pour les exos au poids
     // du corps plutôt que d'afficher un résultat trompeur.
-    if (!ex.bodyweight) {
+    if (!ex.bodyweight && !next.warmup) {
       const est = estimate1RM(poidsNum, repsNum);
       if (isNewRecord(est, bestRef.current[ex.nom] ?? null)) {
         setPrByNom(prev => ({ ...prev, [ex.nom]: true }));
@@ -444,6 +500,30 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
       const secs = parseRestSeconds(target.repos || ex.repos);
       setRest({ left: secs, total: secs });
     }
+  };
+
+  // Bascule le drapeau "échauffement" d'une série — locale à la séance en cours (non
+  // persistée en base, la table seance_logs n'a pas cette colonne) : elle exclut juste la
+  // série des calculs de volume/calories/records pendant que la séance est ouverte.
+  const onToggleWarmup = (exIdx: number, setIdx: number) => {
+    const k = `${exIdx}-${setIdx}`;
+    setLogs(prev => {
+      const base: SetLogState = prev[k] ?? { poids: "", reps: "", rir: "", done: false };
+      return { ...prev, [k]: { ...base, warmup: !base.warmup } };
+    });
+  };
+
+  // Retire la dernière série "extra" ajoutée sur un exercice (swipe sur sa carte) — seules
+  // les séries extra peuvent être retirées : les séries prévues par le coach restent fixes,
+  // et ne retirer que la dernière évite d'avoir à décaler les index des séries suivantes.
+  const onRemoveExtra = async (exIdx: number) => {
+    const rows = displaySetsFor(exercices[exIdx], extraSets[exIdx] ?? 0);
+    const lastIdx = rows.length - 1;
+    if (lastIdx < 0 || !rows[lastIdx].isExtra) return;
+    const k = `${exIdx}-${lastIdx}`;
+    setLogs(prev => { const next = { ...prev }; delete next[k]; return next; });
+    setExtraSets(prev => ({ ...prev, [exIdx]: Math.max(0, (prev[exIdx] ?? 0) - 1) }));
+    await deleteSetLog(seance.id, exIdx, lastIdx);
   };
 
   const [deleting, setDeleting] = useState(false);
@@ -744,13 +824,15 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
                   {run.indices.map(exIdx => (
                     <ExerciceLiveBlock key={exIdx} ex={exercices[exIdx]} exIdx={exIdx} logs={logs}
                       history={historyByNom[exercices[exIdx].nom] ?? {}} prBadge={!!prByNom[exercices[exIdx].nom]}
-                      extra={extraSets[exIdx] ?? 0} onToggle={onToggle} onChange={onChange} onAddSet={onAddSet}/>
+                      extra={extraSets[exIdx] ?? 0} onToggle={onToggle} onChange={onChange} onAddSet={onAddSet}
+                      onToggleWarmup={onToggleWarmup} onRemoveExtra={onRemoveExtra}/>
                   ))}
                 </div>
               ) : (
                 <ExerciceLiveBlock ex={exercices[run.indices[0]]} exIdx={run.indices[0]} logs={logs}
                   history={historyByNom[exercices[run.indices[0]].nom] ?? {}} prBadge={!!prByNom[exercices[run.indices[0]].nom]}
-                  extra={extraSets[run.indices[0]] ?? 0} onToggle={onToggle} onChange={onChange} onAddSet={onAddSet}/>
+                  extra={extraSets[run.indices[0]] ?? 0} onToggle={onToggle} onChange={onChange} onAddSet={onAddSet}
+                  onToggleWarmup={onToggleWarmup} onRemoveExtra={onRemoveExtra}/>
               )}
 
               {runIdx < runs.length - 1 ? (
@@ -783,16 +865,18 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
         })()}
       </div>
 
-      {rest && rest.left > 0 && (
+      {rest && rest.left > 0 && (() => {
+        const almostDone = rest.left <= 5;
+        return (
         <div className="absolute left-0 right-0 bottom-0 px-4 pb-4 shrink-0 pointer-events-none">
-          <div className="pointer-events-auto max-w-sm mx-auto border border-[#c9a84c]/30 bg-[var(--t-surface)] rounded-2xl shadow-[0_16px_40px_-8px_rgba(0,0,0,0.55)] overflow-hidden">
+          <div className={`pointer-events-auto max-w-sm mx-auto border rounded-2xl shadow-[0_16px_40px_-8px_rgba(0,0,0,0.55)] overflow-hidden transition-colors ${almostDone ? "border-[#e0834a]/50 bg-[var(--t-surface)] animate-pulse" : "border-[#c9a84c]/30 bg-[var(--t-surface)]"}`}>
             <div className="h-1.5 bg-[var(--t-track)]">
-              <div className="h-full bg-gradient-to-r from-[#e2c97e] to-[#c9a84c] transition-all duration-1000 linear" style={{ width: `${Math.min((rest.left / rest.total) * 100, 100)}%` }}/>
+              <div className={`h-full transition-all duration-1000 linear ${almostDone ? "bg-gradient-to-r from-[#e0834a] to-[#e07070]" : "bg-gradient-to-r from-[#e2c97e] to-[#c9a84c]"}`} style={{ width: `${Math.min((rest.left / rest.total) * 100, 100)}%` }}/>
             </div>
             <div className="flex items-center justify-between px-5 py-4">
               <div className="flex flex-col items-start">
                 <span className="text-[0.62rem] tracking-[0.2em] uppercase text-[var(--t-text-30)]">Repos</span>
-                <span style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-[#c9a84c] tracking-wide leading-none mt-0.5">{fmtClock(rest.left)}</span>
+                <span style={{ fontFamily: "var(--font-bebas)" }} className={`text-4xl tracking-wide leading-none mt-0.5 ${almostDone ? "text-[#e0834a]" : "text-[#c9a84c]"}`}>{fmtClock(rest.left)}</span>
               </div>
               <div className="flex items-center gap-2">
                 <button onClick={() => setRest(r => r ? { ...r, left: Math.max(0, r.left - 15) } : r)}
@@ -805,7 +889,8 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
             </div>
           </div>
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
