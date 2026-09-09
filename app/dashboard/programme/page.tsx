@@ -6,6 +6,7 @@ import { apiPost } from "@/lib/apiClient";
 import { getMyCoachEmail, getMyCoachBusinessName } from "@/lib/coach";
 import { SeanceBody } from "@/components/SeancePreview";
 import { SeanceLive } from "@/components/SeanceLive";
+import { RoundTimer } from "@/components/RoundTimer";
 import { DateNav } from "@/components/DateNav";
 import { useSelectedDate, todayStr } from "@/lib/useSelectedDate";
 import { syncSteps } from "@/lib/steps";
@@ -22,7 +23,7 @@ import { loadPersonalRecords, type PRCard } from "@/lib/personalRecords";
 import { Sparkline } from "@/components/Sparkline";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
-import { Activity, X, Mic, ChevronDown, Download, Flame, Plus, Trash2 } from "@/lib/solarIcons";
+import { Activity, X, Mic, ChevronDown, Download, Flame, Plus, Trash2, Clock } from "@/lib/solarIcons";
 
 type Profile = { prenom: string; poids: number; taille: number; age: number; sexe: string; objectif_type: string | null };
 type LoggedWorkout = {
@@ -115,6 +116,9 @@ export default function ProgrammePage() {
   const [createItems,    setCreateItems]    = useState<ExerciceItem[]>([]);
   const [createSaving,   setCreateSaving]   = useState(false);
   const [startingFreeform, setStartingFreeform] = useState(false);
+  // Minuteur par rounds accessible directement depuis l'aperçu (pas seulement depuis une
+  // séance live) : un circuit/HIIT/Tabata ne nécessite pas forcément de séance loguée à côté.
+  const [showTimer, setShowTimer] = useState(false);
 
   // Sans confirmation propre : réutilisé par deleteSeance (confirm avant appel) et par
   // l'écran de séance live (qui affiche sa propre confirmation, pour ne pas en demander deux).
@@ -577,11 +581,18 @@ export default function ProgrammePage() {
         )}
 
         {!createOpen && (
-          <button onClick={() => setCreateOpen(true)}
-            className="w-full mt-3 flex items-center justify-center gap-2.5 border-2 border-dashed border-[#c9a84c]/40 text-[#c9a84c] text-base font-bold tracking-[0.08em] uppercase py-4 rounded-xl hover:bg-[#c9a84c]/5 active:scale-[0.99] transition-all">
-            <Icon icon={Plus} size={20} strokeWidth={2.5}/>
-            Créer ma séance
-          </button>
+          <div className="flex flex-col gap-2.5 mt-3">
+            <button onClick={() => setCreateOpen(true)}
+              className="w-full flex items-center justify-center gap-2.5 border-2 border-dashed border-[#c9a84c]/40 text-[#c9a84c] text-base font-bold tracking-[0.08em] uppercase py-4 rounded-xl hover:bg-[#c9a84c]/5 active:scale-[0.99] transition-all">
+              <Icon icon={Plus} size={20} strokeWidth={2.5}/>
+              Créer ma séance
+            </button>
+            <button onClick={() => setShowTimer(true)}
+              className="w-full flex items-center justify-center gap-2 border border-[var(--t-border)] text-[var(--t-text-40)] text-[0.8rem] font-bold tracking-[0.08em] uppercase py-3 rounded-xl hover:border-[#c9a84c]/40 hover:text-[#c9a84c] active:scale-[0.99] transition-all">
+              <Icon icon={Clock} size={17} strokeWidth={2}/>
+              Chronomètre — HIIT / Tabata
+            </button>
+          </div>
         )}
 
       </div>
@@ -1034,6 +1045,8 @@ export default function ProgrammePage() {
           </div>
         </div>
       )}
+
+      {showTimer && <RoundTimer onClose={() => setShowTimer(false)}/>}
 
       {liveSeance && userId && (
         <SeanceLive

@@ -2,7 +2,17 @@
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/Icon";
 import { NumberStepper } from "@/components/NumberStepper";
+import { useWakeLock } from "@/lib/useWakeLock";
 import { X, Play, Pause, ChevronRight, Repeat, Flame } from "@/lib/solarIcons";
+
+// Protocoles reconnus plutôt qu'à reconfigurer rounds/travail/repos à chaque fois — inspiré
+// d'OpenHIIT ("Save & Load — Store unlimited timer configurations"), simplifié ici à quelques
+// presets fixes plutôt qu'un flux de sauvegarde nommée (qui demanderait un prompt() bloquant).
+const PRESETS = [
+  { label: "Tabata classique", rounds: "8", work: "20", rest: "10" },
+  { label: "HIIT", rounds: "5", work: "40", rest: "20" },
+  { label: "EMOM", rounds: "10", work: "60", rest: "0" },
+] as const;
 
 type Phase = "config" | "ready" | "work" | "rest" | "done";
 
@@ -32,6 +42,13 @@ function beep(freq: number, durationMs = 150) {
   } catch { /* Web Audio indisponible — le minuteur reste utilisable sans le son */ }
 }
 
+// Un bip seul rate parfois la transition (musique dans les écouteurs, téléphone en silencieux)
+// — la vibration est le rattrapage standard des minuteurs mobiles. navigator.vibrate n'existe
+// pas sur tous les navigateurs (Safari iOS notamment) : no-op silencieux si absent.
+function vibrate(pattern: number | number[]) {
+  try { navigator.vibrate?.(pattern); } catch { /* ignore */ }
+}
+
 // Minuteur par rounds façon HIIT/Tabata (inspiré d'apps open source comme OpenHIIT) : on
 // configure un nombre de rounds, un temps de travail et un temps de repos, et le minuteur
 // enchaîne tout seul plutôt que de compter sur un tap manuel après chaque série — utile pour
@@ -41,6 +58,7 @@ export function RoundTimer({ onClose }: { onClose: () => void }) {
   const [work,     setWork]     = useState("40");
   const [rest,     setRest]     = useState("20");
   const [reps,     setReps]     = useState("");
+  const [labelsText, setLabelsText] = useState("");
 
   const [phase,    setPhase]    = useState<Phase>("config");
   const [round,    setRound]    = useState(1);
@@ -49,29 +67,38 @@ export function RoundTimer({ onClose }: { onClose: () => void }) {
   const [paused,   setPaused]   = useState(false);
   const [muted,    setMuted]    = useState(false);
 
+  useWakeLock(phase !== "config" && phase !== "done" && !paused);
+
   const roundsN = Math.max(1, parseInt(rounds, 10) || 1);
   const workN   = Math.max(1, parseInt(work, 10) || 1);
   const restN   = Math.max(0, parseInt(rest, 10) || 0);
+  // Un nom d'exercice par round (cycliques si moins de noms que de rounds) — utile pour un
+  // vrai circuit où chaque round n'est pas le même mouvement, contrairement à l'objectif de
+  // reps (fixe, pensé pour un même exercice répété).
+  const labels = labelsText.split("\n").map(l => l.trim()).filter(Boolean);
+  const currentLabel = labels.length ? labels[(round - 1) % labels.length] : null;
 
   const play = (freq: number) => { if (!muted) beep(freq); };
 
+  const applyPreset = (p: typeof PRESETS[number]) => { setRounds(p.rounds); setWork(p.work); setRest(p.rest); };
+
   const start = () => {
     setRound(1); setPhase("ready"); setLeft(READY_SECONDS); setTotal(READY_SECONDS); setPaused(false);
-    play(660);
+    play(660); vibrate(80);
   };
 
   // Avance à la phase suivante de la séquence ready → (work → rest) × N → done — appelé au
   // décompte à zéro, ou manuellement via le bouton "passer".
   const advance = () => {
-    if (phase === "ready") { setPhase("work"); setLeft(workN); setTotal(workN); play(880); return; }
+    if (phase === "ready") { setPhase("work"); setLeft(workN); setTotal(workN); play(880); vibrate([80, 40, 80]); return; }
     if (phase === "work") {
-      if (restN > 0) { setPhase("rest"); setLeft(restN); setTotal(restN); play(440); return; }
-      if (round >= roundsN) { setPhase("done"); play(880); return; }
-      setRound(r => r + 1); setLeft(workN); setTotal(workN); play(880); return;
+      if (restN > 0) { setPhase("rest"); setLeft(restN); setTotal(restN); play(440); vibrate(80); return; }
+      if (round >= roundsN) { setPhase("done"); play(880); vibrate([80, 40, 80, 40, 80]); return; }
+      setRound(r => r + 1); setLeft(workN); setTotal(workN); play(880); vibrate([80, 40, 80]); return;
     }
     if (phase === "rest") {
-      if (round >= roundsN) { setPhase("done"); play(880); return; }
-      setRound(r => r + 1); setPhase("work"); setLeft(workN); setTotal(workN); play(880); return;
+      if (round >= roundsN) { setPhase("done"); play(880); vibrate([80, 40, 80, 40, 80]); return; }
+      setRound(r => r + 1); setPhase("work"); setLeft(workN); setTotal(workN); play(880); vibrate([80, 40, 80]); return;
     }
   };
 
@@ -110,6 +137,18 @@ export function RoundTimer({ onClose }: { onClose: () => void }) {
             Cadence un circuit, un EMOM ou une séance en intervalles : configure les rounds, le minuteur enchaîne travail et repos tout seul.
           </p>
           <div>
+            <label className="text-[0.62rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] block mb-2">Protocoles</label>
+            <div className="flex gap-2">
+              {PRESETS.map(p => (
+                <button key={p.label} onClick={() => applyPreset(p)}
+                  className="flex-1 border border-[var(--t-border)] rounded-xl px-2 py-2.5 text-center hover:border-[#c9a84c]/40 hover:bg-[#c9a84c]/5 transition-colors">
+                  <span className="block text-[0.62rem] font-bold uppercase tracking-wide text-[var(--t-text-60)]">{p.label}</span>
+                  <span className="block text-[0.58rem] text-[var(--t-text-25)] mt-0.5">{p.rounds}×{p.work}s{p.rest !== "0" ? `/${p.rest}s` : ""}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
             <label className="text-[0.62rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] block mb-2">Rounds</label>
             <NumberStepper size="lg" value={rounds} placeholder="3" step={1} onChange={setRounds}/>
           </div>
@@ -127,6 +166,11 @@ export function RoundTimer({ onClose }: { onClose: () => void }) {
             <label className="text-[0.62rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] block mb-2">Répétitions visées <span className="text-[var(--t-text-20)] normal-case">(optionnel, affiché pendant le travail)</span></label>
             <NumberStepper size="lg" value={reps} placeholder="—" step={1} onChange={setReps}/>
           </div>
+          <div>
+            <label className="text-[0.62rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] block mb-2">Exercices par round <span className="text-[var(--t-text-20)] normal-case">(optionnel, un par ligne — cyclés si moins que de rounds)</span></label>
+            <textarea value={labelsText} onChange={e => setLabelsText(e.target.value)} rows={3} placeholder={"Burpees\nSquats\nMountain climbers"}
+              className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 resize-none"/>
+          </div>
           <button onClick={start}
             className="w-full flex items-center justify-center gap-2 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-base font-bold tracking-[0.1em] uppercase py-4 rounded-xl shadow-[0_6px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_8px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all">
             <Icon icon={Play} size={18} strokeWidth={2}/> Démarrer
@@ -137,7 +181,10 @@ export function RoundTimer({ onClose }: { onClose: () => void }) {
       {(phase === "ready" || phase === "work" || phase === "rest") && (
         <div className="flex-1 flex flex-col items-center justify-center px-6 max-w-md mx-auto w-full">
           <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[var(--t-text-30)] mb-1">Round {round} / {roundsN}</p>
-          <p className="text-sm font-bold tracking-[0.15em] uppercase mb-4" style={{ color }}>{PHASE_LABEL[phase]}</p>
+          <p className={`text-sm font-bold tracking-[0.15em] uppercase ${phase === "work" && currentLabel ? "mb-1" : "mb-4"}`} style={{ color }}>{PHASE_LABEL[phase]}</p>
+          {phase === "work" && currentLabel && (
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[var(--t-text)] tracking-wide mb-4 text-center">{currentLabel}</p>
+          )}
 
           <div className="relative w-56 h-56 flex items-center justify-center mb-6">
             <svg viewBox="0 0 100 100" className="absolute inset-0 -rotate-90">
