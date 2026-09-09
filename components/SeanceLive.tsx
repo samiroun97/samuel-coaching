@@ -605,7 +605,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
 
       <div className="border-b border-[var(--t-border-soft)] shrink-0">
         <div className="flex items-center justify-center gap-3 py-4 max-w-lg mx-auto">
-          <RichIcon name="chrono" size={40}/>
+          <RichIcon name="chrono" size={72}/>
           <p style={{ fontFamily: "var(--font-bebas)" }} className="text-5xl text-[var(--t-text)] tracking-wide leading-none">{fmtDuration(elapsed)}</p>
         </div>
         <div className="grid grid-cols-3 max-w-lg mx-auto border-t border-[var(--t-border-soft)]">
