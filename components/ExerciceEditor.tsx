@@ -1,6 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
-import { type ExerciceItem, type ExerciceMode, type SetDetail, type SimpleField, type ExerciceRun, EXERCICE_TYPES, emptyExercice, emptySet, groupExerciceRuns } from "@/lib/exercices";
+import { type ExerciceItem, type ExerciceMode, type SetDetail, type SimpleField, type ExerciceRun, EXERCICE_TYPES, emptyExercice, emptySet, groupExerciceRuns, targetSetsFor } from "@/lib/exercices";
 import { type LibraryEntry } from "@/lib/exerciceLibrary";
 import { type CatalogueEntry, findCatalogueEntry } from "@/lib/exercicesCatalogue";
 import { uploadCustomExerciceImage } from "@/lib/customExerciceImage";
@@ -8,7 +8,7 @@ import { ExerciceLibraryBrowser } from "@/components/ExerciceLibraryBrowser";
 import { NumberStepper } from "@/components/NumberStepper";
 import { Select } from "@/components/Select";
 import { Icon } from "@/components/Icon";
-import { Layers, Repeat, Dumbbell, Clock, ChevronUp, ChevronDown, Camera, X, Copy, ChevronRight, Plus, Library, NotebookPen } from "@/lib/solarIcons";
+import { Layers, Repeat, Dumbbell, Clock, ChevronUp, ChevronDown, Camera, X, Copy, ChevronRight, Plus, Library, NotebookPen, Eye, Pencil } from "@/lib/solarIcons";
 
 const inp = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
 const inpSm = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-2.5 py-2 text-center focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
@@ -122,6 +122,10 @@ const DATALIST_ID = "exercice-bibliotheque-list";
 // que l'essentiel (séries/reps/poids/repos) ; l'éditeur CRM du coach reste inchangé.
 export default function ExerciceEditor({ items, onChange, library = [], catalogue = [], simplified = false }: { items: ExerciceItem[]; onChange: (items: ExerciceItem[]) => void; library?: LibraryEntry[]; catalogue?: CatalogueEntry[]; simplified?: boolean }) {
   const [showLibraryBrowser, setShowLibraryBrowser] = useState(false);
+  // Bascule vers une vue lecture seule, compacte, une carte par exercice avec vignette +
+  // puces de séries — pour voir d'un coup d'œil à quoi ressemble la séance construite,
+  // plutôt que de devoir dérouler tout le formulaire d'édition pour se la représenter.
+  const [previewMode, setPreviewMode] = useState(false);
   const [customRepos, setCustomRepos] = useState<Record<number, boolean>>({});
   const update = (i: number, patch: Partial<ExerciceItem>) => onChange(items.map((it, j) => (j === i ? { ...it, ...patch } : it)));
   const remove = (i: number) => onChange(items.filter((_, j) => j !== i));
@@ -395,6 +399,59 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
     );
   };
 
+  // Carte compacte en lecture seule : vignette + nom + puces "reps×poids" par série, façon
+  // récap d'un programme déjà enregistré — donne une vraie idée visuelle de la séance sans
+  // dérouler tout le formulaire d'édition en dessous.
+  const renderPreviewCard = (i: number) => {
+    const ex = items[i];
+    if (!ex.nom.trim()) return null;
+    const sets = targetSetsFor(ex);
+    const catalogueEntry = findCatalogueEntry(catalogue, ex.nom);
+    const imageUrl = catalogueEntry?.image_url || ex.imageUrl || null;
+    return (
+      <div key={i} className="flex items-start gap-3 border border-[var(--t-border-soft)] bg-[var(--t-surface)] rounded-xl px-3.5 py-3">
+        <div className="shrink-0 w-11 h-11 rounded-lg overflow-hidden bg-[var(--t-surface-2)] flex items-center justify-center">
+          {imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={imageUrl} alt="" className="w-full h-full object-cover"/>
+          ) : (
+            <Icon icon={Dumbbell} size={16} strokeWidth={1.6} className="text-[var(--t-text-15)]"/>
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-bold text-[var(--t-text)] truncate" style={{ fontFamily: "var(--font-bebas)" }}>{ex.nom}</p>
+          {sets.length > 0 ? (
+            <div className="flex flex-wrap gap-1 mt-1.5">
+              {sets.map((s, si) => (
+                <span key={si} className="text-[0.58rem] tracking-wide bg-[var(--t-surface-2)] border border-[var(--t-border-soft)] rounded-full px-2 py-0.5 text-[var(--t-text-40)] whitespace-nowrap">
+                  {s.reps || "?"} × {ex.bodyweight ? `PDC${s.poids ? `+${s.poids}` : ""}` : (s.poids || "?")}
+                </span>
+              ))}
+            </div>
+          ) : ex.texteLibre ? (
+            <p className="text-[0.65rem] text-[var(--t-text-35)] mt-1 line-clamp-2">{ex.texteLibre}</p>
+          ) : (
+            <p className="text-[0.6rem] text-[var(--t-text-20)] mt-1">Détails non renseignés</p>
+          )}
+          {sets[0]?.repos && (
+            <p className="text-[0.55rem] text-[var(--t-text-20)] tracking-wide mt-1.5 flex items-center gap-1">
+              <Icon icon={Clock} size={10} strokeWidth={2}/> {sets[0].repos} de repos
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const previewNodes: React.ReactNode[] = runs.flatMap(run =>
+    run.groupId ? [
+      <div key={`prev-group-${run.indices[0]}`} className="border border-[#c9a84c]/20 bg-[#c9a84c]/[0.03] rounded-xl p-2 flex flex-col gap-2">
+        <p className="text-[0.55rem] tracking-[0.15em] uppercase text-[#c9a84c] px-1">{run.groupLabel || "Superset"}</p>
+        {run.indices.map(k => renderPreviewCard(k))}
+      </div>,
+    ] : [renderPreviewCard(run.indices[0])]
+  );
+
   const nodes: React.ReactNode[] = runs.map((run, runPos) =>
     run.groupId ? (
       <div key={`group-${run.indices[0]}`} className="border border-[#c9a84c]/25 bg-[#c9a84c]/[0.03] rounded-2xl p-2.5 flex flex-col gap-2.5">
@@ -497,23 +554,37 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
         {catalogue.map(c => <option key={`cat-${c.id}`} value={c.nom} />)}
       </datalist>
       {totalExercices > 0 && (
-        <div className="flex items-center justify-around bg-[#c9a84c]/[0.06] border border-[#c9a84c]/20 rounded-xl py-2.5">
-          <div className="text-center">
-            <p className="text-sm font-bold text-[#c9a84c]" style={{ fontFamily: "var(--font-bebas)" }}>{totalExercices}</p>
-            <p className="text-[0.48rem] tracking-[0.12em] uppercase text-[var(--t-text-30)]">Exercice{totalExercices > 1 ? "s" : ""}</p>
+        <div className="flex items-stretch bg-[#c9a84c]/[0.06] border border-[#c9a84c]/20 rounded-xl overflow-hidden">
+          <div className="flex items-center justify-around flex-1 py-2.5">
+            <div className="text-center">
+              <p className="text-sm font-bold text-[#c9a84c]" style={{ fontFamily: "var(--font-bebas)" }}>{totalExercices}</p>
+              <p className="text-[0.48rem] tracking-[0.12em] uppercase text-[var(--t-text-30)]">Exercice{totalExercices > 1 ? "s" : ""}</p>
+            </div>
+            <div className="w-px h-6 bg-[var(--t-border-soft)]"/>
+            <div className="text-center">
+              <p className="text-sm font-bold text-[#c9a84c]" style={{ fontFamily: "var(--font-bebas)" }}>{totalSeries}</p>
+              <p className="text-[0.48rem] tracking-[0.12em] uppercase text-[var(--t-text-30)]">Série{totalSeries > 1 ? "s" : ""}</p>
+            </div>
           </div>
-          <div className="w-px h-6 bg-[var(--t-border-soft)]"/>
-          <div className="text-center">
-            <p className="text-sm font-bold text-[#c9a84c]" style={{ fontFamily: "var(--font-bebas)" }}>{totalSeries}</p>
-            <p className="text-[0.48rem] tracking-[0.12em] uppercase text-[var(--t-text-30)]">Série{totalSeries > 1 ? "s" : ""}</p>
-          </div>
+          <button type="button" onClick={() => setPreviewMode(v => !v)}
+            className={`shrink-0 flex items-center gap-1.5 px-3.5 text-[0.58rem] font-bold tracking-[0.08em] uppercase border-l border-[#c9a84c]/20 transition-colors ${
+              previewMode ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-[#c9a84c] hover:bg-[#c9a84c]/10"}`}>
+            <Icon icon={previewMode ? Pencil : Eye} size={13} strokeWidth={2}/>
+            {previewMode ? "Éditer" : "Aperçu"}
+          </button>
         </div>
       )}
-      {showBigCards && !showLibraryBrowser && bigAddButtons}
-      {showLibraryBrowser && showBigCards && libraryBrowser}
-      {nodes}
-      {simplified && items.length > 0 && !showLibraryBrowser && compactAddButtons}
-      {showLibraryBrowser && !showBigCards && libraryBrowser}
+      {previewMode ? (
+        <div className="flex flex-col gap-2.5">{previewNodes}</div>
+      ) : (
+        <>
+          {showBigCards && !showLibraryBrowser && bigAddButtons}
+          {showLibraryBrowser && showBigCards && libraryBrowser}
+          {nodes}
+          {simplified && items.length > 0 && !showLibraryBrowser && compactAddButtons}
+          {showLibraryBrowser && !showBigCards && libraryBrowser}
+        </>
+      )}
     </div>
   );
 }

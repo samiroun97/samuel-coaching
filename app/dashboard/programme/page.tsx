@@ -584,41 +584,6 @@ export default function ProgrammePage() {
           </button>
         )}
 
-        {/* Panneau de création inline — même logique que l'ancienne page /creer-ma-seance,
-            fusionnée ici pour ne plus avoir à naviguer ailleurs pour démarrer. */}
-        {createOpen && (
-          <div className="mt-3 border-t border-[#c9a84c]/15 pt-4 flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <p className="text-[0.62rem] tracking-[0.2em] uppercase text-[var(--t-text-30)]">Nouvelle séance</p>
-              <button onClick={resetCreatePanel} className="text-[var(--t-text-25)] hover:text-[var(--t-text-60)] transition-colors p-1">
-                <Icon icon={X} size={18} strokeWidth={2}/>
-              </button>
-            </div>
-
-            <button onClick={startFreeformInline} disabled={!userId || startingFreeform}
-              className="text-left border-2 border-[#c9a84c]/30 bg-[#c9a84c]/[0.04] rounded-xl p-4 hover:bg-[#c9a84c]/10 active:scale-[0.99] transition-all disabled:opacity-50">
-              <p className="text-base text-[var(--t-text-70)] font-bold mb-1">
-                {startingFreeform ? "Démarrage…" : "Démarrer en direct →"}
-              </p>
-              <p className="text-[0.68rem] text-[var(--t-text-30)] leading-relaxed">Le chrono démarre tout de suite, ajoute tes exercices et logue séries/reps/poids au fur et à mesure.</p>
-            </button>
-
-            <p className="text-[0.58rem] tracking-[0.2em] uppercase text-[var(--t-text-20)] text-center">— ou prépare-la à l&apos;avance —</p>
-
-            <ExerciceEditor items={createItems} onChange={setCreateItems} catalogue={catalogue} simplified/>
-
-            {createValidCount > 0 && (
-              <>
-                <input className={`${inputCls} py-3.5 text-base`} placeholder="Nom de la séance (optionnel)"
-                  value={createTitre} onChange={e => setCreateTitre(e.target.value)}/>
-                <button onClick={saveCreatedSeance} disabled={createSaving}
-                  className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-base font-bold tracking-[0.08em] uppercase py-4 rounded-xl shadow-[0_6px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_8px_26px_-4px_rgba(201,168,76,0.8)] transition-all disabled:opacity-40">
-                  {createSaving ? "Enregistrement…" : "Enregistrer pour plus tard →"}
-                </button>
-              </>
-            )}
-          </div>
-        )}
       </div>
 
       {/* ── Formulaire séance ── */}
@@ -1027,6 +992,46 @@ export default function ProgrammePage() {
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Panneau de création plein écran — même traitement immersif que la séance live et le
+          minuteur, pour que "Créer ma séance" ait enfin la place d'être une vraie interface
+          plutôt qu'un panneau compressé dans le bandeau Entraînement. */}
+      {createOpen && (
+        <div className="fixed inset-0 bg-[var(--t-bg)] z-50 flex flex-col">
+          <div className="flex items-center justify-between px-5 py-3.5 shrink-0 max-w-lg mx-auto w-full">
+            <button onClick={resetCreatePanel} className="text-[var(--t-text-30)] hover:text-[var(--t-text)] transition-colors w-11 h-11 flex items-center justify-center -ml-2.5">
+              <Icon icon={X} size={20} strokeWidth={2}/>
+            </button>
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-xl tracking-wider text-[var(--t-text)] flex-1 text-center">Nouvelle séance</p>
+            <div className="w-11 shrink-0"/>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-4 pb-10 max-w-lg mx-auto w-full flex flex-col gap-4">
+            <button onClick={startFreeformInline} disabled={!userId || startingFreeform}
+              className="text-left border-2 border-[#c9a84c]/30 bg-[#c9a84c]/[0.04] rounded-xl p-4 hover:bg-[#c9a84c]/10 active:scale-[0.99] transition-all disabled:opacity-50">
+              <p className="text-base text-[var(--t-text-70)] font-bold mb-1">
+                {startingFreeform ? "Démarrage…" : "Démarrer en direct →"}
+              </p>
+              <p className="text-[0.68rem] text-[var(--t-text-30)] leading-relaxed">Le chrono démarre tout de suite, ajoute tes exercices et logue séries/reps/poids au fur et à mesure.</p>
+            </button>
+
+            <p className="text-[0.58rem] tracking-[0.2em] uppercase text-[var(--t-text-20)] text-center">— ou prépare-la à l&apos;avance —</p>
+
+            <ExerciceEditor items={createItems} onChange={setCreateItems} catalogue={catalogue} simplified/>
+
+            {createValidCount > 0 && (
+              <>
+                <input className={`${inputCls} py-3.5 text-base`} placeholder="Nom de la séance (optionnel)"
+                  value={createTitre} onChange={e => setCreateTitre(e.target.value)}/>
+                <button onClick={saveCreatedSeance} disabled={createSaving}
+                  className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-base font-bold tracking-[0.08em] uppercase py-4 rounded-xl shadow-[0_6px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_8px_26px_-4px_rgba(201,168,76,0.8)] transition-all disabled:opacity-40">
+                  {createSaving ? "Enregistrement…" : "Enregistrer pour plus tard →"}
+                </button>
+              </>
+            )}
+          </div>
         </div>
       )}
 
