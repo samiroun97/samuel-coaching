@@ -13,7 +13,7 @@ import { loadCatalogue, type CatalogueEntry } from "@/lib/exercicesCatalogue";
 import { ExerciceLibraryBrowser } from "@/components/ExerciceLibraryBrowser";
 import { NumberStepper, numOr } from "@/components/NumberStepper";
 import { Icon } from "@/components/Icon";
-import { Check, X, ChevronLeft, ChevronRight, Dumbbell, NotebookPen, Plus, Trash2, Clock } from "@/lib/solarIcons";
+import { Check, X, ChevronLeft, ChevronRight, Dumbbell, NotebookPen, Plus, Trash2, Clock, Layers } from "@/lib/solarIcons";
 import { RoundTimer } from "@/components/RoundTimer";
 
 type LiveSeance = { id: string; titre: string; exercices: string | null };
@@ -104,8 +104,8 @@ function SetRow({ target, idx, log, prev, isExtra, bodyweight, onToggle, onChang
         </button>
       </div>
       <div className="grid grid-cols-2 gap-2.5">
-        <NumberStepper size="lg" value={log?.poids ?? ""} placeholder={bodyweight ? (target.poids || "+kg") : (target.poids || "kg")} step={2.5} onChange={v => onChange("poids", v)} accent/>
-        <NumberStepper size="lg" value={log?.reps ?? ""} placeholder={target.reps || "reps"} step={1} onChange={v => onChange("reps", v)}/>
+        <NumberStepper size="lg" label={bodyweight ? "Kg additionnels" : "Kg"} value={log?.poids ?? ""} placeholder={bodyweight ? (target.poids || "+kg") : (target.poids || "kg")} step={2.5} onChange={v => onChange("poids", v)} accent/>
+        <NumberStepper size="lg" label="Reps" value={log?.reps ?? ""} placeholder={target.reps || "reps"} step={1} onChange={v => onChange("reps", v)}/>
       </div>
       <RirSlider value={log?.rir ?? ""} onChange={v => onChange("rir", v)}/>
     </div>
@@ -299,6 +299,26 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
   const clampRun = (i: number) => Math.max(0, Math.min(runs.length - 1, i));
   const goPrev = () => setRunIdx(i => clampRun(i - 1));
   const goNext = () => setRunIdx(i => clampRun(i + 1));
+
+  // Fusionne l'exercice (ou groupe) affiché avec celui d'à côté, pour en faire un vrai
+  // superset/biset/triset a posteriori — deux runs adjacents dans la liste correspondent
+  // toujours à des indices contigus dans `exercices` (groupExerciceRuns parcourt le tableau
+  // dans l'ordre), donc leur assigner le même groupId suffit à les regrouper correctement.
+  const mergeWithAdjacentRun = async (dir: -1 | 1) => {
+    const otherPos = runIdx + dir;
+    if (otherPos < 0 || otherPos >= runs.length) return;
+    const a = runs[Math.min(runIdx, otherPos)];
+    const b = runs[Math.max(runIdx, otherPos)];
+    const gid = a.groupId ?? b.groupId ?? genId();
+    const label = a.groupLabel || b.groupLabel || "Superset";
+    const merged = new Set([...a.indices, ...b.indices]);
+    const next = exercices.map((it, j) => (merged.has(j) ? { ...it, groupId: gid, groupLabel: label } : it));
+    setExercices(next);
+    const newRuns = groupExerciceRuns(next);
+    const landingIdx = newRuns.findIndex(r => r.indices.includes(a.indices[0]));
+    setRunIdx(landingIdx >= 0 ? landingIdx : runIdx);
+    await supabase.from("programme_seances").update({ exercices: serializeExercices(next) }).eq("id", seance.id);
+  };
   const onTouchStart = (e: TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
   const onTouchEnd = (e: TouchEvent) => {
     if (touchStartX.current == null) return;
@@ -611,47 +631,23 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
         </div>
       )}
 
-      {/* Ajouter un exercice non prévu, à tout moment de la séance (improvisation, machine
-          libre trouvée sur place…) — pas seulement des séries à un exercice déjà planifié. */}
-      {loaded && (
-        <div className="px-4 pb-2 shrink-0 max-w-lg mx-auto w-full flex flex-col gap-2">
-          {runs.length > 0 && (
-            <button type="button" onClick={() => setLinkSuperset(v => !v)}
-              className="w-full flex items-center gap-2 text-left px-1 py-1">
-              <span className={`w-4 h-4 rounded shrink-0 border flex items-center justify-center transition-colors ${linkSuperset ? "bg-[#c9a84c] border-[#c9a84c]" : "border-[var(--t-border)]"}`}>
-                {linkSuperset && <Icon icon={Check} size={10} strokeWidth={3} className="text-black"/>}
-              </span>
-              <span className={`text-[0.62rem] tracking-wide transition-colors ${linkSuperset ? "text-[#c9a84c]" : "text-[var(--t-text-25)]"}`}>
-                En superset avec &laquo; {exercices[runs[runIdx].indices[0]]?.nom || "cet exercice"} &raquo;{runs[runIdx].indices.length > 1 ? " (déjà groupé)" : ""}
-              </span>
+      {/* Fusionner deux exercices déjà ajoutés en superset/biset/triset — action explicite et
+          visible plutôt qu'une case à cocher discrète, pour de vrai fusionner ce qui existe
+          déjà (contrairement à la checkbox "lier" plus bas, qui ne concerne qu'un exercice
+          qu'on est en train d'ajouter). */}
+      {loaded && runs.length > 1 && (
+        <div className="flex items-center gap-2 px-4 pb-2 shrink-0 max-w-lg mx-auto w-full">
+          {runIdx > 0 && (
+            <button onClick={() => mergeWithAdjacentRun(-1)}
+              className="flex-1 flex items-center justify-center gap-1.5 border border-dashed border-[var(--t-border)] rounded-xl text-[0.62rem] tracking-wide uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors py-2 font-medium">
+              <Icon icon={Layers} size={13} strokeWidth={2}/> Fusionner avec précédent
             </button>
           )}
-          {addingExercice ? (
-            <div className="flex items-center gap-2">
-              <input autoFocus value={newExerciceNom} onChange={e => setNewExerciceNom(e.target.value)}
-                onKeyDown={e => { if (e.key === "Enter") addExercice(); if (e.key === "Escape") { setAddingExercice(false); setNewExerciceNom(""); } }}
-                placeholder="Nom de l'exercice"
-                className="flex-1 min-w-0 bg-[var(--t-surface)] border border-[#c9a84c]/40 rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2 focus:outline-none"/>
-              <button onClick={addExercice} disabled={!newExerciceNom.trim()}
-                className="shrink-0 w-11 h-11 rounded-xl bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black flex items-center justify-center disabled:opacity-40 transition-opacity">
-                <Icon icon={Check} size={17} strokeWidth={2.5}/>
-              </button>
-              <button onClick={() => { setAddingExercice(false); setNewExerciceNom(""); }}
-                className="shrink-0 w-11 h-11 rounded-xl border border-[var(--t-border)] text-[var(--t-text-30)] hover:text-[var(--t-text-60)] flex items-center justify-center transition-colors">
-                <Icon icon={X} size={16} strokeWidth={2}/>
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <button onClick={() => setShowLibrary(true)}
-                className="flex-1 flex items-center justify-center gap-2 border border-[var(--t-border)] rounded-xl text-[0.7rem] tracking-wider uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors py-3 font-medium">
-                <Icon icon={Dumbbell} size={20} strokeWidth={2}/> Bibliothèque
-              </button>
-              <button onClick={() => setAddingExercice(true)}
-                className="flex-1 flex items-center justify-center gap-2 border border-[var(--t-border)] rounded-xl text-[0.7rem] tracking-wider uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors py-3 font-medium">
-                <Icon icon={NotebookPen} size={20} strokeWidth={2}/> Nom libre
-              </button>
-            </div>
+          {runIdx < runs.length - 1 && (
+            <button onClick={() => mergeWithAdjacentRun(1)}
+              className="flex-1 flex items-center justify-center gap-1.5 border border-dashed border-[var(--t-border)] rounded-xl text-[0.62rem] tracking-wide uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors py-2 font-medium">
+              <Icon icon={Layers} size={13} strokeWidth={2}/> Fusionner avec suivant
+            </button>
           )}
         </div>
       )}
@@ -700,6 +696,47 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
               ) : complete ? (
                 <p className="text-center text-[0.68rem] text-[#7eb8a0] tracking-wide py-1">Dernier exercice terminé — tu peux finir la séance ✓</p>
               ) : null}
+
+              {/* Ajouter un exercice non prévu — après l'exercice en cours plutôt qu'au-dessus,
+                  pour ne pas encombrer le haut de l'écran avant même d'avoir vu ce qu'on logue. */}
+              <div className="flex flex-col gap-2 pt-3 mt-1 border-t border-[var(--t-border-soft)]">
+                <button type="button" onClick={() => setLinkSuperset(v => !v)}
+                  className="w-full flex items-center gap-2 text-left px-1 py-1">
+                  <span className={`w-4 h-4 rounded shrink-0 border flex items-center justify-center transition-colors ${linkSuperset ? "bg-[#c9a84c] border-[#c9a84c]" : "border-[var(--t-border)]"}`}>
+                    {linkSuperset && <Icon icon={Check} size={10} strokeWidth={3} className="text-black"/>}
+                  </span>
+                  <span className={`text-[0.62rem] tracking-wide transition-colors ${linkSuperset ? "text-[#c9a84c]" : "text-[var(--t-text-25)]"}`}>
+                    Le prochain exercice ajouté rejoint « {exercices[run.indices[0]]?.nom || "cet exercice"} »{run.indices.length > 1 ? " (déjà groupé)" : ""}
+                  </span>
+                </button>
+                {addingExercice ? (
+                  <div className="flex items-center gap-2">
+                    <input autoFocus value={newExerciceNom} onChange={e => setNewExerciceNom(e.target.value)}
+                      onKeyDown={e => { if (e.key === "Enter") addExercice(); if (e.key === "Escape") { setAddingExercice(false); setNewExerciceNom(""); } }}
+                      placeholder="Nom de l'exercice"
+                      className="flex-1 min-w-0 bg-[var(--t-surface)] border border-[#c9a84c]/40 rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2 focus:outline-none"/>
+                    <button onClick={addExercice} disabled={!newExerciceNom.trim()}
+                      className="shrink-0 w-11 h-11 rounded-xl bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black flex items-center justify-center disabled:opacity-40 transition-opacity">
+                      <Icon icon={Check} size={17} strokeWidth={2.5}/>
+                    </button>
+                    <button onClick={() => { setAddingExercice(false); setNewExerciceNom(""); }}
+                      className="shrink-0 w-11 h-11 rounded-xl border border-[var(--t-border)] text-[var(--t-text-30)] hover:text-[var(--t-text-60)] flex items-center justify-center transition-colors">
+                      <Icon icon={X} size={16} strokeWidth={2}/>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => setShowLibrary(true)}
+                      className="flex-1 flex items-center justify-center gap-2 border border-[var(--t-border)] rounded-xl text-[0.7rem] tracking-wider uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors py-3 font-medium">
+                      <Icon icon={Dumbbell} size={20} strokeWidth={2}/> Bibliothèque
+                    </button>
+                    <button onClick={() => setAddingExercice(true)}
+                      className="flex-1 flex items-center justify-center gap-2 border border-[var(--t-border)] rounded-xl text-[0.7rem] tracking-wider uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors py-3 font-medium">
+                      <Icon icon={NotebookPen} size={20} strokeWidth={2}/> Nom libre
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           );
         })()}
