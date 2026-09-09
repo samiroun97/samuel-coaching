@@ -13,6 +13,7 @@ import { loadCatalogue, type CatalogueEntry } from "@/lib/exercicesCatalogue";
 import { ExerciceLibraryBrowser } from "@/components/ExerciceLibraryBrowser";
 import { NumberStepper, numOr } from "@/components/NumberStepper";
 import { Icon } from "@/components/Icon";
+import { RichIcon } from "@/components/RichIcon";
 import { Check, X, ChevronLeft, ChevronRight, Dumbbell, NotebookPen, Plus, Trash2, Clock, Layers } from "@/lib/solarIcons";
 import { RoundTimer } from "@/components/RoundTimer";
 
@@ -291,6 +292,16 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
     const load = effectiveLoad(exercices[exIdx], numOr(l.poids), clientBodyweight);
     return s + (load ?? 0) * (numOr(l.reps) ?? 0);
   }, 0);
+
+  // Estimation calorique live : MET (dépense/kg/heure) dérivé du RIR moyen des séries déjà
+  // loguées — plus les séries sont proches de l'échec (RIR bas), plus l'effort réel est
+  // soutenu — appliqué au poids du profil et au temps réellement écoulé. Pas de calcul
+  // physiologique exact (impossible sans VO2), mais une estimation qui bouge vraiment avec
+  // l'intensité de la séance plutôt qu'un chiffre fixe basé sur la seule durée.
+  const doneRirValues = doneEntries.map(([, l]) => numOr(l.rir)).filter((n): n is number => n != null);
+  const avgRir = doneRirValues.length ? doneRirValues.reduce((s, n) => s + n, 0) / doneRirValues.length : 2.5;
+  const metEstimate = Math.min(8, Math.max(3, 8 - avgRir));
+  const estimatedCalories = Math.round(metEstimate * (clientBodyweight ?? 75) * (elapsed / 3600));
 
   const runIsComplete = (run: { indices: number[] }) => run.indices.every(exIdx => {
     const rows = displaySetsFor(exercices[exIdx], extraSets[exIdx] ?? 0);
@@ -593,18 +604,22 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
       </div>
 
       <div className="border-b border-[var(--t-border-soft)] shrink-0">
-        <div className="grid grid-cols-3 max-w-lg mx-auto">
-          <div className="text-center py-4 border-r border-[var(--t-border-soft)]">
-            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[var(--t-text)] tracking-wide leading-none">{fmtDuration(elapsed)}</p>
-            <p className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-25)] mt-1.5">Durée</p>
+        <div className="flex items-center justify-center gap-3 py-4 max-w-lg mx-auto">
+          <RichIcon name="chrono" size={40}/>
+          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-5xl text-[var(--t-text)] tracking-wide leading-none">{fmtDuration(elapsed)}</p>
+        </div>
+        <div className="grid grid-cols-3 max-w-lg mx-auto border-t border-[var(--t-border-soft)]">
+          <div className="text-center py-3.5 border-r border-[var(--t-border-soft)]">
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[#c9a84c] tracking-wide leading-none">{Math.round(volume).toLocaleString("fr-FR")}</p>
+            <p className="text-[0.58rem] tracking-[0.15em] uppercase text-[var(--t-text-25)] mt-1.5">Volume kg</p>
           </div>
-          <div className="text-center py-4 border-r border-[var(--t-border-soft)]">
-            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[#c9a84c] tracking-wide leading-none">{Math.round(volume).toLocaleString("fr-FR")}</p>
-            <p className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-25)] mt-1.5">Volume kg</p>
+          <div className="text-center py-3.5 border-r border-[var(--t-border-soft)]">
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[#e0834a] tracking-wide leading-none">{estimatedCalories}</p>
+            <p className="text-[0.58rem] tracking-[0.15em] uppercase text-[var(--t-text-25)] mt-1.5">Kcal estimées</p>
           </div>
-          <div className="text-center py-4">
-            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[var(--t-text)] tracking-wide leading-none">{doneSets}/{totalSets}</p>
-            <p className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-25)] mt-1.5">Séries</p>
+          <div className="text-center py-3.5">
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[var(--t-text)] tracking-wide leading-none">{doneSets}/{totalSets}</p>
+            <p className="text-[0.58rem] tracking-[0.15em] uppercase text-[var(--t-text-25)] mt-1.5">Séries</p>
           </div>
         </div>
       </div>

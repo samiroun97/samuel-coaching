@@ -18,6 +18,7 @@ const RICH_ICON_SRC = {
   step: "/icons-rich/step.png",
   calendar: "/icons-rich/calendar.png",
   notebookPen: "/icons-rich/notebook.svg",
+  chrono: "/icons-rich/chrono.svg",
 } as const;
 
 export type RichIconName = keyof typeof RICH_ICON_SRC;
