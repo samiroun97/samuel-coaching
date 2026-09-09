@@ -717,12 +717,12 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
             ) : (
               <div className="flex items-center gap-2">
                 <button onClick={() => setShowLibrary(true)}
-                  className="flex-1 flex items-center justify-center gap-2 border border-[var(--t-border)] rounded-xl text-[0.7rem] tracking-wider uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors py-3 font-medium">
-                  <RichIcon name="library" size={26} className="drop-shadow-[0_4px_8px_rgba(201,168,76,0.35)]"/> Bibliothèque
+                  className="flex-1 flex items-center justify-center gap-2 border border-[var(--t-border)] rounded-xl text-[0.7rem] tracking-wider uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors py-2.5 font-medium">
+                  <RichIcon name="library" size={40} className="drop-shadow-[0_4px_8px_rgba(201,168,76,0.35)]"/> Bibliothèque
                 </button>
                 <button onClick={() => setAddingExercice(true)}
-                  className="flex-1 flex items-center justify-center gap-2 border border-[var(--t-border)] rounded-xl text-[0.7rem] tracking-wider uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors py-3 font-medium">
-                  <RichIcon name="notebookPen" size={26} className="drop-shadow-[0_4px_8px_rgba(0,0,0,0.22)]"/> Nom libre
+                  className="flex-1 flex items-center justify-center gap-2 border border-[var(--t-border)] rounded-xl text-[0.7rem] tracking-wider uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors py-2.5 font-medium">
+                  <RichIcon name="notebookPen" size={40} className="drop-shadow-[0_4px_8px_rgba(0,0,0,0.22)]"/> Nom libre
                 </button>
               </div>
             )
