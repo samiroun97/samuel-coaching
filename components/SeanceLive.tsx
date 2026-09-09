@@ -14,6 +14,7 @@ import { ExerciceLibraryBrowser } from "@/components/ExerciceLibraryBrowser";
 import { NumberStepper, numOr } from "@/components/NumberStepper";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
+import { TdeeIcon } from "@/components/CalRefToggle";
 import { Check, X, ChevronLeft, ChevronRight, Plus, Trash2, Clock, Layers } from "@/lib/solarIcons";
 import { RoundTimer } from "@/components/RoundTimer";
 
@@ -293,15 +294,24 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
     return s + (load ?? 0) * (numOr(l.reps) ?? 0);
   }, 0);
 
-  // Estimation calorique live : MET (dépense/kg/heure) dérivé du RIR moyen des séries déjà
-  // loguées — plus les séries sont proches de l'échec (RIR bas), plus l'effort réel est
-  // soutenu — appliqué au poids du profil et au temps réellement écoulé. Pas de calcul
-  // physiologique exact (impossible sans VO2), mais une estimation qui bouge vraiment avec
-  // l'intensité de la séance plutôt qu'un chiffre fixe basé sur la seule durée.
-  const doneRirValues = doneEntries.map(([, l]) => numOr(l.rir)).filter((n): n is number => n != null);
-  const avgRir = doneRirValues.length ? doneRirValues.reduce((s, n) => s + n, 0) / doneRirValues.length : 2.5;
-  const metEstimate = Math.min(8, Math.max(3, 8 - avgRir));
-  const estimatedCalories = Math.round(metEstimate * (clientBodyweight ?? 75) * (elapsed / 3600));
+  // Estimation calorique live : calculée série par série à partir de ce qui est réellement
+  // loggué (reps, charge, RIR) plutôt que du temps écoulé — deux séances ouvertes aussi
+  // longtemps l'une que l'autre mais avec des exos différents doivent donner des chiffres
+  // différents. Par série : durée approximée à ~3s/répétition, MET dérivé du RIR (plus proche
+  // de l'échec = plus soutenu), et un bonus d'effort si la charge est lourde par rapport au
+  // poids de corps. Pas un calcul physiologique exact (impossible sans VO2), juste un chiffre
+  // qui réagit vraiment à la séance loguée.
+  const bodyweightForCalc = clientBodyweight ?? 75;
+  const estimatedCalories = Math.round(doneEntries.reduce((sum, [k, l]) => {
+    const exIdx = parseInt(k.split("-")[0], 10);
+    const load = effectiveLoad(exercices[exIdx], numOr(l.poids), clientBodyweight) ?? 0;
+    const reps = numOr(l.reps) ?? 0;
+    const rir = numOr(l.rir) ?? 2.5;
+    const met = Math.min(8, Math.max(3, 8 - rir));
+    const setDurationHours = (reps * 3) / 3600;
+    const loadFactor = 1 + Math.min(1, load / bodyweightForCalc);
+    return sum + met * bodyweightForCalc * setDurationHours * loadFactor;
+  }, 0));
 
   const runIsComplete = (run: { indices: number[] }) => run.indices.every(exIdx => {
     const rows = displaySetsFor(exercices[exIdx], extraSets[exIdx] ?? 0);
@@ -614,7 +624,10 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
             <p className="text-[0.58rem] tracking-[0.15em] uppercase text-[var(--t-text-25)] mt-1.5">Volume kg</p>
           </div>
           <div className="text-center py-3.5 border-r border-[var(--t-border-soft)]">
-            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[#e0834a] tracking-wide leading-none">{estimatedCalories}</p>
+            <div className="flex items-center justify-center gap-1.5">
+              <TdeeIcon size={20}/>
+              <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[#e0834a] tracking-wide leading-none">{estimatedCalories}</p>
+            </div>
             <p className="text-[0.58rem] tracking-[0.15em] uppercase text-[var(--t-text-25)] mt-1.5">Kcal estimées</p>
           </div>
           <div className="text-center py-3.5">
