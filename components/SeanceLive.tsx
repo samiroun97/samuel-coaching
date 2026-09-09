@@ -116,7 +116,7 @@ function SetRow({ target, idx, log, prev, isExtra, canRemove, bodyweight, onTogg
   const repsPlaceholder = prev?.reps != null ? String(prev.reps) : (target.reps || "reps");
 
   return (
-    <div className="relative">
+    <div className="relative w-full overflow-hidden rounded-2xl">
       {canRemove && (
         <div className="absolute inset-y-0 right-0 w-20 rounded-2xl bg-[#e07070] flex flex-col items-center justify-center gap-0.5 text-white">
           <Icon icon={Trash2} size={17} strokeWidth={2}/>
@@ -125,7 +125,7 @@ function SetRow({ target, idx, log, prev, isExtra, canRemove, bodyweight, onTogg
       )}
       <div {...(canRemove ? { onTouchStart, onTouchMove, onTouchEnd: onTouchEndSwipe } : {})}
         style={{ transform: `translateX(${dragX}px)` }}
-        className={`relative rounded-2xl border p-3.5 flex flex-col gap-3 ${dragging ? "" : "transition-[transform,background-color,border-color] duration-200"} ${
+        className={`relative w-full rounded-2xl border p-3.5 flex flex-col gap-3 ${dragging ? "" : "transition-[transform,background-color,border-color] duration-200"} ${
           done ? "border-[#7eb8a0]/40 bg-[#7eb8a0]/[0.08]" : warmup ? "border-[#e0834a]/35 bg-[#e0834a]/[0.06]" : isExtra ? "border-[#c9a84c]/25 bg-[#c9a84c]/[0.04]" : "border-[var(--t-border-soft)] bg-[var(--t-bg)]"}`}>
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5 min-w-0">
