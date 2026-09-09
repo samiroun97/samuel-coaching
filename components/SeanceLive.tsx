@@ -117,10 +117,16 @@ function SetRow({ target, idx, log, prev, isExtra, canRemove, bodyweight, onTogg
 
   return (
     <div className="relative w-full overflow-hidden rounded-2xl">
+      {/* Le panneau rouge n'est révélé qu'à hauteur du tirage (largeur liée à dragX) plutôt
+          que présent en pleine largeur derrière la carte au repos : certaines cartes (série
+          "extra") ont un fond légèrement translucide, un panneau plein-largeur toujours
+          présent transparaîtrait derrière même sans swipe. */}
       {canRemove && (
-        <div className="absolute inset-y-0 right-0 w-20 rounded-2xl bg-[#e07070] flex flex-col items-center justify-center gap-0.5 text-white">
-          <Icon icon={Trash2} size={17} strokeWidth={2}/>
-          <span className="text-[0.55rem] tracking-wide uppercase">Suppr.</span>
+        <div className="absolute inset-y-0 right-0 overflow-hidden rounded-2xl" style={{ width: Math.max(0, -dragX) }}>
+          <div className="absolute inset-y-0 right-0 w-20 bg-[#e07070] flex flex-col items-center justify-center gap-0.5 text-white">
+            <Icon icon={Trash2} size={17} strokeWidth={2}/>
+            <span className="text-[0.55rem] tracking-wide uppercase">Suppr.</span>
+          </div>
         </div>
       )}
       <div {...(canRemove ? { onTouchStart, onTouchMove, onTouchEnd: onTouchEndSwipe } : {})}
