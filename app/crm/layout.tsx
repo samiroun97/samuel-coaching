@@ -145,7 +145,8 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
             className="flex items-center gap-2.5 px-3 py-2.5 text-[0.6rem] tracking-[0.1em] uppercase text-[var(--t-text-20)] hover:text-[var(--t-text-50)] border-l-2 border-transparent transition-all w-full">
             <Icon icon={LogOut} size={15}/>Déconnexion
           </button>
-          <div className="px-3 pt-1">
+          <div className="flex items-center justify-between px-3 pt-2">
+            <span className="text-[0.6rem] tracking-[0.1em] uppercase text-[var(--t-text-20)]">Thème</span>
             <ThemeToggle/>
           </div>
         </div>
