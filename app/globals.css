@@ -13,6 +13,28 @@ button:not(:disabled) {
   cursor: pointer;
 }
 
+/* Polish tactile générique : un retour visuel au clic sur TOUT bouton, même ceux qui n'ont
+   jamais reçu d'état actif dédié (petits liens texte, onglets, toggles...). Enveloppé dans
+   :where() pour rester à spécificité nulle — un bouton qui définit déjà son propre état actif
+   (ex. les CTA dorés avec hover:-translate-y-0.5/active:translate-y-0, ou active:scale-90 sur
+   les boutons ronds de la séance live) garde SON animation intacte, celle-ci ne comble que ce
+   qui manquait, elle ne remplace jamais un choix déjà fait. */
+:where(button:not(:disabled)) {
+  transition: transform 150ms ease;
+}
+:where(button:not(:disabled):active) {
+  transform: scale(0.97);
+}
+
+/* Anneau de focus clavier cohérent partout (accessibilité) — ne s'affiche qu'à la navigation
+   clavier (:focus-visible ignore les clics souris/tactile), donc n'interfère jamais avec les
+   interactions à la souris. En box-shadow plutôt qu'en outline : suit le border-radius propre
+   à chaque bouton (pilule, carré arrondi...) au lieu du rectangle que dessinerait un outline. */
+button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--t-bg), 0 0 0 4px rgba(201, 168, 76, 0.55);
+}
+
 :root {
   --gold: #c9a84c;
   --gold-light: #e2c97e;
