@@ -382,6 +382,11 @@ export default function NutritionPage() {
   const scanStreamRef   = useRef<MediaStream | null>(null);
   const scanLoopStopRef = useRef(false);
   const [aiResult,    setAiResult]    = useState<AIResult | null>(null);
+  // Ratio de référence pour réajuster les macros quand on modifie les calories à la main —
+  // séparé de aiResult (mutable) pour ne jamais rescaler depuis un état déjà passé par zéro :
+  // sans ça, effacer le champ Cal (macros ramenées à 0 via scale=0) puis retaper un nombre ne
+  // faisait jamais revenir les macros, puisque 0 × n'importe quel facteur reste 0.
+  const aiBaseRef = useRef<{ calories: number; proteines: number; glucides: number; lipides: number; fibres: number } | null>(null);
   const [analyzing,   setAnalyzing]   = useState(false);
   const [aiError,     setAiError]     = useState("");
   const [listening,   setListening]   = useState(false);
@@ -622,14 +627,25 @@ export default function NutritionPage() {
   // avec P/G/L (ex: +200 kcal sur un plat jugé plus riche que prévu par la photo).
   const adjustAiCalories = (newCalories: number) => setAiResult(r => {
     if (!r) return r;
-    const scale = r.calories > 0 ? Math.max(0, newCalories) / r.calories : 1;
+    const base = aiBaseRef.current ?? r;
+    const clamped = Math.max(0, newCalories);
+    const scale = base.calories > 0 ? clamped / base.calories : 0;
     return {
-      ...r, calories: Math.max(0, newCalories),
-      proteines: Math.max(0, Math.round(r.proteines * scale)),
-      glucides:  Math.max(0, Math.round(r.glucides  * scale)),
-      lipides:   Math.max(0, Math.round(r.lipides   * scale)),
-      fibres:    r.fibres !== undefined ? Math.max(0, Math.round(r.fibres * scale)) : undefined,
+      ...r, calories: clamped,
+      proteines: Math.max(0, Math.round(base.proteines * scale)),
+      glucides:  Math.max(0, Math.round(base.glucides  * scale)),
+      lipides:   Math.max(0, Math.round(base.lipides   * scale)),
+      fibres:    r.fibres !== undefined ? Math.max(0, Math.round((base.fibres ?? 0) * scale)) : undefined,
     };
+  });
+
+  // Édition manuelle directe d'une macro (Prot/Gluc/Lip/Fib) — met aussi à jour aiBaseRef pour
+  // que le prochain ajustement des calories reparte de cette correction plutôt que de l'ignorer.
+  const setAiMacro = (patch: Partial<AIResult>) => setAiResult(r => {
+    if (!r) return r;
+    const next = { ...r, ...patch };
+    aiBaseRef.current = { calories: next.calories, proteines: next.proteines, glucides: next.glucides, lipides: next.lipides, fibres: next.fibres ?? 0 };
+    return next;
   });
 
   const addFoodDirect = (item: Omit<IdeaResult, "description">, repas?: string) => {
@@ -662,6 +678,7 @@ export default function NutritionPage() {
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setAiResult(data);
+      aiBaseRef.current = { calories: data.calories, proteines: data.proteines, glucides: data.glucides, lipides: data.lipides, fibres: data.fibres ?? 0 };
     } catch (e: unknown) { setAiError(e instanceof Error ? e.message : "Erreur IA"); }
     setAnalyzing(false);
   };
@@ -1001,13 +1018,22 @@ export default function NutritionPage() {
   const createProduct = () => {
     const base = parseFloat(newProd.base.replace(",", "."));
     if (!newProd.name.trim() || !base || base <= 0) return;
+    const proteines = parseFloat(newProd.proteines.replace(",", ".")) || 0;
+    const glucides  = parseFloat(newProd.glucides.replace(",", ".")) || 0;
+    const lipides   = parseFloat(newProd.lipides.replace(",", ".")) || 0;
+    const typedCalories = parseFloat(newProd.calories.replace(",", ".")) || 0;
+    // Les calories doivent rester physiquement cohérentes avec P/G/L (4/4/9 kcal par gramme) —
+    // un produit tapé à la main pouvait sinon être enregistré à 1000g de lipides pour 10 kcal.
+    // Dès qu'au moins une macro est renseignée, les calories sont recalculées depuis elle plutôt
+    // que de faire confiance à une valeur tapée indépendamment (même politique que l'estimation
+    // IA, cf. api/nutrition/analyze/route.ts).
+    const calories = (proteines > 0 || glucides > 0 || lipides > 0)
+      ? Math.round(proteines * 4 + glucides * 4 + lipides * 9)
+      : typedCalories;
     saveMeal({
       name: newProd.name.trim(),
-      calories:  parseFloat(newProd.calories.replace(",", "."))  || 0,
-      proteines: parseFloat(newProd.proteines.replace(",", ".")) || 0,
-      glucides:  parseFloat(newProd.glucides.replace(",", "."))  || 0,
-      lipides:   parseFloat(newProd.lipides.replace(",", "."))   || 0,
-      fibres:    parseFloat(newProd.fibres.replace(",", "."))    || 0,
+      calories, proteines, glucides, lipides,
+      fibres: parseFloat(newProd.fibres.replace(",", ".")) || 0,
       base_qty: base, unit: newProd.unit,
     });
     setShowNewProd(false); setNewProd(emptyProd);
@@ -1478,10 +1504,10 @@ export default function NutritionPage() {
                           <div><label className={labelCls}>Nom</label><input className={inputCls} value={aiResult.name} onChange={e => setAiResult(r => r ? {...r, name:e.target.value} : r)}/></div>
                           <div className="grid grid-cols-3 gap-2">
                             <div><label className={labelCls}>Cal</label><input className={inputCls} type="number" value={aiResult.calories} onChange={e => adjustAiCalories(+e.target.value)}/></div>
-                            <div><label className={labelCls} style={{ color:"#c9a84c" }}>Prot</label><input className={inputCls} type="number" value={aiResult.proteines} onChange={e => setAiResult(r => r ? {...r, proteines:+e.target.value} : r)}/></div>
-                            <div><label className={labelCls} style={{ color:"#7eb8a0" }}>Gluc</label><input className={inputCls} type="number" value={aiResult.glucides} onChange={e => setAiResult(r => r ? {...r, glucides:+e.target.value} : r)}/></div>
-                            <div><label className={labelCls} style={{ color:"#e07070" }}>Lip</label><input className={inputCls} type="number" value={aiResult.lipides} onChange={e => setAiResult(r => r ? {...r, lipides:+e.target.value} : r)}/></div>
-                            <div><label className={labelCls} style={{ color:"#b6a186" }}>Fib</label><input className={inputCls} type="number" value={aiResult.fibres ?? 0} onChange={e => setAiResult(r => r ? {...r, fibres:+e.target.value} : r)}/></div>
+                            <div><label className={labelCls} style={{ color:"#c9a84c" }}>Prot</label><input className={inputCls} type="number" value={aiResult.proteines} onChange={e => setAiMacro({ proteines:+e.target.value })}/></div>
+                            <div><label className={labelCls} style={{ color:"#7eb8a0" }}>Gluc</label><input className={inputCls} type="number" value={aiResult.glucides} onChange={e => setAiMacro({ glucides:+e.target.value })}/></div>
+                            <div><label className={labelCls} style={{ color:"#e07070" }}>Lip</label><input className={inputCls} type="number" value={aiResult.lipides} onChange={e => setAiMacro({ lipides:+e.target.value })}/></div>
+                            <div><label className={labelCls} style={{ color:"#b6a186" }}>Fib</label><input className={inputCls} type="number" value={aiResult.fibres ?? 0} onChange={e => setAiMacro({ fibres:+e.target.value })}/></div>
                           </div>
                         </div>
                       </div>
@@ -1682,6 +1708,18 @@ export default function NutritionPage() {
                           </div>
                         ))}
                       </div>
+                      {(() => {
+                        const p = parseFloat(newProd.proteines.replace(",", ".")) || 0;
+                        const g = parseFloat(newProd.glucides.replace(",", ".")) || 0;
+                        const l = parseFloat(newProd.lipides.replace(",", ".")) || 0;
+                        if (!p && !g && !l) return null;
+                        const macroCal = Math.round(p * 4 + g * 4 + l * 9);
+                        return (
+                          <p className="text-[0.62rem] text-[var(--t-text-20)] -mt-1">
+                            Les calories seront enregistrées à <span className="text-[var(--t-text-40)] font-medium">{macroCal} kcal</span>, recalculées depuis P/G/L pour rester cohérentes (4 kcal/g protéines et glucides, 9 kcal/g lipides).
+                          </p>
+                        );
+                      })()}
                       <button onClick={createProduct} disabled={!newProd.name.trim() || !(parseFloat(newProd.base.replace(",", ".")) > 0)}
                         className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.58rem] font-bold tracking-[0.18em] uppercase py-2.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed">
                         Enregistrer le produit →
