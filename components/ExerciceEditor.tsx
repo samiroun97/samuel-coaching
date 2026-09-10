@@ -285,50 +285,62 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
         </div>
 
         {ex.mode === "simple" && (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-col gap-3">
             {/* Poids du corps : la charge réelle = fraction du poids de corps du client +
                 lest additionnel loggué dans le champ "Poids" — pertinent pour tractions,
                 dips, pompes… où le poids seul sous-estime la charge réellement soulevée. */}
             <button type="button" onClick={() => update(i, { bodyweight: !ex.bodyweight })}
               title="Charge = fraction du poids de corps + lest additionnel"
-              className={`flex items-center gap-1.5 text-[0.5rem] tracking-[0.1em] uppercase rounded-2xl px-2.5 py-1.5 border transition-colors shrink-0 self-start ${
+              className={`flex items-center gap-1.5 text-[0.5rem] tracking-[0.1em] uppercase rounded-2xl px-2.5 py-1.5 border transition-colors self-start ${
                 ex.bodyweight ? "border-[#c9a84c]/50 text-[#c9a84c] bg-[#c9a84c]/10" : "border-dashed border-[var(--t-border-15)] text-[var(--t-text-25)] hover:border-[#c9a84c]/40 hover:text-[#c9a84c]"}`}>
               🏋️ PDC{ex.bodyweight ? ` ${ex.bodyweightPct || "100"}%` : ""}
             </button>
             {ex.bodyweight && (
-              <div className="relative min-w-[5.5rem]">
-                <div className="bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-2xl px-3 py-2.5 text-center focus-within:border-[#c9a84c]/40 transition-colors">
-                  <p className="text-[0.5rem] tracking-[0.14em] uppercase text-[var(--t-text-25)] mb-1">% du poids</p>
-                  <input className="w-full bg-transparent text-center text-[0.85rem] text-[var(--t-text)] placeholder-[var(--t-text-15)] outline-none"
+              <div>
+                <p className="text-[0.6rem] tracking-[0.12em] uppercase text-[var(--t-text-25)] mb-1.5 px-1">% du poids</p>
+                <div className="bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl px-3 py-3 focus-within:border-[#c9a84c]/40 transition-colors">
+                  <input className="w-full bg-transparent text-center text-base text-[var(--t-text)] placeholder-[var(--t-text-15)] outline-none"
                     inputMode="numeric" placeholder="100" value={ex.bodyweightPct}
                     onChange={e => update(i, { bodyweightPct: e.target.value })}/>
                 </div>
               </div>
             )}
+            {/* Champs empilés pleine largeur (au lieu d'une grille 2 colonnes qui wrappait
+                imprévisiblement) et bouton "retirer" déplacé dans la ligne de label au lieu
+                d'un badge en position absolute au coin du champ : sur mobile, ce badge finissait
+                à quelques pixels du bouton "+" du stepper juste en dessous — assez proche pour
+                qu'un tap visant "+" retire le champ à la place. Ici les deux contrôles ne
+                peuvent plus jamais se chevaucher, par construction. */}
             {SIMPLE_FIELDS.filter(f => !ex.hiddenFields.includes(f.key)).map(f => (
-              <div key={f.key} className={`relative flex-1 ${f.step != null ? "min-w-[8rem]" : "min-w-[5.5rem]"}`}>
+              <div key={f.key} className="flex flex-col gap-1.5">
+                <div className="flex items-center justify-between px-1">
+                  <span className="text-[0.6rem] tracking-[0.12em] uppercase text-[var(--t-text-25)]">{f.label}</span>
+                  <button type="button" onClick={() => hideField(i, f.key)} title={`Retirer le champ ${f.label}`}
+                    className="text-[var(--t-text-20)] hover:text-[#e07070] transition-colors p-1.5 -m-1.5">
+                    <Icon icon={X} size={11} strokeWidth={2.5}/>
+                  </button>
+                </div>
                 {f.step != null ? (
-                  <NumberStepper value={ex[f.key]} placeholder={f.placeholder} step={f.step} label={f.label}
+                  <NumberStepper size="lg" value={ex[f.key]} placeholder={f.placeholder} step={f.step}
                     onChange={v => update(i, { [f.key]: v })}/>
                 ) : (
-                  <div className="bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-2xl px-3 py-2.5 text-center focus-within:border-[#c9a84c]/40 transition-colors">
-                    <p className="text-[0.5rem] tracking-[0.14em] uppercase text-[var(--t-text-25)] mb-1">{f.label}</p>
-                    <input className="w-full bg-transparent text-center text-[0.85rem] text-[var(--t-text)] placeholder-[var(--t-text-15)] outline-none"
+                  <div className="bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl px-3 py-3 focus-within:border-[#c9a84c]/40 transition-colors">
+                    <input className="w-full bg-transparent text-center text-base text-[var(--t-text)] placeholder-[var(--t-text-15)] outline-none"
                       placeholder={f.placeholder} value={ex[f.key]} onChange={e => update(i, { [f.key]: e.target.value })} />
                   </div>
                 )}
-                <button type="button" onClick={() => hideField(i, f.key)} title={`Retirer le champ ${f.label}`}
-                  className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[var(--t-surface)] border border-[var(--t-border)] flex items-center justify-center text-[var(--t-text-25)] hover:text-[#e07070] hover:border-[#e07070]/40 transition-colors">
-                  <Icon icon={X} size={8} strokeWidth={3.5}/>
-                </button>
               </div>
             ))}
-            {SIMPLE_FIELDS.filter(f => ex.hiddenFields.includes(f.key)).map(f => (
-              <button key={f.key} type="button" onClick={() => showField(i, f.key)}
-                className="flex items-center gap-1 text-[0.5rem] tracking-[0.1em] uppercase text-[var(--t-text-25)] border border-dashed border-[var(--t-border-15)] rounded-2xl px-2.5 py-1.5 hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors">
-                + {f.label}
-              </button>
-            ))}
+            {SIMPLE_FIELDS.some(f => ex.hiddenFields.includes(f.key)) && (
+              <div className="flex flex-wrap gap-2">
+                {SIMPLE_FIELDS.filter(f => ex.hiddenFields.includes(f.key)).map(f => (
+                  <button key={f.key} type="button" onClick={() => showField(i, f.key)}
+                    className="flex items-center gap-1 text-[0.5rem] tracking-[0.1em] uppercase text-[var(--t-text-25)] border border-dashed border-[var(--t-border-15)] rounded-2xl px-2.5 py-1.5 hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors">
+                    + {f.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
