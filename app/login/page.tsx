@@ -40,8 +40,8 @@ function InstallGuide() {
       </button>
 
       {open && (
-        <div className="mt-3 bg-[#111111] border border-[#c9a84c]/30 p-6">
-          <div className="flex mb-5 border border-white/10">
+        <div className="mt-3 bg-[#111111] border border-[#c9a84c]/30 p-6 rounded-2xl">
+          <div className="flex mb-5 border border-white/10 rounded-xl overflow-hidden">
             <button
               onClick={() => setOs("ios")}
               className={`flex-1 py-2 text-[0.65rem] tracking-[0.15em] uppercase font-bold transition-colors duration-200 ${os === "ios" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-white/40 hover:text-white"}`}
@@ -185,7 +185,7 @@ export default function LoginPage() {
 
         {/* Toggle */}
         {mode !== "forgot" && (
-          <div className="flex mb-6 border border-white/10">
+          <div className="flex mb-6 border border-white/10 rounded-xl overflow-hidden">
             <button
               onClick={() => { setMode("login"); setError(""); setSuccess(""); }}
               className={`flex-1 py-3 text-xs tracking-[0.15em] uppercase font-bold transition-colors duration-200 ${mode === "login" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-white/40 hover:text-white"}`}
@@ -201,7 +201,7 @@ export default function LoginPage() {
           </div>
         )}
 
-        <div className="bg-[#111111] border border-white/10 p-8">
+        <div className="bg-[#111111] border border-white/10 p-8 rounded-2xl">
           {mode === "forgot" && (
             <button onClick={() => { setMode("login"); setError(""); setSuccess(""); }} className="text-white/30 hover:text-white/60 text-xs mb-4 transition-colors">
               ← Retour à la connexion
@@ -220,7 +220,7 @@ export default function LoginPage() {
                 type="button"
                 onClick={handleGoogleLogin}
                 disabled={googleLoading}
-                className="w-full flex items-center justify-center gap-3 bg-white text-black text-xs font-bold tracking-wide py-3.5 hover:bg-white/90 transition-colors disabled:opacity-50 mb-5"
+                className="w-full flex items-center justify-center gap-3 bg-white text-black text-xs font-bold tracking-wide py-3.5 rounded-xl shadow-[0_4px_16px_-6px_rgba(0,0,0,0.25)] hover:shadow-[0_6px_20px_-4px_rgba(0,0,0,0.35)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-50 mb-5"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M23.52 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.47c-.28 1.5-1.13 2.78-2.4 3.63v3.02h3.88c2.27-2.09 3.57-5.17 3.57-8.84z"/>
@@ -247,7 +247,7 @@ export default function LoginPage() {
                   placeholder="Ton prénom"
                   value={nom}
                   onChange={(e) => setNom(e.target.value)}
-                  className="w-full bg-[#0a0a0a] border border-white/10 text-white placeholder-white/20 text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/50"
+                  className="w-full bg-[#0a0a0a] border border-white/10 text-white placeholder-white/20 text-sm px-4 py-3 rounded-xl focus:outline-none focus:border-[#c9a84c]/50"
                 />
               </div>
             )}
@@ -256,7 +256,7 @@ export default function LoginPage() {
               <div>
                 <button type="button" onClick={() => setIsCoachSignup(v => !v)}
                   className="w-full flex items-center gap-3 text-left">
-                  <span className={`shrink-0 w-4 h-4 border flex items-center justify-center transition-colors ${isCoachSignup ? "bg-[#c9a84c] border-[#c9a84c]" : "border-white/20"}`}>
+                  <span className={`shrink-0 w-4 h-4 rounded border flex items-center justify-center transition-colors ${isCoachSignup ? "bg-[#c9a84c] border-[#c9a84c]" : "border-white/20"}`}>
                     {isCoachSignup && <Icon icon={Check} size={10} strokeWidth={3} className="text-black"/>}
                   </span>
                   <span className="text-xs text-white/60">Je suis un coach professionnel</span>
@@ -267,7 +267,7 @@ export default function LoginPage() {
                     placeholder="Nom de mon activité"
                     value={businessName}
                     onChange={(e) => setBusinessName(e.target.value)}
-                    className="w-full mt-3 bg-[#0a0a0a] border border-white/10 text-white placeholder-white/20 text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/50"
+                    className="w-full mt-3 bg-[#0a0a0a] border border-white/10 text-white placeholder-white/20 text-sm px-4 py-3 rounded-xl focus:outline-none focus:border-[#c9a84c]/50"
                   />
                 )}
               </div>
@@ -283,7 +283,7 @@ export default function LoginPage() {
                 placeholder="ton@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-[#0a0a0a] border border-white/10 text-white placeholder-white/20 text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/50"
+                className="w-full bg-[#0a0a0a] border border-white/10 text-white placeholder-white/20 text-sm px-4 py-3 rounded-xl focus:outline-none focus:border-[#c9a84c]/50"
               />
             </div>
             {mode !== "forgot" && (
@@ -295,7 +295,7 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-[#0a0a0a] border border-white/10 text-white placeholder-white/20 text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/50"
+                  className="w-full bg-[#0a0a0a] border border-white/10 text-white placeholder-white/20 text-sm px-4 py-3 rounded-xl focus:outline-none focus:border-[#c9a84c]/50"
                 />
                 {mode === "register" && <p className="text-white/25 text-[0.65rem] mt-1.5">Au moins 6 caractères, rien de plus compliqué.</p>}
                 {mode === "login" && (
