@@ -7,7 +7,8 @@ import { CATEGORY_ORDER, HIDDEN_CHIPS } from "@/lib/muscleCategories";
 import { Icon } from "@/components/Icon";
 import { ExerciceDetailView } from "@/components/ExerciceDetailView";
 import { AddExerciceIcon } from "@/components/AddExerciceIcon";
-import { Dumbbell, X, Plus, AlertCircle } from "@/lib/solarIcons";
+import { InfoIcon } from "@/components/InfoIcon";
+import { Dumbbell, X, Plus } from "@/lib/solarIcons";
 
 // Sélecteur d'exercice épuré, dédié au client (SeanceBuilder) — contrairement à
 // ExerciceLibraryBrowser (CRM coach : grille de vignettes + vue silhouette + filtre
@@ -41,9 +42,8 @@ function Row({ entry, onAdd, onInfo }: { entry: CatalogueEntry; onAdd: () => voi
           {entry.muscle_cible && <span className="block text-[0.68rem] tracking-wider uppercase text-[#c9a84c]/70 capitalize truncate mt-0.5">{entry.muscle_cible}</span>}
         </span>
       </button>
-      <button type="button" onClick={onInfo} aria-label="Détails" title="Voir la fiche"
-        className="shrink-0 w-11 h-11 flex items-center justify-center rounded-full text-[var(--t-text-25)] hover:text-[var(--t-text)] hover:bg-[var(--t-track)] transition-colors">
-        <Icon icon={AlertCircle} size={19} strokeWidth={2}/>
+      <button type="button" onClick={onInfo} aria-label="Détails" title="Voir la fiche" className="shrink-0">
+        <InfoIcon size={44}/>
       </button>
       <button type="button" onClick={onAdd} aria-label="Ajouter" title="Ajouter à ma séance" className="shrink-0 mr-1">
         <AddExerciceIcon size={44}/>
