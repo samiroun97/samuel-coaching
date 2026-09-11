@@ -6,6 +6,7 @@ import { useDragScroll } from "@/lib/useDragScroll";
 import { CATEGORY_ORDER, HIDDEN_CHIPS } from "@/lib/muscleCategories";
 import { Icon } from "@/components/Icon";
 import { ExerciceDetailView } from "@/components/ExerciceDetailView";
+import { AddExerciceIcon } from "@/components/AddExerciceIcon";
 import { Dumbbell, X, Plus, AlertCircle } from "@/lib/solarIcons";
 
 // Sélecteur d'exercice épuré, dédié au client (SeanceBuilder) — contrairement à
@@ -44,9 +45,8 @@ function Row({ entry, onAdd, onInfo }: { entry: CatalogueEntry; onAdd: () => voi
         className="shrink-0 w-11 h-11 flex items-center justify-center rounded-full text-[var(--t-text-25)] hover:text-[var(--t-text)] hover:bg-[var(--t-track)] transition-colors">
         <Icon icon={AlertCircle} size={19} strokeWidth={2}/>
       </button>
-      <button type="button" onClick={onAdd} aria-label="Ajouter" title="Ajouter à ma séance"
-        className="shrink-0 mr-1 w-11 h-11 flex items-center justify-center rounded-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black">
-        <Icon icon={Plus} size={20} strokeWidth={2.5}/>
+      <button type="button" onClick={onAdd} aria-label="Ajouter" title="Ajouter à ma séance" className="shrink-0 mr-1">
+        <AddExerciceIcon size={44}/>
       </button>
     </div>
   );
