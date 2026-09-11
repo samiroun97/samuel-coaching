@@ -11,7 +11,8 @@ import {
 import { loadExerciceSessionOutcomes, suggestProgression, type ProgressionSuggestion } from "@/lib/progression";
 import { loadCatalogue, type CatalogueEntry } from "@/lib/exercicesCatalogue";
 import { ExerciceLibraryBrowser } from "@/components/ExerciceLibraryBrowser";
-import { NumberStepper, numOr } from "@/components/NumberStepper";
+import { numOr } from "@/components/NumberStepper";
+import { SetInputCell } from "@/components/SetInputCell";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
 import { TdeeIcon } from "@/components/CalRefToggle";
@@ -110,8 +111,7 @@ function SetRow({ target, idx, log, prev, isExtra, canRemove, bodyweight, onTogg
   };
 
   // Placeholder "fantôme" : la valeur de la dernière fois plutôt qu'un simple libellé
-  // générique — visible directement dans le champ sans avoir à taper sur le lien "Préc.",
-  // et le +/- du stepper part de cette valeur (numOr retombe déjà sur le placeholder).
+  // générique — visible directement dans le champ sans avoir à taper sur le lien "Préc.".
   const kgPlaceholder = prev?.poids != null ? String(prev.poids) : (bodyweight ? "+kg" : target.poids || "kg");
   const repsPlaceholder = prev?.reps != null ? String(prev.reps) : (target.reps || "reps");
 
@@ -158,8 +158,8 @@ function SetRow({ target, idx, log, prev, isExtra, canRemove, bodyweight, onTogg
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2.5">
-          <NumberStepper size="lg" label={bodyweight ? "Kg additionnels" : "Kg"} value={log?.poids ?? ""} placeholder={kgPlaceholder} step={2.5} onChange={v => onChange("poids", v)} accent/>
-          <NumberStepper size="lg" label="Reps" value={log?.reps ?? ""} placeholder={repsPlaceholder} step={1} onChange={v => onChange("reps", v)}/>
+          <SetInputCell kind="kg" label={bodyweight ? "Kg additionnels" : "Kg"} value={log?.poids ?? ""} placeholder={kgPlaceholder} onChange={v => onChange("poids", v)} accent/>
+          <SetInputCell kind="reps" label="Reps" value={log?.reps ?? ""} placeholder={repsPlaceholder} onChange={v => onChange("reps", v)}/>
         </div>
         <RirSlider value={log?.rir ?? ""} onChange={v => onChange("rir", v)}/>
       </div>

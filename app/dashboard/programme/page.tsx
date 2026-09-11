@@ -12,7 +12,7 @@ import { useSelectedDate, todayStr } from "@/lib/useSelectedDate";
 import { syncSteps } from "@/lib/steps";
 import { parseExercices, hasLoggableSets, serializeExercices, type ExerciceItem } from "@/lib/exercices";
 import { loadCatalogue, type CatalogueEntry } from "@/lib/exercicesCatalogue";
-import ExerciceEditor from "@/components/ExerciceEditor";
+import SeanceBuilder from "@/components/SeanceBuilder";
 import { TdeeIcon } from "@/components/CalRefToggle";
 import { loadDayStatuses, type DayStatus } from "@/lib/consistency";
 import { MuscleVolumeChart } from "@/components/MuscleVolumeChart";
@@ -458,6 +458,10 @@ export default function ProgrammePage() {
   const pendingSelectedDate = seancesSelectedDate.filter(s => !s.completed_at);
   const doneSelectedDate    = seancesSelectedDate.filter(s => s.completed_at);
   const createValidCount    = createItems.filter(it => it.nom.trim()).length;
+  // Une séance enregistrée sans aucune série chiffrée échouerait hasLoggableSets() et
+  // n'afficherait jamais de bouton "Démarrer" — on bloque donc l'enregistrement avant ce
+  // point plutôt que de laisser l'utilisateur découvrir une séance inutilisable après coup.
+  const createHasSets       = createItems.some(it => it.nom.trim() && it.sets.some(s => s.reps || s.poids));
 
   return (
     <div className="p-4 sm:p-8 max-w-2xl">
@@ -1030,13 +1034,16 @@ export default function ProgrammePage() {
 
             <p className="text-[0.58rem] tracking-[0.2em] uppercase text-[var(--t-text-20)] text-center">— ou prépare-la à l&apos;avance —</p>
 
-            <ExerciceEditor items={createItems} onChange={setCreateItems} catalogue={catalogue} simplified/>
+            <SeanceBuilder items={createItems} onChange={setCreateItems} catalogue={catalogue}/>
 
             {createValidCount > 0 && (
               <>
                 <input className={`${inputCls} py-3.5 text-base`} placeholder="Nom de la séance (optionnel)"
                   value={createTitre} onChange={e => setCreateTitre(e.target.value)}/>
-                <button onClick={saveCreatedSeance} disabled={createSaving}
+                {!createHasSets && (
+                  <p className="text-[0.68rem] text-[var(--t-text-30)] text-center -mt-2">Ajoute au moins un poids ou des reps sur une série pour pouvoir démarrer cette séance plus tard.</p>
+                )}
+                <button onClick={saveCreatedSeance} disabled={createSaving || !createHasSets}
                   className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-base font-bold tracking-[0.08em] uppercase py-4 rounded-xl shadow-[0_6px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_8px_26px_-4px_rgba(201,168,76,0.8)] transition-all disabled:opacity-40">
                   {createSaving ? "Enregistrement…" : "Enregistrer pour plus tard →"}
                 </button>

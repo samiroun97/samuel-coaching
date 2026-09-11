@@ -1,6 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
-import { type ExerciceItem, type ExerciceMode, type SetDetail, type SimpleField, type ExerciceRun, EXERCICE_TYPES, emptyExercice, emptySet, groupExerciceRuns, targetSetsFor } from "@/lib/exercices";
+import { type ExerciceItem, type ExerciceMode, type SetDetail, type SimpleField, type ExerciceRun, EXERCICE_TYPES, emptyExercice, emptySet, groupExerciceRuns, targetSetsFor, REST_PRESETS, REST_LABELS } from "@/lib/exercices";
 import { type LibraryEntry } from "@/lib/exerciceLibrary";
 import { type CatalogueEntry, findCatalogueEntry } from "@/lib/exercicesCatalogue";
 import { uploadCustomExerciceImage } from "@/lib/customExerciceImage";
@@ -108,12 +108,6 @@ const SIMPLE_FIELDS: { key: SimpleField; label: string; icon: () => React.ReactN
 ];
 
 const genId = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`);
-
-// Repos entre séries en mode Avancé : réglage unique par exercice (pastilles) plutôt qu'un
-// champ texte répété à chaque ligne — le repos change rarement d'une série à l'autre, ça
-// évite de le retaper N fois et ça libère de la place dans le tableau des séries.
-const REST_PRESETS = ["", "60 sec", "90 sec", "120 sec", "180 sec"];
-const REST_LABELS: Record<string, string> = { "": "Off", "60 sec": "60s", "90 sec": "90s", "120 sec": "120s", "180 sec": "180s" };
 
 const DATALIST_ID = "exercice-bibliotheque-list";
 

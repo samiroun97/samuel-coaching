@@ -42,6 +42,21 @@ export const emptyExercice = (): ExerciceItem => ({
   bodyweight: false, bodyweightPct: "100",
 });
 
+// Nombre de séries proposées par défaut à la création d'un exercice côté client
+// (SeanceBuilder) — la plupart des mouvements de force se travaillent en 3-4 séries,
+// démarrer à 3 évite 2-3 taps sur "Ajouter une série" à chaque exercice.
+export const DEFAULT_SET_COUNT = 3;
+
+export function emptyAdvancedExercice(nom = "", n: number = DEFAULT_SET_COUNT): ExerciceItem {
+  return { ...emptyExercice(), nom, mode: "avance", sets: Array.from({ length: n }, () => emptySet()) };
+}
+
+// Presets de repos entre séries (mode Avancé / SeanceBuilder) — partagés pour que
+// l'éditeur coach et le constructeur client restent cohérents plutôt que de dupliquer
+// deux listes qui pourraient diverger.
+export const REST_PRESETS = ["", "60 sec", "90 sec", "120 sec", "180 sec"];
+export const REST_LABELS: Record<string, string> = { "": "Off", "60 sec": "60s", "90 sec": "90s", "120 sec": "120s", "180 sec": "180s" };
+
 // Comble les champs manquants d'un exercice partiel (ancien format JSON, réponse IA, modèle importé…).
 export function normalizeExercice(p: Partial<ExerciceItem>): ExerciceItem {
   return {
