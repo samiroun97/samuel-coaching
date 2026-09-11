@@ -10,7 +10,7 @@ import {
 } from "@/lib/workoutLog";
 import { loadExerciceSessionOutcomes, suggestProgression, type ProgressionSuggestion } from "@/lib/progression";
 import { loadCatalogue, type CatalogueEntry } from "@/lib/exercicesCatalogue";
-import { ExerciceLibraryBrowser } from "@/components/ExerciceLibraryBrowser";
+import { ExercicePicker } from "@/components/ExercicePicker";
 import { numOr } from "@/components/NumberStepper";
 import { SetInputCell } from "@/components/SetInputCell";
 import { Icon } from "@/components/Icon";
@@ -464,9 +464,9 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
     await pushExercice(nom);
   };
 
-  const addFromCatalogue = async (entry: CatalogueEntry) => {
+  const addFromCatalogue = async (nom: string) => {
     setShowLibrary(false);
-    await pushExercice(entry.nom);
+    await pushExercice(nom);
   };
 
   const onToggle = async (exIdx: number, setIdx: number, target: SetDetail) => {
@@ -766,13 +766,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
         </div>
       )}
 
-      {showLibrary && (
-        <div className="fixed inset-0 bg-black/75 z-[60] flex items-center justify-center px-4" onClick={() => setShowLibrary(false)}>
-          <div className="w-full max-w-lg" onClick={e => e.stopPropagation()}>
-            <ExerciceLibraryBrowser catalogue={catalogue} onPick={addFromCatalogue} onClose={() => setShowLibrary(false)}/>
-          </div>
-        </div>
-      )}
+      {showLibrary && <ExercicePicker catalogue={catalogue} onPick={addFromCatalogue} onClose={() => setShowLibrary(false)}/>}
 
       {showTimer && <RoundTimer onClose={() => setShowTimer(false)}/>}
 

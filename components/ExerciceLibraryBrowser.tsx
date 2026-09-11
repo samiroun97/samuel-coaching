@@ -193,15 +193,13 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
       )}
 
       {detailEntry ? (
-        <div className="flex-1 min-h-0">
-          <ExerciceDetailView entry={detailEntry} onClose={() => setDetailEntry(null)}
-            footer={
-              <button type="button" onClick={() => handlePick(detailEntry)}
-                className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.15em] uppercase py-3 rounded-2xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 hover:scale-[1.02] active:translate-y-0 active:scale-[0.97] active:brightness-95 transition-all duration-200">
-                Ajouter à ma séance
-              </button>
-            }/>
-        </div>
+        <ExerciceDetailView entry={detailEntry} onClose={() => setDetailEntry(null)}
+          footer={
+            <button type="button" onClick={() => handlePick(detailEntry)}
+              className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.15em] uppercase py-3 rounded-2xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 hover:scale-[1.02] active:translate-y-0 active:scale-[0.97] active:brightness-95 transition-all duration-200">
+              Ajouter à ma séance
+            </button>
+          }/>
       ) : (
         <div className="flex-1 min-h-0 overflow-y-auto p-5">
           {viewMode === "silhouette" ? (

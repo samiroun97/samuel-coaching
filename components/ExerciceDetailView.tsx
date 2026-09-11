@@ -9,11 +9,19 @@ import { X } from "@/lib/solarIcons";
 // noter. Extrait de ExerciceLibraryBrowser (CRM coach) pour être réutilisé tel quel par
 // ExercicePicker (client) : composant 100% présentationnel, aucun état propre, le footer
 // (bouton d'action) est fourni par l'appelant puisqu'il diffère d'un contexte à l'autre.
-export function ExerciceDetailView({ entry, onClose, footer }: {
-  entry: CatalogueEntry; onClose: () => void; footer?: React.ReactNode;
+//
+// Racine en flex-1 min-h-0 (jamais h-full) : rendu comme ENFANT DIRECT du conteneur
+// flex-col parent (pas de <div> intermédiaire autour), pour que la hauteur se propage par
+// flex-grow tout du long — un h-full au milieu de la chaîne dépend d'un ancestor à hauteur
+// explicite, et un simple wrapper flex-1/min-h-0 sans display:flex ne lui en fournit pas
+// toujours une, laissant l'aire de défilement (et donc le bouton d'action tout en bas)
+// s'écraser à 0px. C'était le bug remonté : "l'aperçu est figé, impossible de descendre
+// pour valider l'exercice" — le contenu débordait sans jamais pouvoir défiler.
+export function ExerciceDetailView({ entry, onClose, footer, className }: {
+  entry: CatalogueEntry; onClose: () => void; footer?: React.ReactNode; className?: string;
 }) {
   return (
-    <div className="flex flex-col h-full">
+    <div className={`flex-1 min-h-0 flex flex-col ${className ?? ""}`}>
       <div className="flex-1 min-h-0 overflow-y-auto">
         <div className="flex flex-col gap-4 pb-16">
           {/* Hero : média plein cadre avec titre incrusté façon fiche produit, ou
