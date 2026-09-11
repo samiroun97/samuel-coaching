@@ -25,28 +25,28 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
 
 function Row({ entry, onAdd, onInfo }: { entry: CatalogueEntry; onAdd: () => void; onInfo: () => void }) {
   return (
-    <div className="flex items-center gap-2 rounded-xl hover:bg-[var(--t-glass-bg)] transition-colors">
-      <button type="button" onClick={onAdd} className="flex items-center gap-3 flex-1 min-w-0 text-left px-2 py-2">
-        <span className="shrink-0 w-11 h-11 rounded-lg overflow-hidden bg-[var(--t-surface-2)] flex items-center justify-center">
+    <div className="flex items-center gap-2.5 rounded-2xl hover:bg-[var(--t-glass-bg)] transition-colors">
+      <button type="button" onClick={onAdd} className="flex items-center gap-3.5 flex-1 min-w-0 text-left px-2.5 py-2.5">
+        <span className="shrink-0 w-16 h-16 rounded-xl overflow-hidden bg-[var(--t-surface-2)] flex items-center justify-center">
           {entry.image_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={entry.image_url} alt="" loading="lazy" className="w-full h-full object-cover"/>
           ) : (
-            <Icon icon={Dumbbell} size={16} strokeWidth={1.6} className="text-[var(--t-text-15)]"/>
+            <Icon icon={Dumbbell} size={24} strokeWidth={1.6} className="text-[var(--t-text-15)]"/>
           )}
         </span>
         <span className="min-w-0">
-          <span className="block text-sm text-[var(--t-text-80)] cap-first truncate">{entry.nom}</span>
-          {entry.muscle_cible && <span className="block text-[0.6rem] tracking-wider uppercase text-[#c9a84c]/70 capitalize truncate">{entry.muscle_cible}</span>}
+          <span className="block text-base font-medium text-[var(--t-text-80)] cap-first truncate">{entry.nom}</span>
+          {entry.muscle_cible && <span className="block text-[0.68rem] tracking-wider uppercase text-[#c9a84c]/70 capitalize truncate mt-0.5">{entry.muscle_cible}</span>}
         </span>
       </button>
       <button type="button" onClick={onInfo} aria-label="Détails" title="Voir la fiche"
-        className="shrink-0 w-9 h-9 flex items-center justify-center rounded-full text-[var(--t-text-25)] hover:text-[var(--t-text)] hover:bg-[var(--t-track)] transition-colors">
-        <Icon icon={AlertCircle} size={15} strokeWidth={2}/>
+        className="shrink-0 w-11 h-11 flex items-center justify-center rounded-full text-[var(--t-text-25)] hover:text-[var(--t-text)] hover:bg-[var(--t-track)] transition-colors">
+        <Icon icon={AlertCircle} size={19} strokeWidth={2}/>
       </button>
       <button type="button" onClick={onAdd} aria-label="Ajouter" title="Ajouter à ma séance"
-        className="shrink-0 mr-1 w-9 h-9 flex items-center justify-center rounded-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black">
-        <Icon icon={Plus} size={16} strokeWidth={2.5}/>
+        className="shrink-0 mr-1 w-11 h-11 flex items-center justify-center rounded-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black">
+        <Icon icon={Plus} size={20} strokeWidth={2.5}/>
       </button>
     </div>
   );
@@ -116,7 +116,7 @@ export function ExercicePicker({ catalogue, onPick, onClose }: {
             </button>
           }/>
       ) : (
-        <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3 max-w-lg mx-auto w-full flex flex-col gap-1">
+        <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3 max-w-lg mx-auto w-full flex flex-col gap-1.5">
           <button type="button" onClick={() => onPick(query.trim() || "Nouvel exercice")}
             className="flex items-center gap-3 px-3 py-3 mb-1.5 rounded-xl border border-dashed border-[#c9a84c]/40 text-[#c9a84c] hover:bg-[#c9a84c]/[0.06] transition-colors">
             <Icon icon={Plus} size={16} strokeWidth={2.5}/>
