@@ -1,24 +1,25 @@
 // Icônes illustrées (dégradé or/anthracite, style "Charcoal Gold") réservées aux emplacements
 // déjà accentués en doré et de taille généreuse — contrairement aux icônes Solar, leurs couleurs
 // sont fixes (pas de currentColor), donc inadaptées aux endroits avec état actif/thème dynamique.
+// Servies en WebP 200x200 (converties depuis les PNG/SVG sources d'origine, jamais affichées
+// au-delà de 84px à l'écran) plutôt que les fichiers bruts — jusqu'à 500 Ko pièce pour un
+// rendu final de quelques dizaines de pixels, désormais quelques Ko chacune.
 const RICH_ICON_SRC = {
-  scale: "/icons-rich/scale.png",
-  clipboardCheck: "/icons-rich/clipboard-check.png",
-  footprints: "/icons-rich/footprints.svg",
-  library: "/icons-rich/library.png",
-  lightbulb: "/icons-rich/lightbulb.png",
-  mealPetitDejeuner: "/icons-rich/petit-dejeuner.png",
-  mealDejeuner: "/icons-rich/dejeuner.png",
-  mealDiner: "/icons-rich/diner.png",
-  mealCollation: "/icons-rich/collation.png",
-  burn: "/icons-rich/burn.png",
-  targetGoal: "/icons-rich/target-goal.png",
-  waterBottle: "/icons-rich/water-bottle.png",
-  droplet: "/icons-rich/droplet.png",
-  step: "/icons-rich/step.png",
-  calendar: "/icons-rich/calendar.png",
-  notebookPen: "/icons-rich/notebook.svg",
-  chrono: "/icons-rich/chrono.svg",
+  scale: "/icons-rich/scale.webp",
+  clipboardCheck: "/icons-rich/clipboard-check.webp",
+  library: "/icons-rich/library.webp",
+  lightbulb: "/icons-rich/lightbulb.webp",
+  mealPetitDejeuner: "/icons-rich/petit-dejeuner.webp",
+  mealDejeuner: "/icons-rich/dejeuner.webp",
+  mealDiner: "/icons-rich/diner.webp",
+  mealCollation: "/icons-rich/collation.webp",
+  burn: "/icons-rich/burn.webp",
+  targetGoal: "/icons-rich/target-goal.webp",
+  waterBottle: "/icons-rich/water-bottle.webp",
+  droplet: "/icons-rich/droplet.webp",
+  step: "/icons-rich/step.webp",
+  notebookPen: "/icons-rich/notebook.webp",
+  chrono: "/icons-rich/chrono.webp",
 } as const;
 
 export type RichIconName = keyof typeof RICH_ICON_SRC;
