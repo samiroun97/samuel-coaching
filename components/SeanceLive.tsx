@@ -20,7 +20,13 @@ import { Check, X, ChevronLeft, ChevronRight, Plus, Trash2, Clock, Layers } from
 import { RoundTimer } from "@/components/RoundTimer";
 
 type LiveSeance = { id: string; titre: string; exercices: string | null };
-type SetLogState = { poids: string; reps: string; rir: string; done: boolean; warmup?: boolean };
+// Paliers d'une série dégressive (drop set) : une chute de charge enchaînée sans repos
+// juste après la série principale — poids/reps propres à chaque palier. Comme `warmup`,
+// c'est local à la séance en cours (pas de colonne dédiée dans seance_logs) : ça décrit la
+// façon dont la série a été exécutée, pas une donnée que le programme doit se souvenir
+// d'une séance à l'autre.
+type DropStep = { poids: string; reps: string };
+type SetLogState = { poids: string; reps: string; rir: string; done: boolean; warmup?: boolean; drops?: DropStep[] };
 
 const genId = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`);
 
@@ -86,14 +92,16 @@ const SWIPE_MAX = -88;
 // Chaque série est sa propre carte (plutôt qu'une ligne de tableau compressée) : les
 // chiffres poids/reps — l'info la plus regardée pendant l'effort — ont la place d'être
 // gros, et le bouton de validation devient une vraie cible tactile plutôt qu'un point.
-function SetRow({ target, idx, log, prev, isExtra, canRemove, bodyweight, onToggle, onChange, onCopyPrev, onToggleWarmup, onRemove }: {
+function SetRow({ target, idx, log, prev, isExtra, canRemove, bodyweight, onToggle, onChange, onCopyPrev, onToggleWarmup, onRemove, onAddDrop, onChangeDrop, onRemoveDrop }: {
   target: SetDetail; idx: number; log: SetLogState | undefined; prev: { poids: number | null; reps: number | null } | undefined;
   isExtra: boolean; canRemove: boolean; bodyweight?: boolean; onToggle: () => void; onChange: (field: "poids" | "reps" | "rir", val: string) => void;
   onCopyPrev: () => void; onToggleWarmup: () => void; onRemove: () => void;
+  onAddDrop: () => void; onChangeDrop: (dropIdx: number, field: "poids" | "reps", val: string) => void; onRemoveDrop: (dropIdx: number) => void;
 }) {
   const hasPrev = prev && (prev.poids != null || prev.reps != null);
   const done = !!log?.done;
   const warmup = !!log?.warmup;
+  const drops = log?.drops ?? [];
   const [dragX, setDragX] = useState(0);
   const [dragging, setDragging] = useState(false);
   const dragStartX = useRef(0);
@@ -132,7 +140,7 @@ function SetRow({ target, idx, log, prev, isExtra, canRemove, bodyweight, onTogg
       <div {...(canRemove ? { onTouchStart, onTouchMove, onTouchEnd: onTouchEndSwipe } : {})}
         style={{ transform: `translateX(${dragX}px)` }}
         className={`relative w-full rounded-2xl border p-3.5 flex flex-col gap-3 ${dragging ? "" : "transition-[transform,background-color,border-color] duration-200"} ${
-          done ? "border-[#7eb8a0]/40 bg-[#7eb8a0]/[0.08]" : warmup ? "border-[#e0834a]/35 bg-[#e0834a]/[0.06]" : isExtra ? "border-[#c9a84c]/25 bg-[#c9a84c]/[0.04]" : "border-[var(--t-border-soft)] bg-[var(--t-bg)]"}`}>
+          done ? "border-[#7eb8a0]/40 bg-[#7eb8a0]/[0.08]" : warmup ? "border-[#e0834a]/35 bg-[#e0834a]/[0.06]" : drops.length > 0 ? "border-[#8aa0e0]/35 bg-[#8aa0e0]/[0.06]" : isExtra ? "border-[#c9a84c]/25 bg-[#c9a84c]/[0.04]" : "border-[var(--t-border-soft)] bg-[var(--t-bg)]"}`}>
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5 min-w-0">
             <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${done ? "bg-[#7eb8a0] text-black" : "bg-[var(--t-track)] text-[var(--t-text-40)]"}`}>{idx + 1}</span>
@@ -162,18 +170,46 @@ function SetRow({ target, idx, log, prev, isExtra, canRemove, bodyweight, onTogg
           <SetInputCell kind="reps" label="Reps" value={log?.reps ?? ""} placeholder={repsPlaceholder} onChange={v => onChange("reps", v)}/>
         </div>
         <RirSlider value={log?.rir ?? ""} onChange={v => onChange("rir", v)}/>
+
+        {/* Paliers d'une série dégressive : chute de charge enchaînée juste après la série
+            principale, sans repos — chaque palier a sa propre saisie kg/reps, indentée pour
+            se lire comme un prolongement de la série plutôt qu'une nouvelle série à part. */}
+        {drops.length > 0 && (
+          <div className="flex flex-col gap-2.5 pl-3 border-l-2 border-[#8aa0e0]/30">
+            {drops.map((d, di) => (
+              <div key={di} className="flex items-center gap-2">
+                <span className="text-[0.58rem] tracking-wide uppercase text-[#8aa0e0] shrink-0 w-14">Palier {di + 1}</span>
+                <div className="flex-1 grid grid-cols-2 gap-2">
+                  <SetInputCell kind="kg" value={d.poids} placeholder="kg" onChange={v => onChangeDrop(di, "poids", v)}/>
+                  <SetInputCell kind="reps" value={d.reps} placeholder="reps" onChange={v => onChangeDrop(di, "reps", v)}/>
+                </div>
+                <button onClick={() => onRemoveDrop(di)} title="Retirer ce palier"
+                  className="shrink-0 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors p-2 -m-1">
+                  <Icon icon={X} size={12} strokeWidth={2.5}/>
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+        <button onClick={onAddDrop}
+          className="self-start flex items-center gap-1.5 text-[0.6rem] tracking-wide uppercase text-[#8aa0e0]/80 hover:text-[#8aa0e0] transition-colors py-1">
+          <Icon icon={Plus} size={11} strokeWidth={2.5}/> Palier dégressif
+        </button>
       </div>
     </div>
   );
 }
 
-function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle, onChange, onAddSet, onToggleWarmup, onRemoveExtra }: {
+function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle, onChange, onAddSet, onToggleWarmup, onRemoveExtra, onAddDrop, onChangeDrop, onRemoveDrop }: {
   ex: ExerciceItem; exIdx: number; logs: Record<string, SetLogState>; history: LastPerformance; prBadge: boolean; extra: number;
   onToggle: (exIdx: number, setIdx: number, target: SetDetail) => void;
   onChange: (exIdx: number, setIdx: number, field: "poids" | "reps" | "rir", val: string) => void;
   onAddSet: (exIdx: number) => void;
   onToggleWarmup: (exIdx: number, setIdx: number) => void;
   onRemoveExtra: (exIdx: number) => void;
+  onAddDrop: (exIdx: number, setIdx: number) => void;
+  onChangeDrop: (exIdx: number, setIdx: number, dropIdx: number, field: "poids" | "reps", val: string) => void;
+  onRemoveDrop: (exIdx: number, setIdx: number, dropIdx: number) => void;
 }) {
   const rows = displaySetsFor(ex, extra);
   const doneCount = rows.filter((_, i) => logs[`${exIdx}-${i}`]?.done).length;
@@ -210,7 +246,10 @@ function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle,
                 onChange={(field, val) => onChange(exIdx, setIdx, field, val)}
                 onCopyPrev={() => { const p = history[setIdx]; if (p?.poids != null) onChange(exIdx, setIdx, "poids", String(p.poids)); if (p?.reps != null) onChange(exIdx, setIdx, "reps", String(p.reps)); }}
                 onToggleWarmup={() => onToggleWarmup(exIdx, setIdx)}
-                onRemove={() => onRemoveExtra(exIdx)}/>
+                onRemove={() => onRemoveExtra(exIdx)}
+                onAddDrop={() => onAddDrop(exIdx, setIdx)}
+                onChangeDrop={(dropIdx, field, val) => onChangeDrop(exIdx, setIdx, dropIdx, field, val)}
+                onRemoveDrop={dropIdx => onRemoveDrop(exIdx, setIdx, dropIdx)}/>
             ))}
           </div>
           <button onClick={() => onAddSet(exIdx)}
@@ -348,11 +387,17 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
   // Une série d'échauffement (warmup) est cochée comme les autres pour le compte de séries
   // faites, mais exclue du volume/calories/records — elle ne reflète pas l'effort de travail
   // réel de la séance, inclure sa charge y fausserait le chiffre.
+  // Les paliers d'une série dégressive comptent en plus de la série principale — chacun est
+  // un vrai travail supplémentaire (charge × reps), pas une répétition de la même série.
   const volume = doneEntries.reduce((s, [k, l]) => {
     if (l.warmup) return s;
     const exIdx = parseInt(k.split("-")[0], 10);
     const load = effectiveLoad(exercices[exIdx], numOr(l.poids), clientBodyweight);
-    return s + (load ?? 0) * (numOr(l.reps) ?? 0);
+    const dropsVolume = (l.drops ?? []).reduce((ds, d) => {
+      const dropLoad = effectiveLoad(exercices[exIdx], numOr(d.poids), clientBodyweight);
+      return ds + (dropLoad ?? 0) * (numOr(d.reps) ?? 0);
+    }, 0);
+    return s + (load ?? 0) * (numOr(l.reps) ?? 0) + dropsVolume;
   }, 0);
 
   // Estimation calorique live : calculée série par série à partir de ce qui est réellement
@@ -363,16 +408,26 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
   // poids de corps. Pas un calcul physiologique exact (impossible sans VO2), juste un chiffre
   // qui réagit vraiment à la séance loguée.
   const bodyweightForCalc = clientBodyweight ?? 75;
+  // Une série dégressive enchaîne ses paliers sans repos — même RIR de référence que la
+  // série principale (pas de nouvelle échelle d'effort saisie par palier), seuls la charge
+  // et les reps changent.
+  const calcSetKcal = (load: number, reps: number, rir: number) => {
+    const met = Math.min(8, Math.max(3, 8 - rir));
+    const setDurationHours = (reps * 3) / 3600;
+    const loadFactor = 1 + Math.min(1, load / bodyweightForCalc);
+    return met * bodyweightForCalc * setDurationHours * loadFactor;
+  };
   const estimatedCalories = Math.round(doneEntries.reduce((sum, [k, l]) => {
     if (l.warmup) return sum;
     const exIdx = parseInt(k.split("-")[0], 10);
     const load = effectiveLoad(exercices[exIdx], numOr(l.poids), clientBodyweight) ?? 0;
     const reps = numOr(l.reps) ?? 0;
     const rir = numOr(l.rir) ?? 2.5;
-    const met = Math.min(8, Math.max(3, 8 - rir));
-    const setDurationHours = (reps * 3) / 3600;
-    const loadFactor = 1 + Math.min(1, load / bodyweightForCalc);
-    return sum + met * bodyweightForCalc * setDurationHours * loadFactor;
+    const dropsKcal = (l.drops ?? []).reduce((ds, d) => {
+      const dropLoad = effectiveLoad(exercices[exIdx], numOr(d.poids), clientBodyweight) ?? 0;
+      return ds + calcSetKcal(dropLoad, numOr(d.reps) ?? 0, rir);
+    }, 0);
+    return sum + calcSetKcal(load, reps, rir) + dropsKcal;
   }, 0));
 
   const runIsComplete = (run: { indices: number[] }) => run.indices.every(exIdx => {
@@ -516,6 +571,34 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
     setLogs(prev => {
       const base: SetLogState = prev[k] ?? { poids: "", reps: "", rir: "", done: false };
       return { ...prev, [k]: { ...base, warmup: !base.warmup } };
+    });
+  };
+
+  // Paliers d'une série dégressive — mêmes garanties que le drapeau warmup ci-dessus (local
+  // à la séance en cours). Chaque palier est une chute de charge enchaînée juste après la
+  // série principale : sa propre saisie kg/reps, comptée en plus dans volume/calories.
+  const addDrop = (exIdx: number, setIdx: number) => {
+    const k = `${exIdx}-${setIdx}`;
+    setLogs(prev => {
+      const base: SetLogState = prev[k] ?? { poids: "", reps: "", rir: "", done: false };
+      return { ...prev, [k]: { ...base, drops: [...(base.drops ?? []), { poids: "", reps: "" }] } };
+    });
+  };
+  const changeDrop = (exIdx: number, setIdx: number, dropIdx: number, field: "poids" | "reps", val: string) => {
+    const k = `${exIdx}-${setIdx}`;
+    setLogs(prev => {
+      const base = prev[k];
+      if (!base) return prev;
+      const drops = (base.drops ?? []).map((d, i) => (i === dropIdx ? { ...d, [field]: val } : d));
+      return { ...prev, [k]: { ...base, drops } };
+    });
+  };
+  const removeDrop = (exIdx: number, setIdx: number, dropIdx: number) => {
+    const k = `${exIdx}-${setIdx}`;
+    setLogs(prev => {
+      const base = prev[k];
+      if (!base) return prev;
+      return { ...prev, [k]: { ...base, drops: (base.drops ?? []).filter((_, i) => i !== dropIdx) } };
     });
   };
 
@@ -753,14 +836,14 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
         <div className="flex items-center gap-2 px-4 pb-2 shrink-0 max-w-lg mx-auto w-full">
           {runIdx > 0 && (
             <button onClick={() => mergeWithAdjacentRun(-1)}
-              className="flex-1 flex items-center justify-center gap-1.5 border border-dashed border-[var(--t-border)] rounded-xl text-[0.62rem] tracking-wide uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors py-2 font-medium">
-              <Icon icon={Layers} size={13} strokeWidth={2}/> Fusionner avec précédent
+              className="flex-1 flex items-center justify-center gap-2 border border-[#c9a84c]/40 bg-[#c9a84c]/[0.08] rounded-xl text-[0.68rem] tracking-wide uppercase text-[#c9a84c] hover:bg-[#c9a84c]/[0.16] hover:border-[#c9a84c]/60 active:scale-[0.98] transition-all py-2.5 font-bold">
+              <Icon icon={Layers} size={15} strokeWidth={2.5}/> Fusionner avec précédent
             </button>
           )}
           {runIdx < runs.length - 1 && (
             <button onClick={() => mergeWithAdjacentRun(1)}
-              className="flex-1 flex items-center justify-center gap-1.5 border border-dashed border-[var(--t-border)] rounded-xl text-[0.62rem] tracking-wide uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors py-2 font-medium">
-              <Icon icon={Layers} size={13} strokeWidth={2}/> Fusionner avec suivant
+              className="flex-1 flex items-center justify-center gap-2 border border-[#c9a84c]/40 bg-[#c9a84c]/[0.08] rounded-xl text-[0.68rem] tracking-wide uppercase text-[#c9a84c] hover:bg-[#c9a84c]/[0.16] hover:border-[#c9a84c]/60 active:scale-[0.98] transition-all py-2.5 font-bold">
+              <Icon icon={Layers} size={15} strokeWidth={2.5}/> Fusionner avec suivant
             </button>
           )}
         </div>
@@ -825,14 +908,16 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
                     <ExerciceLiveBlock key={exIdx} ex={exercices[exIdx]} exIdx={exIdx} logs={logs}
                       history={historyByNom[exercices[exIdx].nom] ?? {}} prBadge={!!prByNom[exercices[exIdx].nom]}
                       extra={extraSets[exIdx] ?? 0} onToggle={onToggle} onChange={onChange} onAddSet={onAddSet}
-                      onToggleWarmup={onToggleWarmup} onRemoveExtra={onRemoveExtra}/>
+                      onToggleWarmup={onToggleWarmup} onRemoveExtra={onRemoveExtra}
+                      onAddDrop={addDrop} onChangeDrop={changeDrop} onRemoveDrop={removeDrop}/>
                   ))}
                 </div>
               ) : (
                 <ExerciceLiveBlock ex={exercices[run.indices[0]]} exIdx={run.indices[0]} logs={logs}
                   history={historyByNom[exercices[run.indices[0]].nom] ?? {}} prBadge={!!prByNom[exercices[run.indices[0]].nom]}
                   extra={extraSets[run.indices[0]] ?? 0} onToggle={onToggle} onChange={onChange} onAddSet={onAddSet}
-                  onToggleWarmup={onToggleWarmup} onRemoveExtra={onRemoveExtra}/>
+                  onToggleWarmup={onToggleWarmup} onRemoveExtra={onRemoveExtra}
+                  onAddDrop={addDrop} onChangeDrop={changeDrop} onRemoveDrop={removeDrop}/>
               )}
 
               {runIdx < runs.length - 1 ? (
