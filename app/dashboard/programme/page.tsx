@@ -23,7 +23,7 @@ import { loadPersonalRecords, type PRCard } from "@/lib/personalRecords";
 import { Sparkline } from "@/components/Sparkline";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
-import { Activity, X, Mic, ChevronDown, Download, Flame, Plus, Trash2, Clock } from "@/lib/solarIcons";
+import { Activity, X, Mic, ChevronDown, Download, Flame, Plus, Trash2 } from "@/lib/solarIcons";
 
 type Profile = { prenom: string; poids: number; taille: number; age: number; sexe: string; objectif_type: string | null };
 type LoggedWorkout = {
@@ -596,14 +596,14 @@ export default function ProgrammePage() {
 
       {/* ── Minuteur — section à part : un outil de chrono autonome (HIIT/Tabata/circuit),
           pas une étape du flux séance planifiée/créée juste au-dessus. ── */}
-      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 mb-6 flex items-center justify-between gap-3">
-        <div className="min-w-0">
+      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 mb-6 flex items-center gap-4">
+        <RichIcon name="chrono" size={56} className="drop-shadow-[0_6px_12px_rgba(0,0,0,0.2)]"/>
+        <div className="min-w-0 flex-1">
           <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1">Minuteur</p>
           <p className="text-[0.72rem] text-[var(--t-text-35)] leading-relaxed">Rounds chronométrés pour un circuit, un HIIT ou un Tabata.</p>
         </div>
         <button onClick={() => setShowTimer(true)}
-          className="shrink-0 flex items-center justify-center gap-2 border border-[var(--t-border)] text-[var(--t-text-40)] text-[0.75rem] font-bold tracking-[0.08em] uppercase py-3 px-4 rounded-xl hover:border-[#c9a84c]/40 hover:text-[#c9a84c] active:scale-[0.99] transition-all">
-          <Icon icon={Clock} size={17} strokeWidth={2}/>
+          className="shrink-0 border border-[var(--t-border)] text-[var(--t-text-40)] text-[0.75rem] font-bold tracking-[0.08em] uppercase py-3 px-4 rounded-xl hover:border-[#c9a84c]/40 hover:text-[#c9a84c] active:scale-[0.99] transition-all">
           Démarrer
         </button>
       </div>
