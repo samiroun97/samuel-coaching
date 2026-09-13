@@ -23,7 +23,7 @@ import { loadPersonalRecords, type PRCard } from "@/lib/personalRecords";
 import { Sparkline } from "@/components/Sparkline";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
-import { Activity, X, Mic, ChevronDown, Download, Flame, Plus, Trash2 } from "@/lib/solarIcons";
+import { Activity, X, Mic, ChevronDown, Download, Flame, Plus, Trash2, Play } from "@/lib/solarIcons";
 
 type Profile = { prenom: string; poids: number; taille: number; age: number; sexe: string; objectif_type: string | null };
 type LoggedWorkout = {
@@ -161,7 +161,8 @@ export default function ProgrammePage() {
       if (!hasContent) return;
       setCreateTitre(draft.titre ?? "");
       setCreateItems(items);
-      setCreateOpen(true);
+      // Le panneau ne se rouvre pas tout seul (surprendrait à chaque retour sur "Activité")
+      // — juste le bouton qui passe de "Créer" à "Reprendre", pour un retour volontaire.
     } catch { /* brouillon corrompu ou absent — on repart d'une création vide */ }
   }, []);
 
@@ -621,8 +622,17 @@ export default function ProgrammePage() {
         {!createOpen && (
           <button onClick={() => setCreateOpen(true)}
             className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-base font-bold tracking-[0.08em] uppercase py-4 rounded-xl shadow-[0_6px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_8px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-all mt-3">
-            <Icon icon={Plus} size={20} strokeWidth={2.5}/>
-            Créer ma séance
+            {createValidCount > 0 ? (
+              <>
+                <Icon icon={Play} size={18} strokeWidth={2}/>
+                Reprendre ma séance
+              </>
+            ) : (
+              <>
+                <Icon icon={Plus} size={20} strokeWidth={2.5}/>
+                Créer ma séance
+              </>
+            )}
           </button>
         )}
 
