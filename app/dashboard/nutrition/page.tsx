@@ -206,7 +206,7 @@ function MacroBar({ label, consumed, goal, color }: { label: string; consumed: n
 }
 
 // Bouteille avec halo bleu.
-function WaterBottleIcon({ size = 58 }: { size?: number }) {
+function WaterBottleIcon({ size = 68 }: { size?: number }) {
   return (
     <div className="relative shrink-0">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-lg pointer-events-none"
@@ -217,7 +217,7 @@ function WaterBottleIcon({ size = 58 }: { size?: number }) {
 }
 
 // Ampoule avec halo jaune.
-function LightbulbIcon({ size = 65 }: { size?: number }) {
+function LightbulbIcon({ size = 76 }: { size?: number }) {
   return (
     <div className="relative shrink-0">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-lg pointer-events-none"
@@ -1168,8 +1168,8 @@ export default function NutritionPage() {
             <div className="flex items-center gap-4 px-5 py-4">
               <div className="relative animate-levitate" style={{ animationDelay: `${i * 0.35}s` }}>
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-xl pointer-events-none"
-                  style={{ width: 50, height: 50, backgroundColor: "#f0c95c", opacity: 0.55 }}/>
-                <MealTypeIcon type={type} size={64} className="relative"/>
+                  style={{ width: 58, height: 58, backgroundColor: "#f0c95c", opacity: 0.55 }}/>
+                <MealTypeIcon type={type} size={74} className="relative"/>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
@@ -1288,7 +1288,7 @@ export default function NutritionPage() {
               style={ideaMealType === t
                 ? { borderColor: MEAL_TYPE_COLOR[t], color: MEAL_TYPE_COLOR[t], backgroundColor: `${MEAL_TYPE_COLOR[t]}18` }
                 : undefined}>
-              <MealTypeIcon type={t} size={44} className={`transition-opacity ${ideaMealType === t ? "opacity-100" : "opacity-45"}`}/>
+              <MealTypeIcon type={t} size={50} className={`transition-opacity ${ideaMealType === t ? "opacity-100" : "opacity-45"}`}/>
               {t}
             </button>
           ))}

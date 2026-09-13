@@ -643,7 +643,7 @@ export default function ProgrammePage() {
       {/* ── Minuteur — section à part : un outil de chrono autonome (HIIT/Tabata/circuit),
           pas une étape du flux séance planifiée/créée juste au-dessus. ── */}
       <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 mb-6 flex items-center gap-4">
-        <RichIcon name="chrono" size={84} className="drop-shadow-[0_10px_18px_rgba(0,0,0,0.35)]"/>
+        <RichIcon name="chrono" size={88} className="drop-shadow-[0_10px_18px_rgba(0,0,0,0.35)]"/>
         <div className="min-w-0 flex-1">
           <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1">Minuteur</p>
           <p className="text-[0.72rem] text-[var(--t-text-35)] leading-relaxed">Rounds chronométrés pour un circuit, un HIIT ou un Tabata.</p>
@@ -796,7 +796,7 @@ export default function ProgrammePage() {
       {/* ── Pas ── */}
       <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 mb-6">
         <div className="flex items-center gap-3 mb-5">
-          <RichIcon name="step" size={36}/>
+          <RichIcon name="step" size={40}/>
           <div className="flex-1 min-w-0">
             <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">
               {selectedDate === todayStr() ? "Pas aujourd'hui" : `Pas · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`}
