@@ -1,9 +1,17 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Title from "./Title";
 
 export default function HeroSection() {
   const bgRef = useRef<HTMLDivElement>(null);
+  // La vidéo hero pèse plusieurs dizaines de Mo — sur mobile (souvent en 4G, et c'est la toute
+  // première page vue par un prospect) on préfère un fond dégradé statique plutôt que de forcer
+  // ce téléchargement ; vérifié une fois au montage, pas de watcher permanent (pas besoin de
+  // réagir à une rotation d'écran sur ce choix).
+  const [showVideo, setShowVideo] = useState(false);
+  useEffect(() => {
+    if (window.matchMedia("(min-width: 768px)").matches) setShowVideo(true);
+  }, []);
 
   useEffect(() => {
     const onScroll = () => {
@@ -18,14 +26,19 @@ export default function HeroSection() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       <div ref={bgRef} className="absolute inset-0 scale-110">
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover"
-          src="/videos/hero.mp4"
-        />
+        {showVideo ? (
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="none"
+            className="absolute inset-0 w-full h-full object-cover"
+            src="/videos/hero.mp4"
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-b from-[#1c1710] via-[#120f0a] to-[#0a0a0a]"/>
+        )}
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/70 via-[#0a0a0a]/50 to-[#0a0a0a]" />
       </div>
 
