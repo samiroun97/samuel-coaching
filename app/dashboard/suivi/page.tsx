@@ -890,7 +890,7 @@ export default function SuiviPage() {
                       {/* Fantôme du dernier check-in — repère pour se replacer dans la même
                           position/distance, pas la photo réellement enregistrée cette fois. */}
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={lastPhotosBySlot[slot.key]} alt="" className="absolute inset-0 w-full h-full object-cover opacity-30"/>
+                      <img src={lastPhotosBySlot[slot.key]} alt={`Photo précédente — ${slot.label} (repère de position)`} className="absolute inset-0 w-full h-full object-cover opacity-30"/>
                       <div className="absolute inset-0 flex items-center justify-center">
                         <Icon icon={Plus} size={14} strokeWidth={1.5} className="text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"/>
                       </div>
@@ -1129,7 +1129,7 @@ export default function SuiviPage() {
                     <div className="flex gap-1.5 p-2 overflow-x-auto snap-x snap-mandatory no-scrollbar">
                       {entryPhotos.map((url, pi) => (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img key={pi} src={url} alt="" onClick={() => setViewingPhoto(url)}
+                        <img key={pi} src={url} alt={`Photo ${pi + 1} du check-in du ${new Date(entry.date.split("T")[0] + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}`} onClick={() => setViewingPhoto(url)}
                           className="h-36 sm:h-44 aspect-[3/4] object-cover rounded-xl border border-[var(--t-border)] cursor-pointer hover:border-[#c9a84c]/40 hover:opacity-90 transition-all shrink-0 snap-start"/>
                       ))}
                     </div>
@@ -1216,7 +1216,7 @@ export default function SuiviPage() {
       {viewingPhoto && (
         <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4" onClick={() => setViewingPhoto(null)}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={viewingPhoto} alt="" className="max-w-full max-h-full object-contain"/>
+          <img src={viewingPhoto} alt="Photo de suivi corporel en plein écran" className="max-w-full max-h-full object-contain"/>
           <button onClick={() => setViewingPhoto(null)} className="absolute top-4 right-4 text-[var(--t-text-60)] hover:text-[var(--t-text)] transition-colors">
             <Icon icon={X} size={22} strokeWidth={1.5}/>
           </button>
