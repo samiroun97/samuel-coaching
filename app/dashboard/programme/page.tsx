@@ -33,7 +33,9 @@ type LoggedWorkout = {
 };
 type PerfRecord = { date: string; calories: number; duration: number; description: string };
 type PerfHistory = Record<string, PerfRecord[]>;
-type CoachSeance = { id: string; titre: string; type_seance: string | null; date_prevue: string | null; semaine: number | null; description: string | null; exercices: string | null; notes_libres: string | null; completed_at: string | null; created_by_client?: boolean };
+// Exporté pour lib/pdf.ts — un seul type source évite qu'un ajout de colonne ici (ex.
+// created_by_client) reste invisible côté export PDF sans qu'on s'en rende compte.
+export type CoachSeance = { id: string; titre: string; type_seance: string | null; date_prevue: string | null; semaine: number | null; description: string | null; exercices: string | null; notes_libres: string | null; completed_at: string | null; created_by_client?: boolean };
 
 // Brouillon de "Créer ma séance" — un seul en cours à la fois (pas de séance multiple en
 // préparation simultanée), donc une clé fixe suffit plutôt qu'un id par brouillon.

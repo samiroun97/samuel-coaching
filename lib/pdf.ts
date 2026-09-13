@@ -1,8 +1,7 @@
 import { jsPDF } from "jspdf";
 import { type ExerciceItem, parseExercices } from "@/lib/exercices";
 import { parseNotesLibres } from "@/lib/notesLibres";
-
-type CoachSeance = { titre: string; type_seance: string | null; date_prevue: string | null; semaine?: number | null; description: string | null; exercices: string | null; notes_libres?: string | null };
+import { type CoachSeance } from "@/app/dashboard/programme/page";
 
 const GOLD = { r: 201, g: 168, b: 76 };
 const GOLD_LIGHT = { r: 226, g: 201, b: 126 };
