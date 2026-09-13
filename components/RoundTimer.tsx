@@ -21,7 +21,7 @@ const READY_SECONDS = 5;
 const PHASE_LABEL: Record<Phase, string> = { config: "", ready: "Prêt", work: "Travail", rest: "Repos", done: "Terminé" };
 const PHASE_COLOR: Record<Phase, string> = { config: "#c9a84c", ready: "#c9a84c", work: "#c9a84c", rest: "#7eb8a0", done: "#c9a84c" };
 
-const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 
 // Petit bip synthétisé (Web Audio, aucun fichier audio à charger) : un ton par transition
 // de phase, plus aigu pour le passage au travail, plus grave pour le repos — pas besoin de
