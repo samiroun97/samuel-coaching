@@ -149,9 +149,17 @@ export default function SeanceBuilder({ items, onChange, catalogue }: {
                   </span>
                 )}
               </div>
+              {/* autoFocus seulement sur un exercice tout juste créé sans nom (via "Créer un
+                  exercice personnalisé" sans recherche tapée) — un nouveau nœud DOM à ce
+                  moment-là (clé i jamais réutilisée par un item déjà nommé), donc le focus
+                  ne revient jamais se voler sur un item existant lors d'un re-render. La
+                  bordure pointillée signale que le champ est tapable : sans elle, "bg-
+                  transparent border-0" se lit comme du texte statique, pas un input — c'est
+                  précisément ce qui a fait croire qu'on ne pouvait pas nommer l'exercice. */}
               <input value={ex.nom} onChange={e => update(i, { nom: e.target.value })}
+                autoFocus={i === items.length - 1 && !ex.nom}
                 placeholder="Nom de l'exercice" style={{ fontFamily: "var(--font-bebas)" }}
-                className="flex-1 min-w-0 bg-transparent border-0 outline-none text-xl tracking-wide text-[var(--t-text)] placeholder-[var(--t-text-20)]"/>
+                className="flex-1 min-w-0 bg-transparent border-0 border-b border-dashed border-[var(--t-text-15)] focus:border-[#c9a84c]/50 outline-none pb-0.5 text-xl tracking-wide text-[var(--t-text)] placeholder-[var(--t-text-20)] transition-colors"/>
               {ex.bodyweight && (
                 <span className="shrink-0 text-[0.55rem] tracking-[0.1em] uppercase text-[#c9a84c] border border-[#c9a84c]/40 bg-[#c9a84c]/10 rounded-full px-1.5 py-0.5">PDC</span>
               )}

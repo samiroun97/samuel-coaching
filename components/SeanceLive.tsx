@@ -560,7 +560,10 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
 
   const addFromCatalogue = async (nom: string) => {
     setShowLibrary(false);
-    await pushExercice(nom);
+    // Contrairement à SeanceBuilder, cette carte n'a pas de champ pour renommer l'exercice
+    // après coup — "" (créer perso sans avoir tapé de recherche) doit donc garder un nom
+    // lisible plutôt que rester vide et injoignable.
+    await pushExercice(nom || "Nouvel exercice");
   };
 
   const onToggle = async (exIdx: number, setIdx: number, target: SetDetail) => {

@@ -54,6 +54,10 @@ function Row({ entry, onAdd, onInfo }: { entry: CatalogueEntry; onAdd: () => voi
 
 export function ExercicePicker({ catalogue, onPick, onClose }: {
   catalogue: CatalogueEntry[];
+  // "" possible pour "Créer un exercice personnalisé" sans avoir tapé de recherche —
+  // volontairement pas de nom par défaut ici : à l'appelant de décider (SeanceBuilder a un
+  // champ de renommage et peut laisser vide + focus ; SeanceLive n'en a pas et doit fournir
+  // un repli).
   onPick: (nom: string) => void;
   onClose: () => void;
 }) {
@@ -117,7 +121,7 @@ export function ExercicePicker({ catalogue, onPick, onClose }: {
           }/>
       ) : (
         <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3 max-w-lg mx-auto w-full flex flex-col gap-1.5">
-          <button type="button" onClick={() => onPick(query.trim() || "Nouvel exercice")}
+          <button type="button" onClick={() => onPick(query.trim())}
             className="flex items-center gap-3 px-3 py-3 mb-1.5 rounded-xl border border-dashed border-[#c9a84c]/40 text-[#c9a84c] hover:bg-[#c9a84c]/[0.06] transition-colors">
             <Icon icon={Plus} size={16} strokeWidth={2.5}/>
             <span className="text-sm font-bold">{query.trim() ? `Créer « ${query.trim()} »` : "Créer un exercice personnalisé"}</span>
