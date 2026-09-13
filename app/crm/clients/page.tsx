@@ -2,6 +2,7 @@
 export const dynamic = "force-dynamic";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
 import { CalendarPicker } from "@/components/CalendarPicker";
@@ -51,10 +52,19 @@ type MealItem = { id: string; plan_id: string; meal_type: string; name: string; 
 const todayStr = () => new Date().toISOString().split("T")[0];
 
 export default function ClientsPage() {
+  const searchParams = useSearchParams();
   const [clients,  setClients]  = useState<Client[]>([]);
   const [search,   setSearch]   = useState("");
   const [filterStage,  setFilterStage]  = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
+
+  // Arrivée depuis un lien "En risque" / "Churné" / une étape du pipeline (aperçu CRM ou
+  // ancienne page /crm/pipeline, jamais construite) : ?stage=en_risque préfiltre direct la
+  // liste plutôt que de renvoyer vers une vue dédiée qui n'existe pas.
+  useEffect(() => {
+    const stage = searchParams.get("stage");
+    if (stage) setFilterStage(stage);
+  }, [searchParams]);
   const [selected, setSelected] = useState<Client | null>(null);
   const [tab,      setTab]      = useState<"apercu"|"profil"|"notes"|"checkin"|"repas"|"journal">("apercu");
   const [loading,  setLoading]  = useState(true);
@@ -273,7 +283,7 @@ export default function ClientsPage() {
                       <span className="text-[0.42rem] text-[var(--t-text-20)]">{new Date(p.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}</span>
                     </div>
                     <button onClick={() => deletePendingSignup(p)} disabled={deletingPendingId === p.id}
-                      title="Supprimer ce compte" className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors disabled:opacity-40 mt-px">
+                      title="Supprimer ce compte" aria-label="Supprimer ce compte" className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors disabled:opacity-40 mt-px">
                       <Icon icon={X} size={11} strokeWidth={2}/>
                     </button>
                   </div>
@@ -319,7 +329,7 @@ export default function ClientsPage() {
           <div className="px-4 md:px-8 pt-5 md:pt-6 pb-4 border-b border-[var(--t-border-soft)] shrink-0">
             <div className="flex items-start justify-between mb-3 gap-2">
               <div className="flex items-start gap-2 min-w-0">
-                <button onClick={() => setSelected(null)} className="md:hidden text-[var(--t-text-40)] hover:text-[var(--t-text-70)] transition-colors mt-1.5 shrink-0">
+                <button onClick={() => setSelected(null)} aria-label="Retour à la liste des clients" className="md:hidden text-[var(--t-text-40)] hover:text-[var(--t-text-70)] transition-colors mt-1.5 shrink-0">
                   <Icon icon={ChevronLeft} size={18}/>
                 </button>
                 <div className="min-w-0">
@@ -339,7 +349,7 @@ export default function ClientsPage() {
                   <Icon icon={Trash2} size={11}/>
                   {deleting ? "Suppression…" : "Supprimer"}
                 </button>
-                <button onClick={() => setSelected(null)} className="text-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">
+                <button onClick={() => setSelected(null)} aria-label="Fermer la fiche client" className="text-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">
                   <Icon icon={X} size={16}/>
                 </button>
               </div>
@@ -534,7 +544,7 @@ export default function ClientsPage() {
                           {new Date(n.created_at).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
                         </p>
                         <button onClick={async () => { await supabase.from("coach_notes").delete().eq("id", n.id); setNotes(prev => prev.filter(x => x.id !== n.id)); }}
-                          className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
+                          aria-label="Supprimer cette note" className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
                           <Icon icon={X} size={11} strokeWidth={2}/>
                         </button>
                       </div>
@@ -597,7 +607,7 @@ export default function ClientsPage() {
                         {ck.notes && <p className="text-xs text-[var(--t-text-35)] leading-relaxed">{ck.notes}</p>}
                       </div>
                       <button onClick={async () => { await supabase.from("weekly_checkins").delete().eq("id", ck.id); setCheckins(prev => prev.filter(x => x.id !== ck.id)); }}
-                        className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors shrink-0">
+                        aria-label="Supprimer ce check-in" className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors shrink-0">
                         <Icon icon={X} size={11} strokeWidth={2}/>
                       </button>
                     </div>
@@ -650,7 +660,7 @@ export default function ClientsPage() {
                           {items.map(item => (
                             <div key={item.id} className="flex items-center justify-between border border-[var(--t-text-8)] bg-[var(--t-surface)] rounded-xl px-4 py-2.5 mb-1">
                               <div><p className="text-xs text-[var(--t-text-60)]">{item.name}</p><div className="flex gap-2 mt-0.5"><span className="text-[0.42rem] text-[var(--t-text-25)]">{item.calories} kcal</span><span className="text-[0.42rem] text-[#c9a84c]/55">P {item.proteines}g</span><span className="text-[0.42rem] text-[#7eb8a0]/55">G {item.glucides}g</span><span className="text-[0.42rem] text-[#e07070]/55">L {item.lipides}g</span></div></div>
-                              <button onClick={async () => { await supabase.from("meal_plan_items").delete().eq("id", item.id); setMealItems(prev => prev.filter(x => x.id !== item.id)); }} className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors"><Icon icon={X} size={11} strokeWidth={2}/></button>
+                              <button onClick={async () => { await supabase.from("meal_plan_items").delete().eq("id", item.id); setMealItems(prev => prev.filter(x => x.id !== item.id)); }} aria-label="Supprimer cet aliment" className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors"><Icon icon={X} size={11} strokeWidth={2}/></button>
                             </div>
                           ))}
                         </div>

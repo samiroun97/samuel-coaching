@@ -133,7 +133,7 @@ export default function CRMDashboard() {
     }
   });
   clients.filter(c => (c.pipeline_stage ?? "actif") === "en_risque").forEach(c => {
-    alerts.push({ type: "risque", label: `${c.prenom} ${c.nom} — en risque`, sub: "Stage : En risque", href: "/crm/pipeline", color: "#e09070", urgency: 6 });
+    alerts.push({ type: "risque", label: `${c.prenom} ${c.nom} — en risque`, sub: "Stage : En risque", href: "/crm/clients?stage=en_risque", color: "#e09070", urgency: 6 });
   });
   sansProgramme.forEach(c => {
     alerts.push({ type: "sans_programme", label: `${c.prenom} ${c.nom} — sans programme`, sub: "Aucune séance envoyée", href: `/crm/programmes?client=${encodeURIComponent(c.email)}`, color: "#c9a84c", urgency: 8 });
@@ -231,8 +231,8 @@ export default function CRMDashboard() {
       {/* KPIs — vue d'ensemble secondaire, sous l'action du jour */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 md:gap-3 mb-8">
         <KPI label="Clients actifs"    value={actifs}       color="#7eb8a0" href="/crm/clients"/>
-        <KPI label="En risque"         value={enRisque}     color="#e09070" href="/crm/pipeline"/>
-        <KPI label="Churné"            value={churne}       color="#e07070" href="/crm/pipeline"/>
+        <KPI label="En risque"         value={enRisque}     color="#e09070" href="/crm/clients?stage=en_risque"/>
+        <KPI label="Churné"            value={churne}       color="#e07070" href="/crm/clients?stage=churne"/>
         <KPI label="Exp. < 14j"        value={in14}         color="#c9a84c" href="/crm/clients"/>
         <KPI label="Non répondus"      value={nonRepondus}  color="#c9a84c" href="/crm/inbox"/>
         <KPI label="Sans programme"    value={sansProgramme.length} color="#c9a84c" href="/crm/programmes"/>
@@ -332,18 +332,18 @@ export default function CRMDashboard() {
       <div className="mt-6 border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-xl p-4 md:p-5">
         <div className="flex items-center justify-between mb-4">
           <p className="text-[0.65rem] tracking-[0.22em] uppercase text-[#c9a84c]">Répartition pipeline</p>
-          <Link href="/crm/pipeline" className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">Vue complète →</Link>
+          <Link href="/crm/clients" className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">Vue complète →</Link>
         </div>
         <div className="flex gap-3 flex-wrap">
           {Object.entries(STAGE_LABEL).map(([key, label]) => {
             const count = clients.filter(c => (c.pipeline_stage ?? "actif") === key).length;
             return (
-              <div key={key} className="flex items-center gap-2 rounded-full border px-3 py-2"
+              <Link key={key} href={`/crm/clients?stage=${key}`} className="flex items-center gap-2 rounded-full border px-3 py-2 hover:bg-[var(--t-glass-bg)] transition-colors"
                 style={{ borderColor: `${STAGE_COLOR[key]}30` }}>
                 <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: STAGE_COLOR[key] }}/>
                 <p className="text-[0.65rem] tracking-wider uppercase" style={{ color: STAGE_COLOR[key] }}>{label}</p>
                 <p style={{ fontFamily: "var(--font-bebas)" }} className="text-lg text-[var(--t-text-70)] tracking-wide leading-none">{count}</p>
-              </div>
+              </Link>
             );
           })}
         </div>

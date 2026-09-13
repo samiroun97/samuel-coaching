@@ -253,7 +253,7 @@ export default function InboxPage() {
           <div className="border-b border-[var(--t-border-soft)] px-4 md:px-8 pt-4 md:pt-5 pb-4 shrink-0">
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-start gap-2 min-w-0">
-                <button onClick={() => setActiveEmail(null)} className="md:hidden text-[var(--t-text-40)] hover:text-[var(--t-text-70)] transition-colors mt-1 shrink-0">
+                <button onClick={() => setActiveEmail(null)} aria-label="Retour à la liste des conversations" className="md:hidden text-[var(--t-text-40)] hover:text-[var(--t-text-70)] transition-colors mt-1 shrink-0">
                   <Icon icon={ChevronLeft} size={18} strokeWidth={1.5}/>
                 </button>
                 <div className="min-w-0">

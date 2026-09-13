@@ -312,7 +312,7 @@ export default function ProgrammesPage() {
           {/* Header */}
           <div className="px-4 md:px-8 pt-5 md:pt-6 pb-4 border-b border-[var(--t-border-soft)] shrink-0">
             <div className="flex items-start gap-2">
-              <button onClick={() => setSelected(null)} className="md:hidden text-[var(--t-text-40)] hover:text-[var(--t-text-70)] transition-colors mt-1.5 shrink-0">
+              <button onClick={() => setSelected(null)} aria-label="Retour à la liste des clients" className="md:hidden text-[var(--t-text-40)] hover:text-[var(--t-text-70)] transition-colors mt-1.5 shrink-0">
                 <Icon icon={ChevronLeft} size={18}/>
               </button>
               <div className="min-w-0">
@@ -443,7 +443,7 @@ export default function ProgrammesPage() {
                             <Icon icon={ChevronDown} size={10}
                               className={`text-[var(--t-text-25)] shrink-0 transition-transform ${open ? "rotate-180" : ""}`}/>
                           </button>
-                          <button onClick={() => deleteSeance(s.id)} disabled={deletingId === s.id} title="Supprimer cette séance"
+                          <button onClick={() => deleteSeance(s.id)} disabled={deletingId === s.id} title="Supprimer cette séance" aria-label="Supprimer cette séance"
                             className="shrink-0 mr-3 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors disabled:opacity-30">
                             <Icon icon={Trash2} size={13} strokeWidth={1.8}/>
                           </button>
@@ -479,7 +479,7 @@ export default function ProgrammesPage() {
                         {library.map(l => (
                           <div key={l.id} className="flex items-center justify-between gap-2 rounded-xl border border-[var(--t-border-soft)] px-2.5 py-1.5">
                             <span className="text-[0.62rem] text-[var(--t-text-50)] truncate">{l.nom}{l.type ? <span className="text-[var(--t-text-25)]"> · {l.type}</span> : null}</span>
-                            <button onClick={() => removeLibItem(l.id)} className="shrink-0 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
+                            <button onClick={() => removeLibItem(l.id)} aria-label={`Retirer ${l.nom} de la bibliothèque`} className="shrink-0 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
                               <Icon icon={X} size={10} strokeWidth={2}/>
                             </button>
                           </div>
@@ -545,7 +545,7 @@ export default function ProgrammesPage() {
                         <p className="text-xs text-[var(--t-text-70)] truncate">{t.nom}</p>
                         <p className="text-[0.55rem] text-[var(--t-text-25)] truncate">{t.objectif || t.type_seance || "—"}</p>
                       </button>
-                      <button onClick={() => removeTemplate(t.id)} className="shrink-0 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
+                      <button onClick={() => removeTemplate(t.id)} aria-label={`Supprimer le modèle ${t.nom}`} className="shrink-0 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
                         <Icon icon={X} size={11} strokeWidth={2}/>
                       </button>
                     </div>
@@ -572,10 +572,10 @@ export default function ProgrammesPage() {
                             className="text-[0.48rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[#c9a84c] transition-colors disabled:opacity-30">
                             Modèle
                           </button>
-                          <button onClick={() => duplicateDraft(i)} title="Dupliquer cette séance" className="text-[var(--t-text-25)] hover:text-[#c9a84c] transition-colors">
+                          <button onClick={() => duplicateDraft(i)} title="Dupliquer cette séance" aria-label="Dupliquer cette séance" className="text-[var(--t-text-25)] hover:text-[#c9a84c] transition-colors">
                             <Icon icon={Copy} size={12} strokeWidth={2}/>
                           </button>
-                          <button onClick={() => setDrafts(prev => prev.filter((_, j) => j !== i))} className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
+                          <button onClick={() => setDrafts(prev => prev.filter((_, j) => j !== i))} aria-label={`Supprimer la séance ${i + 1}`} className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
                             <Icon icon={X} size={12} strokeWidth={2}/>
                           </button>
                         </div>
@@ -599,18 +599,18 @@ export default function ProgrammesPage() {
                           {d.notesLibres.map((n, ni) => (
                             <div key={ni} className="border border-[var(--t-text-8)] bg-[var(--t-bg)] rounded-xl p-2.5 flex items-start gap-2">
                               <div className="shrink-0 flex flex-col border border-[var(--t-border)] rounded-md overflow-hidden mt-0.5">
-                                <button type="button" onClick={() => moveNoteLibre(i, ni, -1)} disabled={ni === 0} title="Monter"
+                                <button type="button" onClick={() => moveNoteLibre(i, ni, -1)} disabled={ni === 0} title="Monter" aria-label="Monter cette note"
                                   className="w-5 h-4 flex items-center justify-center text-[var(--t-text-30)] hover:text-[#c9a84c] hover:bg-[var(--t-track)] transition-colors disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-[var(--t-text-30)] border-b border-[var(--t-border)]">
                                   <Icon icon={ChevronUp} size={10} strokeWidth={2.5}/>
                                 </button>
-                                <button type="button" onClick={() => moveNoteLibre(i, ni, 1)} disabled={ni === d.notesLibres.length - 1} title="Descendre"
+                                <button type="button" onClick={() => moveNoteLibre(i, ni, 1)} disabled={ni === d.notesLibres.length - 1} title="Descendre" aria-label="Descendre cette note"
                                   className="w-5 h-4 flex items-center justify-center text-[var(--t-text-30)] hover:text-[#c9a84c] hover:bg-[var(--t-track)] transition-colors disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-[var(--t-text-30)]">
                                   <Icon icon={ChevronDown} size={10} strokeWidth={2.5}/>
                                 </button>
                               </div>
                               <textarea className={`${inp} resize-none`} rows={2} placeholder="Ex : arriver 10 min en avance pour l'échauffement…"
                                 value={n} onChange={e => setNoteLibre(i, ni, e.target.value)}/>
-                              <button type="button" onClick={() => removeNoteLibre(i, ni)} className="shrink-0 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors mt-2">
+                              <button type="button" onClick={() => removeNoteLibre(i, ni)} aria-label="Supprimer cette note" className="shrink-0 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors mt-2">
                                 <Icon icon={X} size={12} strokeWidth={2}/>
                               </button>
                             </div>
