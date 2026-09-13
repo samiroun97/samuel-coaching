@@ -585,20 +585,27 @@ export default function ProgrammePage() {
         )}
 
         {!createOpen && (
-          <div className="flex flex-col gap-2.5 mt-3">
-            <button onClick={() => setCreateOpen(true)}
-              className="w-full flex items-center justify-center gap-2.5 border-2 border-dashed border-[#c9a84c]/40 text-[#c9a84c] text-base font-bold tracking-[0.08em] uppercase py-4 rounded-xl hover:bg-[#c9a84c]/5 active:scale-[0.99] transition-all">
-              <Icon icon={Plus} size={20} strokeWidth={2.5}/>
-              Créer ma séance
-            </button>
-            <button onClick={() => setShowTimer(true)}
-              className="w-full flex items-center justify-center gap-2 border border-[var(--t-border)] text-[var(--t-text-40)] text-[0.8rem] font-bold tracking-[0.08em] uppercase py-3 rounded-xl hover:border-[#c9a84c]/40 hover:text-[#c9a84c] active:scale-[0.99] transition-all">
-              <Icon icon={Clock} size={17} strokeWidth={2}/>
-              Chronomètre — HIIT / Tabata
-            </button>
-          </div>
+          <button onClick={() => setCreateOpen(true)}
+            className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-base font-bold tracking-[0.08em] uppercase py-4 rounded-xl shadow-[0_6px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_8px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-all mt-3">
+            <Icon icon={Plus} size={20} strokeWidth={2.5}/>
+            Créer ma séance
+          </button>
         )}
 
+      </div>
+
+      {/* ── Minuteur — section à part : un outil de chrono autonome (HIIT/Tabata/circuit),
+          pas une étape du flux séance planifiée/créée juste au-dessus. ── */}
+      <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 mb-6 flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1">Minuteur</p>
+          <p className="text-[0.72rem] text-[var(--t-text-35)] leading-relaxed">Rounds chronométrés pour un circuit, un HIIT ou un Tabata.</p>
+        </div>
+        <button onClick={() => setShowTimer(true)}
+          className="shrink-0 flex items-center justify-center gap-2 border border-[var(--t-border)] text-[var(--t-text-40)] text-[0.75rem] font-bold tracking-[0.08em] uppercase py-3 px-4 rounded-xl hover:border-[#c9a84c]/40 hover:text-[#c9a84c] active:scale-[0.99] transition-all">
+          <Icon icon={Clock} size={17} strokeWidth={2}/>
+          Démarrer
+        </button>
       </div>
 
       {/* ── Formulaire séance ── */}
