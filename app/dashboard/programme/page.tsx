@@ -597,7 +597,7 @@ export default function ProgrammePage() {
       {/* ── Minuteur — section à part : un outil de chrono autonome (HIIT/Tabata/circuit),
           pas une étape du flux séance planifiée/créée juste au-dessus. ── */}
       <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-5 mb-6 flex items-center gap-4">
-        <RichIcon name="chrono" size={56} className="drop-shadow-[0_6px_12px_rgba(0,0,0,0.2)]"/>
+        <RichIcon name="chrono" size={84} className="drop-shadow-[0_10px_18px_rgba(0,0,0,0.35)]"/>
         <div className="min-w-0 flex-1">
           <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1">Minuteur</p>
           <p className="text-[0.72rem] text-[var(--t-text-35)] leading-relaxed">Rounds chronométrés pour un circuit, un HIIT ou un Tabata.</p>
