@@ -43,7 +43,7 @@ function Row({ entry, onAdd, onInfo }: { entry: CatalogueEntry; onAdd: () => voi
         </span>
       </button>
       <button type="button" onClick={onInfo} aria-label="Détails" title="Voir la fiche" className="shrink-0">
-        <InfoIcon size={30}/>
+        <InfoIcon size={20}/>
       </button>
       <button type="button" onClick={onAdd} aria-label="Ajouter" title="Ajouter à ma séance" className="shrink-0 mr-1">
         <AddExerciceIcon size={30}/>
