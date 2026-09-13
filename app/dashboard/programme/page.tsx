@@ -35,6 +35,10 @@ type PerfRecord = { date: string; calories: number; duration: number; descriptio
 type PerfHistory = Record<string, PerfRecord[]>;
 type CoachSeance = { id: string; titre: string; type_seance: string | null; date_prevue: string | null; semaine: number | null; description: string | null; exercices: string | null; notes_libres: string | null; completed_at: string | null; created_by_client?: boolean };
 
+// Brouillon de "Créer ma séance" — un seul en cours à la fois (pas de séance multiple en
+// préparation simultanée), donc une clé fixe suffit plutôt qu'un id par brouillon.
+const CREATE_DRAFT_KEY = "programme_creation_draft_v1";
+
 const DURATIONS = [
   { label: "15 min", min: 15 }, { label: "30 min", min: 30 }, { label: "45 min", min: 45 },
   { label: "1h",     min: 60 }, { label: "1h15",   min: 75 }, { label: "1h30",   min: 90 },
@@ -143,7 +147,37 @@ export default function ProgrammePage() {
     await supabase.from("programme_seances").update({ completed_at: done }).eq("id", s.id);
   };
 
-  const resetCreatePanel = () => { setCreateOpen(false); setCreateTitre(""); setCreateItems([]); };
+  // Restaure un brouillon de création laissé en cours (autre onglet, fermeture accidentelle,
+  // navigation vers Nutrition/Suivi…) plutôt que de le perdre — lu en effet, jamais dans
+  // l'initialiseur des useState, pour ne pas faire diverger le HTML serveur du premier rendu
+  // client (même garde d'hydratation que le reste de la page).
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(CREATE_DRAFT_KEY);
+      if (!raw) return;
+      const draft = JSON.parse(raw) as { titre?: string; items?: ExerciceItem[] };
+      const items = Array.isArray(draft.items) ? draft.items : [];
+      const hasContent = items.some(it => it.nom?.trim()) || !!draft.titre?.trim();
+      if (!hasContent) return;
+      setCreateTitre(draft.titre ?? "");
+      setCreateItems(items);
+      setCreateOpen(true);
+    } catch { /* brouillon corrompu ou absent — on repart d'une création vide */ }
+  }, []);
+
+  // Sauvegarde continue du brouillon tant que le panneau de création est ouvert, pour
+  // survivre à un changement de page ou une fermeture d'onglet en cours de route.
+  useEffect(() => {
+    if (!createOpen) return;
+    try {
+      localStorage.setItem(CREATE_DRAFT_KEY, JSON.stringify({ titre: createTitre, items: createItems }));
+    } catch { /* stockage indisponible (navigation privée pleine…) — création utilisable, juste pas sauvegardée */ }
+  }, [createOpen, createTitre, createItems]);
+
+  const resetCreatePanel = () => {
+    setCreateOpen(false); setCreateTitre(""); setCreateItems([]);
+    try { localStorage.removeItem(CREATE_DRAFT_KEY); } catch { /* ignore */ }
+  };
 
   // Option "Préparer" : enregistre la séance pour la date sélectionnée sans lancer le
   // chrono — elle apparaît dans la liste ci-dessous, démarrable quand le client est prêt.
