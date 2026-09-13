@@ -26,7 +26,11 @@ type LiveSeance = { id: string; titre: string; exercices: string | null };
 // façon dont la série a été exécutée, pas une donnée que le programme doit se souvenir
 // d'une séance à l'autre.
 type DropStep = { poids: string; reps: string };
-type SetLogState = { poids: string; reps: string; rir: string; done: boolean; warmup?: boolean; drops?: DropStep[] };
+// Paliers d'une montée en charge d'échauffement (ex. 60/100/140 kg avant la série de travail) :
+// même forme que DropStep, mais rattachés à une série marquée `warmup` — ni les paliers ni la
+// série qui les porte ne comptent dans le volume/calories/records (cf. les gardes `l.warmup`
+// plus bas, qui excluent la série et ne lisent jamais `warmupSteps`).
+type SetLogState = { poids: string; reps: string; rir: string; done: boolean; warmup?: boolean; drops?: DropStep[]; warmupSteps?: DropStep[] };
 
 const genId = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`);
 
@@ -92,16 +96,18 @@ const SWIPE_MAX = -88;
 // Chaque série est sa propre carte (plutôt qu'une ligne de tableau compressée) : les
 // chiffres poids/reps — l'info la plus regardée pendant l'effort — ont la place d'être
 // gros, et le bouton de validation devient une vraie cible tactile plutôt qu'un point.
-function SetRow({ target, idx, log, prev, isExtra, canRemove, bodyweight, onToggle, onChange, onCopyPrev, onToggleWarmup, onRemove, onAddDrop, onChangeDrop, onRemoveDrop }: {
+function SetRow({ target, idx, log, prev, isExtra, canRemove, bodyweight, onToggle, onChange, onCopyPrev, onToggleWarmup, onRemove, onAddDrop, onChangeDrop, onRemoveDrop, onAddWarmupStep, onChangeWarmupStep, onRemoveWarmupStep }: {
   target: SetDetail; idx: number; log: SetLogState | undefined; prev: { poids: number | null; reps: number | null } | undefined;
   isExtra: boolean; canRemove: boolean; bodyweight?: boolean; onToggle: () => void; onChange: (field: "poids" | "reps" | "rir", val: string) => void;
   onCopyPrev: () => void; onToggleWarmup: () => void; onRemove: () => void;
   onAddDrop: () => void; onChangeDrop: (dropIdx: number, field: "poids" | "reps", val: string) => void; onRemoveDrop: (dropIdx: number) => void;
+  onAddWarmupStep: () => void; onChangeWarmupStep: (stepIdx: number, field: "poids" | "reps", val: string) => void; onRemoveWarmupStep: (stepIdx: number) => void;
 }) {
   const hasPrev = prev && (prev.poids != null || prev.reps != null);
   const done = !!log?.done;
   const warmup = !!log?.warmup;
   const drops = log?.drops ?? [];
+  const warmupSteps = log?.warmupSteps ?? [];
   const [dragX, setDragX] = useState(0);
   const [dragging, setDragging] = useState(false);
   const dragStartX = useRef(0);
@@ -165,6 +171,33 @@ function SetRow({ target, idx, log, prev, isExtra, canRemove, bodyweight, onTogg
             </button>
           </div>
         </div>
+
+        {/* Montée en charge d'échauffement : plusieurs paliers (ex. 60/100/140 kg) avant la
+            série de travail, saisis directement dans cette même carte plutôt que comme des
+            séries à part — n'apparaît que sur une carte marquée "Éch.", puisque aucun palier
+            ne doit compter comme une série effective (même exclusion que la carte elle-même). */}
+        {warmup && (
+          <div className="flex flex-col gap-2.5 pl-3 border-l-2 border-[#e0834a]/30">
+            {warmupSteps.map((w, wi) => (
+              <div key={wi} className="flex items-center gap-2">
+                <span className="text-[0.58rem] tracking-wide uppercase text-[#e0834a] shrink-0 w-14">Palier {wi + 1}</span>
+                <div className="flex-1 grid grid-cols-2 gap-2">
+                  <SetInputCell kind="kg" value={w.poids} placeholder="kg" onChange={v => onChangeWarmupStep(wi, "poids", v)}/>
+                  <SetInputCell kind="reps" value={w.reps} placeholder="reps" onChange={v => onChangeWarmupStep(wi, "reps", v)}/>
+                </div>
+                <button onClick={() => onRemoveWarmupStep(wi)} title="Retirer ce palier"
+                  className="shrink-0 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors p-2 -m-1">
+                  <Icon icon={X} size={12} strokeWidth={2.5}/>
+                </button>
+              </div>
+            ))}
+            <button onClick={onAddWarmupStep}
+              className="self-start flex items-center gap-1.5 text-[0.6rem] tracking-wide uppercase text-[#e0834a]/80 hover:text-[#e0834a] transition-colors py-1">
+              <Icon icon={Plus} size={11} strokeWidth={2.5}/> Palier échauffement
+            </button>
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-2.5">
           <SetInputCell kind="kg" label={bodyweight ? "Kg additionnels" : "Kg"} value={log?.poids ?? ""} placeholder={kgPlaceholder} onChange={v => onChange("poids", v)} accent/>
           <SetInputCell kind="reps" label="Reps" value={log?.reps ?? ""} placeholder={repsPlaceholder} onChange={v => onChange("reps", v)}/>
@@ -200,7 +233,7 @@ function SetRow({ target, idx, log, prev, isExtra, canRemove, bodyweight, onTogg
   );
 }
 
-function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle, onChange, onAddSet, onToggleWarmup, onRemoveExtra, onAddDrop, onChangeDrop, onRemoveDrop }: {
+function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle, onChange, onAddSet, onToggleWarmup, onRemoveExtra, onAddDrop, onChangeDrop, onRemoveDrop, onAddWarmupStep, onChangeWarmupStep, onRemoveWarmupStep }: {
   ex: ExerciceItem; exIdx: number; logs: Record<string, SetLogState>; history: LastPerformance; prBadge: boolean; extra: number;
   onToggle: (exIdx: number, setIdx: number, target: SetDetail) => void;
   onChange: (exIdx: number, setIdx: number, field: "poids" | "reps" | "rir", val: string) => void;
@@ -210,6 +243,9 @@ function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle,
   onAddDrop: (exIdx: number, setIdx: number) => void;
   onChangeDrop: (exIdx: number, setIdx: number, dropIdx: number, field: "poids" | "reps", val: string) => void;
   onRemoveDrop: (exIdx: number, setIdx: number, dropIdx: number) => void;
+  onAddWarmupStep: (exIdx: number, setIdx: number) => void;
+  onChangeWarmupStep: (exIdx: number, setIdx: number, stepIdx: number, field: "poids" | "reps", val: string) => void;
+  onRemoveWarmupStep: (exIdx: number, setIdx: number, stepIdx: number) => void;
 }) {
   const rows = displaySetsFor(ex, extra);
   const doneCount = rows.filter((_, i) => logs[`${exIdx}-${i}`]?.done).length;
@@ -249,7 +285,10 @@ function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle,
                 onRemove={() => onRemoveExtra(exIdx)}
                 onAddDrop={() => onAddDrop(exIdx, setIdx)}
                 onChangeDrop={(dropIdx, field, val) => onChangeDrop(exIdx, setIdx, dropIdx, field, val)}
-                onRemoveDrop={dropIdx => onRemoveDrop(exIdx, setIdx, dropIdx)}/>
+                onRemoveDrop={dropIdx => onRemoveDrop(exIdx, setIdx, dropIdx)}
+                onAddWarmupStep={() => onAddWarmupStep(exIdx, setIdx)}
+                onChangeWarmupStep={(stepIdx, field, val) => onChangeWarmupStep(exIdx, setIdx, stepIdx, field, val)}
+                onRemoveWarmupStep={stepIdx => onRemoveWarmupStep(exIdx, setIdx, stepIdx)}/>
             ))}
           </div>
           <button onClick={() => onAddSet(exIdx)}
@@ -602,6 +641,36 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
     });
   };
 
+  // Paliers d'une montée en charge d'échauffement (ex. 60/100/140 kg avant la série de
+  // travail) — même mécanique que les paliers dégressifs ci-dessus, mais rattachés à une
+  // série marquée `warmup` : ni la série ni ses paliers ne sont lus par les calculs de
+  // volume/calories (cf. les gardes `l.warmup` plus haut), donc aucun palier ne compte comme
+  // une série effective.
+  const addWarmupStep = (exIdx: number, setIdx: number) => {
+    const k = `${exIdx}-${setIdx}`;
+    setLogs(prev => {
+      const base: SetLogState = prev[k] ?? { poids: "", reps: "", rir: "", done: false };
+      return { ...prev, [k]: { ...base, warmupSteps: [...(base.warmupSteps ?? []), { poids: "", reps: "" }] } };
+    });
+  };
+  const changeWarmupStep = (exIdx: number, setIdx: number, stepIdx: number, field: "poids" | "reps", val: string) => {
+    const k = `${exIdx}-${setIdx}`;
+    setLogs(prev => {
+      const base = prev[k];
+      if (!base) return prev;
+      const warmupSteps = (base.warmupSteps ?? []).map((w, i) => (i === stepIdx ? { ...w, [field]: val } : w));
+      return { ...prev, [k]: { ...base, warmupSteps } };
+    });
+  };
+  const removeWarmupStep = (exIdx: number, setIdx: number, stepIdx: number) => {
+    const k = `${exIdx}-${setIdx}`;
+    setLogs(prev => {
+      const base = prev[k];
+      if (!base) return prev;
+      return { ...prev, [k]: { ...base, warmupSteps: (base.warmupSteps ?? []).filter((_, i) => i !== stepIdx) } };
+    });
+  };
+
   // Retire la dernière série "extra" ajoutée sur un exercice (swipe sur sa carte) — seules
   // les séries extra peuvent être retirées : les séries prévues par le coach restent fixes,
   // et ne retirer que la dernière évite d'avoir à décaler les index des séries suivantes.
@@ -909,7 +978,8 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
                       history={historyByNom[exercices[exIdx].nom] ?? {}} prBadge={!!prByNom[exercices[exIdx].nom]}
                       extra={extraSets[exIdx] ?? 0} onToggle={onToggle} onChange={onChange} onAddSet={onAddSet}
                       onToggleWarmup={onToggleWarmup} onRemoveExtra={onRemoveExtra}
-                      onAddDrop={addDrop} onChangeDrop={changeDrop} onRemoveDrop={removeDrop}/>
+                      onAddDrop={addDrop} onChangeDrop={changeDrop} onRemoveDrop={removeDrop}
+                      onAddWarmupStep={addWarmupStep} onChangeWarmupStep={changeWarmupStep} onRemoveWarmupStep={removeWarmupStep}/>
                   ))}
                 </div>
               ) : (
@@ -917,7 +987,8 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
                   history={historyByNom[exercices[run.indices[0]].nom] ?? {}} prBadge={!!prByNom[exercices[run.indices[0]].nom]}
                   extra={extraSets[run.indices[0]] ?? 0} onToggle={onToggle} onChange={onChange} onAddSet={onAddSet}
                   onToggleWarmup={onToggleWarmup} onRemoveExtra={onRemoveExtra}
-                  onAddDrop={addDrop} onChangeDrop={changeDrop} onRemoveDrop={removeDrop}/>
+                  onAddDrop={addDrop} onChangeDrop={changeDrop} onRemoveDrop={removeDrop}
+                  onAddWarmupStep={addWarmupStep} onChangeWarmupStep={changeWarmupStep} onRemoveWarmupStep={removeWarmupStep}/>
               )}
 
               {runIdx < runs.length - 1 ? (
