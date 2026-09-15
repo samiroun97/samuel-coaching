@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useRef, useState, type TouchEvent } from "react";
 import { supabase } from "@/lib/supabase";
-import { type ExerciceItem, type SetDetail, type RepKind, REP_KIND_COLUMN_LABEL, REP_KIND_PLACEHOLDER, REP_KIND_SUFFIX, parseExercices, serializeExercices, emptyExercice, groupExerciceRuns, targetSetsFor, effectiveLoad } from "@/lib/exercices";
+import { type ExerciceItem, type SetDetail, type RepKind, REP_KINDS, REP_KIND_LABELS, REP_KIND_COLUMN_LABEL, REP_KIND_PLACEHOLDER, REP_KIND_SUFFIX, parseExercices, serializeExercices, emptyExercice, groupExerciceRuns, targetSetsFor, effectiveLoad } from "@/lib/exercices";
 import { useWakeLock } from "@/lib/useWakeLock";
 import { getMyCoachEmail } from "@/lib/coach";
 import {
@@ -237,7 +237,7 @@ function SetRow({ target, idx, log, prev, isExtra, canRemove, bodyweight, repKin
   );
 }
 
-function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle, onChange, onAddSet, onToggleWarmup, onRemoveExtra, onAddDrop, onChangeDrop, onRemoveDrop, onAddWarmupStep, onChangeWarmupStep, onRemoveWarmupStep }: {
+function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle, onChange, onAddSet, onToggleWarmup, onRemoveExtra, onAddDrop, onChangeDrop, onRemoveDrop, onAddWarmupStep, onChangeWarmupStep, onRemoveWarmupStep, onChangeRepKind }: {
   ex: ExerciceItem; exIdx: number; logs: Record<string, SetLogState>; history: LastPerformance; prBadge: boolean; extra: number;
   onToggle: (exIdx: number, setIdx: number, target: SetDetail) => void;
   onChange: (exIdx: number, setIdx: number, field: "poids" | "reps" | "rir", val: string) => void;
@@ -250,6 +250,7 @@ function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle,
   onAddWarmupStep: (exIdx: number, setIdx: number) => void;
   onChangeWarmupStep: (exIdx: number, setIdx: number, stepIdx: number, field: "poids" | "reps", val: string) => void;
   onRemoveWarmupStep: (exIdx: number, setIdx: number, stepIdx: number) => void;
+  onChangeRepKind: (exIdx: number, kind: RepKind) => void;
 }) {
   const rows = displaySetsFor(ex, extra);
   const doneCount = rows.filter((_, i) => logs[`${exIdx}-${i}`]?.done).length;
@@ -275,6 +276,26 @@ function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle,
         </div>
         {complete && <span className="text-[#7eb8a0] shrink-0 text-2xl">✓</span>}
       </div>
+
+      {/* Un exercice ajouté en direct (Bibliothèque, Nom libre) n'est jamais passé par
+          SeanceBuilder — sans ce toggle ici aussi, impossible de marquer un fractionné
+          improvisé en "Temps" pendant la séance elle-même. Compact (pas la même taille que
+          dans le builder) : ici c'est un réglage secondaire au milieu du logging, pas le
+          point d'entrée principal de la carte. */}
+      {rows.length > 0 && (
+        <div className="flex gap-1.5 -mt-1">
+          {REP_KINDS.map(k => {
+            const active = ex.repKind === k;
+            return (
+              <button key={k} onClick={() => onChangeRepKind(exIdx, k)}
+                className={`flex-1 text-[0.55rem] tracking-[0.06em] uppercase py-1 rounded-full border transition-colors ${
+                  active ? "border-[#c9a84c]/50 bg-[#c9a84c]/10 text-[#c9a84c]" : "border-[var(--t-border)] text-[var(--t-text-20)] hover:text-[var(--t-text-50)]"}`}>
+                {REP_KIND_LABELS[k]}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {rows.length > 0 ? (
         <>
@@ -576,6 +597,15 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
     // après coup — "" (créer perso sans avoir tapé de recherche) doit donc garder un nom
     // lisible plutôt que rester vide et injoignable.
     await pushExercice(nom || "Nouvel exercice");
+  };
+
+  // Un exercice ajouté en direct (Bibliothèque ou Nom libre) part toujours en "reps" —
+  // SeanceBuilder n'est pas dans la boucle pour les exercices improvisés pendant la séance
+  // elle-même, donc l'unité doit rester modifiable ici aussi, pas seulement en préparation.
+  const changeRepKind = async (exIdx: number, kind: RepKind) => {
+    const next = exercices.map((e, i) => (i === exIdx ? { ...e, repKind: kind } : e));
+    setExercices(next);
+    await supabase.from("programme_seances").update({ exercices: serializeExercices(next) }).eq("id", seance.id);
   };
 
   const onToggle = async (exIdx: number, setIdx: number, target: SetDetail) => {
@@ -996,7 +1026,8 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
                       extra={extraSets[exIdx] ?? 0} onToggle={onToggle} onChange={onChange} onAddSet={onAddSet}
                       onToggleWarmup={onToggleWarmup} onRemoveExtra={onRemoveExtra}
                       onAddDrop={addDrop} onChangeDrop={changeDrop} onRemoveDrop={removeDrop}
-                      onAddWarmupStep={addWarmupStep} onChangeWarmupStep={changeWarmupStep} onRemoveWarmupStep={removeWarmupStep}/>
+                      onAddWarmupStep={addWarmupStep} onChangeWarmupStep={changeWarmupStep} onRemoveWarmupStep={removeWarmupStep}
+                      onChangeRepKind={changeRepKind}/>
                   ))}
                 </div>
               ) : (
@@ -1005,7 +1036,8 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
                   extra={extraSets[run.indices[0]] ?? 0} onToggle={onToggle} onChange={onChange} onAddSet={onAddSet}
                   onToggleWarmup={onToggleWarmup} onRemoveExtra={onRemoveExtra}
                   onAddDrop={addDrop} onChangeDrop={changeDrop} onRemoveDrop={removeDrop}
-                  onAddWarmupStep={addWarmupStep} onChangeWarmupStep={changeWarmupStep} onRemoveWarmupStep={removeWarmupStep}/>
+                  onAddWarmupStep={addWarmupStep} onChangeWarmupStep={changeWarmupStep} onRemoveWarmupStep={removeWarmupStep}
+                  onChangeRepKind={changeRepKind}/>
               )}
 
               {runIdx < runs.length - 1 ? (
