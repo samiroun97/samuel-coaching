@@ -165,6 +165,16 @@ function SetRow({ target, idx, log, prev, isExtra, canRemove, bodyweight, repKin
             )}
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
+            {/* La suppression au swipe (gauche) reste dispo, mais sans aucun indice visuel
+                au repos — le panneau rouge n'apparaît qu'une fois le doigt déjà en train de
+                glisser. Un bouton explicite ici, comme dans SeanceBuilder, pour que "je ne
+                peux pas supprimer cette série" ne se reproduise pas. */}
+            {canRemove && (
+              <button onClick={onRemove} title="Supprimer cette série" aria-label="Supprimer cette série"
+                className="text-[var(--t-text-20)] hover:text-[#e07070] transition-colors p-2 -m-1">
+                <Icon icon={Trash2} size={14} strokeWidth={2}/>
+              </button>
+            )}
             <button onClick={onToggleWarmup} title="Série d'échauffement — exclue du volume et des records"
               className={`text-[0.58rem] tracking-wide uppercase px-2 py-2 rounded-full border transition-colors ${warmup ? "border-[#e0834a]/50 bg-[#e0834a]/10 text-[#e0834a]" : "border-[var(--t-border)] text-[var(--t-text-20)] hover:text-[var(--t-text-50)]"}`}>
               Éch.
