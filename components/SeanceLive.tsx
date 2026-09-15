@@ -187,7 +187,7 @@ function SetRow({ target, idx, log, prev, isExtra, canRemove, bodyweight, repKin
                 <span className="text-[0.58rem] tracking-wide uppercase text-[#e0834a] shrink-0 w-14">Palier {wi + 1}</span>
                 <div className="flex-1 grid grid-cols-2 gap-2">
                   <SetInputCell kind="kg" value={w.poids} placeholder="kg" onChange={v => onChangeWarmupStep(wi, "poids", v)}/>
-                  <SetInputCell kind="reps" value={w.reps} placeholder="reps" onChange={v => onChangeWarmupStep(wi, "reps", v)}/>
+                  <SetInputCell kind={repKind} value={w.reps} placeholder={REP_KIND_PLACEHOLDER[repKind]} onChange={v => onChangeWarmupStep(wi, "reps", v)}/>
                 </div>
                 <button onClick={() => onRemoveWarmupStep(wi)} title="Retirer ce palier"
                   className="shrink-0 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors p-2 -m-1">
@@ -218,7 +218,7 @@ function SetRow({ target, idx, log, prev, isExtra, canRemove, bodyweight, repKin
                 <span className="text-[0.58rem] tracking-wide uppercase text-[#8aa0e0] shrink-0 w-14">Palier {di + 1}</span>
                 <div className="flex-1 grid grid-cols-2 gap-2">
                   <SetInputCell kind="kg" value={d.poids} placeholder="kg" onChange={v => onChangeDrop(di, "poids", v)}/>
-                  <SetInputCell kind="reps" value={d.reps} placeholder="reps" onChange={v => onChangeDrop(di, "reps", v)}/>
+                  <SetInputCell kind={repKind} value={d.reps} placeholder={REP_KIND_PLACEHOLDER[repKind]} onChange={v => onChangeDrop(di, "reps", v)}/>
                 </div>
                 <button onClick={() => onRemoveDrop(di)} title="Retirer ce palier"
                   className="shrink-0 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors p-2 -m-1">
