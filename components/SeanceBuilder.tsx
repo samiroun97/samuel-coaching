@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   type ExerciceItem, type SetDetail, emptyAdvancedExercice, emptySet, REST_PRESETS, REST_LABELS,
+  REP_KINDS, REP_KIND_LABELS, REP_KIND_COLUMN_LABEL, REP_KIND_PLACEHOLDER,
 } from "@/lib/exercices";
 import { type CatalogueEntry, findCatalogueEntry } from "@/lib/exercicesCatalogue";
 import { uploadCustomExerciceImage } from "@/lib/customExerciceImage";
@@ -24,7 +25,7 @@ import { Plus, X, MoreHorizontal, FileText, Camera, Dumbbell, ChevronUp, Chevron
 // nouvelle série diffère de la précédente).
 function prevGhost(ex: ExerciceItem, ri: number, key: "poids" | "reps"): string {
   for (let k = ri; k >= 0; k--) if (ex.sets[k]?.[key]) return ex.sets[k][key];
-  return key === "poids" ? "kg" : "reps";
+  return key === "poids" ? "kg" : REP_KIND_PLACEHOLDER[ex.repKind];
 }
 
 const GRID = "grid grid-cols-[2.25rem_1fr_1fr_2.75rem] gap-2 items-center";
@@ -183,16 +184,34 @@ export default function SeanceBuilder({ items, onChange, catalogue }: {
 
             {uploadError?.index === i && <p className="text-[0.65rem] text-[#e07070] -mt-2">{uploadError.msg}</p>}
 
+            {/* Unité des séries — décision structurante (change le sens de toute la
+                colonne "reps"), donc rangée de boutons toujours visible plutôt que
+                planquée dans le menu ⋯ comme "Poids du corps". Ne vide jamais les
+                valeurs déjà tapées : un "12" reste "12" en base, seule l'étiquette et
+                l'interprétation en aval (volume, records, calories) changent. */}
+            <div className="flex gap-1.5">
+              {REP_KINDS.map(k => {
+                const active = ex.repKind === k;
+                return (
+                  <button key={k} type="button" onClick={() => update(i, { repKind: k })}
+                    className={`flex-1 text-[0.62rem] tracking-[0.06em] uppercase py-1.5 rounded-full border transition-colors ${
+                      active ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-35)] hover:border-[#c9a84c]/40"}`}>
+                    {REP_KIND_LABELS[k]}
+                  </button>
+                );
+              })}
+            </div>
+
             <div className="flex flex-col gap-2">
               <div className={`${GRID} px-0.5 text-[0.55rem] tracking-[0.14em] uppercase text-[var(--t-text-25)]`}>
                 <span className="text-center">Série</span><span className="text-center">Kg</span>
-                <span className="text-center">Reps</span><span/>
+                <span className="text-center">{REP_KIND_COLUMN_LABEL[ex.repKind]}</span><span/>
               </div>
               {ex.sets.map((s, ri) => (
                 <div key={ri} className={GRID}>
                   <span className="text-center text-sm font-bold text-[var(--t-text-35)]" style={{ fontFamily: "var(--font-bebas)" }}>{ri + 1}</span>
                   <SetInputCell kind="kg" value={s.poids} placeholder={prevGhost(ex, ri - 1, "poids")} onChange={v => setRow(i, ri, { poids: v })} accent/>
-                  <SetInputCell kind="reps" value={s.reps} placeholder={prevGhost(ex, ri - 1, "reps")} onChange={v => setRow(i, ri, { reps: v })}/>
+                  <SetInputCell kind={ex.repKind} value={s.reps} placeholder={prevGhost(ex, ri - 1, "reps")} onChange={v => setRow(i, ri, { reps: v })}/>
                   <button type="button" onClick={() => removeRow(i, ri)} aria-label={`Supprimer la série ${ri + 1}`}
                     className="w-11 h-11 mx-auto flex items-center justify-center rounded-lg text-[var(--t-text-15)] hover:text-[#e07070] hover:bg-[#e07070]/10 transition-colors">
                     <Icon icon={X} size={13} strokeWidth={2}/>

@@ -4,6 +4,18 @@ export type SetDetail = { reps: string; poids: string; repos: string; rpe: strin
 
 export const emptySet = (): SetDetail => ({ reps: "", poids: "", repos: "", rpe: "", tempo: "" });
 
+// Unité dans laquelle `repetitions`/`sets[].reps` doit être lu pour CET exercice — un
+// fractionné se compte en secondes ("6×12 sec"), un sprint ou un portage en mètres. Le
+// champ `reps` lui-même n'est jamais renommé (générique jusqu'en base : reps_reel), seule
+// son interprétation change. Par exercice, pas par série : un exercice est fondamentalement
+// une seule modalité, jamais un mélange reps/temps/distance série par série.
+export type RepKind = "reps" | "temps" | "distance";
+export const REP_KINDS: RepKind[] = ["reps", "temps", "distance"];
+export const REP_KIND_LABELS: Record<RepKind, string> = { reps: "Reps", temps: "Temps", distance: "Distance" };
+export const REP_KIND_COLUMN_LABEL: Record<RepKind, string> = { reps: "Reps", temps: "Temps (sec)", distance: "Distance (m)" };
+export const REP_KIND_PLACEHOLDER: Record<RepKind, string> = { reps: "reps", temps: "sec", distance: "m" };
+export const REP_KIND_SUFFIX: Record<RepKind, string> = { reps: "reps", temps: "sec", distance: "m" };
+
 export type ExerciceMode = "simple" | "avance" | "libre";
 
 // Champs du mode "simple" qu'on peut retirer individuellement par exercice
@@ -16,6 +28,10 @@ export type ExerciceItem = {
   // mode "simple"
   series: string; repetitions: string; poids: string; repos: string;
   hiddenFields: SimpleField[];
+  // Unité de `repetitions` (mode simple) et de tous les `sets[].reps` (mode avancé) —
+  // voir RepKind ci-dessus. "reps" par défaut, rétrocompatible avec toute séance
+  // enregistrée avant l'ajout de ce champ (normalizeExercice).
+  repKind: RepKind;
   // mode "avance"
   sets: SetDetail[];
   // mode "libre"
@@ -37,7 +53,7 @@ export type ExerciceItem = {
 
 export const emptyExercice = (): ExerciceItem => ({
   nom: "", type: "", note: "", mode: "simple",
-  series: "", repetitions: "", poids: "", repos: "", hiddenFields: [],
+  series: "", repetitions: "", poids: "", repos: "", hiddenFields: [], repKind: "reps",
   sets: [], texteLibre: "", videoUrl: "", imageUrl: "", groupId: null, groupLabel: "",
   bodyweight: false, bodyweightPct: "100",
 });
@@ -64,6 +80,7 @@ export function normalizeExercice(p: Partial<ExerciceItem>): ExerciceItem {
     mode: p.mode ?? "simple",
     series: p.series ?? "", repetitions: p.repetitions ?? "", poids: p.poids ?? "", repos: p.repos ?? "",
     hiddenFields: Array.isArray(p.hiddenFields) ? p.hiddenFields : [],
+    repKind: p.repKind === "temps" || p.repKind === "distance" ? p.repKind : "reps",
     sets: Array.isArray(p.sets) ? p.sets : [],
     texteLibre: p.texteLibre ?? "",
     videoUrl: p.videoUrl ?? "",
@@ -158,7 +175,7 @@ export function serializeExercices(items: ExerciceItem[]): string | null {
     nom: i.nom.trim(), type: i.type.trim(), note: i.note.trim(),
     mode: i.mode,
     series: i.series.trim(), repetitions: i.repetitions.trim(), poids: i.poids.trim(), repos: i.repos.trim(),
-    hiddenFields: i.hiddenFields,
+    hiddenFields: i.hiddenFields, repKind: i.repKind,
     sets: i.sets.map(s => ({ reps: s.reps.trim(), poids: s.poids.trim(), repos: s.repos.trim(), rpe: s.rpe.trim(), tempo: s.tempo.trim() })),
     texteLibre: i.texteLibre.trim(),
     videoUrl: i.videoUrl.trim(),

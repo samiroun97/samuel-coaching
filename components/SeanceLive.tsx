@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useRef, useState, type TouchEvent } from "react";
 import { supabase } from "@/lib/supabase";
-import { type ExerciceItem, type SetDetail, parseExercices, serializeExercices, emptyExercice, groupExerciceRuns, targetSetsFor, effectiveLoad } from "@/lib/exercices";
+import { type ExerciceItem, type SetDetail, type RepKind, REP_KIND_COLUMN_LABEL, REP_KIND_PLACEHOLDER, REP_KIND_SUFFIX, parseExercices, serializeExercices, emptyExercice, groupExerciceRuns, targetSetsFor, effectiveLoad } from "@/lib/exercices";
 import { useWakeLock } from "@/lib/useWakeLock";
 import { getMyCoachEmail } from "@/lib/coach";
 import {
@@ -41,8 +41,12 @@ const fmtDuration = (s: number) => {
   return h > 0 ? `${h}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}` : `${m}:${String(sec).padStart(2, "0")}`;
 };
 
-const fmtPrev = (p: { poids: number | null; reps: number | null } | undefined) => {
+// Pour une série en temps/distance, "poids×reps" n'a pas de sens ("0×12" pour 12 secondes) —
+// on affiche juste la valeur avec son unité (Préc. 12sec / Préc. 400m) plutôt que de forcer
+// le même gabarit poids×quantité que pour une série de force classique.
+const fmtPrev = (p: { poids: number | null; reps: number | null } | undefined, repKind: RepKind = "reps") => {
   if (!p || (p.poids == null && p.reps == null)) return "—";
+  if (repKind !== "reps") return p.reps != null ? `${p.reps}${REP_KIND_SUFFIX[repKind]}` : (p.poids != null ? `${p.poids}kg` : "—");
   return `${p.poids ?? "–"}×${p.reps ?? "–"}`;
 };
 
@@ -96,9 +100,9 @@ const SWIPE_MAX = -88;
 // Chaque série est sa propre carte (plutôt qu'une ligne de tableau compressée) : les
 // chiffres poids/reps — l'info la plus regardée pendant l'effort — ont la place d'être
 // gros, et le bouton de validation devient une vraie cible tactile plutôt qu'un point.
-function SetRow({ target, idx, log, prev, isExtra, canRemove, bodyweight, onToggle, onChange, onCopyPrev, onToggleWarmup, onRemove, onAddDrop, onChangeDrop, onRemoveDrop, onAddWarmupStep, onChangeWarmupStep, onRemoveWarmupStep }: {
+function SetRow({ target, idx, log, prev, isExtra, canRemove, bodyweight, repKind, onToggle, onChange, onCopyPrev, onToggleWarmup, onRemove, onAddDrop, onChangeDrop, onRemoveDrop, onAddWarmupStep, onChangeWarmupStep, onRemoveWarmupStep }: {
   target: SetDetail; idx: number; log: SetLogState | undefined; prev: { poids: number | null; reps: number | null } | undefined;
-  isExtra: boolean; canRemove: boolean; bodyweight?: boolean; onToggle: () => void; onChange: (field: "poids" | "reps" | "rir", val: string) => void;
+  isExtra: boolean; canRemove: boolean; bodyweight?: boolean; repKind: RepKind; onToggle: () => void; onChange: (field: "poids" | "reps" | "rir", val: string) => void;
   onCopyPrev: () => void; onToggleWarmup: () => void; onRemove: () => void;
   onAddDrop: () => void; onChangeDrop: (dropIdx: number, field: "poids" | "reps", val: string) => void; onRemoveDrop: (dropIdx: number) => void;
   onAddWarmupStep: () => void; onChangeWarmupStep: (stepIdx: number, field: "poids" | "reps", val: string) => void; onRemoveWarmupStep: (stepIdx: number) => void;
@@ -127,7 +131,7 @@ function SetRow({ target, idx, log, prev, isExtra, canRemove, bodyweight, onTogg
   // Placeholder "fantôme" : la valeur de la dernière fois plutôt qu'un simple libellé
   // générique — visible directement dans le champ sans avoir à taper sur le lien "Préc.".
   const kgPlaceholder = prev?.poids != null ? String(prev.poids) : (bodyweight ? "+kg" : target.poids || "kg");
-  const repsPlaceholder = prev?.reps != null ? String(prev.reps) : (target.reps || "reps");
+  const repsPlaceholder = prev?.reps != null ? String(prev.reps) : (target.reps || REP_KIND_PLACEHOLDER[repKind]);
 
   return (
     <div className="relative w-full overflow-hidden rounded-2xl">
@@ -152,10 +156,10 @@ function SetRow({ target, idx, log, prev, isExtra, canRemove, bodyweight, onTogg
             <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${done ? "bg-[#7eb8a0] text-black" : "bg-[var(--t-track)] text-[var(--t-text-40)]"}`}>{idx + 1}</span>
             {hasPrev && (
               done ? (
-                <span className="text-xs text-[var(--t-text-20)] truncate">Préc. {fmtPrev(prev)}</span>
+                <span className="text-xs text-[var(--t-text-20)] truncate">Préc. {fmtPrev(prev, repKind)}</span>
               ) : (
                 <button onClick={onCopyPrev} className="text-xs text-[var(--t-text-30)] truncate hover:text-[#c9a84c] transition-colors underline decoration-dotted decoration-[var(--t-text-15)]">
-                  Préc. {fmtPrev(prev)}
+                  Préc. {fmtPrev(prev, repKind)}
                 </button>
               )
             )}
@@ -200,7 +204,7 @@ function SetRow({ target, idx, log, prev, isExtra, canRemove, bodyweight, onTogg
 
         <div className="grid grid-cols-2 gap-2.5">
           <SetInputCell kind="kg" label={bodyweight ? "Kg additionnels" : "Kg"} value={log?.poids ?? ""} placeholder={kgPlaceholder} onChange={v => onChange("poids", v)} accent/>
-          <SetInputCell kind="reps" label="Reps" value={log?.reps ?? ""} placeholder={repsPlaceholder} onChange={v => onChange("reps", v)}/>
+          <SetInputCell kind={repKind} label={REP_KIND_COLUMN_LABEL[repKind]} value={log?.reps ?? ""} placeholder={repsPlaceholder} onChange={v => onChange("reps", v)}/>
         </div>
         <RirSlider value={log?.rir ?? ""} onChange={v => onChange("rir", v)}/>
 
@@ -276,7 +280,7 @@ function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle,
         <>
           <div className="flex flex-col gap-2.5">
             {rows.map((row, setIdx) => (
-              <SetRow key={setIdx} target={row.target} idx={setIdx} isExtra={row.isExtra} canRemove={row.isExtra && setIdx === rows.length - 1} bodyweight={ex.bodyweight}
+              <SetRow key={setIdx} target={row.target} idx={setIdx} isExtra={row.isExtra} canRemove={row.isExtra && setIdx === rows.length - 1} bodyweight={ex.bodyweight} repKind={ex.repKind}
                 log={logs[`${exIdx}-${setIdx}`]} prev={history[setIdx]}
                 onToggle={() => onToggle(exIdx, setIdx, row.target)}
                 onChange={(field, val) => onChange(exIdx, setIdx, field, val)}
@@ -428,9 +432,12 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
   // réel de la séance, inclure sa charge y fausserait le chiffre.
   // Les paliers d'une série dégressive comptent en plus de la série principale — chacun est
   // un vrai travail supplémentaire (charge × reps), pas une répétition de la même série.
+  // Un exercice en temps/distance (repKind "temps"/"distance") n'est pas exclu comme le
+  // warmup, mais sa "quantité" n'est pas des reps — charge × secondes ou charge × mètres ne
+  // veut rien dire en kg de volume, donc on l'exclut du total au même titre.
   const volume = doneEntries.reduce((s, [k, l]) => {
-    if (l.warmup) return s;
     const exIdx = parseInt(k.split("-")[0], 10);
+    if (l.warmup || exercices[exIdx].repKind !== "reps") return s;
     const load = effectiveLoad(exercices[exIdx], numOr(l.poids), clientBodyweight);
     const dropsVolume = (l.drops ?? []).reduce((ds, d) => {
       const dropLoad = effectiveLoad(exercices[exIdx], numOr(d.poids), clientBodyweight);
@@ -450,12 +457,17 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
   // Une série dégressive enchaîne ses paliers sans repos — même RIR de référence que la
   // série principale (pas de nouvelle échelle d'effort saisie par palier), seuls la charge
   // et les reps changent.
-  const calcSetKcal = (load: number, reps: number, rir: number) => {
+  const calcSetKcal = (load: number, durationSeconds: number, rir: number) => {
     const met = Math.min(8, Math.max(3, 8 - rir));
-    const setDurationHours = (reps * 3) / 3600;
+    const setDurationHours = durationSeconds / 3600;
     const loadFactor = 1 + Math.min(1, load / bodyweightForCalc);
     return met * bodyweightForCalc * setDurationHours * loadFactor;
   };
+  // Une série "temps" donne sa vraie durée directement (la valeur saisie est déjà en
+  // secondes) — plus fiable que l'approximation ~3s/répétition, réservée aux séries en
+  // reps. Une série "distance" n'a pas de durée déductible simplement (pas d'allure
+  // connue) : on garde l'approximation par défaut plutôt que d'ajouter un système d'allure.
+  const setDurationSeconds = (exIdx: number, qty: number) => (exercices[exIdx].repKind === "temps" ? qty : qty * 3);
   const estimatedCalories = Math.round(doneEntries.reduce((sum, [k, l]) => {
     if (l.warmup) return sum;
     const exIdx = parseInt(k.split("-")[0], 10);
@@ -464,9 +476,9 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
     const rir = numOr(l.rir) ?? 2.5;
     const dropsKcal = (l.drops ?? []).reduce((ds, d) => {
       const dropLoad = effectiveLoad(exercices[exIdx], numOr(d.poids), clientBodyweight) ?? 0;
-      return ds + calcSetKcal(dropLoad, numOr(d.reps) ?? 0, rir);
+      return ds + calcSetKcal(dropLoad, setDurationSeconds(exIdx, numOr(d.reps) ?? 0), rir);
     }, 0);
-    return sum + calcSetKcal(load, reps, rir) + dropsKcal;
+    return sum + calcSetKcal(load, setDurationSeconds(exIdx, reps), rir) + dropsKcal;
   }, 0));
 
   const runIsComplete = (run: { indices: number[] }) => run.indices.every(exIdx => {
@@ -590,8 +602,10 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
     // lest additionnel loggué — sans savoir quelle fraction de poids de corps s'y ajoutait à
     // l'époque. Comparer un 1RM "poids de corps inclus" à cet historique brut donnerait de
     // faux records à chaque série ; on désactive donc juste ce badge pour les exos au poids
-    // du corps plutôt que d'afficher un résultat trompeur.
-    if (!ex.bodyweight && !next.warmup) {
+    // du corps plutôt que d'afficher un résultat trompeur. Même chose pour un exercice en
+    // temps/distance : la formule de Berger (1RM à partir de charge × reps) n'a aucun sens
+    // sur une planche tenue 12 secondes ou un sprint de 400m.
+    if (!ex.bodyweight && !next.warmup && ex.repKind === "reps") {
       const est = estimate1RM(poidsNum, repsNum);
       if (isNewRecord(est, bestRef.current[ex.nom] ?? null)) {
         setPrByNom(prev => ({ ...prev, [ex.nom]: true }));
