@@ -613,11 +613,31 @@ export default function ProgrammePage() {
               </div>
             ))}
           </div>
+        ) : doneSelectedDate.length > 0 ? (
+          // Une séance terminée montrait juste "✓" sans aucun moyen d'y retoucher — pour
+          // corriger un poids mal tapé ou une série oubliée il fallait d'abord la marquer
+          // "non terminée" plus bas dans la liste complète avant que "Démarrer" ne
+          // réapparaisse. "Modifier" rouvre directement l'écran de log, qui recharge déjà
+          // les séries loguées telles quelles (aucun changement nécessaire côté SeanceLive).
+          <div className="flex flex-col gap-3">
+            {doneSelectedDate.map(s => (
+              <div key={s.id} className="border border-[#7eb8a0]/20 bg-[var(--t-bg)] rounded-2xl p-4 flex flex-col gap-3">
+                <div className="min-w-0">
+                  <span className="text-[0.6rem] tracking-wider uppercase text-[#7eb8a0] rounded-full border border-[#7eb8a0]/30 px-1.5 py-0.5 inline-block mb-1.5">✓ Terminée</span>
+                  <p className="text-base text-[var(--t-text-70)] font-medium truncate">{s.titre}</p>
+                </div>
+                {hasLoggableSets(parseExercices(s.exercices)) && (
+                  <button onClick={() => setLiveSeance(s)}
+                    className="w-full border-2 border-[var(--t-border)] text-[var(--t-text-40)] text-base font-bold tracking-[0.08em] uppercase py-4 rounded-xl hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors">
+                    Modifier
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
         ) : (
           <div className="border border-dashed border-[var(--t-border)] rounded-xl py-4 text-center">
-            <p className="text-[0.7rem] text-[var(--t-text-30)]">
-              {doneSelectedDate.length > 0 ? "Séance du jour terminée ✓" : "Aucune séance prévue pour ce jour."}
-            </p>
+            <p className="text-[0.7rem] text-[var(--t-text-30)]">Aucune séance prévue pour ce jour.</p>
           </div>
         )}
 
@@ -977,6 +997,12 @@ export default function ProgrammePage() {
                       <button onClick={() => setLiveSeance(s)}
                         className="w-full py-2.5 rounded-xl text-[0.7rem] font-bold tracking-[0.15em] uppercase transition-all duration-200 mb-2 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black shadow-[0_4px_16px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_20px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0">
                         ▶ Démarrer la séance
+                      </button>
+                    )}
+                    {done && hasLoggableSets(parseExercices(s.exercices)) && (
+                      <button onClick={() => setLiveSeance(s)}
+                        className="w-full py-2.5 rounded-xl text-[0.7rem] font-bold tracking-[0.15em] uppercase transition-all duration-200 mb-2 border border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40 hover:text-[#c9a84c]">
+                        Modifier
                       </button>
                     )}
                     <button onClick={() => toggleSeanceDone(s)}
