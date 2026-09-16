@@ -159,17 +159,21 @@ button:focus-visible {
 }
 
 :root[data-theme="light"] {
-  --t-bg: #f7f5f0;
-  --t-bg2: #efece3;
-  --t-surface: #ffffff;
-  --t-surface-2: #f7f5f0;
-  --t-border: rgba(23, 21, 18, 0.12);
-  --t-border-15: rgba(23, 21, 18, 0.16);
-  --t-border-soft: rgba(23, 21, 18, 0.06);
-  --t-glass-bg: rgba(23, 21, 18, 0.04);
-  --t-glass-border: rgba(23, 21, 18, 0.1);
-  --t-track: rgba(23, 21, 18, 0.06);
-  --t-surface-gold: #fbf6e6;
+  /* Retravaillé (refonte parcours Activité) : l'ancien cream (#f7f5f0) + bordures à peine
+     visibles (0.04-0.06) faisaient fondre les cartes les unes dans les autres — surfaces
+     un ton plus chaud/affirmé, bordures perceptibles sans devenir dures, --t-surface-gold
+     plus présent pour porter des sections "hero" SANS bordure (nouvelle hiérarchie). */
+  --t-bg: #f5f0e3;
+  --t-bg2: #ece4d1;
+  --t-surface: #fffdf8;
+  --t-surface-2: #efe7d5;
+  --t-border: rgba(23, 21, 18, 0.14);
+  --t-border-15: rgba(23, 21, 18, 0.18);
+  --t-border-soft: rgba(23, 21, 18, 0.09);
+  --t-glass-bg: rgba(23, 21, 18, 0.055);
+  --t-glass-border: rgba(23, 21, 18, 0.12);
+  --t-track: rgba(23, 21, 18, 0.08);
+  --t-surface-gold: #f6ecc8;
   --t-text: #171512;
   --t-text-80: rgba(23, 21, 18, 0.8);
   --t-text-75: rgba(23, 21, 18, 0.75);

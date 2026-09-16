@@ -20,6 +20,10 @@ const RICH_ICON_SRC = {
   step: "/icons-rich/step.webp",
   notebookPen: "/icons-rich/notebook.webp",
   chrono: "/icons-rich/chrono.webp",
+  // Monogramme de marque — badge autonome (fond sombre déjà intégré au fichier, pas un
+  // simple trait transparent), à réserver aux moments hero (voir public/icons/logo-source.svg
+  // pour l'original, jamais utilisé nulle part avant cette passe).
+  monogram: "/icons-rich/monogram.webp",
 } as const;
 
 export type RichIconName = keyof typeof RICH_ICON_SRC;

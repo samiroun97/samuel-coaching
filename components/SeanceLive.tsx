@@ -16,7 +16,7 @@ import { SetInputCell } from "@/components/SetInputCell";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
 import { TdeeIcon } from "@/components/CalRefToggle";
-import { Check, X, ChevronLeft, ChevronRight, Plus, Trash2, Clock, Layers, Lock, Play, Pause } from "@/lib/solarIcons";
+import { Check, X, ChevronLeft, ChevronRight, Plus, Trash2, Clock, Layers, Lock, Play, Pause, Dumbbell, Star } from "@/lib/solarIcons";
 import { RoundTimer } from "@/components/RoundTimer";
 
 type LiveSeance = { id: string; titre: string; exercices: string | null };
@@ -274,8 +274,16 @@ function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle,
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-lg font-bold text-[var(--t-text)] truncate">{ex.nom}</p>
-            {ex.bodyweight && <span className="text-[0.6rem] text-[var(--t-text-30)] shrink-0" title="Charge = poids de corps + lest">🏋️ PDC</span>}
-            {prBadge && <span className="text-xs text-[#c9a84c] shrink-0 font-medium">🏆 Record</span>}
+            {ex.bodyweight && (
+              <span className="flex items-center gap-1 text-[0.6rem] text-[var(--t-text-30)] shrink-0" title="Charge = poids de corps + lest">
+                <Icon icon={Dumbbell} size={11}/>PDC
+              </span>
+            )}
+            {prBadge && (
+              <span className="flex items-center gap-1 text-xs text-[#c9a84c] shrink-0 font-medium">
+                <Icon icon={Star} size={12}/>Record
+              </span>
+            )}
           </div>
           {rows.length > 0 && (
             <div className="flex items-center gap-2.5 mt-2">
@@ -871,8 +879,15 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
     return (
       <div className="fixed inset-0 bg-[var(--t-bg)] z-50 flex flex-col overflow-y-auto">
         <div className="flex-1 px-6 py-10 max-w-md mx-auto w-full flex flex-col items-center text-center gap-6">
-          <div className="w-16 h-16 rounded-full bg-[#7eb8a0]/10 border border-[#7eb8a0]/30 flex items-center justify-center">
-            <Icon icon={Check} size={28} strokeWidth={2.5} className="text-[#7eb8a0]"/>
+          {/* Le monogramme de marque n'apparaissait nulle part dans l'app — l'écran de fin
+              de séance est le moment le plus chargé émotionnellement du parcours, le bon
+              endroit pour l'ancrer. Le badge vert (succès) reste lisible, juste posé dessus
+              plutôt que porté seul par un simple cercle translucide. */}
+          <div className="relative w-20 h-20 shrink-0">
+            <RichIcon name="monogram" size={80} className="rounded-full drop-shadow-[0_8px_20px_rgba(201,168,76,0.35)]"/>
+            <span className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-[#7eb8a0] border-2 border-[var(--t-bg)] flex items-center justify-center">
+              <Icon icon={Check} size={13} className="text-black"/>
+            </span>
           </div>
           <div>
             <p className="text-[0.7rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-2">Séance terminée</p>
@@ -895,8 +910,11 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
           </div>
 
           {summary.prs > 0 && (
-            <div className="border border-[#c9a84c]/25 bg-[#c9a84c]/5 rounded-xl px-4 py-3 w-full">
-              <p className="text-xs text-[#c9a84c] font-medium">🏆 {summary.prs} nouveau{summary.prs > 1 ? "x" : ""} record{summary.prs > 1 ? "s" : ""} personnel{summary.prs > 1 ? "s" : ""} !</p>
+            <div className="border border-[#c9a84c]/25 bg-[#c9a84c]/5 rounded-xl px-4 py-3 w-full flex items-center gap-2.5">
+              <span className="shrink-0 w-7 h-7 rounded-full bg-[#c9a84c]/15 text-[#c9a84c] flex items-center justify-center">
+                <Icon icon={Star} size={14}/>
+              </span>
+              <p className="text-xs text-[#c9a84c] font-medium text-left">{summary.prs} nouveau{summary.prs > 1 ? "x" : ""} record{summary.prs > 1 ? "s" : ""} personnel{summary.prs > 1 ? "s" : ""} !</p>
             </div>
           )}
 

@@ -504,10 +504,16 @@ export default function ProgrammePage() {
   return (
     <div className="p-4 sm:p-8 max-w-2xl">
 
-      {/* Header */}
-      <div className="mb-6">
-        <p className="text-[0.7rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-2">Rubrique</p>
-        <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl sm:text-5xl text-[var(--t-text)] tracking-wide">ACTIVITÉ</h1>
+      {/* Header — le monogramme de marque (public/icons/logo-source.svg) n'était utilisé
+          nulle part dans l'app avant cette refonte, même pas sur l'écran de login qui
+          recrée le nom en texte brut ; ici c'est le premier repère visuel qu'on voit en
+          entrant sur l'onglet, un vrai ancrage d'identité plutôt qu'un titre seul. */}
+      <div className="mb-6 flex items-center gap-3.5">
+        <RichIcon name="monogram" size={52} className="shrink-0 rounded-full drop-shadow-[0_6px_16px_rgba(201,168,76,0.25)]"/>
+        <div>
+          <p className="text-[0.7rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-1">Rubrique</p>
+          <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl sm:text-5xl text-[var(--t-text)] tracking-wide leading-none">ACTIVITÉ</h1>
+        </div>
       </div>
 
       <DateNav date={selectedDate} onChange={setSelectedDate} statuses={dayStatuses}/>
@@ -555,8 +561,11 @@ export default function ProgrammePage() {
         </div>
       </div>
 
-      {/* ══ ENTRAÎNEMENT — série, séance du jour, création inline ══ */}
-      <div className="border border-[#c9a84c]/25 bg-[var(--t-surface-gold)] rounded-2xl p-5 mb-6">
+      {/* ══ ENTRAÎNEMENT — série, séance du jour, création inline ══
+          Bordure adoucie (refonte) : une section hero se distingue par son fond teinté,
+          pas par un contour dur — la bordure franche reste réservée aux vraies cartes
+          actionnables (une séance, un exercice) pour garder une hiérarchie lisible. */}
+      <div className="border border-[#c9a84c]/10 bg-[var(--t-surface-gold)] rounded-2xl p-5 mb-6">
         <div className="flex items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-2.5">
             <Icon icon={Flame} fill="currentColor" stroke="none"

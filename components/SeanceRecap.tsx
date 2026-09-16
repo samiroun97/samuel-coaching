@@ -10,6 +10,8 @@ import { loadSeanceLogs, computeExercicePRs } from "@/lib/workoutLog";
 import { analyzeSeance, type SeanceAnalysis } from "@/lib/seanceAnalysis";
 import { SeanceBody, type PreviewSeance } from "@/components/SeancePreview";
 import { RichIcon } from "@/components/RichIcon";
+import { Icon } from "@/components/Icon";
+import { Star } from "@/lib/solarIcons";
 
 function fmtSet(poids: number | null, reps: number | null, rir: number | null, repKind: RepKind) {
   const parts: string[] = [];
@@ -125,7 +127,11 @@ export function SeanceRecap({ seance, clientId, clientBodyweight }: {
           const body = entries.map(pe => (
             <div key={pe.exIdx} className="border border-[var(--t-border-soft)] bg-[var(--t-glass-bg)] rounded-xl px-3 py-2.5">
               <p className="text-xs text-[var(--t-text-70)] font-medium flex items-center gap-1.5">
-                {pe.nom}{pe.isPR && <span className="text-[#c9a84c]" title="Nouveau record">🏆</span>}
+                {pe.nom}{pe.isPR && (
+                  <span className="shrink-0 w-4 h-4 rounded-full bg-[#c9a84c]/15 text-[#c9a84c] flex items-center justify-center" title="Nouveau record">
+                    <Icon icon={Star} size={9}/>
+                  </span>
+                )}
               </p>
               <div className="flex flex-col gap-0.5 mt-1.5">
                 {pe.sets.map(s => (
