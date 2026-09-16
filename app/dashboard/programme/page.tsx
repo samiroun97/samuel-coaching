@@ -978,13 +978,18 @@ export default function ProgrammePage() {
                   className="w-full text-left px-5 py-3 flex items-center justify-between gap-2 hover:bg-[var(--t-glass-bg)] transition-colors">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      {done && <span className="text-[0.7rem] text-[#7eb8a0] shrink-0">✓</span>}
+                      {/* Barré se lit comme "annulé", pas "terminé" — un badge plein
+                          (même vert que le reste de l'app pour un état "fait") + titre
+                          lisible normalement plutôt qu'un ✓ minuscule et un texte raturé. */}
+                      {done && (
+                        <span className="shrink-0 w-4 h-4 rounded-full bg-[#7eb8a0] text-black flex items-center justify-center text-[0.55rem] font-bold leading-none">✓</span>
+                      )}
                       {s.created_by_client
                         ? <span className="text-[0.68rem] tracking-wider uppercase text-[var(--t-text-30)] rounded-full border border-[var(--t-border)] px-1.5 py-0.5 shrink-0">Toi</span>
                         : <span className="text-[0.68rem] tracking-wider uppercase text-[#c9a84c] rounded-full border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">Samuel</span>}
                       {s.type_seance && <span className="text-[0.68rem] tracking-wider uppercase text-[#c9a84c] rounded-full border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">{s.type_seance}</span>}
                       {s.semaine && <span className="text-[0.68rem] tracking-wider uppercase text-[var(--t-text-30)] rounded-full border border-[var(--t-border)] px-1.5 py-0.5 shrink-0">Sem. {s.semaine}</span>}
-                      <p className={`text-xs truncate ${done ? "text-[var(--t-text-35)] line-through" : "text-[var(--t-text-70)]"}`}>{s.titre}</p>
+                      <p className={`text-xs truncate ${done ? "text-[var(--t-text-35)]" : "text-[var(--t-text-70)]"}`}>{s.titre}</p>
                     </div>
                     {s.date_prevue && <p className="text-[0.7rem] text-[var(--t-text-25)] mt-0.5">{new Date(s.date_prevue + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</p>}
                   </div>
