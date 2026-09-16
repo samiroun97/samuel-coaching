@@ -112,6 +112,20 @@ export function SeanceRecap({ seance, clientId, clientBodyweight }: {
           </div>
         </div>
 
+        {/* Durée/Calories en second rang plutôt que mêlées aux 3 premières : dérivées
+            (approximées depuis les séries), pas mesurées directement comme le volume/séries
+            comptées au-dessus — même distinction visuelle, pas la même certitude. */}
+        <div className="flex divide-x divide-[#c9a84c]/15 border-t border-[#c9a84c]/15 pt-3.5">
+          <div className="flex-1 text-center">
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-lg text-[var(--t-text-60)] tracking-wide leading-none">{analysis.durationMin != null ? `${analysis.durationMin} min` : "—"}</p>
+            <p className="text-[0.56rem] tracking-[0.1em] uppercase text-[var(--t-text-30)] mt-1">Durée estimée</p>
+          </div>
+          <div className="flex-1 text-center">
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-lg text-[var(--t-text-60)] tracking-wide leading-none">{Math.round(analysis.calories)} kcal</p>
+            <p className="text-[0.56rem] tracking-[0.1em] uppercase text-[var(--t-text-30)] mt-1">Dépense estimée</p>
+          </div>
+        </div>
+
         {(analysis.points.forts.length > 0 || analysis.points.aAmeliorer.length > 0) && (
           <div className="flex flex-col gap-2 border-t border-[#c9a84c]/15 pt-3.5">
             {analysis.points.forts.map((p, i) => <PointRow key={`f${i}`} kind="fort" text={p}/>)}

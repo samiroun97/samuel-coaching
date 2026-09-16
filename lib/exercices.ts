@@ -196,3 +196,17 @@ export function effectiveLoad(ex: Pick<ExerciceItem, "bodyweight" | "bodyweightP
   const pct = parseFloat(ex.bodyweightPct) || 100;
   return (clientBodyweight * pct) / 100 + (loggedPoids ?? 0);
 }
+
+// Estimation calorique d'une série à partir de la charge réelle, sa durée et le RIR —
+// partagée entre l'estimation live (SeanceLive), le bilan rétroactif (lib/seanceAnalysis.ts)
+// et l'estimateur de dépense (page Activité) pour ne jamais diverger d'une formule à l'autre.
+// MET dérivé du RIR (plus proche de l'échec = plus soutenu), bonus d'effort si la charge est
+// lourde par rapport au poids de corps. Pas un calcul physiologique exact (impossible sans
+// VO2), juste un chiffre qui réagit vraiment à ce qui a été réellement soulevé — plus pointu
+// que l'estimation IA générique (nom d'activité + durée) réservée aux activités non loguées.
+export function estimateSetKcal(loadKg: number, durationSeconds: number, rir: number, bodyweightKg: number): number {
+  const met = Math.min(8, Math.max(3, 8 - rir));
+  const durationHours = durationSeconds / 3600;
+  const loadFactor = 1 + Math.min(1, loadKg / bodyweightKg);
+  return met * bodyweightKg * durationHours * loadFactor;
+}

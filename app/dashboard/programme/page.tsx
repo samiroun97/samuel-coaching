@@ -13,6 +13,8 @@ import { useSelectedDate, todayStr } from "@/lib/useSelectedDate";
 import { syncSteps } from "@/lib/steps";
 import { parseExercices, hasLoggableSets, serializeExercices, type ExerciceItem } from "@/lib/exercices";
 import { loadCatalogue, type CatalogueEntry } from "@/lib/exercicesCatalogue";
+import { loadSeanceLogs } from "@/lib/workoutLog";
+import { analyzeSeance, type SeanceAnalysis } from "@/lib/seanceAnalysis";
 import SeanceBuilder from "@/components/SeanceBuilder";
 import { TdeeIcon } from "@/components/CalRefToggle";
 import { loadDayStatuses, type DayStatus } from "@/lib/consistency";
@@ -246,6 +248,13 @@ export default function ProgrammePage() {
   const [calResult,   setCalResult]   = useState<{ calories_brulees: number; note: string } | null>(null);
   const [calError,    setCalError]    = useState("");
   const [intensity,   setIntensity]   = useState<IntensityKey>("haute");
+  // Alternative à l'estimation IA générique (nom d'activité + durée) pour une séance déjà
+  // structurée et loguée via "Créer ma séance" : même formule pointue (charge réelle × durée
+  // × RIR) que le bilan de séance, réutilisée telle quelle plutôt que redevinée au pif.
+  const [estimatorTab, setEstimatorTab] = useState<"libre" | "seance">("libre");
+  const [seanceLogAnalysis, setSeanceLogAnalysis] = useState<SeanceAnalysis | null>(null);
+  const [seanceLogLoading, setSeanceLogLoading] = useState(false);
+  const [selectedDoneSeanceId, setSelectedDoneSeanceId] = useState<string | null>(null);
   const recognitionRef = useRef<{ start(): void; stop(): void } | null>(null);
   const userEmailRef = useRef("");
   const coachEmailRef = useRef<string | null>(null);
@@ -501,6 +510,55 @@ export default function ProgrammePage() {
   // point plutôt que de laisser l'utilisateur découvrir une séance inutilisable après coup.
   const createHasSets       = createItems.some(it => it.nom.trim() && it.sets.some(s => s.reps || s.poids));
 
+  // Séances terminées ce jour-là qui ont réellement quelque chose à loguer — une séance
+  // "marquée terminée sans logger" (aucune série chiffrée) n'a rien de plus précis à offrir
+  // que l'estimation libre, donc exclue de l'onglet "Séance loguée".
+  const doneLoggableSelectedDate = doneSelectedDate.filter(s => hasLoggableSets(parseExercices(s.exercices)));
+
+  useEffect(() => {
+    if (estimatorTab !== "seance") return;
+    if (!doneLoggableSelectedDate.length) { setSelectedDoneSeanceId(null); return; }
+    if (!doneLoggableSelectedDate.some(s => s.id === selectedDoneSeanceId)) {
+      setSelectedDoneSeanceId(doneLoggableSelectedDate[0].id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [estimatorTab, selectedDate, doneLoggableSelectedDate.length]);
+
+  useEffect(() => {
+    if (estimatorTab !== "seance" || !selectedDoneSeanceId) { setSeanceLogAnalysis(null); return; }
+    let cancelled = false;
+    setSeanceLogLoading(true);
+    (async () => {
+      const logs = await loadSeanceLogs(selectedDoneSeanceId);
+      if (cancelled) return;
+      const target = doneLoggableSelectedDate.find(s => s.id === selectedDoneSeanceId);
+      if (!logs.length || !target) { setSeanceLogAnalysis(null); setSeanceLogLoading(false); return; }
+      setSeanceLogAnalysis(analyzeSeance(parseExercices(target.exercices), logs, profile?.poids ?? null, {}));
+      setSeanceLogLoading(false);
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [estimatorTab, selectedDoneSeanceId]);
+
+  // Log cette estimation précise dans "ma journée", au même titre qu'une activité libre —
+  // même stockage local (programme_logs) que addWorkout, pour que l'EAT du jour compte les
+  // deux sources indifféremment.
+  const addSeanceLogWorkout = () => {
+    const seance = doneLoggableSelectedDate.find(s => s.id === selectedDoneSeanceId);
+    if (!seance || !seanceLogAnalysis) return;
+    const entry: LoggedWorkout = {
+      id: Date.now().toString(),
+      date: new Date(selectedDate + "T12:00:00").toISOString(),
+      activity: seance.titre, duration_minutes: seanceLogAnalysis.durationMin ?? 0,
+      description: `Volume ${Math.round(seanceLogAnalysis.volume).toLocaleString("fr-FR")} kg`,
+      calories_burned: Math.round(seanceLogAnalysis.calories),
+      note: "Calculé depuis la séance loguée",
+    };
+    const next = [entry, ...workouts].slice(0, 50);
+    setWorkouts(next);
+    localStorage.setItem("programme_logs", JSON.stringify(next));
+  };
+
   return (
     <div className="p-4 sm:p-8 max-w-2xl">
 
@@ -688,6 +746,63 @@ export default function ProgrammePage() {
       <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-6 mb-6 flex flex-col gap-5">
         <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Estimer la dépense de mon entraînement</p>
 
+        {/* "Séance loguée" réutilise la même formule pointue (charge réelle × durée × RIR)
+            que le bilan de séance au lieu de redemander à l'IA de deviner à partir d'un nom
+            d'activité — seulement pertinent s'il existe une séance loguée ce jour-là, sinon
+            l'estimation libre reste la seule option sensée (activité non structurée). */}
+        <div className="flex gap-1.5 -mt-1">
+          <button type="button" onClick={() => setEstimatorTab("libre")}
+            className={`flex-1 text-[0.62rem] tracking-[0.06em] uppercase py-2 rounded-full border transition-colors ${
+              estimatorTab === "libre" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-35)] hover:border-[#c9a84c]/40"}`}>
+            Activité libre
+          </button>
+          <button type="button" onClick={() => setEstimatorTab("seance")}
+            className={`flex-1 text-[0.62rem] tracking-[0.06em] uppercase py-2 rounded-full border transition-colors ${
+              estimatorTab === "seance" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-35)] hover:border-[#c9a84c]/40"}`}>
+            Séance loguée
+          </button>
+        </div>
+
+        {estimatorTab === "seance" ? (
+          doneLoggableSelectedDate.length === 0 ? (
+            <p className="text-xs text-[var(--t-text-30)] text-center py-4">Aucune séance loguée ce jour — utilise « Activité libre », ou reviens ici une fois ta séance terminée.</p>
+          ) : seanceLogLoading ? (
+            <p className="text-xs text-[var(--t-text-30)] text-center py-4">Calcul en cours…</p>
+          ) : !seanceLogAnalysis ? (
+            <p className="text-xs text-[var(--t-text-30)] text-center py-4">Cette séance n&apos;a aucune série loguée à estimer.</p>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {doneLoggableSelectedDate.length > 1 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {doneLoggableSelectedDate.map(s => (
+                    <button key={s.id} type="button" onClick={() => setSelectedDoneSeanceId(s.id)}
+                      className={chip(selectedDoneSeanceId === s.id)}>
+                      {s.titre}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <div className="border border-[#c9a84c]/20 bg-[#c9a84c]/5 rounded-xl p-4 flex items-center justify-between">
+                <div className="flex-1 min-w-0 mr-4">
+                  <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[#c9a84c]">Calculé depuis tes séries</p>
+                  <p className="text-[0.7rem] text-[var(--t-text-40)] italic">
+                    Volume {Math.round(seanceLogAnalysis.volume).toLocaleString("fr-FR")} kg
+                    {seanceLogAnalysis.durationMin != null ? ` · ${seanceLogAnalysis.durationMin} min` : ""}
+                  </p>
+                </div>
+                <div className="text-right shrink-0">
+                  <p style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-[var(--t-text)] tracking-wide leading-none">{Math.round(seanceLogAnalysis.calories)}</p>
+                  <p className="text-[0.62rem] tracking-[0.15em] uppercase text-[var(--t-text-30)]">kcal</p>
+                </div>
+              </div>
+              <button onClick={addSeanceLogWorkout}
+                className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
+                Ajouter à ma journée →
+              </button>
+            </div>
+          )
+        ) : (
+        <>
         <div>
           <label className="text-[0.7rem] tracking-[0.2em] uppercase text-[var(--t-text-40)] block mb-1.5">Activité</label>
           <input className={inputCls} placeholder="Ex : musculation, boxe, natation, vélo…"
@@ -820,6 +935,8 @@ export default function ProgrammePage() {
               ? <><div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"/>Estimation en cours…</>
               : <><TdeeIcon size={14}/>Estimer les calories brûlées</>}
           </button>
+        )}
+        </>
         )}
       </div>
 

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useRef, useState, type TouchEvent } from "react";
 import { supabase } from "@/lib/supabase";
-import { type ExerciceItem, type SetDetail, type RepKind, REP_KINDS, REP_KIND_LABELS, REP_KIND_COLUMN_LABEL, REP_KIND_PLACEHOLDER, REP_KIND_SUFFIX, parseExercices, serializeExercices, emptyExercice, groupExerciceRuns, targetSetsFor, effectiveLoad } from "@/lib/exercices";
+import { type ExerciceItem, type SetDetail, type RepKind, REP_KINDS, REP_KIND_LABELS, REP_KIND_COLUMN_LABEL, REP_KIND_PLACEHOLDER, REP_KIND_SUFFIX, parseExercices, serializeExercices, emptyExercice, groupExerciceRuns, targetSetsFor, effectiveLoad, estimateSetKcal } from "@/lib/exercices";
 import { useWakeLock } from "@/lib/useWakeLock";
 import { getMyCoachEmail } from "@/lib/coach";
 import {
@@ -520,12 +520,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
   // Une série dégressive enchaîne ses paliers sans repos — même RIR de référence que la
   // série principale (pas de nouvelle échelle d'effort saisie par palier), seuls la charge
   // et les reps changent.
-  const calcSetKcal = (load: number, durationSeconds: number, rir: number) => {
-    const met = Math.min(8, Math.max(3, 8 - rir));
-    const setDurationHours = durationSeconds / 3600;
-    const loadFactor = 1 + Math.min(1, load / bodyweightForCalc);
-    return met * bodyweightForCalc * setDurationHours * loadFactor;
-  };
+  const calcSetKcal = (load: number, durationSeconds: number, rir: number) => estimateSetKcal(load, durationSeconds, rir, bodyweightForCalc);
   // Une série "temps" donne sa vraie durée directement (la valeur saisie est déjà en
   // secondes) — plus fiable que l'approximation ~3s/répétition, réservée aux séries en
   // reps. Une série "distance" n'a pas de durée déductible simplement (pas d'allure

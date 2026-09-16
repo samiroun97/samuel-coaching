@@ -1,8 +1,9 @@
-import { type ExerciceItem, type RepKind, effectiveLoad, targetSetsFor } from "@/lib/exercices";
+import { type ExerciceItem, type RepKind, effectiveLoad, targetSetsFor, estimateSetKcal } from "@/lib/exercices";
 import { type SeanceLogRow } from "@/lib/workoutLog";
 
 export type SeanceAnalysis = {
   volume: number;
+  calories: number;
   totalPlanned: number;
   totalLogged: number;
   avgRir: number | null;
@@ -48,6 +49,21 @@ export function analyzeSeance(
     ? Math.round((Math.max(...timestamps) - Math.min(...timestamps)) / 60000)
     : null;
 
+  // Même formule que l'estimation live (SeanceLive) — durée approximée à ~3s/répétition en
+  // reps, durée réelle pour une série "temps". Comme le volume ci-dessus, ne peut pas exclure
+  // les séries d'échauffement (jamais persistées dans seance_logs) : légère surestimation
+  // possible pour une séance avec échauffement marqué, limite déjà connue et acceptée.
+  const bodyweightForCalc = clientBodyweight ?? 75;
+  const calories = logs.reduce((sum, l) => {
+    const ex = exercices[l.exercice_index];
+    if (!ex) return sum;
+    const load = effectiveLoad(ex, l.poids_reel, clientBodyweight) ?? 0;
+    const rir = l.rir_reel ?? 2.5;
+    const qty = l.reps_reel ?? 0;
+    const durationSeconds = ex.repKind === "temps" ? qty : qty * 3;
+    return sum + estimateSetKcal(load, durationSeconds, rir, bodyweightForCalc);
+  }, 0);
+
   const byExercice = new Map<number, SeanceLogRow[]>();
   for (const l of logs) {
     if (!exercices[l.exercice_index]) continue; // ligne orpheline (exercice depuis supprimé) — ignorée plutôt que de planter
@@ -88,7 +104,7 @@ export function analyzeSeance(
   if (forts.length === 0 && aAmeliorer.length === 0) forts.push("Séance loguée.");
 
   return {
-    volume, totalPlanned, totalLogged, avgRir, durationMin, perExercice,
+    volume, calories, totalPlanned, totalLogged, avgRir, durationMin, perExercice,
     points: { forts: forts.slice(0, 2), aAmeliorer: aAmeliorer.slice(0, 2) },
   };
 }
