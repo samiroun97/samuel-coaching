@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
 import { getMyCoachEmail, getMyCoachBusinessName } from "@/lib/coach";
 import { SeanceBody } from "@/components/SeancePreview";
+import { SeanceRecap } from "@/components/SeanceRecap";
 import { SeanceLive } from "@/components/SeanceLive";
 import { RoundTimer } from "@/components/RoundTimer";
 import { DateNav } from "@/components/DateNav";
@@ -992,7 +993,13 @@ export default function ProgrammePage() {
                 </button>
                 {open && (
                   <div className="px-5 pb-4">
-                    <SeanceBody s={s} />
+                    {done ? (
+                      <div className="mb-4">
+                        <SeanceRecap seance={s} clientId={userId ?? ""} clientBodyweight={profile?.poids ?? null}/>
+                      </div>
+                    ) : (
+                      <SeanceBody s={s} />
+                    )}
                     {!done && hasLoggableSets(parseExercices(s.exercices)) && (
                       <button onClick={() => setLiveSeance(s)}
                         className="w-full py-2.5 rounded-xl text-[0.7rem] font-bold tracking-[0.15em] uppercase transition-all duration-200 mb-2 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black shadow-[0_4px_16px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_20px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0">
