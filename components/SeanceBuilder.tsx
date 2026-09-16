@@ -47,9 +47,9 @@ function MenuItem({ icon, danger, disabled, onClick, children }: {
 // qu'un bottom-sheet (aucune primitive de ce type dans le repo) ou un expand inline (qui
 // décalerait la liste sous le pouce en cours d'interaction) — sort les actions secondaires
 // de la zone de frappe, pour qu'un tap raté n'ait jamais de conséquence destructive.
-function OverflowMenu({ ex, onToggleNote, onUploadPhoto, onToggleBodyweight, onMoveUp, onMoveDown, onDelete, onClose }: {
+function OverflowMenu({ ex, onToggleNote, onUploadPhoto, onToggleBodyweight, onMoveUp, onMoveDown, onClose }: {
   ex: ExerciceItem; onToggleNote: () => void; onUploadPhoto: () => void; onToggleBodyweight: () => void;
-  onMoveUp?: () => void; onMoveDown?: () => void; onDelete: () => void; onClose: () => void;
+  onMoveUp?: () => void; onMoveDown?: () => void; onClose: () => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -70,8 +70,6 @@ function OverflowMenu({ ex, onToggleNote, onUploadPhoto, onToggleBodyweight, onM
       <div className="h-px bg-[var(--t-border-soft)] my-1"/>
       <MenuItem icon={ChevronUp} disabled={!onMoveUp} onClick={run(() => onMoveUp?.())}>Monter</MenuItem>
       <MenuItem icon={ChevronDown} disabled={!onMoveDown} onClick={run(() => onMoveDown?.())}>Descendre</MenuItem>
-      <div className="h-px bg-[var(--t-border-soft)] my-1"/>
-      <MenuItem icon={Trash2} danger onClick={run(onDelete)}>Supprimer l&apos;exercice</MenuItem>
     </div>
   );
 }
@@ -88,7 +86,14 @@ export default function SeanceBuilder({ items, onChange, catalogue }: {
   const pendingUploadIndex = useRef<number | null>(null);
 
   const update = (i: number, patch: Partial<ExerciceItem>) => onChange(items.map((it, j) => (j === i ? { ...it, ...patch } : it)));
-  const remove = (i: number) => onChange(items.filter((_, j) => j !== i));
+  // Confirmation seulement ici (pas sur removeRow, une série se rajoute en un tap) —
+  // supprimer tout un exercice peut effacer plusieurs séries déjà remplies d'un coup, et
+  // le bouton est maintenant visible en permanence sur la carte plutôt que planqué dans
+  // le menu ⋯, donc plus facile à toucher par erreur.
+  const remove = (i: number) => {
+    if (!window.confirm(`Supprimer « ${items[i].nom || "cet exercice"} » et toutes ses séries ?`)) return;
+    onChange(items.filter((_, j) => j !== i));
+  };
   const move = (i: number, dir: -1 | 1) => {
     const target = i + dir;
     if (target < 0 || target >= items.length) return;
@@ -164,6 +169,13 @@ export default function SeanceBuilder({ items, onChange, catalogue }: {
               {ex.bodyweight && (
                 <span className="shrink-0 text-[0.55rem] tracking-[0.1em] uppercase text-[#c9a84c] border border-[#c9a84c]/40 bg-[#c9a84c]/10 rounded-full px-1.5 py-0.5">PDC</span>
               )}
+              {/* Supprimer l'exercice était uniquement dans le menu ⋯ — invisible sans
+                  l'ouvrir. Icône directe ici, comme la corbeille ajoutée en séance live pour
+                  le même problème sur les séries extra. */}
+              <button type="button" onClick={() => remove(i)} aria-label={`Supprimer ${ex.nom || "cet exercice"}`} title="Supprimer l'exercice"
+                className="shrink-0 w-9 h-9 flex items-center justify-center rounded-full text-[var(--t-text-20)] hover:text-[#e07070] hover:bg-[#e07070]/10 transition-colors">
+                <Icon icon={Trash2} size={16} strokeWidth={1.8}/>
+              </button>
               <div className="relative shrink-0">
                 <button type="button" onClick={() => setMenuFor(v => (v === i ? null : i))}
                   className="w-9 h-9 -mr-1 flex items-center justify-center rounded-full text-[var(--t-text-30)] hover:text-[var(--t-text)] hover:bg-[var(--t-track)] transition-colors">
@@ -176,7 +188,6 @@ export default function SeanceBuilder({ items, onChange, catalogue }: {
                     onToggleBodyweight={() => toggleBodyweight(i)}
                     onMoveUp={i > 0 ? () => move(i, -1) : undefined}
                     onMoveDown={i < items.length - 1 ? () => move(i, 1) : undefined}
-                    onDelete={() => remove(i)}
                     onClose={() => setMenuFor(null)}/>
                 )}
               </div>
@@ -224,17 +235,20 @@ export default function SeanceBuilder({ items, onChange, catalogue }: {
               </button>
             </div>
 
-            <div className="flex flex-wrap gap-1.5">
-              {REST_PRESETS.map(v => {
-                const active = ex.repos === v;
-                return (
-                  <button key={v || "off"} type="button" onClick={() => setRest(i, v)}
-                    className={`text-[0.62rem] tracking-[0.06em] uppercase px-3 py-1.5 rounded-full border transition-colors ${
-                      active ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-35)] hover:border-[#c9a84c]/40"}`}>
-                    {REST_LABELS[v]}
-                  </button>
-                );
-              })}
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[0.55rem] tracking-[0.14em] uppercase text-[var(--t-text-25)] px-0.5">Repos entre séries</span>
+              <div className="flex flex-wrap gap-1.5">
+                {REST_PRESETS.map(v => {
+                  const active = ex.repos === v;
+                  return (
+                    <button key={v || "off"} type="button" onClick={() => setRest(i, v)}
+                      className={`text-[0.62rem] tracking-[0.06em] uppercase px-3 py-1.5 rounded-full border transition-colors ${
+                        active ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-35)] hover:border-[#c9a84c]/40"}`}>
+                      {REST_LABELS[v]}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {noteFor.has(i) && (

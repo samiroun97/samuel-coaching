@@ -16,7 +16,7 @@ import { SetInputCell } from "@/components/SetInputCell";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
 import { TdeeIcon } from "@/components/CalRefToggle";
-import { Check, X, ChevronLeft, ChevronRight, Plus, Trash2, Clock, Layers } from "@/lib/solarIcons";
+import { Check, X, ChevronLeft, ChevronRight, Plus, Trash2, Clock, Layers, Lock } from "@/lib/solarIcons";
 import { RoundTimer } from "@/components/RoundTimer";
 
 type LiveSeance = { id: string; titre: string; exercices: string | null };
@@ -262,6 +262,7 @@ function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle,
   onRemoveWarmupStep: (exIdx: number, setIdx: number, stepIdx: number) => void;
   onChangeRepKind: (exIdx: number, kind: RepKind) => void;
 }) {
+  const [unlockedRepKind, setUnlockedRepKind] = useState(false);
   const rows = displaySetsFor(ex, extra);
   const doneCount = rows.filter((_, i) => logs[`${exIdx}-${i}`]?.done).length;
   const pct = rows.length ? Math.round((doneCount / rows.length) * 100) : 0;
@@ -291,20 +292,32 @@ function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle,
           SeanceBuilder — sans ce toggle ici aussi, impossible de marquer un fractionné
           improvisé en "Temps" pendant la séance elle-même. Compact (pas la même taille que
           dans le builder) : ici c'est un réglage secondaire au milieu du logging, pas le
-          point d'entrée principal de la carte. */}
+          point d'entrée principal de la carte.
+          Verrouillé dès qu'une série est loguée : "10" veut dire une chose différente selon
+          l'unité (10 reps ≠ 10 sec ≠ 10 m), donc changer l'unité après coup réinterprète
+          silencieusement des séries déjà faites sans qu'aucune nouvelle saisie ne le signale
+          — remonté par le user ("tu switch et ça retouche tout"). Un tap sur le cadenas
+          déverrouille pour de bon (après confirmation), pas de retour en arrière automatique. */}
       {rows.length > 0 && (
-        <div className="flex gap-1.5 -mt-1">
-          {REP_KINDS.map(k => {
-            const active = ex.repKind === k;
-            return (
-              <button key={k} onClick={() => onChangeRepKind(exIdx, k)}
-                className={`flex-1 text-[0.55rem] tracking-[0.06em] uppercase py-1 rounded-full border transition-colors ${
-                  active ? "border-[#c9a84c]/50 bg-[#c9a84c]/10 text-[#c9a84c]" : "border-[var(--t-border)] text-[var(--t-text-20)] hover:text-[var(--t-text-50)]"}`}>
-                {REP_KIND_LABELS[k]}
-              </button>
-            );
-          })}
-        </div>
+        doneCount > 0 && !unlockedRepKind ? (
+          <button onClick={() => { if (window.confirm(`"${ex.nom}" a déjà des séries loguées en ${REP_KIND_LABELS[ex.repKind].toLowerCase()}. Changer l'unité ne les convertit pas — un "10" resterait "10" mais ne voudrait plus dire la même chose. Déverrouiller quand même ?`)) setUnlockedRepKind(true); }}
+            className="self-start flex items-center gap-1.5 -mt-1 text-[0.55rem] tracking-[0.06em] uppercase text-[var(--t-text-20)] hover:text-[var(--t-text-40)] transition-colors py-1">
+            <Icon icon={Lock} size={11}/> {REP_KIND_LABELS[ex.repKind]} verrouillé
+          </button>
+        ) : (
+          <div className="flex gap-1.5 -mt-1">
+            {REP_KINDS.map(k => {
+              const active = ex.repKind === k;
+              return (
+                <button key={k} onClick={() => onChangeRepKind(exIdx, k)}
+                  className={`flex-1 text-[0.55rem] tracking-[0.06em] uppercase py-1 rounded-full border transition-colors ${
+                    active ? "border-[#c9a84c]/50 bg-[#c9a84c]/10 text-[#c9a84c]" : "border-[var(--t-border)] text-[var(--t-text-20)] hover:text-[var(--t-text-50)]"}`}>
+                  {REP_KIND_LABELS[k]}
+                </button>
+              );
+            })}
+          </div>
+        )
       )}
 
       {rows.length > 0 ? (
