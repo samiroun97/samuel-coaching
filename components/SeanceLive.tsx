@@ -16,7 +16,7 @@ import { SetInputCell } from "@/components/SetInputCell";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
 import { TdeeIcon } from "@/components/CalRefToggle";
-import { Check, X, ChevronLeft, ChevronRight, Plus, Trash2, Clock, Layers, Lock } from "@/lib/solarIcons";
+import { Check, X, ChevronLeft, ChevronRight, Plus, Trash2, Clock, Layers, Lock, Play, Pause } from "@/lib/solarIcons";
 import { RoundTimer } from "@/components/RoundTimer";
 
 type LiveSeance = { id: string; titre: string; exercices: string | null };
@@ -247,7 +247,7 @@ function SetRow({ target, idx, log, prev, isExtra, canRemove, bodyweight, repKin
   );
 }
 
-function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle, onChange, onAddSet, onToggleWarmup, onRemoveExtra, onAddDrop, onChangeDrop, onRemoveDrop, onAddWarmupStep, onChangeWarmupStep, onRemoveWarmupStep, onChangeRepKind }: {
+function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle, onChange, onAddSet, onToggleWarmup, onRemoveExtra, onAddDrop, onChangeDrop, onRemoveDrop, onAddWarmupStep, onChangeWarmupStep, onRemoveWarmupStep, onChangeRepKind, onRemoveExercice }: {
   ex: ExerciceItem; exIdx: number; logs: Record<string, SetLogState>; history: LastPerformance; prBadge: boolean; extra: number;
   onToggle: (exIdx: number, setIdx: number, target: SetDetail) => void;
   onChange: (exIdx: number, setIdx: number, field: "poids" | "reps" | "rir", val: string) => void;
@@ -261,6 +261,7 @@ function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle,
   onChangeWarmupStep: (exIdx: number, setIdx: number, stepIdx: number, field: "poids" | "reps", val: string) => void;
   onRemoveWarmupStep: (exIdx: number, setIdx: number, stepIdx: number) => void;
   onChangeRepKind: (exIdx: number, kind: RepKind) => void;
+  onRemoveExercice: (exIdx: number) => void;
 }) {
   const [unlockedRepKind, setUnlockedRepKind] = useState(false);
   const rows = displaySetsFor(ex, extra);
@@ -285,7 +286,17 @@ function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle,
             </div>
           )}
         </div>
-        {complete && <span className="text-[#7eb8a0] shrink-0 text-2xl">✓</span>}
+        <div className="flex items-center gap-2 shrink-0">
+          {complete && <span className="text-[#7eb8a0] text-2xl">✓</span>}
+          {/* Aucun moyen de retirer un exercice entier de la séance en direct jusqu'ici —
+              seules les séries "extra" ajoutées en trop l'étaient. Toujours visible (pas
+              planqué dans un menu), avec confirmation qui prévient explicitement si des
+              séries sont déjà loguées dessus. */}
+          <button onClick={() => onRemoveExercice(exIdx)} aria-label={`Supprimer ${ex.nom}`} title="Supprimer cet exercice"
+            className="text-[var(--t-text-20)] hover:text-[#e07070] transition-colors p-2 -m-2">
+            <Icon icon={Trash2} size={16} strokeWidth={1.8}/>
+          </button>
+        </div>
       </div>
 
       {/* Un exercice ajouté en direct (Bibliothèque, Nom libre) n'est jamais passé par
@@ -380,7 +391,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
   const [historyByNom, setHistoryByNom] = useState<Record<string, LastPerformance>>({});
   const [prByNom, setPrByNom] = useState<Record<string, boolean>>({});
   const [extraSets, setExtraSets] = useState<Record<number, number>>({});
-  const [rest, setRest] = useState<{ left: number; total: number } | null>(null);
+  const [rest, setRest] = useState<{ left: number; total: number; paused?: boolean } | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [finishing, setFinishing] = useState(false);
   const [summary, setSummary] = useState<{ duration: string; volume: number; sets: number; prs: number } | null>(null);
@@ -450,7 +461,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
   }, [seance.id, clientId]);
 
   useEffect(() => {
-    if (!rest || rest.left <= 0) return;
+    if (!rest || rest.left <= 0 || rest.paused) return;
     const t = setTimeout(() => setRest(r => (r && r.left > 1 ? { ...r, left: r.left - 1 } : null)), 1000);
     return () => clearTimeout(t);
   }, [rest]);
@@ -754,6 +765,54 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
     await deleteSetLog(seance.id, exIdx, lastIdx);
   };
 
+  // Retire un exercice entier de la séance en direct — contrairement à onRemoveExtra (une
+  // seule série "extra"), ça peut effacer un exercice avec des séries déjà loguées : la
+  // confirmation le dit explicitement. Les exercices après celui supprimé décalent d'un
+  // cran (logs, séries extra ET exercice_index en base) pour ne jamais désynchroniser
+  // seance_logs du nouveau tableau `exercices` — plus simple et plus sûr de tout ré-écrire
+  // d'un coup (delete + insert) que de mettre à jour chaque ligne existante une par une.
+  const removeExercice = async (exIdx: number) => {
+    const ex = exercices[exIdx];
+    const doneHere = Object.entries(logs).filter(([k, l]) => parseInt(k.split("-")[0], 10) === exIdx && l.done).length;
+    const msg = doneHere > 0
+      ? `Supprimer « ${ex.nom} » et ${doneHere === 1 ? "sa série déjà loguée" : `ses ${doneHere} séries déjà loguées`} ?`
+      : `Supprimer « ${ex.nom} » de cette séance ?`;
+    if (!window.confirm(msg)) return;
+
+    const next = exercices.filter((_, i) => i !== exIdx);
+    const reindexedLogs: Record<string, SetLogState> = {};
+    for (const [k, l] of Object.entries(logs)) {
+      const [i, s] = k.split("-").map(Number);
+      if (i === exIdx) continue;
+      reindexedLogs[`${i > exIdx ? i - 1 : i}-${s}`] = l;
+    }
+    const reindexedExtra: Record<number, number> = {};
+    for (const [k, v] of Object.entries(extraSets)) {
+      const i = Number(k);
+      if (i === exIdx) continue;
+      reindexedExtra[i > exIdx ? i - 1 : i] = v;
+    }
+
+    setExercices(next);
+    setLogs(reindexedLogs);
+    setExtraSets(reindexedExtra);
+
+    await supabase.from("seance_logs").delete().eq("seance_id", seance.id);
+    const rowsToInsert = Object.entries(reindexedLogs).filter(([, l]) => l.done).map(([k, l]) => {
+      const [i, s] = k.split("-").map(Number);
+      return {
+        seance_id: seance.id, client_id: clientId, exercice_index: i, exercice_nom: next[i].nom,
+        set_index: s, poids_reel: numOr(l.poids), reps_reel: numOr(l.reps), rir_reel: numOr(l.rir),
+        logged_at: new Date().toISOString(),
+      };
+    });
+    if (rowsToInsert.length) await supabase.from("seance_logs").insert(rowsToInsert);
+    await supabase.from("programme_seances").update({ exercices: serializeExercices(next) }).eq("id", seance.id);
+
+    const newRuns = groupExerciceRuns(next);
+    setRunIdx(i => Math.max(0, Math.min(i, newRuns.length - 1)));
+  };
+
   const [deleting, setDeleting] = useState(false);
   // Annule l'entraînement : contrairement à onClose (qui laisse la séance intacte pour la
   // reprendre plus tard), ça la supprime pour de bon — utile pour une séance libre lancée
@@ -1050,7 +1109,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
                       onToggleWarmup={onToggleWarmup} onRemoveExtra={onRemoveExtra}
                       onAddDrop={addDrop} onChangeDrop={changeDrop} onRemoveDrop={removeDrop}
                       onAddWarmupStep={addWarmupStep} onChangeWarmupStep={changeWarmupStep} onRemoveWarmupStep={removeWarmupStep}
-                      onChangeRepKind={changeRepKind}/>
+                      onChangeRepKind={changeRepKind} onRemoveExercice={removeExercice}/>
                   ))}
                 </div>
               ) : (
@@ -1060,7 +1119,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
                   onToggleWarmup={onToggleWarmup} onRemoveExtra={onRemoveExtra}
                   onAddDrop={addDrop} onChangeDrop={changeDrop} onRemoveDrop={removeDrop}
                   onAddWarmupStep={addWarmupStep} onChangeWarmupStep={changeWarmupStep} onRemoveWarmupStep={removeWarmupStep}
-                  onChangeRepKind={changeRepKind}/>
+                  onChangeRepKind={changeRepKind} onRemoveExercice={removeExercice}/>
               )}
 
               {runIdx < runs.length - 1 ? (
@@ -1107,6 +1166,11 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
                 <span style={{ fontFamily: "var(--font-bebas)" }} className={`text-4xl tracking-wide leading-none mt-0.5 ${almostDone ? "text-[#e0834a]" : "text-[#c9a84c]"}`}>{fmtClock(rest.left)}</span>
               </div>
               <div className="flex items-center gap-2">
+                <button onClick={() => setRest(r => r ? { ...r, paused: !r.paused } : r)} title={rest.paused ? "Reprendre" : "Mettre en pause"}
+                  className={`w-11 h-11 rounded-full border flex items-center justify-center active:scale-90 transition-all ${
+                    rest.paused ? "border-[#c9a84c]/50 bg-[#c9a84c]/10 text-[#c9a84c]" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-70)]"}`}>
+                  <Icon icon={rest.paused ? Play : Pause} size={16} strokeWidth={2}/>
+                </button>
                 <button onClick={() => setRest(r => r ? { ...r, left: Math.max(0, r.left - 15) } : r)}
                   className="w-11 h-11 rounded-full border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-70)] active:scale-90 transition-all text-sm font-medium">−15</button>
                 <button onClick={() => setRest(r => r ? { left: r.left + 15, total: Math.max(r.total, r.left + 15) } : r)}
