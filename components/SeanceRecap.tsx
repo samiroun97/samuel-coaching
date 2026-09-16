@@ -9,6 +9,7 @@ import { type RepKind, REP_KIND_SUFFIX, parseExercices, groupExerciceRuns } from
 import { loadSeanceLogs, computeExercicePRs } from "@/lib/workoutLog";
 import { analyzeSeance, type SeanceAnalysis } from "@/lib/seanceAnalysis";
 import { SeanceBody, type PreviewSeance } from "@/components/SeancePreview";
+import { RichIcon } from "@/components/RichIcon";
 
 function fmtSet(poids: number | null, reps: number | null, rir: number | null, repKind: RepKind) {
   const parts: string[] = [];
@@ -21,6 +22,19 @@ function fmtSet(poids: number | null, reps: number | null, rir: number | null, r
   }
   if (rir != null) parts.push(`RIR ${rir}`);
   return parts.length ? parts.join(" · ") : "—";
+}
+
+function PointRow({ kind, text }: { kind: "fort" | "aAmeliorer"; text: string }) {
+  const fort = kind === "fort";
+  return (
+    <div className="flex items-start gap-2.5">
+      <span className={`shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[0.6rem] font-bold mt-0.5 ${
+        fort ? "bg-[#c9a84c]/15 text-[#c9a84c]" : "bg-[#e0834a]/15 text-[#e0834a]"}`}>
+        {fort ? "✓" : "!"}
+      </span>
+      <p className="text-[0.72rem] text-[var(--t-text-60)] leading-relaxed pt-0.5">{text}</p>
+    </div>
+  );
 }
 
 export function SeanceRecap({ seance, clientId, clientBodyweight }: {
@@ -53,40 +67,56 @@ export function SeanceRecap({ seance, clientId, clientBodyweight }: {
 
   const runs = groupExerciceRuns(parseExercices(seance.exercices));
   const byIdx = new Map(analysis.perExercice.map(pe => [pe.exIdx, pe]));
+  const pct = analysis.totalPlanned > 0 ? Math.min(100, Math.round((analysis.totalLogged / analysis.totalPlanned) * 100)) : null;
+  const ringColor = pct === 100 ? "#7eb8a0" : "#c9a84c";
+  const r = 42, circ = 2 * Math.PI * r;
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-3 gap-2.5">
-        <div className="border border-[var(--t-border-soft)] bg-[var(--t-bg)] rounded-xl py-3.5 px-2 text-center">
-          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[#c9a84c] tracking-wide leading-none">{Math.round(analysis.volume).toLocaleString("fr-FR")}</p>
-          <p className="text-[0.58rem] tracking-[0.12em] uppercase text-[var(--t-text-30)] mt-1.5">Volume kg</p>
+      <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-2xl p-4 flex flex-col gap-4">
+        <div className="flex items-center gap-3.5">
+          {pct != null ? (
+            <div className="relative w-16 h-16 shrink-0 flex items-center justify-center">
+              <svg viewBox="0 0 100 100" className="absolute inset-0 -rotate-90">
+                <circle cx="50" cy="50" r={r} fill="none" stroke="var(--t-track)" strokeWidth="10"/>
+                <circle cx="50" cy="50" r={r} fill="none" stroke={ringColor} strokeWidth="10" strokeLinecap="round"
+                  strokeDasharray={circ} strokeDashoffset={circ * (1 - pct / 100)} style={{ transition: "stroke-dashoffset .6s ease" }}/>
+              </svg>
+              <span style={{ fontFamily: "var(--font-bebas)", color: ringColor }} className="text-lg tracking-wide leading-none">{pct}%</span>
+            </div>
+          ) : (
+            <RichIcon name="clipboardCheck" size={52} className="shrink-0 drop-shadow-[0_4px_10px_rgba(201,168,76,0.3)]"/>
+          )}
+          <div className="min-w-0">
+            <p className="text-[0.62rem] tracking-[0.2em] uppercase text-[#c9a84c]">Bilan de séance</p>
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-xl text-[var(--t-text)] tracking-wide leading-tight mt-0.5">
+              {pct != null ? `${analysis.totalLogged}/${analysis.totalPlanned} séries complétées` : "Séance loguée"}
+            </p>
+          </div>
         </div>
-        <div className="border border-[var(--t-border-soft)] bg-[var(--t-bg)] rounded-xl py-3.5 px-2 text-center">
-          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[var(--t-text)] tracking-wide leading-none">
-            {analysis.totalLogged}{analysis.totalPlanned > analysis.totalLogged ? `/${analysis.totalPlanned}` : ""}
-          </p>
-          <p className="text-[0.58rem] tracking-[0.12em] uppercase text-[var(--t-text-30)] mt-1.5">Séries</p>
-        </div>
-        <div className="border border-[var(--t-border-soft)] bg-[var(--t-bg)] rounded-xl py-3.5 px-2 text-center">
-          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[var(--t-text)] tracking-wide leading-none">{analysis.avgRir != null ? analysis.avgRir.toFixed(1) : "—"}</p>
-          <p className="text-[0.58rem] tracking-[0.12em] uppercase text-[var(--t-text-30)] mt-1.5">RIR moyen</p>
-        </div>
-      </div>
 
-      {(analysis.points.forts.length > 0 || analysis.points.aAmeliorer.length > 0) && (
-        <div className="flex flex-col gap-2">
-          {analysis.points.forts.map((p, i) => (
-            <p key={`f${i}`} className="text-[0.72rem] text-[var(--t-text-60)] leading-relaxed flex items-start gap-2">
-              <span className="text-[#c9a84c] shrink-0 font-bold">✓</span>{p}
-            </p>
-          ))}
-          {analysis.points.aAmeliorer.map((p, i) => (
-            <p key={`a${i}`} className="text-[0.72rem] text-[var(--t-text-60)] leading-relaxed flex items-start gap-2">
-              <span className="text-[#e0834a] shrink-0 font-bold">⚠</span>{p}
-            </p>
-          ))}
+        <div className="flex divide-x divide-[#c9a84c]/15 border-t border-[#c9a84c]/15 pt-3.5">
+          <div className="flex-1 text-center">
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-xl text-[#c9a84c] tracking-wide leading-none">{Math.round(analysis.volume).toLocaleString("fr-FR")}</p>
+            <p className="text-[0.56rem] tracking-[0.1em] uppercase text-[var(--t-text-30)] mt-1">Volume kg</p>
+          </div>
+          <div className="flex-1 text-center">
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-xl text-[var(--t-text)] tracking-wide leading-none">{analysis.totalLogged}</p>
+            <p className="text-[0.56rem] tracking-[0.1em] uppercase text-[var(--t-text-30)] mt-1">Séries</p>
+          </div>
+          <div className="flex-1 text-center">
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-xl text-[var(--t-text)] tracking-wide leading-none">{analysis.avgRir != null ? analysis.avgRir.toFixed(1) : "—"}</p>
+            <p className="text-[0.56rem] tracking-[0.1em] uppercase text-[var(--t-text-30)] mt-1">RIR moyen</p>
+          </div>
         </div>
-      )}
+
+        {(analysis.points.forts.length > 0 || analysis.points.aAmeliorer.length > 0) && (
+          <div className="flex flex-col gap-2 border-t border-[#c9a84c]/15 pt-3.5">
+            {analysis.points.forts.map((p, i) => <PointRow key={`f${i}`} kind="fort" text={p}/>)}
+            {analysis.points.aAmeliorer.map((p, i) => <PointRow key={`a${i}`} kind="aAmeliorer" text={p}/>)}
+          </div>
+        )}
+      </div>
 
       <div className="flex flex-col gap-2">
         {runs.map(run => {
