@@ -49,20 +49,29 @@ export function analyzeSeance(
     ? Math.round((Math.max(...timestamps) - Math.min(...timestamps)) / 60000)
     : null;
 
-  // Même formule que l'estimation live (SeanceLive) — durée approximée à ~3s/répétition en
-  // reps, durée réelle pour une série "temps". Comme le volume ci-dessus, ne peut pas exclure
-  // les séries d'échauffement (jamais persistées dans seance_logs) : légère surestimation
-  // possible pour une séance avec échauffement marqué, limite déjà connue et acceptée.
+  // Même méthode que l'estimation live (SeanceLive) : sur la vraie durée de la séance
+  // (durationMin, du premier au dernier set loggé), pas en sommant ~3s par répétition —
+  // cette dernière approche ne comptait que le temps "barre en main" et ignorait le repos
+  // entre séries (l'essentiel d'une heure de force), ce qui avait fait remonter "1h
+  // d'entraînement, 100 kcal". Charge moyenne et RIR moyen des séries pilotent l'intensité
+  // de cette durée réelle. Repli sur l'ancienne approximation si durationMin est
+  // indisponible (un seul set loggué, ou logged_at identique sur toutes les lignes après une
+  // suppression d'exercice — cf. removeExercice dans SeanceLive) plutôt que 0 kcal.
   const bodyweightForCalc = clientBodyweight ?? 75;
-  const calories = logs.reduce((sum, l) => {
-    const ex = exercices[l.exercice_index];
-    if (!ex) return sum;
-    const load = effectiveLoad(ex, l.poids_reel, clientBodyweight) ?? 0;
-    const rir = l.rir_reel ?? 2.5;
-    const qty = l.reps_reel ?? 0;
-    const durationSeconds = ex.repKind === "temps" ? qty : qty * 3;
-    return sum + estimateSetKcal(load, durationSeconds, rir, bodyweightForCalc);
-  }, 0);
+  const loadsForCal = logs.map(l => { const ex = exercices[l.exercice_index]; return ex ? effectiveLoad(ex, l.poids_reel, clientBodyweight) ?? 0 : null; }).filter((v): v is number => v != null);
+  const avgLoadForCal = loadsForCal.length ? loadsForCal.reduce((a, b) => a + b, 0) / loadsForCal.length : 0;
+  const avgRirForCal = avgRir ?? 2.5;
+  const calories = durationMin != null
+    ? estimateSetKcal(avgLoadForCal, durationMin * 60, avgRirForCal, bodyweightForCalc)
+    : logs.reduce((sum, l) => {
+        const ex = exercices[l.exercice_index];
+        if (!ex) return sum;
+        const load = effectiveLoad(ex, l.poids_reel, clientBodyweight) ?? 0;
+        const rir = l.rir_reel ?? 2.5;
+        const qty = l.reps_reel ?? 0;
+        const durationSeconds = ex.repKind === "temps" ? qty : qty * 3;
+        return sum + estimateSetKcal(load, durationSeconds, rir, bodyweightForCalc);
+      }, 0);
 
   const byExercice = new Map<number, SeanceLogRow[]>();
   for (const l of logs) {

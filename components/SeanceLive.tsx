@@ -509,35 +509,21 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
     return s + (load ?? 0) * (numOr(l.reps) ?? 0) + dropsVolume;
   }, 0);
 
-  // Estimation calorique live : calculée série par série à partir de ce qui est réellement
-  // loggué (reps, charge, RIR) plutôt que du temps écoulé — deux séances ouvertes aussi
-  // longtemps l'une que l'autre mais avec des exos différents doivent donner des chiffres
-  // différents. Par série : durée approximée à ~3s/répétition, MET dérivé du RIR (plus proche
-  // de l'échec = plus soutenu), et un bonus d'effort si la charge est lourde par rapport au
-  // poids de corps. Pas un calcul physiologique exact (impossible sans VO2), juste un chiffre
-  // qui réagit vraiment à la séance loguée.
+  // Estimation calorique live : sur le temps RÉELLEMENT écoulé depuis le début de la séance
+  // (elapsed), pas juste un ~3s par répétition sommé série par série — un temps de repos
+  // entre séries fait aussi partie de la dépense d'une vraie séance de force (l'essentiel
+  // d'une heure de musculation, en fait), donc ne compter que le temps "barre en main"
+  // avait fait remonter "1h de sport, 100 kcal" — largement sous-évalué. La charge moyenne
+  // (vs poids de corps) et le RIR moyen des séries déjà faites pilotent l'intensité de ce
+  // temps écoulé ; tant qu'aucune série n'est cochée, 0 kcal (une séance ouverte sans rien
+  // faire ne doit pas gonfler le chiffre, seul cas que l'ancienne approche protégeait bien).
   const bodyweightForCalc = clientBodyweight ?? 75;
-  // Une série dégressive enchaîne ses paliers sans repos — même RIR de référence que la
-  // série principale (pas de nouvelle échelle d'effort saisie par palier), seuls la charge
-  // et les reps changent.
-  const calcSetKcal = (load: number, durationSeconds: number, rir: number) => estimateSetKcal(load, durationSeconds, rir, bodyweightForCalc);
-  // Une série "temps" donne sa vraie durée directement (la valeur saisie est déjà en
-  // secondes) — plus fiable que l'approximation ~3s/répétition, réservée aux séries en
-  // reps. Une série "distance" n'a pas de durée déductible simplement (pas d'allure
-  // connue) : on garde l'approximation par défaut plutôt que d'ajouter un système d'allure.
-  const setDurationSeconds = (exIdx: number, qty: number) => (exercices[exIdx].repKind === "temps" ? qty : qty * 3);
-  const estimatedCalories = Math.round(doneEntries.reduce((sum, [k, l]) => {
-    if (l.warmup) return sum;
-    const exIdx = parseInt(k.split("-")[0], 10);
-    const load = effectiveLoad(exercices[exIdx], numOr(l.poids), clientBodyweight) ?? 0;
-    const reps = numOr(l.reps) ?? 0;
-    const rir = numOr(l.rir) ?? 2.5;
-    const dropsKcal = (l.drops ?? []).reduce((ds, d) => {
-      const dropLoad = effectiveLoad(exercices[exIdx], numOr(d.poids), clientBodyweight) ?? 0;
-      return ds + calcSetKcal(dropLoad, setDurationSeconds(exIdx, numOr(d.reps) ?? 0), rir);
-    }, 0);
-    return sum + calcSetKcal(load, setDurationSeconds(exIdx, reps), rir) + dropsKcal;
-  }, 0));
+  const workingEntries = doneEntries.filter(([k, l]) => !l.warmup && exercices[parseInt(k.split("-")[0], 10)]);
+  const workingLoads = workingEntries.map(([k, l]) => effectiveLoad(exercices[parseInt(k.split("-")[0], 10)], numOr(l.poids), clientBodyweight) ?? 0);
+  const workingRirs = workingEntries.map(([, l]) => numOr(l.rir)).filter((r): r is number => r != null);
+  const avgWorkingLoad = workingLoads.length ? workingLoads.reduce((a, b) => a + b, 0) / workingLoads.length : 0;
+  const avgWorkingRir = workingRirs.length ? workingRirs.reduce((a, b) => a + b, 0) / workingRirs.length : 2.5;
+  const estimatedCalories = workingEntries.length ? Math.round(estimateSetKcal(avgWorkingLoad, elapsed, avgWorkingRir, bodyweightForCalc)) : 0;
 
   const runIsComplete = (run: { indices: number[] }) => run.indices.every(exIdx => {
     const rows = displaySetsFor(exercices[exIdx], extraSets[exIdx] ?? 0);
