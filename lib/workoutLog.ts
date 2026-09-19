@@ -1,5 +1,9 @@
 import { supabase } from "@/lib/supabase";
 
+// Palier d'une série dégressive ou d'une montée en charge d'échauffement — voir DropStep/
+// warmupSteps dans SeanceLive.tsx, dont c'est exactement la forme persistée telle quelle.
+export type LogStep = { poids: string; reps: string };
+
 export type SeanceLogRow = {
   id: string;
   seance_id: string;
@@ -11,6 +15,9 @@ export type SeanceLogRow = {
   reps_reel: number | null;
   rir_reel: number | null;
   logged_at: string;
+  warmup: boolean;
+  drops: LogStep[] | null;
+  warmup_steps: LogStep[] | null;
 };
 
 // Au-delà de ~12 reps, l'estimation de 1RM (formule de Berger) devient peu fiable : la série
@@ -62,6 +69,7 @@ export async function loadSeanceLogs(seanceId: string): Promise<SeanceLogRow[]> 
 export async function saveSetLog(params: {
   seanceId: string; clientId: string; exerciceIndex: number; exerciceNom: string;
   setIndex: number; poids: number | null; reps: number | null; rir: number | null;
+  warmup?: boolean; drops?: LogStep[] | null; warmupSteps?: LogStep[] | null;
 }): Promise<void> {
   await supabase.from("seance_logs").upsert(
     {
@@ -70,6 +78,9 @@ export async function saveSetLog(params: {
       set_index: params.setIndex,
       poids_reel: params.poids, reps_reel: params.reps, rir_reel: params.rir,
       logged_at: new Date().toISOString(),
+      warmup: params.warmup ?? false,
+      drops: params.drops?.length ? params.drops : null,
+      warmup_steps: params.warmupSteps?.length ? params.warmupSteps : null,
     },
     { onConflict: "seance_id,exercice_index,set_index" }
   );

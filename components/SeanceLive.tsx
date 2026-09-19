@@ -439,6 +439,9 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
             reps: l.reps_reel != null ? String(l.reps_reel) : "",
             rir: l.rir_reel != null ? String(l.rir_reel) : "",
             done: true,
+            warmup: l.warmup,
+            drops: l.drops?.length ? l.drops.map(d => ({ poids: d.poids, reps: d.reps })) : undefined,
+            warmupSteps: l.warmup_steps?.length ? l.warmup_steps.map(w => ({ poids: w.poids, reps: w.reps })) : undefined,
           };
           maxSetIdxByEx[l.exercice_index] = Math.max(maxSetIdxByEx[l.exercice_index] ?? -1, l.set_index);
         }
@@ -649,6 +652,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
     await saveSetLog({
       seanceId: seance.id, clientId, exerciceIndex: exIdx, exerciceNom: ex.nom,
       setIndex: setIdx, poids: poidsNum, reps: repsNum, rir: rirNum,
+      warmup: next.warmup, drops: next.drops, warmupSteps: next.warmupSteps,
     });
 
     // La détection de record historique (bestRef) vient de seance_logs, qui ne stocke que le
@@ -672,25 +676,45 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
     }
   };
 
-  // Bascule le drapeau "échauffement" d'une série — locale à la séance en cours (non
-  // persistée en base, la table seance_logs n'a pas cette colonne) : elle exclut juste la
-  // série des calculs de volume/calories/records pendant que la séance est ouverte.
+  // Ré-écrit immédiatement la ligne seance_logs quand une série déjà cochée est retouchée
+  // (échauffement/paliers changés après coup plutôt qu'avant de cocher) — sans ça, seul un
+  // nouveau passage par le bouton ✓ (onToggle) aurait persisté le changement, et la série
+  // reste cochée donc ce bouton ne sera jamais retapé. Un set pas encore coché n'a pas de
+  // ligne à mettre à jour : ses réglages échauffement/paliers seront envoyés au prochain ✓,
+  // exactement comme poids/reps/rir le sont déjà.
+  const persistIfDone = (exIdx: number, setIdx: number, next: SetLogState) => {
+    if (!next.done) return;
+    const ex = exercices[exIdx];
+    saveSetLog({
+      seanceId: seance.id, clientId, exerciceIndex: exIdx, exerciceNom: ex.nom, setIndex: setIdx,
+      poids: numOr(next.poids), reps: numOr(next.reps), rir: numOr(next.rir),
+      warmup: next.warmup, drops: next.drops, warmupSteps: next.warmupSteps,
+    });
+  };
+
+  // Bascule le drapeau "échauffement" d'une série — exclut juste la série des calculs de
+  // volume/calories/records pendant que la séance est ouverte (cf. les gardes `l.warmup`
+  // plus haut) ; persisté dans seance_logs (colonnes additives warmup/drops/warmup_steps)
+  // pour survivre à une navigation hors de la page, cf. persistIfDone ci-dessus.
   const onToggleWarmup = (exIdx: number, setIdx: number) => {
     const k = `${exIdx}-${setIdx}`;
     setLogs(prev => {
       const base: SetLogState = prev[k] ?? { poids: "", reps: "", rir: "", done: false };
-      return { ...prev, [k]: { ...base, warmup: !base.warmup } };
+      const next = { ...base, warmup: !base.warmup };
+      persistIfDone(exIdx, setIdx, next);
+      return { ...prev, [k]: next };
     });
   };
 
-  // Paliers d'une série dégressive — mêmes garanties que le drapeau warmup ci-dessus (local
-  // à la séance en cours). Chaque palier est une chute de charge enchaînée juste après la
-  // série principale : sa propre saisie kg/reps, comptée en plus dans volume/calories.
+  // Paliers d'une série dégressive. Chaque palier est une chute de charge enchaînée juste
+  // après la série principale : sa propre saisie kg/reps, comptée en plus dans volume/calories.
   const addDrop = (exIdx: number, setIdx: number) => {
     const k = `${exIdx}-${setIdx}`;
     setLogs(prev => {
       const base: SetLogState = prev[k] ?? { poids: "", reps: "", rir: "", done: false };
-      return { ...prev, [k]: { ...base, drops: [...(base.drops ?? []), { poids: "", reps: "" }] } };
+      const next = { ...base, drops: [...(base.drops ?? []), { poids: "", reps: "" }] };
+      persistIfDone(exIdx, setIdx, next);
+      return { ...prev, [k]: next };
     });
   };
   const changeDrop = (exIdx: number, setIdx: number, dropIdx: number, field: "poids" | "reps", val: string) => {
@@ -699,7 +723,9 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
       const base = prev[k];
       if (!base) return prev;
       const drops = (base.drops ?? []).map((d, i) => (i === dropIdx ? { ...d, [field]: val } : d));
-      return { ...prev, [k]: { ...base, drops } };
+      const next = { ...base, drops };
+      persistIfDone(exIdx, setIdx, next);
+      return { ...prev, [k]: next };
     });
   };
   const removeDrop = (exIdx: number, setIdx: number, dropIdx: number) => {
@@ -707,7 +733,9 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
     setLogs(prev => {
       const base = prev[k];
       if (!base) return prev;
-      return { ...prev, [k]: { ...base, drops: (base.drops ?? []).filter((_, i) => i !== dropIdx) } };
+      const next = { ...base, drops: (base.drops ?? []).filter((_, i) => i !== dropIdx) };
+      persistIfDone(exIdx, setIdx, next);
+      return { ...prev, [k]: next };
     });
   };
 
@@ -720,7 +748,9 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
     const k = `${exIdx}-${setIdx}`;
     setLogs(prev => {
       const base: SetLogState = prev[k] ?? { poids: "", reps: "", rir: "", done: false };
-      return { ...prev, [k]: { ...base, warmupSteps: [...(base.warmupSteps ?? []), { poids: "", reps: "" }] } };
+      const next = { ...base, warmupSteps: [...(base.warmupSteps ?? []), { poids: "", reps: "" }] };
+      persistIfDone(exIdx, setIdx, next);
+      return { ...prev, [k]: next };
     });
   };
   const changeWarmupStep = (exIdx: number, setIdx: number, stepIdx: number, field: "poids" | "reps", val: string) => {
@@ -729,7 +759,9 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
       const base = prev[k];
       if (!base) return prev;
       const warmupSteps = (base.warmupSteps ?? []).map((w, i) => (i === stepIdx ? { ...w, [field]: val } : w));
-      return { ...prev, [k]: { ...base, warmupSteps } };
+      const next = { ...base, warmupSteps };
+      persistIfDone(exIdx, setIdx, next);
+      return { ...prev, [k]: next };
     });
   };
   const removeWarmupStep = (exIdx: number, setIdx: number, stepIdx: number) => {
@@ -737,7 +769,9 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
     setLogs(prev => {
       const base = prev[k];
       if (!base) return prev;
-      return { ...prev, [k]: { ...base, warmupSteps: (base.warmupSteps ?? []).filter((_, i) => i !== stepIdx) } };
+      const next = { ...base, warmupSteps: (base.warmupSteps ?? []).filter((_, i) => i !== stepIdx) };
+      persistIfDone(exIdx, setIdx, next);
+      return { ...prev, [k]: next };
     });
   };
 
