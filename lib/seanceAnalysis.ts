@@ -50,19 +50,22 @@ export function analyzeSeance(
     : null;
 
   // Même méthode que l'estimation live (SeanceLive) : sur la vraie durée de la séance
-  // (durationMin, du premier au dernier set loggé), pas en sommant ~3s par répétition —
-  // cette dernière approche ne comptait que le temps "barre en main" et ignorait le repos
-  // entre séries (l'essentiel d'une heure de force), ce qui avait fait remonter "1h
-  // d'entraînement, 100 kcal". Charge moyenne et RIR moyen des séries pilotent l'intensité
-  // de cette durée réelle. Repli sur l'ancienne approximation si durationMin est
-  // indisponible (un seul set loggué, ou logged_at identique sur toutes les lignes après une
-  // suppression d'exercice — cf. removeExercice dans SeanceLive) plutôt que 0 kcal.
+  // (durationMin, du premier au dernier set loggé), PLAFONNÉE — sans plafond, un gros écart
+  // entre deux séries (interruption, séance reprise plus tard via "Modifier") gonflait
+  // démesurément le chiffre, aussi grave que l'ancienne sous-estimation par répétition.
+  // Plafond à ~4 min par série loguée (rythme généreux mais borné), même valeur que le live.
+  // Charge moyenne et RIR moyen pilotent l'intensité de cette durée. Repli sur l'ancienne
+  // approximation par répétition si durationMin est indisponible (un seul set loggué, ou
+  // logged_at identique sur toutes les lignes après une suppression d'exercice — cf.
+  // removeExercice dans SeanceLive) plutôt que 0 kcal.
   const bodyweightForCalc = clientBodyweight ?? 75;
   const loadsForCal = logs.map(l => { const ex = exercices[l.exercice_index]; return ex ? effectiveLoad(ex, l.poids_reel, clientBodyweight) ?? 0 : null; }).filter((v): v is number => v != null);
   const avgLoadForCal = loadsForCal.length ? loadsForCal.reduce((a, b) => a + b, 0) / loadsForCal.length : 0;
   const avgRirForCal = avgRir ?? 2.5;
-  const calories = durationMin != null
-    ? estimateSetKcal(avgLoadForCal, durationMin * 60, avgRirForCal, bodyweightForCalc)
+  const MAX_MIN_PER_SET = 4;
+  const cappedDurationMin = durationMin != null ? Math.min(durationMin, totalLogged * MAX_MIN_PER_SET) : null;
+  const calories = cappedDurationMin != null
+    ? estimateSetKcal(avgLoadForCal, cappedDurationMin * 60, avgRirForCal, bodyweightForCalc)
     : logs.reduce((sum, l) => {
         const ex = exercices[l.exercice_index];
         if (!ex) return sum;
