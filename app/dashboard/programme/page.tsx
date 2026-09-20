@@ -1113,7 +1113,7 @@ export default function ProgrammePage() {
               {exportingPdf ? (
                 <div className="w-3 h-3 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>
               ) : (
-                <RichIcon name="download" size={18} className="-my-1"/>
+                <RichIcon name="download" size={28} className="-my-2.5"/>
               )}
               <span className="hidden sm:inline">PDF</span>
             </button>
