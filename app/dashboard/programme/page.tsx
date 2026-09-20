@@ -33,6 +33,10 @@ type LoggedWorkout = {
   id: string; date: string; activity: string;
   duration_minutes: number; description: string;
   calories_burned: number; note: string;
+  // Présent seulement pour une entrée ajoutée depuis l'onglet "Séance loguée" (addSeanceLogWorkout) —
+  // permet de détecter qu'une séance a déjà été ajoutée à la journée et d'éviter un doublon
+  // silencieux si on retape sur "Ajouter à ma journée" (cf. seanceAlreadyLogged plus bas).
+  seanceId?: string;
 };
 type PerfRecord = { date: string; calories: number; duration: number; description: string };
 type PerfHistory = Record<string, PerfRecord[]>;
@@ -543,9 +547,17 @@ export default function ProgrammePage() {
   // Log cette estimation précise dans "ma journée", au même titre qu'une activité libre —
   // même stockage local (programme_logs) que addWorkout, pour que l'EAT du jour compte les
   // deux sources indifféremment.
+  // Sans ce garde-fou, rien n'indiquait qu'une séance avait déjà été ajoutée à la journée —
+  // retaper sur "Ajouter à ma journée" (bouton toujours dans le même état) créait une entrée
+  // en plus à chaque tap, sans aucun moyen de s'en apercevoir ni de corriger depuis ce panneau
+  // (remonté par le user : 3 ajouts d'affilée -> EAT à 1100 kcal pour une seule séance).
+  const seanceAlreadyLogged = selectedDoneSeanceId
+    ? workouts.find(w => w.seanceId === selectedDoneSeanceId) ?? null
+    : null;
+
   const addSeanceLogWorkout = () => {
     const seance = doneLoggableSelectedDate.find(s => s.id === selectedDoneSeanceId);
-    if (!seance || !seanceLogAnalysis) return;
+    if (!seance || !seanceLogAnalysis || seanceAlreadyLogged) return;
     const entry: LoggedWorkout = {
       id: Date.now().toString(),
       date: new Date(selectedDate + "T12:00:00").toISOString(),
@@ -553,6 +565,7 @@ export default function ProgrammePage() {
       description: `Volume ${Math.round(seanceLogAnalysis.volume).toLocaleString("fr-FR")} kg`,
       calories_burned: Math.round(seanceLogAnalysis.calories),
       note: "Calculé depuis la séance loguée",
+      seanceId: seance.id,
     };
     const next = [entry, ...workouts].slice(0, 50);
     setWorkouts(next);
@@ -795,10 +808,20 @@ export default function ProgrammePage() {
                   <p className="text-[0.62rem] tracking-[0.15em] uppercase text-[var(--t-text-30)]">kcal</p>
                 </div>
               </div>
-              <button onClick={addSeanceLogWorkout}
-                className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
-                Ajouter à ma journée →
-              </button>
+              {seanceAlreadyLogged ? (
+                <div className="flex items-center justify-between gap-3 rounded-xl border border-[#7eb8a0]/30 bg-[#7eb8a0]/[0.08] px-4 py-2.5">
+                  <span className="text-[0.68rem] text-[#7eb8a0] font-medium">✓ Déjà ajoutée à ta journée ({seanceAlreadyLogged.calories_burned} kcal)</span>
+                  <button onClick={() => removeWorkout(seanceAlreadyLogged.id)}
+                    className="shrink-0 text-[0.62rem] tracking-[0.1em] uppercase text-[var(--t-text-30)] hover:text-[#e07070] transition-colors underline decoration-dotted">
+                    Retirer
+                  </button>
+                </div>
+              ) : (
+                <button onClick={addSeanceLogWorkout}
+                  className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
+                  Ajouter à ma journée →
+                </button>
+              )}
             </div>
           )
         ) : (
