@@ -1109,11 +1109,11 @@ export default function ProgrammePage() {
               <span className="text-[0.62rem] text-[var(--t-text-25)] uppercase tracking-wider">{coachSeances.length} séance{coachSeances.length > 1 ? "s" : ""}</span>
             </div>
             <button onClick={downloadPdf} disabled={exportingPdf}
-              className="shrink-0 flex items-center gap-1.5 border border-[#c9a84c]/30 text-[#c9a84c] rounded-xl text-[0.6rem] font-bold tracking-[0.12em] uppercase px-2.5 py-2 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-40">
+              className="shrink-0 flex items-center gap-1 text-[#c9a84c] text-[0.6rem] font-bold tracking-[0.12em] uppercase py-2 hover:opacity-75 active:scale-95 transition-all disabled:opacity-40">
               {exportingPdf ? (
                 <div className="w-3 h-3 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>
               ) : (
-                <RichIcon name="download" size={28} className="-my-2.5"/>
+                <RichIcon name="download" size={34} className="-my-3.5 drop-shadow-[0_4px_8px_rgba(201,168,76,0.45)]"/>
               )}
               <span className="hidden sm:inline">PDF</span>
             </button>
