@@ -24,6 +24,9 @@ const RICH_ICON_SRC = {
   // simple trait transparent), à réserver aux moments hero (voir public/icons/logo-source.svg
   // pour l'original, jamais utilisé nulle part avant cette passe).
   monogram: "/icons-rich/monogram.webp",
+  // Badge autonome (même principe que monogram) — icône de téléchargement fournie par le
+  // client pour tous les boutons de téléchargement de l'app (ex. export PDF programme).
+  download: "/icons-rich/download.webp",
 } as const;
 
 export type RichIconName = keyof typeof RICH_ICON_SRC;

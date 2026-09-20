@@ -26,7 +26,7 @@ import { loadPersonalRecords, type PRCard } from "@/lib/personalRecords";
 import { Sparkline } from "@/components/Sparkline";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
-import { Activity, X, Mic, ChevronDown, Download, Flame, Plus, Trash2, Play } from "@/lib/solarIcons";
+import { Activity, X, Mic, ChevronDown, Flame, Plus, Trash2, Play } from "@/lib/solarIcons";
 
 type Profile = { prenom: string; poids: number; taille: number; age: number; sexe: string; objectif_type: string | null };
 type LoggedWorkout = {
@@ -1113,7 +1113,7 @@ export default function ProgrammePage() {
               {exportingPdf ? (
                 <div className="w-3 h-3 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>
               ) : (
-                <Icon icon={Download} size={12} strokeWidth={2}/>
+                <RichIcon name="download" size={18} className="-my-1"/>
               )}
               <span className="hidden sm:inline">PDF</span>
             </button>
