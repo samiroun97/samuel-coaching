@@ -9,7 +9,7 @@ import { apiPost } from "@/lib/apiClient";
 import { Icon } from "@/components/Icon";
 import { ChevronRight, X, Repeat } from "@/lib/solarIcons";
 
-type SectionKey = "profil" | "notifications" | "steps" | "password";
+type SectionKey = "profil" | "notifications" | "steps" | "password" | "email";
 
 // Ligne cliquable style "liste de préférences" : label + chevron, qui déroule
 // son contenu (children) juste en dessous quand ouverte.
@@ -77,18 +77,42 @@ export default function PreferencesPage() {
   const [pwdSaved,  setPwdSaved]  = useState(false);
   const [pwdError,  setPwdError]  = useState("");
 
+  const [currentEmail, setCurrentEmail] = useState("");
+  const [newEmail,      setNewEmail]      = useState("");
+  const [emailSaving,   setEmailSaving]   = useState(false);
+  const [emailSent,     setEmailSent]     = useState(false);
+  const [emailError,    setEmailError]    = useState("");
+
+  // Un seul interrupteur ("Rappels repas") ne pilotait que l'abonnement navigateur tout ou
+  // rien — ces deux-là permettent de couper juste le rappel déjeuner ou juste le dîner sans
+  // se désabonner complètement (cf. app/api/push/send-reminders qui envoie déjà les deux
+  // séparément, juste sans lire de préférence jusqu'ici).
+  const [notifDejeuner, setNotifDejeuner] = useState(true);
+  const [notifDiner,    setNotifDiner]    = useState(true);
+  const [notifPrefsSaving, setNotifPrefsSaving] = useState(false);
+
+  const [deleteOpen,    setDeleteOpen]    = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deleting,      setDeleting]      = useState(false);
+  const [deleteError,   setDeleteError]   = useState("");
+
   useEffect(() => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       isCoachUser(user.id).then(setIsCoach);
+      setCurrentEmail(user.email ?? "");
       const { data } = await supabase.from("profiles")
-        .select("prenom,nom,age,poids,taille,sexe").eq("id", user.id).single();
+        .select("prenom,nom,age,poids,taille,sexe,notif_dejeuner,notif_diner").eq("id", user.id).single();
       if (data) setForm({
         prenom: data.prenom ?? "", nom: data.nom ?? "",
         age: data.age?.toString() ?? "", poids: data.poids?.toString() ?? "",
         taille: data.taille?.toString() ?? "", sexe: data.sexe ?? "",
       });
+      if (data) {
+        setNotifDejeuner(data.notif_dejeuner ?? true);
+        setNotifDiner(data.notif_diner ?? true);
+      }
 
       setPushSupported(isPushSupported());
       const { count } = await supabase.from("push_subscriptions")
@@ -152,6 +176,50 @@ export default function PreferencesPage() {
     if (err) { setPwdError(err.message); return; }
     setPwdSaved(true);
     setNewPassword(""); setConfirmPassword("");
+  };
+
+  // Contrairement au mot de passe (changement instantané), Supabase envoie un email de
+  // confirmation au double opt-in par défaut — le nouvel email ne prend effet qu'après
+  // clic sur le lien reçu. D'où un message "vérifie ta boîte mail" plutôt qu'un ✓ immédiat.
+  const saveEmail = async () => {
+    setEmailError(""); setEmailSent(false);
+    const trimmed = newEmail.trim();
+    if (!trimmed || !trimmed.includes("@")) { setEmailError("Adresse email invalide."); return; }
+    if (trimmed === currentEmail) { setEmailError("C'est déjà ton email actuel."); return; }
+    setEmailSaving(true);
+    const { error: err } = await supabase.auth.updateUser({ email: trimmed });
+    setEmailSaving(false);
+    if (err) { setEmailError(err.message); return; }
+    setEmailSent(true);
+    setNewEmail("");
+  };
+
+  const toggleNotifPref = async (key: "notif_dejeuner" | "notif_diner", value: boolean) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    if (key === "notif_dejeuner") setNotifDejeuner(value); else setNotifDiner(value);
+    setNotifPrefsSaving(true);
+    await supabase.from("profiles").update({ [key]: value }).eq("id", user.id);
+    setNotifPrefsSaving(false);
+  };
+
+  // Geste irréversible : gate explicite (taper "SUPPRIMER") avant que le bouton final ne
+  // s'active, plutôt qu'une simple confirmation en un clic — cf. la cascade complète côté
+  // serveur dans app/api/account/delete (mêmes tables que la suppression côté coach, plus
+  // le nettoyage des buckets Storage qui n'a pas de cascade automatique en base).
+  const deleteAccount = async () => {
+    if (deleteConfirm.trim().toUpperCase() !== "SUPPRIMER" || deleting) return;
+    setDeleteError(""); setDeleting(true);
+    try {
+      const res = await apiPost("/api/account/delete", {});
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error || `Erreur ${res.status}`);
+      await supabase.auth.signOut();
+      router.push("/login?deleted=1");
+    } catch (e: unknown) {
+      setDeleteError(e instanceof Error ? e.message : "Erreur lors de la suppression.");
+      setDeleting(false);
+    }
   };
 
   const inp = "w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
@@ -262,6 +330,25 @@ export default function PreferencesPage() {
               </button>
             </div>
           )}
+          {/* Réglage fin par repas — n'a de sens que si l'abonnement navigateur est actif,
+              sinon aucun rappel n'est envoyé de toute façon quel que soit ces deux flags. */}
+          {pushSupported && pushEnabled && (
+            <div className="flex flex-col gap-3 border-t border-[var(--t-border-soft)] mt-4 pt-4">
+              {([
+                { key: "notif_dejeuner" as const, label: "Rappel déjeuner", value: notifDejeuner },
+                { key: "notif_diner" as const, label: "Rappel dîner", value: notifDiner },
+              ]).map(({ key, label, value }) => (
+                <div key={key} className="flex items-center justify-between">
+                  <p className="text-[0.68rem] text-[var(--t-text-45)]">{label}</p>
+                  <button onClick={() => toggleNotifPref(key, !value)} disabled={notifPrefsSaving}
+                    className={`w-9 h-5 rounded-full transition-all relative shrink-0 disabled:opacity-50 ${value ? "bg-[#c9a84c]" : "bg-[var(--t-border)]"}`}
+                    style={{ minWidth: 36, height: 20 }}>
+                    <span className={`absolute top-[3px] w-3.5 h-3.5 rounded-full bg-white transition-transform ${value ? "translate-x-[18px]" : "translate-x-[3px]"}`}/>
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
           {pushError && <p className="text-xs text-[#e07070] rounded-xl border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2 mt-3">{pushError}</p>}
         </Row>
 
@@ -341,6 +428,29 @@ export default function PreferencesPage() {
             </button>
           </div>
         </Row>
+
+        <Row label="Email" sublabel={currentEmail || "Adresse du compte"} open={openSection === "email"} onClick={() => toggle("email")}>
+          <div className="flex flex-col gap-5">
+            <div>
+              <label className={lbl}>Email actuel</label>
+              <input readOnly className={`${inp} opacity-60`} value={currentEmail}/>
+            </div>
+            <div>
+              <label className={lbl}>Nouvel email</label>
+              <input type="email" autoComplete="email" className={inp} value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="nouveau@email.com"/>
+            </div>
+
+            {emailError && <p className="text-xs text-[#e07070] rounded-xl border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2">{emailError}</p>}
+            {emailSent && <p className="text-xs text-[#7eb8a0] rounded-xl border border-[#7eb8a0]/20 bg-[#7eb8a0]/5 px-3 py-2 leading-relaxed">Vérifie ta boîte mail pour confirmer le changement — l&apos;adresse actuelle reste active tant que ce n&apos;est pas fait.</p>}
+
+            <button onClick={saveEmail} disabled={emailSaving}
+              className="border border-[#c9a84c]/30 text-[#c9a84c] rounded-xl text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+              {emailSaving
+                ? <><div className="w-3 h-3 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>Envoi…</>
+                : "Changer l'email"}
+            </button>
+          </div>
+        </Row>
       </div>
 
       {/* ── Autre ── */}
@@ -349,7 +459,51 @@ export default function PreferencesPage() {
         <LinkRow label="Nous contacter" href="/dashboard/coach"/>
         <LinkRow label="Mentions légales" href="/mentions-legales"/>
         <LinkRow label="Se déconnecter" danger onClick={async () => { await supabase.auth.signOut(); router.push("/login"); }}/>
+        {/* Un compte coach ne peut pas s'auto-supprimer ici (casserait l'accès de ses
+            clients) — la route le refuse aussi côté serveur, ceci évite juste d'afficher
+            une option qui échouerait pour un coach passé en aperçu client. */}
+        {!isCoach && (
+          <LinkRow label="Supprimer mon compte" danger onClick={() => { setDeleteOpen(true); setDeleteConfirm(""); setDeleteError(""); }}/>
+        )}
       </div>
+
+      {/* ── Confirmation de suppression de compte — geste irréversible, pas d'action en un
+          clic : il faut taper "SUPPRIMER" pour activer le bouton final. ── */}
+      {deleteOpen && (
+        <div className="fixed inset-0 bg-black/75 z-50 flex items-center justify-center px-4" onClick={() => !deleting && setDeleteOpen(false)}>
+          <div className="bg-[var(--t-bg)] border border-[#e07070]/30 rounded-xl w-full max-w-sm" onClick={e => e.stopPropagation()}>
+            <div className="p-6 flex flex-col gap-4">
+              <div>
+                <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#e07070] mb-1">Action irréversible</p>
+                <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[var(--t-text)] tracking-wide">Supprimer mon compte</h2>
+              </div>
+              <p className="text-xs text-[var(--t-text-45)] leading-relaxed">
+                Ton profil, tes séances loguées, ton historique de poids/photos, tes messages
+                et ta photo de profil seront définitivement supprimés. Cette action ne peut
+                pas être annulée.
+              </p>
+              <div>
+                <label className={lbl}>Tape SUPPRIMER pour confirmer</label>
+                <input className={inp} value={deleteConfirm} onChange={e => setDeleteConfirm(e.target.value)}
+                  placeholder="SUPPRIMER" autoComplete="off"/>
+              </div>
+              {deleteError && <p className="text-xs text-[#e07070] rounded-xl border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2">{deleteError}</p>}
+              <div className="flex gap-2">
+                <button onClick={() => setDeleteOpen(false)} disabled={deleting}
+                  className="flex-1 border border-[var(--t-border)] text-[var(--t-text-50)] rounded-xl text-[0.7rem] font-bold tracking-[0.15em] uppercase py-3 hover:bg-[var(--t-glass-bg)] transition-colors disabled:opacity-50">
+                  Annuler
+                </button>
+                <button onClick={deleteAccount} disabled={deleteConfirm.trim().toUpperCase() !== "SUPPRIMER" || deleting}
+                  className="flex-1 bg-[#e07070] text-black rounded-xl text-[0.7rem] font-bold tracking-[0.15em] uppercase py-3 hover:brightness-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                  {deleting
+                    ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Suppression…</>
+                    : "Supprimer"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

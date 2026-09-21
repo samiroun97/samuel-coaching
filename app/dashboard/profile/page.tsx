@@ -7,6 +7,7 @@ import { apiPost } from "@/lib/apiClient";
 import ThemeToggle from "@/components/ThemeToggle";
 import { CalendarPicker } from "@/components/CalendarPicker";
 import { OBJECTIF_TYPES, OBJECTIF_TYPE_LABEL, type ObjectifType } from "@/lib/objectifTypes";
+import { uploadAvatar } from "@/lib/avatarUpload";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
 import { Settings, ChevronRight, Pencil, MessageSquare, AlertCircle, Check, Repeat } from "@/lib/solarIcons";
@@ -17,6 +18,7 @@ type Profile = {
   seances_par_semaine: number | null; lieu_entrainement: string | null;
   blessures: string | null; alimentation: string | null; sommeil_stress: string | null;
   niveau_activite: string | null; experience: string | null; duree_seance: string | null;
+  avatar_url: string | null;
 };
 
 const FB_LABELS: Record<string, string> = { bug: "🐛 Bug", suggestion: "💡 Suggestion", idee: "✨ Idée" };
@@ -65,6 +67,9 @@ export default function ProfilePage() {
   const [showEcheancePicker, setShowEcheancePicker] = useState(false);
   const [unread, setUnread] = useState(false);
 
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarError, setAvatarError] = useState("");
+
   useEffect(() => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -84,11 +89,22 @@ export default function ProfilePage() {
         if ((count ?? 0) > 0) setUnread(true);
       }
       const { data } = await supabase.from("profiles")
-        .select("prenom,nom,age,poids,taille,sexe,objectifs,objectif_type,objectif_echeance,objectif_pending,seances_par_semaine,lieu_entrainement,blessures,alimentation,sommeil_stress,niveau_activite,experience,duree_seance")
+        .select("prenom,nom,age,poids,taille,sexe,objectifs,objectif_type,objectif_echeance,objectif_pending,seances_par_semaine,lieu_entrainement,blessures,alimentation,sommeil_stress,niveau_activite,experience,duree_seance,avatar_url")
         .eq("id", user.id).single();
       if (data) setProfile(data as Profile);
     })();
   }, []);
+
+  const handleAvatarChange = async (file: File | undefined) => {
+    if (!file || !userId) return;
+    setAvatarError(""); setAvatarUploading(true);
+    const result = await uploadAvatar(file);
+    if ("error" in result) { setAvatarError(result.error); setAvatarUploading(false); return; }
+    const { error } = await supabase.from("profiles").update({ avatar_url: result.url }).eq("id", userId);
+    setAvatarUploading(false);
+    if (error) { setAvatarError("Échec de l'enregistrement."); return; }
+    setProfile(p => (p ? { ...p, avatar_url: result.url } : p));
+  };
 
   const sendFeedback = async () => {
     if (!fbMsg.trim() || fbSending) return;
@@ -184,16 +200,38 @@ export default function ProfilePage() {
       )}
 
       <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-6 flex items-center gap-4 mb-4">
-        <div className="w-14 h-14 rounded-full bg-[#c9a84c]/10 border border-[#c9a84c]/30 flex items-center justify-center shrink-0">
-          <span style={{ fontFamily: "var(--font-bebas)" }} className="text-lg text-[#c9a84c] tracking-wide">{initials || "?"}</span>
-        </div>
+        {/* Cercle cliquable — photo si avatar_url, sinon retombe sur les initiales (pas de
+            régression). Le pinceau en badge signale que c'est tapable sans devoir deviner. */}
+        <label className="relative w-14 h-14 rounded-full shrink-0 cursor-pointer group">
+          <input type="file" accept="image/*" className="hidden" disabled={avatarUploading}
+            onChange={e => { const f = e.target.files?.[0]; e.target.value = ""; handleAvatarChange(f); }}/>
+          <div className="w-14 h-14 rounded-full bg-[#c9a84c]/10 border border-[#c9a84c]/30 flex items-center justify-center overflow-hidden group-hover:border-[#c9a84c]/60 transition-colors">
+            {profile?.avatar_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={profile.avatar_url} alt="" className="w-full h-full object-cover"/>
+            ) : (
+              <span style={{ fontFamily: "var(--font-bebas)" }} className="text-lg text-[#c9a84c] tracking-wide">{initials || "?"}</span>
+            )}
+          </div>
+          {avatarUploading ? (
+            <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center">
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"/>
+            </div>
+          ) : (
+            <span className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full bg-[#c9a84c] border-2 border-[var(--t-surface)] flex items-center justify-center shadow-[0_1px_3px_rgba(0,0,0,0.2)]">
+              <Icon icon={Pencil} size={9} strokeWidth={2.5} className="text-black"/>
+            </span>
+          )}
+        </label>
         <div className="min-w-0">
           <p className="text-lg text-[var(--t-text)] truncate">{profile?.prenom} {profile?.nom}</p>
           <p className="text-[0.62rem] text-[var(--t-text-25)] tracking-wider mt-0.5">
             {[profile?.age && `${profile.age} ans`, profile?.poids && `${profile.poids} kg`, profile?.taille && `${profile.taille} cm`].filter(Boolean).join(" · ") || "Complète ton profil dans Préférences"}
           </p>
+          {currentEmail && <p className="text-[0.62rem] text-[var(--t-text-20)] tracking-wider mt-0.5 truncate">{currentEmail}</p>}
         </div>
       </div>
+      {avatarError && <p className="text-xs text-[#e07070] rounded-xl border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2 -mt-2 mb-4">{avatarError}</p>}
 
       {/* ── Demande de précision d'objectif (déclenchée par le coach) ── */}
       {profile?.objectif_pending && (

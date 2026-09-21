@@ -92,6 +92,7 @@ export default function LoginPage() {
       try { localStorage.setItem("pending_invite_code", invite.trim().toUpperCase()); } catch { /* ignore */ }
       if (params.get("mode") === "register") setMode("register");
     }
+    if (params.get("deleted") === "1") setSuccess("Ton compte a bien été supprimé.");
   }, []);
 
   const translateError = (message: string) => {

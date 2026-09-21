@@ -31,17 +31,29 @@ export async function GET(req: NextRequest) {
   const admin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceKey);
 
   const today = new Date().toISOString().split("T")[0];
-  const [{ data: subs }, { data: todaySummaries }, { data: links }, { data: coaches }] = await Promise.all([
+  // "dejeuner"/"diner" (déjà validés ci-dessus via MEAL_LABELS) correspondent exactement aux
+  // colonnes notif_dejeuner/notif_diner sur profiles — un flag par repas plutôt qu'un seul
+  // interrupteur tout-ou-rien, pour couper juste l'un des deux rappels sans se désabonner.
+  const notifCol = meal === "dejeuner" ? "notif_dejeuner" : "notif_diner";
+  const [{ data: subs }, { data: todaySummaries }, { data: links }, { data: coaches }, { data: prefs }] = await Promise.all([
     admin.from("push_subscriptions").select("id,user_id,endpoint,p256dh,auth"),
     admin.from("daily_summaries").select("user_id,foods").eq("date", today),
     admin.from("coach_clients").select("client_id,coach_id"),
     admin.from("coaches").select("id,business_name"),
+    admin.from("profiles").select(`id,${notifCol}`),
   ]);
 
   const alreadyLogged = new Set(
     (todaySummaries ?? [])
       .filter((row) => Array.isArray(row.foods) && row.foods.some((f: { repas?: string }) => f.repas === mealLabel))
       .map((row) => row.user_id)
+  );
+  // Défaut true (colonnes NOT NULL DEFAULT true) — un profil absent de cette liste (édge case,
+  // ne devrait pas arriver) reste donc abonné plutôt que silencieusement exclu.
+  const optedOut = new Set(
+    (prefs as { id: string; [k: string]: unknown }[] | null ?? [])
+      .filter(p => p[notifCol] === false)
+      .map(p => p.id)
   );
 
   // Nom du coach par utilisateur (pour le titre de la notif) — jointure faite ici plutôt
@@ -51,7 +63,7 @@ export async function GET(req: NextRequest) {
 
   let sent = 0, removed = 0;
   await Promise.all((subs ?? []).map(async (s) => {
-    if (alreadyLogged.has(s.user_id)) return;
+    if (alreadyLogged.has(s.user_id) || optedOut.has(s.user_id)) return;
     try {
       await webpush.sendNotification(
         { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
