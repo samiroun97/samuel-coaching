@@ -606,10 +606,13 @@ export default function SuiviPage() {
   return (
     <div className="p-4 sm:p-8 max-w-2xl">
 
-      {/* Header */}
-      <div className="mb-6">
-        <p className="text-[0.7rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-2">Rubrique</p>
-        <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl sm:text-5xl text-[var(--t-text)] tracking-wide">SUIVI</h1>
+      {/* Header — même ancrage de marque que la rubrique Activité (monogramme + eyebrow). */}
+      <div className="mb-6 flex items-center gap-3.5">
+        <RichIcon name="monogram" size={52} className="shrink-0 rounded-full drop-shadow-[0_6px_16px_rgba(201,168,76,0.25)]"/>
+        <div>
+          <p className="text-[0.7rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-1">Rubrique</p>
+          <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl sm:text-5xl text-[var(--t-text)] tracking-wide leading-none">SUIVI</h1>
+        </div>
       </div>
 
       <DateNav date={selectedDate} onChange={setSelectedDate} />

@@ -8,6 +8,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { CalendarPicker } from "@/components/CalendarPicker";
 import { OBJECTIF_TYPES, OBJECTIF_TYPE_LABEL, type ObjectifType } from "@/lib/objectifTypes";
 import { Icon } from "@/components/Icon";
+import { RichIcon } from "@/components/RichIcon";
 import { Settings, ChevronRight, Pencil, MessageSquare, AlertCircle, Check } from "@/lib/solarIcons";
 
 type Profile = {
@@ -155,9 +156,13 @@ export default function ProfilePage() {
   return (
     <div className="p-4 sm:p-8 max-w-lg">
       <div className="flex items-start justify-between mb-8">
-        <div>
-          <p className="text-[0.7rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-2">Paramètres</p>
-          <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-5xl text-[var(--t-text)] tracking-wide">COMPTE</h1>
+        {/* Même ancrage de marque que la rubrique Activité (monogramme + eyebrow). */}
+        <div className="flex items-center gap-3.5">
+          <RichIcon name="monogram" size={52} className="shrink-0 rounded-full drop-shadow-[0_6px_16px_rgba(201,168,76,0.25)]"/>
+          <div>
+            <p className="text-[0.7rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-1">Paramètres</p>
+            <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-5xl text-[var(--t-text)] tracking-wide leading-none">COMPTE</h1>
+          </div>
         </div>
         <Link href="/dashboard/profile/preferences"
           aria-label="Préférences"

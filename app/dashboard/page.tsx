@@ -266,15 +266,18 @@ export default function AccueilPage() {
   return (
     <div className="p-4 sm:p-8 max-w-3xl">
 
-      {/* ── Header ── */}
-      <div className="mb-4 sm:mb-6">
-        <p className="text-[0.7rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-1">Espace client</p>
-        <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl sm:text-5xl text-[var(--t-text)] tracking-wide">
-          {profile.prenom} {profile.nom}
-        </h1>
-        <p className="text-[var(--t-text-30)] text-xs mt-1 capitalize">
-          {new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}
-        </p>
+      {/* ── Header — même ancrage de marque que la rubrique Activité (monogramme + eyebrow). ── */}
+      <div className="mb-4 sm:mb-6 flex items-center gap-3.5">
+        <RichIcon name="monogram" size={52} className="shrink-0 rounded-full drop-shadow-[0_6px_16px_rgba(201,168,76,0.25)]"/>
+        <div>
+          <p className="text-[0.7rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-1">Espace client</p>
+          <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl sm:text-5xl text-[var(--t-text)] tracking-wide leading-none">
+            {profile.prenom} {profile.nom}
+          </h1>
+          <p className="text-[var(--t-text-30)] text-xs mt-1 capitalize">
+            {new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}
+          </p>
+        </div>
       </div>
 
       {/* ── Sélecteur de date global ── */}
