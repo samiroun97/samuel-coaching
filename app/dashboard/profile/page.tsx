@@ -9,7 +9,7 @@ import { CalendarPicker } from "@/components/CalendarPicker";
 import { OBJECTIF_TYPES, OBJECTIF_TYPE_LABEL, type ObjectifType } from "@/lib/objectifTypes";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
-import { Settings, ChevronRight, Pencil, MessageSquare, AlertCircle, Check } from "@/lib/solarIcons";
+import { Settings, ChevronRight, Pencil, MessageSquare, AlertCircle, Check, Repeat } from "@/lib/solarIcons";
 
 type Profile = {
   prenom: string; nom: string; age: number | null; poids: number | null; taille: number | null; sexe: string | null;
@@ -171,20 +171,16 @@ export default function ProfilePage() {
         </Link>
       </div>
 
-      {/* Fond opaque théme-aware (--t-surface-gold, déjà réglé pour lire correctement en clair
-          comme en sombre — cf. les autres bannières hero de l'app) plutôt qu'un simple voile
-          doré à 5% d'opacité, trop pâle en clair et à peine visible en sombre. */}
+      {/* Pas une bannière explicative — juste un bouton de bascule, même langage visuel que
+          ThemeToggle (pastille dégradée + icône) plutôt qu'une carte avec texte à lire. */}
       {isCoach && (
-        <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-2xl p-5 flex items-center justify-between gap-4 mb-6 shadow-[0_4px_20px_rgba(0,0,0,0.06),0_0_24px_-8px_rgba(201,168,76,0.35)]">
-          <div className="min-w-0">
-            <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1">Espace coach</p>
-            <p className="text-[0.62rem] text-[var(--t-text-45)] tracking-wide leading-snug">Tu es actuellement dans ton espace perso (aperçu adhérent)</p>
-          </div>
-          <Link href="/crm/clients"
-            className="shrink-0 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.65rem] font-bold tracking-[0.15em] uppercase px-4 py-2.5 shadow-[0_4px_16px_-4px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_20px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
-            Retour →
-          </Link>
-        </div>
+        <Link href="/crm/clients"
+          className="mb-6 self-start inline-flex items-center gap-2.5 rounded-full border border-[#c9a84c]/30 pl-1.5 pr-4 py-1.5 text-[0.62rem] font-bold tracking-[0.12em] uppercase text-[#c9a84c] hover:bg-[#c9a84c]/10 transition-colors">
+          <span className="w-7 h-7 rounded-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] flex items-center justify-center shrink-0 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.4)]">
+            <Icon icon={Repeat} size={13} className="text-black"/>
+          </span>
+          Espace coach
+        </Link>
       )}
 
       <div className="border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl p-6 flex items-center gap-4 mb-4">

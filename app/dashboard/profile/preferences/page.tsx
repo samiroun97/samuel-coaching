@@ -7,7 +7,7 @@ import { isPushSupported, subscribeToPush, unsubscribeFromPush } from "@/lib/pus
 import { isCoachUser } from "@/lib/coach";
 import { apiPost } from "@/lib/apiClient";
 import { Icon } from "@/components/Icon";
-import { ChevronRight, X } from "@/lib/solarIcons";
+import { ChevronRight, X, Repeat } from "@/lib/solarIcons";
 
 type SectionKey = "profil" | "notifications" | "steps" | "password";
 
@@ -168,17 +168,16 @@ export default function PreferencesPage() {
         <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[var(--t-text)] tracking-wide">PRÉFÉRENCES</h1>
       </div>
 
+      {/* Pas une bannière explicative — juste un bouton de bascule, même langage visuel que
+          ThemeToggle (pastille dégradée + icône) plutôt qu'une carte avec texte à lire. */}
       {isCoach && (
-        <div className="border border-[#c9a84c]/25 bg-[#c9a84c]/5 rounded-xl p-5 flex items-center justify-between gap-4 mb-8">
-          <div>
-            <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-1">Espace coach</p>
-            <p className="text-[0.62rem] text-[var(--t-text-35)] tracking-wider">Tu es actuellement dans ton espace perso (aperçu adhérent)</p>
-          </div>
-          <Link href="/crm/clients"
-            className="shrink-0 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.65rem] font-bold tracking-[0.15em] uppercase px-4 py-2.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
-            Retour espace coach →
-          </Link>
-        </div>
+        <Link href="/crm/clients"
+          className="mb-8 inline-flex items-center gap-2.5 rounded-full border border-[#c9a84c]/30 pl-1.5 pr-4 py-1.5 text-[0.62rem] font-bold tracking-[0.12em] uppercase text-[#c9a84c] hover:bg-[#c9a84c]/10 transition-colors">
+          <span className="w-7 h-7 rounded-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] flex items-center justify-center shrink-0 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.4)]">
+            <Icon icon={Repeat} size={13} className="text-black"/>
+          </span>
+          Espace coach
+        </Link>
       )}
 
       {/* ── Mon profil ── */}
