@@ -172,7 +172,7 @@ export default function PreferencesPage() {
           ThemeToggle (pastille dégradée + icône) plutôt qu'une carte avec texte à lire. */}
       {isCoach && (
         <Link href="/crm/clients"
-          className="mb-8 inline-flex items-center gap-2.5 rounded-full border border-[#c9a84c]/30 pl-1.5 pr-4 py-1.5 text-[0.62rem] font-bold tracking-[0.12em] uppercase text-[#c9a84c] hover:bg-[#c9a84c]/10 transition-colors">
+          className="mb-8 inline-flex items-center gap-2.5 rounded-full border border-[#c9a84c]/30 bg-[var(--t-surface)] pl-1.5 pr-4 py-1.5 text-[0.62rem] font-bold tracking-[0.12em] uppercase text-[#c9a84c] shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:bg-[#c9a84c]/10 active:scale-[0.97] transition-all duration-150">
           <span className="w-7 h-7 rounded-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] flex items-center justify-center shrink-0 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.4)]">
             <Icon icon={Repeat} size={13} className="text-black"/>
           </span>

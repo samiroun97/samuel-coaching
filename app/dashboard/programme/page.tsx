@@ -676,7 +676,7 @@ export default function ProgrammePage() {
                     <p className="text-base text-[var(--t-text-70)] font-medium truncate">{s.titre}</p>
                   </div>
                   <button onClick={() => deleteSeance(s)} disabled={deletingSeanceId === s.id} title="Supprimer cette séance"
-                    className="shrink-0 text-[var(--t-text-20)] hover:text-[#e07070] transition-colors w-9 h-9 -mr-1.5 -mt-1 flex items-center justify-center disabled:opacity-40">
+                    className="shrink-0 rounded-full text-[var(--t-text-20)] hover:bg-[#e07070]/10 hover:text-[#e07070] active:scale-90 transition-all duration-150 w-9 h-9 -mr-1.5 -mt-1 flex items-center justify-center disabled:opacity-40 disabled:active:scale-100">
                     <Icon icon={Trash2} size={16} strokeWidth={2}/>
                   </button>
                 </div>
@@ -763,15 +763,20 @@ export default function ProgrammePage() {
             que le bilan de séance au lieu de redemander à l'IA de deviner à partir d'un nom
             d'activité — seulement pertinent s'il existe une séance loguée ce jour-là, sinon
             l'estimation libre reste la seule option sensée (activité non structurée). */}
-        <div className="flex gap-1.5 -mt-1">
+        {/* Piste commune + fond glissant (même mécanisme que CalRefToggle) plutôt que deux
+            pilules indépendantes — un seul indicateur continu qui se déplace vers l'option
+            active, au lieu d'un fond plein réappliqué séparément à chaque bouton. */}
+        <div className="relative flex border border-[var(--t-border)] rounded-full p-1 bg-[var(--t-surface)] -mt-1">
+          <div className="absolute top-1 bottom-1 rounded-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] shadow-[0_2px_8px_-2px_rgba(201,168,76,0.5)] transition-[left,width] duration-300 ease-out"
+            style={{ left: estimatorTab === "libre" ? "4px" : "50%", width: "calc(50% - 4px)" }}/>
           <button type="button" onClick={() => setEstimatorTab("libre")}
-            className={`flex-1 text-[0.62rem] tracking-[0.06em] uppercase py-2 rounded-full border transition-colors ${
-              estimatorTab === "libre" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-35)] hover:border-[#c9a84c]/40"}`}>
+            className={`relative z-10 flex-1 text-[0.62rem] tracking-[0.06em] uppercase py-2 rounded-full transition-colors ${
+              estimatorTab === "libre" ? "text-black font-semibold" : "text-[var(--t-text-35)] hover:text-[var(--t-text-60)]"}`}>
             Activité libre
           </button>
           <button type="button" onClick={() => setEstimatorTab("seance")}
-            className={`flex-1 text-[0.62rem] tracking-[0.06em] uppercase py-2 rounded-full border transition-colors ${
-              estimatorTab === "seance" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-35)] hover:border-[#c9a84c]/40"}`}>
+            className={`relative z-10 flex-1 text-[0.62rem] tracking-[0.06em] uppercase py-2 rounded-full transition-colors ${
+              estimatorTab === "seance" ? "text-black font-semibold" : "text-[var(--t-text-35)] hover:text-[var(--t-text-60)]"}`}>
             Séance loguée
           </button>
         </div>

@@ -1102,8 +1102,10 @@ export default function NutritionPage() {
 
   const inputCls = "w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
   const labelCls = "text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] block mb-1.5";
-  const tabCls   = (active: boolean, border = true) =>
-    `flex-1 py-2 text-[0.7rem] tracking-[0.1em] uppercase transition-colors ${border ? "border-r border-[var(--t-border)]" : ""} ${active ? "bg-[#c9a84c]/10 text-[#c9a84c]" : "text-[var(--t-text-30)] hover:text-[var(--t-text-50)]"}`;
+  // Fond mis en évidence désormais porté par un indicateur glissant commun (cf. site d'appel)
+  // plutôt que par chaque bouton individuellement — cette fonction ne gère plus que le texte.
+  const tabCls = (active: boolean) =>
+    `relative z-10 flex-1 py-2 text-[0.7rem] tracking-[0.1em] uppercase transition-colors ${active ? "text-[#c9a84c] font-semibold" : "text-[var(--t-text-30)] hover:text-[var(--t-text-50)]"}`;
 
   const daysWithData = fullHistory.filter(d => d.calories > 0);
   const avgCal = daysWithData.length ? Math.round(daysWithData.reduce((s,d) => s+d.calories,0)/daysWithData.length) : 0;
@@ -1391,11 +1393,14 @@ export default function NutritionPage() {
 
             <div className="px-6 py-5 flex flex-col gap-5">
 
-              {/* Mode tabs */}
-              <div className="flex border border-[var(--t-border)] rounded-xl overflow-hidden">
+              {/* Mode tabs — indicateur glissant continu (même esprit que CalRefToggle)
+                  plutôt que des séparateurs durs entre boutons indépendants. */}
+              <div className="relative flex border border-[var(--t-border)] rounded-xl overflow-hidden bg-[var(--t-surface)]">
+                <div className="absolute inset-y-0 w-1/3 bg-[#c9a84c]/12 transition-transform duration-300 ease-out"
+                  style={{ transform: `translateX(${modalMode === "ai" ? 0 : modalMode === "search" ? 100 : 200}%)` }}/>
                 <button onClick={() => { setModalMode("ai"); setSelectedSaved(null); }} className={tabCls(modalMode==="ai")}>Estimation IA</button>
                 <button onClick={() => { setModalMode("search"); setSelectedSaved(null); }} className={tabCls(modalMode==="search")}>Scan</button>
-                <button onClick={() => { setModalMode("saved"); setSelectedSaved(null); }} className={tabCls(modalMode==="saved", false)}>
+                <button onClick={() => { setModalMode("saved"); setSelectedSaved(null); }} className={tabCls(modalMode==="saved")}>
                   Mes repas{savedMeals.length > 0 && <span className="ml-1 opacity-50">({savedMeals.length})</span>}
                 </button>
               </div>

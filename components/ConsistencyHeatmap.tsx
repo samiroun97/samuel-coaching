@@ -54,14 +54,14 @@ export function ConsistencyHeatmap({ statuses }: { statuses: Record<string, DayS
 
       <div className="flex items-center justify-between">
         <button type="button" onClick={() => go(-1)}
-          className="w-8 h-8 rounded-full border border-[var(--t-border)] flex items-center justify-center text-[var(--t-text-50)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors">
+          className="w-8 h-8 rounded-full border border-[#c9a84c]/20 bg-[#c9a84c]/8 shadow-[0_1px_3px_rgba(0,0,0,0.06)] flex items-center justify-center text-[var(--t-text-50)] hover:bg-[#c9a84c]/15 hover:text-[var(--t-text-80)] active:bg-[#c9a84c]/25 active:scale-90 transition-all duration-150">
           <Icon icon={ChevronLeft} size={13} strokeWidth={2}/>
         </button>
         <p style={{ fontFamily: "var(--font-bebas)" }} className="text-base tracking-[0.15em] uppercase text-[var(--t-text)]">
           {MONTHS[viewMonth]} {viewYear}
         </p>
         <button type="button" onClick={() => go(1)} disabled={isCurrentMonth}
-          className="w-8 h-8 rounded-full border border-[var(--t-border)] flex items-center justify-center text-[var(--t-text-50)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors disabled:opacity-20 disabled:pointer-events-none">
+          className="w-8 h-8 rounded-full border border-[#c9a84c]/20 bg-[#c9a84c]/8 shadow-[0_1px_3px_rgba(0,0,0,0.06)] flex items-center justify-center text-[var(--t-text-50)] hover:bg-[#c9a84c]/15 hover:text-[var(--t-text-80)] active:bg-[#c9a84c]/25 active:scale-90 transition-all duration-150 disabled:opacity-20 disabled:pointer-events-none disabled:active:scale-100">
           <Icon icon={ChevronRight} size={13} strokeWidth={2}/>
         </button>
       </div>

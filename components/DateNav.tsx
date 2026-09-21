@@ -16,12 +16,13 @@ export function DateNav({ date, onChange, statuses }: { date: string; onChange: 
   const label = isToday ? "Aujourd'hui" : new Date(date + "T12:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
   return (
     <div className="flex items-center gap-2 mb-6">
-      <button onClick={() => move(-1)} className="w-9 h-9 rounded-full border border-[var(--t-border)] bg-[var(--t-surface)] text-[var(--t-text-50)] hover:text-[var(--t-text-80)] hover:border-[var(--t-text-25)] transition-colors flex items-center justify-center shrink-0">
+      <button onClick={() => move(-1)}
+        className="w-9 h-9 rounded-full border border-[#c9a84c]/20 bg-[#c9a84c]/8 text-[var(--t-text-50)] shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:bg-[#c9a84c]/15 hover:text-[var(--t-text-80)] active:bg-[#c9a84c]/25 active:scale-90 transition-all duration-150 flex items-center justify-center shrink-0">
         <Icon icon={ChevronLeft} size={14} strokeWidth={2}/>
       </button>
       <div className="flex-1 relative flex items-center justify-center">
         <button type="button" onClick={() => setOpen(o => !o)}
-          className="flex items-center gap-2 px-4 py-2 rounded-full border border-[var(--t-border)] bg-[var(--t-surface)] hover:border-[#c9a84c]/40 transition-colors group">
+          className="flex items-center gap-2 px-4 py-2 rounded-full border border-[var(--t-border)] bg-[var(--t-surface)] shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:border-[#c9a84c]/40 hover:bg-[#c9a84c]/5 active:scale-[0.98] transition-all duration-150 group">
           <Icon icon={Calendar} size={17} strokeWidth={1.5} className="text-[var(--t-text-40)] group-hover:text-[#c9a84c] transition-colors shrink-0"/>
           <p className="text-[0.7rem] tracking-[0.15em] uppercase text-[var(--t-text-60)] group-hover:text-[var(--t-text-80)] transition-colors capitalize select-none">{label}</p>
         </button>
@@ -30,7 +31,8 @@ export function DateNav({ date, onChange, statuses }: { date: string; onChange: 
             className="top-full left-1/2 -translate-x-1/2 mt-2"/>
         )}
       </div>
-      <button onClick={() => move(1)} disabled={isToday} className="w-9 h-9 rounded-full border border-[var(--t-border)] bg-[var(--t-surface)] text-[var(--t-text-50)] hover:text-[var(--t-text-80)] hover:border-[var(--t-text-25)] transition-colors flex items-center justify-center shrink-0 disabled:opacity-20 disabled:cursor-not-allowed">
+      <button onClick={() => move(1)} disabled={isToday}
+        className="w-9 h-9 rounded-full border border-[#c9a84c]/20 bg-[#c9a84c]/8 text-[var(--t-text-50)] shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:bg-[#c9a84c]/15 hover:text-[var(--t-text-80)] active:bg-[#c9a84c]/25 active:scale-90 transition-all duration-150 flex items-center justify-center shrink-0 disabled:opacity-20 disabled:cursor-not-allowed disabled:active:scale-100">
         <Icon icon={ChevronRight} size={14} strokeWidth={2}/>
       </button>
       {!isToday && (

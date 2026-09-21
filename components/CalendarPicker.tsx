@@ -78,13 +78,13 @@ export function CalendarPicker({
       style={{ backgroundColor: "var(--t-surface)" }}
       className={`absolute z-[100] border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl shadow-[0_16px_40px_-8px_rgba(0,0,0,0.6)] ${big ? "p-6 w-[390px] sm:w-[440px]" : "p-4 w-[280px]"} ${className}`}>
       <div className={`flex items-center justify-between ${big ? "mb-4" : "mb-3"}`}>
-        <button type="button" onClick={() => go(-1)} className={`${big ? "w-9 h-9" : "w-8 h-8"} rounded-full border border-[var(--t-border)] flex items-center justify-center text-[var(--t-text-50)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors`}>
+        <button type="button" onClick={() => go(-1)} className={`${big ? "w-9 h-9" : "w-8 h-8"} rounded-full border border-[#c9a84c]/20 bg-[#c9a84c]/8 flex items-center justify-center text-[var(--t-text-50)] hover:bg-[#c9a84c]/15 hover:text-[var(--t-text-80)] active:bg-[#c9a84c]/25 active:scale-90 transition-all duration-150`}>
           <Icon icon={ChevronLeft} size={big ? 15 : 13} strokeWidth={2}/>
         </button>
         <p style={{ fontFamily: "var(--font-bebas)" }} className={`${big ? "text-base" : "text-sm"} tracking-[0.15em] uppercase text-[var(--t-text)]`}>
           {MONTHS[viewMonth]} {viewYear}
         </p>
-        <button type="button" onClick={() => go(1)} className={`${big ? "w-9 h-9" : "w-8 h-8"} rounded-full border border-[var(--t-border)] flex items-center justify-center text-[var(--t-text-50)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors`}>
+        <button type="button" onClick={() => go(1)} className={`${big ? "w-9 h-9" : "w-8 h-8"} rounded-full border border-[#c9a84c]/20 bg-[#c9a84c]/8 flex items-center justify-center text-[var(--t-text-50)] hover:bg-[#c9a84c]/15 hover:text-[var(--t-text-80)] active:bg-[#c9a84c]/25 active:scale-90 transition-all duration-150`}>
           <Icon icon={ChevronRight} size={big ? 15 : 13} strokeWidth={2}/>
         </button>
       </div>

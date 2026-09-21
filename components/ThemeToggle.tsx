@@ -82,7 +82,7 @@ export default function ThemeToggle() {
   return (
     <button type="button" onPointerDown={onPointerDown} onClick={onClick}
       aria-label={isLight ? "Passer en mode sombre" : "Passer en mode clair"}
-      className="relative w-[68px] h-9 rounded-full border border-[var(--t-border)] bg-[var(--t-surface-2)] shrink-0 touch-none select-none">
+      className="relative w-[68px] h-9 rounded-full border border-[var(--t-border)] bg-[var(--t-surface-2)] shadow-[inset_0_1px_3px_rgba(0,0,0,0.1)] shrink-0 touch-none select-none">
       <span className="absolute inset-0 flex items-center justify-between px-2.5 pointer-events-none">
         <Icon icon={Moon} size={14} className="opacity-25 text-[var(--t-text-50)]"/>
         <Icon icon={Sun} size={14} className="opacity-25 text-[var(--t-text-50)]"/>
