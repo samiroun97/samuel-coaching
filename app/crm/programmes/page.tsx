@@ -21,10 +21,9 @@ import { type ProgrammeTemplate, listTemplates, saveTemplate, deleteTemplate, te
 import { getMyCoachId } from "@/lib/coach";
 import Link from "next/link";
 import { hasBlessure } from "@/lib/blessures";
-import { type Mesocycle, loadActiveMesocycle, createMesocycle, deleteMesocycle } from "@/lib/mesocycles";
-import { MesocycleCard } from "@/components/MesocycleCard";
+import { type Mesocycle, loadActiveMesocycle, createMesocycle, deleteMesocycle, mesocycleProgress } from "@/lib/mesocycles";
 import { Icon } from "@/components/Icon";
-import { ChevronLeft, ChevronDown, Trash2, X, Copy, FileText } from "@/lib/solarIcons";
+import { ChevronLeft, ChevronDown, Trash2, X, Copy, FileText, Plus } from "@/lib/solarIcons";
 
 const STAGE_CFG: Record<string, { label: string; color: string }> = {
   prospect:   { label: "Prospect",   color: "#888" },
@@ -35,7 +34,7 @@ const STAGE_CFG: Record<string, { label: string; color: string }> = {
   reactive:   { label: "Réactivé",   color: "#6ea8d9" },
 };
 
-type Client = { id: string; email: string; prenom: string; nom: string; age: number; poids: number; taille: number; sexe: string; niveau_activite: string; experience: string; seances_par_semaine: number; duree_seance: string; lieu_entrainement: string; blessures: string; objectifs: string; objectif_type: string | null; pipeline_stage: string | null; is_coach: boolean | null };
+type Client = { id: string; email: string; prenom: string; nom: string; age: number; poids: number; taille: number; sexe: string; niveau_activite: string; experience: string; seances_par_semaine: number; duree_seance: string; lieu_entrainement: string; blessures: string; objectifs: string; objectif_type: string | null; pipeline_stage: string | null; is_coach: boolean | null; avatar_url: string | null };
 type SentSeance = { id: string; titre: string; type_seance: string | null; date_prevue: string | null; semaine: number | null; description: string | null; exercices: string | null; notes_libres: string | null; completed_at: string | null; created_by_client?: boolean };
 
 // Regroupe les séances envoyées par semaine (lundi de la date prévue, ou de la date de fin
@@ -68,6 +67,9 @@ export default function ProgrammesPage() {
   const preselectEmail = searchParams.get("client");
   const [clients,     setClients]     = useState<Client[]>([]);
   const [seanceCount, setSeanceCount] = useState<Map<string, number>>(new Map());
+  const [nextByEmail, setNextByEmail] = useState<Map<string, string>>(new Map());
+  // Panneau latéral "Nouveau programme" (IA, modèles, brouillons) : garde le calendrier visible.
+  const [composer, setComposer] = useState(false);
   const [filter,      setFilter]      = useState<"sans" | "avec">("sans");
   const [selected,    setSelected]    = useState<Client | null>(null);
   const [loading,     setLoading]     = useState(true);
@@ -151,8 +153,17 @@ export default function ProgrammesPage() {
     const [{ data: { user } }, { data: c, error: cErr }, { data: s }] = await Promise.all([
       supabase.auth.getUser(),
       supabase.from("profiles").select("*").order("updated_at", { ascending: false }),
-      supabase.from("programme_seances").select("assigned_to_email"),
+      supabase.from("programme_seances").select("assigned_to_email,date_prevue,completed_at,created_by_client"),
     ]);
+    // Prochaine séance à faire par client (pour la liste de gauche).
+    const todayISO = new Date().toLocaleDateString("sv-SE");
+    const next = new Map<string, string>();
+    for (const r of (s ?? []) as { assigned_to_email: string; date_prevue: string | null; completed_at: string | null; created_by_client: boolean | null }[]) {
+      if (r.completed_at || r.created_by_client || !r.date_prevue || r.date_prevue < todayISO) continue;
+      const cur = next.get(r.assigned_to_email);
+      if (!cur || r.date_prevue < cur) next.set(r.assigned_to_email, r.date_prevue);
+    }
+    setNextByEmail(next);
     if (cErr) setGenError(cErr.message);
     // Même filtre que Clients / Pipeline : le coach n'est pas son propre client.
     setClients(((c ?? []) as Client[]).filter(cl => !cl.is_coach && cl.id !== user?.id));
@@ -168,7 +179,7 @@ export default function ProgrammesPage() {
   const list = filter === "sans" ? sans : avec;
 
   const selectClient = (c: Client) => {
-    setSelected(c); setDrafts([]); setGenError(""); setSentTo(null); setGenDescription(""); setOpenSentId(null);
+    setSelected(c); setDrafts([]); setComposer(false); setGenError(""); setSentTo(null); setGenDescription(""); setOpenSentId(null);
     loadSentSeances(c.email);
     setActiveMeso(null); setShowMesoForm(false); setTemplateDraft(null);
     loadActiveMesocycle(c.id).then(setActiveMeso).catch(() => {});
@@ -402,7 +413,7 @@ export default function ProgrammesPage() {
     }))).select();
     setSending(false);
     if (error) { setGenError(error.message); return; }
-    setSentTo(selected.email); setDrafts([]); setGenDescription("");
+    setSentTo(selected.email); setDrafts([]); setGenDescription(""); setComposer(false); setSentView("calendrier");
     // Ouvre directement l'aperçu de ce qui vient d'être envoyé, au lieu de laisser
     // le coach avec un simple message "envoyé ✓" sans visuel dessus.
     if (inserted && inserted[0]) setOpenSentId(inserted[0].id as string);
@@ -415,27 +426,39 @@ export default function ProgrammesPage() {
 
   if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="w-5 h-5 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/></div>;
 
+  const initials = (c: Pick<Client, "prenom" | "nom">) => `${c.prenom?.[0] ?? ""}${c.nom?.[0] ?? ""}`.toUpperCase() || "?";
+  const Avatar = ({ c, size, color }: { c: Client; size: number; color: string }) => c.avatar_url ? (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={c.avatar_url} alt="" className="rounded-full object-cover shrink-0" style={{ width: size, height: size, boxShadow: `0 0 0 2px ${color}40` }}/>
+  ) : (
+    <div className="rounded-full flex items-center justify-center shrink-0 font-bold"
+      style={{ width: size, height: size, fontSize: size * 0.34, color, background: `linear-gradient(145deg, ${color}35, ${color}12)`, boxShadow: `inset 0 0 0 1px ${color}30` }}>
+      {initials(c)}
+    </div>
+  );
+  const fmtDay = (iso: string) => new Date(iso + "T12:00:00").toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" });
+  const toolBtn = "flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[var(--t-border)] bg-[var(--t-surface)] text-[var(--t-text-60)] text-[0.58rem] tracking-[0.1em] uppercase hover:border-[#c9a84c]/50 hover:text-[#c9a84c] transition-colors disabled:opacity-40 disabled:hover:border-[var(--t-border)] disabled:hover:text-[var(--t-text-60)]";
+
   return (
     <div className="flex h-[calc(100dvh-50px-env(safe-area-inset-bottom))] md:h-screen overflow-hidden">
 
-      {/* ── Left: list (plein écran sur mobile quand aucun client sélectionné) ── */}
-      <div className={`flex-col border-r border-[var(--t-border-soft)] bg-[var(--t-bg)] ${selected ? "hidden md:flex w-80 shrink-0" : "flex flex-1"}`}>
-        <div className="px-4 md:px-5 pt-5 md:pt-6 pb-4 border-b border-[var(--t-border-soft)]">
+      {/* ── Liste clients : compacte, statut programme en un coup d'œil ── */}
+      <div className={`flex-col border-r border-[var(--t-border-soft)] bg-[var(--t-bg)] ${selected ? "hidden md:flex w-72 shrink-0" : "flex flex-1 md:max-w-md"}`}>
+        <div className="px-4 md:px-5 pt-5 md:pt-6 pb-3 border-b border-[var(--t-border-soft)]">
           <p className="text-[0.5rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-1">Plateforme coaching</p>
           <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl md:text-4xl text-[var(--t-text)] tracking-wide mb-3">PROGRAMMES</h1>
-          <div className="flex gap-2">
-            <button onClick={() => setFilter("sans")}
-              className={`flex-1 py-2 rounded-xl text-[0.5rem] tracking-[0.12em] uppercase border transition-all ${filter === "sans" ? "border-[#e09070] text-[#e09070] bg-[#e09070]/5" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[var(--t-text-20)]"}`}>
-              Sans programme ({sans.length})
-            </button>
-            <button onClick={() => setFilter("avec")}
-              className={`flex-1 py-2 rounded-xl text-[0.5rem] tracking-[0.12em] uppercase border transition-all ${filter === "avec" ? "border-[#7eb8a0] text-[#7eb8a0] bg-[#7eb8a0]/5" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[var(--t-text-20)]"}`}>
-              Avec ({avec.length})
-            </button>
+          <div className="flex p-0.5 rounded-xl bg-[var(--t-surface-2)] border border-[var(--t-border-soft)]">
+            {([["sans", `À programmer · ${sans.length}`, "#e09070"], ["avec", `En cours · ${avec.length}`, "#7eb8a0"]] as const).map(([k, label, color]) => (
+              <button key={k} onClick={() => setFilter(k)}
+                className={`flex-1 py-1.5 rounded-lg text-[0.52rem] tracking-[0.1em] uppercase transition-all ${filter === k ? "bg-[var(--t-surface)] shadow-[0_1px_4px_rgba(0,0,0,0.08)]" : "text-[var(--t-text-35)] hover:text-[var(--t-text-60)]"}`}
+                style={filter === k ? { color } : undefined}>
+                {label}
+              </button>
+            ))}
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto py-2 px-2">
+        <div className="flex-1 overflow-y-auto py-1.5 px-2">
           {genError && !selected && <p className="text-xs text-[#e07070] px-3 py-2">{genError}</p>}
           {list.length === 0 ? (
             <p className="text-[var(--t-text-20)] text-xs text-center py-8">
@@ -445,106 +468,257 @@ export default function ProgrammesPage() {
             const stage = STAGE_CFG[c.pipeline_stage ?? "actif"] ?? STAGE_CFG.actif;
             const isSel = selected?.id === c.id;
             const count = seanceCount.get(c.email) ?? 0;
+            const next = nextByEmail.get(c.email);
             return (
               <button key={c.id} onClick={() => selectClient(c)}
-                className={`w-full text-left px-4 py-3 mb-1 rounded-xl border transition-all ${isSel ? "border-[#c9a84c]/30 bg-[#c9a84c]/5" : "border-[var(--t-border-soft)] hover:border-[var(--t-border)] hover:bg-[var(--t-glass-bg)]"}`}>
-                <div className="flex items-start justify-between mb-1 gap-2">
-                  <p className={`text-sm font-medium ${isSel ? "text-[var(--t-text)]" : "text-[var(--t-text-70)]"}`}>{c.prenom} {c.nom}</p>
-                  <span className="text-[0.42rem] tracking-wider uppercase px-1.5 py-0.5 rounded-full border shrink-0"
-                    style={{ color: stage.color, borderColor: `${stage.color}35`, backgroundColor: `${stage.color}10` }}>
-                    {stage.label}
-                  </span>
+                className={`w-full text-left px-2.5 py-2 mb-0.5 rounded-xl flex items-center gap-2.5 transition-colors ${isSel ? "bg-[#c9a84c]/10" : "hover:bg-[var(--t-glass-bg)]"}`}>
+                <Avatar c={c} size={32} color={stage.color}/>
+                <div className="min-w-0 flex-1">
+                  <p className={`text-[0.8rem] font-medium truncate ${isSel ? "text-[var(--t-text)]" : "text-[var(--t-text-75)]"}`}>{c.prenom} {c.nom}</p>
+                  <p className={`text-[0.56rem] truncate ${count === 0 ? "text-[#e09070]" : next ? "text-[var(--t-text-40)]" : "text-[#c9a84c]"}`}>
+                    {count === 0 ? "Aucun programme" : next ? `Prochaine : ${fmtDay(next)}` : `${count} séance${count > 1 ? "s" : ""} · rien de prévu`}
+                  </p>
                 </div>
-                <p className="text-[0.55rem] text-[var(--t-text-40)] line-clamp-2 leading-relaxed">🎯 {c.objectifs || "Objectif non renseigné"}</p>
-                <p className="text-[0.45rem] text-[var(--t-text-20)] mt-1">
-                  {c.experience || "—"} · {c.seances_par_semaine ? `${c.seances_par_semaine}×/sem` : "—"}
-                  {count > 0 && <span className="text-[#7eb8a0]"> · {count} séance{count > 1 ? "s" : ""}</span>}
-                </p>
+                {count > 0 && <span className="text-[0.5rem] text-[var(--t-text-30)] shrink-0">{count}</span>}
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* ── Right: detail ── */}
-      {selected ? (
-        <div className="flex-1 flex flex-col overflow-hidden">
+      {/* ── Espace de programmation du client ── */}
+      {selected ? (() => {
+        const stage = STAGE_CFG[selected.pipeline_stage ?? "actif"] ?? STAGE_CFG.actif;
 
-          {/* Header */}
-          <div className="px-4 md:px-8 pt-5 md:pt-6 pb-4 border-b border-[var(--t-border-soft)] shrink-0">
-            <div className="flex items-start gap-2">
-              <button onClick={() => setSelected(null)} aria-label="Retour à la liste des clients" className="md:hidden text-[var(--t-text-40)] hover:text-[var(--t-text-70)] transition-colors mt-1.5 shrink-0">
+        const prog = activeMeso ? mesocycleProgress(activeMeso) : null;
+        return (
+        <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+
+          {/* En-tête : identité + contraintes + barre d'outils (façon Everfit / TrueCoach) */}
+          <div className="px-4 md:px-8 pt-5 md:pt-6 pb-4 border-b border-[var(--t-border-soft)] shrink-0 flex flex-col gap-3">
+            <div className="flex items-start gap-3">
+              <button onClick={() => setSelected(null)} aria-label="Retour à la liste des clients" className="md:hidden text-[var(--t-text-40)] hover:text-[var(--t-text-70)] transition-colors mt-3 shrink-0">
                 <Icon icon={ChevronLeft} size={18}/>
               </button>
+              <Avatar c={selected} size={48} color={stage.color}/>
               <div className="min-w-0 flex-1">
-                <p className="text-[0.45rem] tracking-[0.2em] text-[var(--t-text-25)] uppercase truncate">{selected.email}</p>
-                <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl md:text-4xl text-[var(--t-text)] tracking-wide">{selected.prenom} {selected.nom}</h2>
-                <p className="text-[var(--t-text-30)] text-xs mt-0.5">{selected.age} ans · {selected.sexe} · {selected.poids} kg · {selected.experience || "expérience —"} · {selected.seances_par_semaine ? `${selected.seances_par_semaine}×/sem` : "—"}{selected.duree_seance ? ` · ${selected.duree_seance}` : ""}</p>
+                <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl md:text-4xl text-[var(--t-text)] tracking-wide leading-none">{selected.prenom} {selected.nom}</h2>
+                <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                  {[selected.experience, selected.seances_par_semaine ? `${selected.seances_par_semaine}× / sem.` : null, selected.duree_seance, selected.lieu_entrainement ? `📍 ${selected.lieu_entrainement}` : null]
+                    .filter(Boolean).map(t => (
+                      <span key={t!} className="text-[0.56rem] px-2 py-0.5 rounded-full bg-[var(--t-surface-2)] border border-[var(--t-border-soft)] text-[var(--t-text-50)]">{t}</span>
+                    ))}
+                </div>
               </div>
-              {/* Régularité, volume, poids… vivent sur la fiche client : cette page ne sert qu'à programmer. */}
               <Link href={`/crm/clients?client=${selected.id}`}
-                className="shrink-0 mt-1 px-3 py-1.5 rounded-xl border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-70)] hover:border-[var(--t-text-25)] transition-all text-[0.5rem] tracking-[0.15em] uppercase">
+                className="shrink-0 mt-1 px-3 py-1.5 rounded-xl border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-70)] hover:border-[var(--t-text-25)] transition-all text-[0.5rem] tracking-[0.15em] uppercase hidden sm:block">
                 Voir la fiche →
               </Link>
             </div>
+
+            <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-[0.65rem] text-[var(--t-text-50)] leading-relaxed">
+              <span><span className="text-[0.48rem] tracking-[0.15em] uppercase text-[#c9a84c] mr-1.5">Objectif</span>{selected.objectifs || "Non renseigné"}</span>
+              {hasBlessure(selected.blessures) && <span className="text-[#e09070]">⚠ {selected.blessures}</span>}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <button onClick={() => setComposer(true)}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.58rem] font-bold tracking-[0.1em] uppercase shadow-[0_4px_16px_-6px_rgba(201,168,76,0.6)] hover:-translate-y-px transition-all">
+                ✦ Générer avec l&apos;IA
+              </button>
+              <button onClick={() => openCreate(new Date().toLocaleDateString("sv-SE"))} className={toolBtn}>
+                <Icon icon={Plus} size={11} strokeWidth={2.2}/> Séance
+              </button>
+              <button onClick={openAssign} disabled={programmes.length === 0} className={toolBtn}
+                title={programmes.length === 0 ? "Enregistre un planning comme programme pour le réappliquer ici" : undefined}>
+                Appliquer un programme · {programmes.length}
+              </button>
+              <button onClick={() => { setShowTemplates(true); setComposer(true); }} disabled={templates.length === 0} className={toolBtn}
+                title={templates.length === 0 ? "Enregistre une séance comme modèle pour la réutiliser" : undefined}>
+                Modèles · {templates.length}
+              </button>
+
+              {/* Mésocycle : bloc en cours avec progression, ou bouton discret pour en démarrer un */}
+              <div className="sm:ml-auto">
+                {activeMeso && prog ? (
+                  <div className="flex items-center gap-2.5 pl-3 pr-2 py-1.5 rounded-xl border border-[#c9a84c]/30 bg-[#c9a84c]/[0.06]">
+                    <div className="min-w-0">
+                      <p className="text-[0.56rem] text-[var(--t-text-70)] truncate max-w-[180px]">{activeMeso.nom}</p>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <div className="w-20 h-1 rounded-full bg-[var(--t-track)] overflow-hidden">
+                          <div className="h-full rounded-full bg-[#c9a84c]" style={{ width: `${prog.pct}%` }}/>
+                        </div>
+                        <span className="text-[0.5rem] text-[#c9a84c]">S{prog.weekNum}/{prog.totalWeeks}</span>
+                      </div>
+                    </div>
+                    <button onClick={removeMeso} aria-label="Supprimer le mésocycle" title="Supprimer le mésocycle" className="text-[var(--t-text-20)] hover:text-[#e07070] transition-colors">
+                      <Icon icon={X} size={11} strokeWidth={2}/>
+                    </button>
+                  </div>
+                ) : (
+                  <button onClick={() => setShowMesoForm(true)} className={`${toolBtn} border-dashed`}>
+                    <Icon icon={Plus} size={11} strokeWidth={2.2}/> Mésocycle
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
 
+          {/* Corps : le planning est l'écran principal, pleine largeur */}
           <div className="flex-1 overflow-y-auto px-4 md:px-8 py-5 md:py-6">
-            <div className="max-w-2xl flex flex-col gap-4">
+            <div className="max-w-6xl flex flex-col gap-4">
 
-              {/* Contraintes à garder en tête en programmant — une ligne, pas une carte. */}
-              <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-[0.65rem] text-[var(--t-text-50)] leading-relaxed">
-                <span><span className="text-[0.48rem] tracking-[0.15em] uppercase text-[#c9a84c] mr-1.5">Objectif</span>{selected.objectifs || "Non renseigné"}</span>
-                {hasBlessure(selected.blessures) && <span className="text-[#e09070]">⚠ {selected.blessures}</span>}
-                <span className="text-[var(--t-text-30)]">📍 {selected.lieu_entrainement || "Lieu —"}</span>
+              {genError && <p className="text-xs text-[#e07070] rounded-xl border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2">{genError}</p>}
+              {sentTo === selected.email && (
+                <p className="text-xs text-[#7eb8a0] rounded-xl border border-[#7eb8a0]/25 bg-[#7eb8a0]/5 px-3 py-2">Programme envoyé à {selected.prenom} ✓</p>
+              )}
+              {calMsg && <p className="text-xs text-[#7eb8a0] rounded-xl border border-[#7eb8a0]/25 bg-[#7eb8a0]/5 px-3 py-2">{calMsg}</p>}
+              {drafts.length > 0 && !composer && (
+                <button onClick={() => setComposer(true)}
+                  className="flex items-center justify-between rounded-xl border border-[#c9a84c]/35 bg-[#c9a84c]/[0.07] px-4 py-2.5 text-left hover:bg-[#c9a84c]/12 transition-colors">
+                  <span className="text-xs text-[var(--t-text-70)]">{drafts.length} séance{drafts.length > 1 ? "s" : ""} en brouillon, pas encore envoyée{drafts.length > 1 ? "s" : ""}</span>
+                  <span className="text-[0.55rem] tracking-wider uppercase text-[#c9a84c]">Reprendre →</span>
+                </button>
+              )}
+
+              {/* Onglets de vue + action d'enregistrement */}
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex p-0.5 rounded-xl bg-[var(--t-surface-2)] border border-[var(--t-border-soft)]">
+                  {(["calendrier", "progression", "liste"] as const).map(v => (
+                    <button key={v} onClick={() => setSentView(v)}
+                      className={`px-3.5 py-1.5 rounded-lg text-[0.56rem] tracking-[0.1em] uppercase transition-all ${sentView === v ? "bg-[var(--t-surface)] text-[#c9a84c] shadow-[0_1px_4px_rgba(0,0,0,0.08)]" : "text-[var(--t-text-35)] hover:text-[var(--t-text-60)]"}`}>
+                      {v === "calendrier" ? "Calendrier" : v === "progression" ? "Progression" : "Liste"}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-[0.56rem] text-[var(--t-text-30)]">{sentSeances.length} séance{sentSeances.length > 1 ? "s" : ""} · {sentSeances.filter(s => s.completed_at).length} faite{sentSeances.filter(s => s.completed_at).length > 1 ? "s" : ""}</span>
+                  {coachDated.length > 0 && (
+                    <button onClick={openSaveProgramme} className="text-[0.55rem] tracking-[0.1em] uppercase text-[var(--t-text-40)] hover:text-[#c9a84c] transition-colors">
+                      ⤓ Enregistrer comme programme
+                    </button>
+                  )}
+                </div>
               </div>
 
-              {/* ── Création d'abord : c'est la raison d'être de cette page ── */}
-              {drafts.length === 0 && !showTemplates && (
-                <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-xl p-4 md:p-5 flex flex-col gap-4">
-                  <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c]">Nouveau programme</p>
+              <div className="border border-[var(--t-border-soft)] bg-[var(--t-surface)]/50 rounded-2xl p-3 md:p-4">
+                {sentView === "calendrier" && (
+                  <ProgrammeCalendar seances={sentSeances} meso={activeMeso} weeklyTarget={selected.seances_par_semaine || 0}
+                    onCreate={openCreate} onOpen={openEdit} onMove={moveSeance} onDuplicateWeek={m => setDup({ monday: m, rule: NO_PROGRESSION })} busyWeek={busyWeek}/>
+                )}
 
-                  <div className="flex flex-col gap-2">
-                    <textarea rows={2} className={`${inp} resize-none`}
-                      placeholder={`Précisions pour l'IA (optionnel) — ex : reprise après blessure au genou, priorité haut du corps…`}
+                {sentView === "progression" && (
+                  <ProgressionTable seances={sentSeances} meso={activeMeso} onOpen={openEdit}/>
+                )}
+
+                {sentView === "liste" && sentSeances.length === 0 && (
+                  <p className="text-xs text-[var(--t-text-25)] py-2">Aucune séance pour l&apos;instant.</p>
+                )}
+
+                {sentView === "liste" && groupByWeek(sentSeances).map(g => (
+                  <div key={g.key} className="mb-2 last:mb-0">
+                    <div className="flex items-center justify-between px-2 py-1.5">
+                      <p className="text-[0.52rem] tracking-[0.18em] uppercase text-[var(--t-text-40)]">{g.label}</p>
+                      <p className="text-[0.52rem] text-[var(--t-text-30)]">
+                        <span className="text-[#7eb8a0]">{g.items.filter(s => s.completed_at).length}</span> / {g.items.length} faite{g.items.length > 1 ? "s" : ""}
+                      </p>
+                    </div>
+                    <div className="rounded-xl border border-[var(--t-border-soft)] overflow-hidden">
+                      {g.items.map(s => {
+                        const open = openSentId === s.id;
+                        return (
+                          <div key={s.id} className="border-t border-[var(--t-border-soft)] first:border-t-0 bg-[var(--t-surface)]">
+                            <div className="w-full flex items-center gap-2">
+                              <button onClick={() => setOpenSentId(open ? null : s.id)}
+                                className="flex-1 min-w-0 text-left px-3 py-2.5 flex items-center justify-between gap-2 hover:bg-[var(--t-glass-bg)] transition-colors">
+                                <div className="min-w-0 flex items-center gap-2">
+                                  {s.completed_at ? <span className="text-[0.7rem] text-[#7eb8a0] shrink-0">✓</span> : <span className="w-1.5 h-1.5 rounded-full bg-[var(--t-text-20)] shrink-0"/>}
+                                  <p className="text-xs text-[var(--t-text-75)] truncate">{s.titre}</p>
+                                  {s.type_seance && <span className="text-[0.55rem] tracking-wider uppercase text-[#c9a84c] rounded-full bg-[#c9a84c]/10 px-1.5 py-0.5 shrink-0">{s.type_seance}</span>}
+                                  {s.created_by_client && <span className="text-[0.55rem] tracking-wider uppercase text-[#6ea8d9] rounded-full bg-[#6ea8d9]/10 px-1.5 py-0.5 shrink-0">Séance libre</span>}
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                  {s.date_prevue && <span className="text-[0.6rem] text-[var(--t-text-30)] capitalize">{fmtDay(s.date_prevue)}</span>}
+                                  <Icon icon={ChevronDown} size={10} className={`text-[var(--t-text-25)] transition-transform ${open ? "rotate-180" : ""}`}/>
+                                </div>
+                              </button>
+                              <button onClick={() => deleteSeance(s.id)} disabled={deletingId === s.id} title="Supprimer cette séance" aria-label="Supprimer cette séance"
+                                className="shrink-0 mr-3 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors disabled:opacity-30">
+                                <Icon icon={Trash2} size={13} strokeWidth={1.8}/>
+                              </button>
+                            </div>
+                            {open && (
+                              <div className="px-4 pb-4 flex flex-col gap-3">
+                                <SeanceBody s={s} />
+                                <SeanceLoggedSummary seanceId={s.id} clientId={selected.id} exercicesRaw={s.exercices}/>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <ProgressionSuggestions clientId={selected.id} />
+            </div>
+          </div>
+        </div>
+        );
+      })() : (
+        <div className="flex-1 hidden md:flex flex-col items-center justify-center gap-3">
+          <Icon icon={FileText} size={36} strokeWidth={1} className="text-[var(--t-border)]"/>
+          <p className="text-[var(--t-text-15)] text-sm">Sélectionne un client pour le programmer</p>
+        </div>
+      )}
+
+      {/* ── Panneau latéral "Nouveau programme" : IA, modèles, brouillons — le calendrier reste visible ── */}
+      {composer && selected && (
+        <div className="fixed inset-0 z-40 flex justify-end bg-black/30 backdrop-blur-[2px]" onClick={() => setComposer(false)}>
+          <div onClick={e => e.stopPropagation()} className="w-full max-w-2xl h-full bg-[var(--t-bg)] border-l border-[var(--t-border)] shadow-[-20px_0_60px_-20px_rgba(0,0,0,0.35)] flex flex-col animate-[slideIn_.2s_ease-out]">
+            <div className="flex items-center justify-between gap-3 px-5 pt-5 pb-3 border-b border-[var(--t-border-soft)]">
+              <div>
+                <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c]">Nouveau programme</p>
+                <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[var(--t-text)] tracking-wide leading-none mt-0.5">{selected.prenom} {selected.nom}</p>
+              </div>
+              <button onClick={() => setComposer(false)} aria-label="Fermer" className="text-[var(--t-text-25)] hover:text-[var(--t-text-60)] transition-colors">
+                <Icon icon={X} size={16}/>
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-4">
+              {drafts.length === 0 && !showTemplates && (
+                <>
+                  <div className="rounded-2xl border border-[#c9a84c]/25 bg-[var(--t-surface-gold)] p-4 flex flex-col gap-2.5">
+                    <p className="text-[0.6rem] tracking-[0.18em] uppercase text-[#c9a84c]">✦ Générer avec l&apos;IA</p>
+                    <textarea rows={3} autoFocus className={`${inp} resize-none`}
+                      placeholder="Précisions (optionnel) — ex : reprise après blessure au genou, priorité haut du corps…"
                       value={genDescription} onChange={e => setGenDescription(e.target.value)}/>
                     <button onClick={generate} disabled={generating}
-                      className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.58rem] font-bold tracking-[0.18em] uppercase py-3 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-50 flex items-center justify-center gap-2">
-                      {generating ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Génération en cours…</> : `Générer ${Math.min(Math.max(selected.seances_par_semaine || 3, 2), 6)} séances avec l'IA →`}
+                      className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.58rem] font-bold tracking-[0.18em] uppercase py-3 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:-translate-y-0.5 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+                      {generating ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Génération en cours…</> : `Générer ${Math.min(Math.max(selected.seances_par_semaine || 3, 2), 6)} séances →`}
                     </button>
-                    <p className="text-[0.55rem] text-[var(--t-text-25)]">Basé sur l&apos;objectif, le niveau, le lieu et les blessures de {selected.prenom}. Tout reste modifiable avant l&apos;envoi.</p>
+                    <p className="text-[0.55rem] text-[var(--t-text-30)]">Basé sur l&apos;objectif, le niveau, le lieu et les blessures de {selected.prenom}. Tout reste modifiable avant l&apos;envoi.</p>
                   </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    <button onClick={openAssign} disabled={programmes.length === 0}
-                      title={programmes.length === 0 ? "Enregistre un planning comme programme (depuis le calendrier) pour le réappliquer ici" : undefined}
-                      className="border border-[#c9a84c]/40 bg-[var(--t-surface)] text-[#c9a84c] text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-xl hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-40 disabled:border-[var(--t-border)] disabled:text-[var(--t-text-50)] disabled:hover:bg-[var(--t-surface)]">
-                      Appliquer un programme ({programmes.length})
-                    </button>
-                    <button onClick={() => setShowTemplates(true)} disabled={templates.length === 0}
-                      title={templates.length === 0 ? "Enregistre une séance comme modèle (bouton « Modèle ») pour la réutiliser ici" : undefined}
-                      className="border border-[var(--t-border)] bg-[var(--t-surface)] text-[var(--t-text-50)] text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-xl hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors disabled:opacity-40 disabled:hover:border-[var(--t-border)] disabled:hover:text-[var(--t-text-50)]">
-                      Modèle de séance ({templates.length})
-                    </button>
-                    <button onClick={() => setDrafts([emptySeance()])}
-                      className="border border-[var(--t-border)] bg-[var(--t-surface)] text-[var(--t-text-50)] text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-xl hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors">
-                      Créer manuellement
-                    </button>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button onClick={() => setShowTemplates(true)} disabled={templates.length === 0} className={`${toolBtn} justify-center py-2.5`}>Partir d&apos;un modèle · {templates.length}</button>
+                    <button onClick={() => setDrafts([emptySeance()])} className={`${toolBtn} justify-center py-2.5`}>Créer manuellement</button>
                   </div>
-                </div>
+                </>
               )}
 
               {drafts.length === 0 && showTemplates && (
-                <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-xl p-4 md:p-5 flex flex-col gap-3">
+                <div className="flex flex-col gap-2">
                   <div className="flex items-center justify-between">
-                    <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c]">Modèles enregistrés</p>
-                    <button onClick={() => setShowTemplates(false)} className="text-[0.5rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">Retour</button>
+                    <p className="text-[0.6rem] tracking-[0.18em] uppercase text-[#c9a84c]">Modèles de séance</p>
+                    <button onClick={() => setShowTemplates(false)} className="text-[0.5rem] tracking-wider uppercase text-[var(--t-text-30)] hover:text-[var(--t-text-60)] transition-colors">← Retour</button>
                   </div>
                   {templates.map(t => (
-                    <div key={t.id} className="flex items-center justify-between gap-2 border border-[var(--t-text-8)] bg-[var(--t-surface)] rounded-xl px-3 py-2.5">
+                    <div key={t.id} className="flex items-center justify-between gap-2 border border-[var(--t-border-soft)] bg-[var(--t-surface)] rounded-xl px-3 py-2.5 hover:border-[#c9a84c]/40 transition-colors">
                       <button onClick={() => applyTemplate(t)} className="text-left min-w-0 flex-1">
-                        <p className="text-xs text-[var(--t-text-70)] truncate">{t.nom}</p>
-                        <p className="text-[0.55rem] text-[var(--t-text-25)] truncate">{t.objectif || t.type_seance || "—"}</p>
+                        <p className="text-xs text-[var(--t-text-75)] truncate">{t.nom}</p>
+                        <p className="text-[0.55rem] text-[var(--t-text-30)] truncate">{t.objectif || t.type_seance || "—"}</p>
                       </button>
                       <button onClick={() => removeTemplate(t.id)} aria-label={`Supprimer le modèle ${t.nom}`} className="shrink-0 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
                         <Icon icon={X} size={11} strokeWidth={2}/>
@@ -554,29 +728,25 @@ export default function ProgrammesPage() {
                 </div>
               )}
 
-              {genError && <p className="text-xs text-[#e07070] rounded-xl border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2">{genError}</p>}
-
-              {/* Séances éditables */}
               {drafts.length > 0 && (
                 <>
                   <div className="flex items-center justify-between">
-                    <p className="text-[0.5rem] tracking-[0.2em] uppercase text-[var(--t-text-25)]">{drafts.length} séance{drafts.length > 1 ? "s" : ""} — modifiable{drafts.length > 1 ? "s" : ""}</p>
-                    <button onClick={() => { setDrafts([]); setGenError(""); }} className="text-[0.5rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[#e07070] transition-colors">Tout effacer</button>
+                    <p className="text-[0.55rem] tracking-[0.18em] uppercase text-[var(--t-text-35)]">{drafts.length} séance{drafts.length > 1 ? "s" : ""} en brouillon</p>
+                    <button onClick={() => { setDrafts([]); setGenError(""); }} className="text-[0.5rem] tracking-wider uppercase text-[var(--t-text-30)] hover:text-[#e07070] transition-colors">Tout effacer</button>
                   </div>
-
                   {drafts.map((d, i) => (
-                    <div key={i} className="border border-[var(--t-text-8)] bg-[var(--t-surface)] rounded-xl p-4 flex flex-col gap-3">
+                    <div key={i} className="border border-[var(--t-border-soft)] bg-[var(--t-surface)] rounded-2xl p-4 flex flex-col gap-3">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-[0.5rem] tracking-[0.2em] uppercase text-[#c9a84c]">Séance {i + 1}</span>
+                        <span className="text-[0.52rem] tracking-[0.2em] uppercase text-[#c9a84c]">Séance {i + 1}</span>
                         <div className="flex items-center gap-3">
                           <button onClick={() => setTemplateDraft({ index: i, nom: d.titre })} disabled={!d.titre.trim()} title="Enregistrer comme modèle"
-                            className="text-[0.48rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[#c9a84c] transition-colors disabled:opacity-30">
+                            className="text-[0.5rem] tracking-wider uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] transition-colors disabled:opacity-30">
                             Modèle
                           </button>
-                          <button onClick={() => duplicateDraft(i)} title="Dupliquer cette séance" aria-label="Dupliquer cette séance" className="text-[var(--t-text-25)] hover:text-[#c9a84c] transition-colors">
+                          <button onClick={() => duplicateDraft(i)} title="Dupliquer cette séance" aria-label="Dupliquer cette séance" className="text-[var(--t-text-30)] hover:text-[#c9a84c] transition-colors">
                             <Icon icon={Copy} size={12} strokeWidth={2}/>
                           </button>
-                          <button onClick={() => setDrafts(prev => prev.filter((_, j) => j !== i))} aria-label={`Supprimer la séance ${i + 1}`} className="text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
+                          <button onClick={() => setDrafts(prev => prev.filter((_, j) => j !== i))} aria-label={`Supprimer la séance ${i + 1}`} className="text-[var(--t-text-20)] hover:text-[#e07070] transition-colors">
                             <Icon icon={X} size={12} strokeWidth={2}/>
                           </button>
                         </div>
@@ -584,163 +754,60 @@ export default function ProgrammesPage() {
                       <SeanceForm draft={d} onChange={patch => setDraft(i, patch)} library={library} catalogue={catalogue}/>
                     </div>
                   ))}
-
-                  <button onClick={() => setDrafts(prev => [...prev, emptySeance()])}
-                    className="border border-[var(--t-border)] text-[var(--t-text-30)] text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-xl hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">
-                    + Ajouter une séance
-                  </button>
-
-                  <button onClick={sendAll} disabled={sending || !drafts.some(d => d.titre.trim())}
-                    className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.2em] uppercase py-3.5 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40 flex items-center justify-center gap-2">
-                    {sending ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Envoi…</> : `Envoyer le programme à ${selected.prenom} →`}
+                  <button onClick={() => setDrafts(prev => [...prev, emptySeance()])} className={`${toolBtn} justify-center py-2.5`}>
+                    <Icon icon={Plus} size={11} strokeWidth={2.2}/> Ajouter une séance
                   </button>
                 </>
               )}
+              {genError && <p className="text-xs text-[#e07070] rounded-xl border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2">{genError}</p>}
+            </div>
 
-              {/* Mésocycle — bloc d'entraînement nommé avec un objectif et des dates. Les
-                  séances envoyées pendant qu'il est actif y sont automatiquement rattachées. */}
-              {activeMeso ? (
-                <MesocycleCard meso={activeMeso} onDelete={removeMeso}/>
-              ) : showMesoForm ? (
-                <div className="border border-[#c9a84c]/25 bg-[#c9a84c]/5 rounded-xl p-4 flex flex-col gap-3">
-                  <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c]">Nouveau mésocycle</p>
-                  <input className={inp} placeholder="Nom (ex : Prise de masse — bloc 1)" value={mesoForm.nom}
-                    onChange={e => setMesoForm(f => ({ ...f, nom: e.target.value }))}/>
-                  <input className={inp} placeholder="Objectif (optionnel)" value={mesoForm.objectif}
-                    onChange={e => setMesoForm(f => ({ ...f, objectif: e.target.value }))}/>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className={lbl}>Début</label>
-                      <input type="date" className={inp} value={mesoForm.dateDebut}
-                        onChange={e => setMesoForm(f => ({ ...f, dateDebut: e.target.value }))}/>
-                    </div>
-                    <div>
-                      <label className={lbl}>Fin</label>
-                      <input type="date" className={inp} value={mesoForm.dateFin}
-                        onChange={e => setMesoForm(f => ({ ...f, dateFin: e.target.value }))}/>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => setShowMesoForm(false)}
-                      className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] text-[0.6rem] tracking-wider uppercase py-2.5 rounded-xl hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors">
-                      Annuler
-                    </button>
-                    <button onClick={submitMeso} disabled={mesoSaving || !mesoForm.nom.trim() || !mesoForm.dateDebut || !mesoForm.dateFin}
-                      className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.6rem] font-bold tracking-wider uppercase py-2.5 rounded-xl disabled:opacity-40 transition-all">
-                      {mesoSaving ? "…" : "Créer →"}
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <button onClick={() => setShowMesoForm(true)}
-                  className="border border-dashed border-[var(--t-border)] text-[var(--t-text-25)] text-[0.6rem] tracking-wider uppercase py-2.5 rounded-xl hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors">
-                  + Démarrer un mésocycle
+            {drafts.length > 0 && (
+              <div className="px-5 py-3 border-t border-[var(--t-border-soft)] flex items-center gap-3">
+                <p className="text-[0.55rem] text-[var(--t-text-30)] flex-1">Les séances sans date arrivent dans « Sans date » : glisse-les ensuite sur un jour.</p>
+                <button onClick={sendAll} disabled={sending || !drafts.some(d => d.titre.trim())}
+                  className="px-5 py-3 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.58rem] font-bold tracking-[0.15em] uppercase rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] disabled:opacity-40 flex items-center gap-2 shrink-0">
+                  {sending ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Envoi…</> : `Envoyer à ${selected.prenom} →`}
                 </button>
-              )}
-
-              {/* Confirmation d'envoi */}
-              {sentTo === selected.email && (
-                <div className="border border-[#7eb8a0]/25 bg-[#7eb8a0]/5 rounded-xl px-4 py-3 text-center">
-                  <p className="text-xs text-[#7eb8a0]">Programme envoyé à {selected.prenom} ✓ — aperçu ci-dessous</p>
-                </div>
-              )}
-
-              <ProgressionSuggestions clientId={selected.id} />
-
-              {/* Planning du client : calendrier (créer / déplacer / dupliquer / modifier) ou liste détaillée */}
-              <div className="border border-[var(--t-text-8)] bg-[var(--t-bg)] rounded-xl">
-                  <div className="flex items-center justify-between gap-2 px-4 pt-3 pb-2">
-                    <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[var(--t-text-40)]">
-                      Planning de {selected.prenom} ({sentSeances.length} séance{sentSeances.length > 1 ? "s" : ""})
-                    </p>
-                    <div className="flex items-center gap-1 shrink-0">
-                      {(["calendrier", "progression", "liste"] as const).map(v => (
-                        <button key={v} onClick={() => setSentView(v)}
-                          className={`text-[0.55rem] tracking-wider uppercase px-2 py-1 rounded-lg transition-colors ${sentView === v ? "bg-[#c9a84c]/15 text-[#c9a84c]" : "text-[var(--t-text-25)] hover:text-[var(--t-text-50)]"}`}>
-                          {v === "calendrier" ? "Calendrier" : v === "progression" ? "Progression" : "Liste"}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {coachDated.length > 0 && (
-                    <div className="px-4 pb-2 -mt-1">
-                      <button onClick={openSaveProgramme}
-                        className="text-[0.52rem] tracking-[0.12em] uppercase text-[var(--t-text-35)] hover:text-[#c9a84c] transition-colors">
-                        ⤓ Enregistrer ce planning comme programme réutilisable
-                      </button>
-                    </div>
-                  )}
-
-                  {calMsg && <p className="mx-4 mb-2 rounded-lg bg-[#7eb8a0]/10 text-[#7eb8a0] text-[0.65rem] px-3 py-1.5">{calMsg}</p>}
-
-                  {sentView === "calendrier" && (
-                    <div className="px-4 pb-4 border-t border-[var(--t-border-soft)] pt-3">
-                      <ProgrammeCalendar seances={sentSeances} meso={activeMeso} weeklyTarget={selected.seances_par_semaine || 0}
-                        onCreate={openCreate} onOpen={openEdit} onMove={moveSeance} onDuplicateWeek={m => setDup({ monday: m, rule: NO_PROGRESSION })} busyWeek={busyWeek}/>
-                    </div>
-                  )}
-
-                  {sentView === "progression" && (
-                    <div className="px-4 pb-4 border-t border-[var(--t-border-soft)] pt-3">
-                      <ProgressionTable seances={sentSeances} meso={activeMeso} onOpen={openEdit}/>
-                    </div>
-                  )}
-
-                  {sentView === "liste" && sentSeances.length === 0 && (
-                    <p className="px-4 pb-4 pt-3 border-t border-[var(--t-border-soft)] text-xs text-[var(--t-text-25)]">Aucune séance pour l&apos;instant.</p>
-                  )}
-
-                  {sentView === "liste" && groupByWeek(sentSeances).map(g => (
-                    <div key={g.key}>
-                      <div className="flex items-center justify-between px-4 pt-3 pb-1.5 border-t border-[var(--t-border-soft)] bg-[var(--t-surface-2)]/60">
-                        <p className="text-[0.52rem] tracking-[0.18em] uppercase text-[var(--t-text-40)]">{g.label}</p>
-                        <p className="text-[0.52rem] text-[var(--t-text-30)]">
-                          <span className="text-[#7eb8a0]">{g.items.filter(s => s.completed_at).length}</span> / {g.items.length} faite{g.items.length > 1 ? "s" : ""}
-                        </p>
-                      </div>
-                  {g.items.map(s => {
-                    const open = openSentId === s.id;
-                    return (
-                      <div key={s.id} className="border-t border-[var(--t-border-soft)]">
-                        <div className="w-full flex items-center gap-2">
-                          <button onClick={() => setOpenSentId(open ? null : s.id)}
-                            className="flex-1 min-w-0 text-left px-4 py-2.5 flex items-center justify-between gap-2 hover:bg-[var(--t-glass-bg)] transition-colors">
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-2">
-                                {s.completed_at && <span className="text-[0.7rem] text-[#7eb8a0] shrink-0">✓</span>}
-                                {s.created_by_client && <span className="text-[0.62rem] tracking-wider uppercase text-[#6ea8d9] rounded-full border border-[#6ea8d9]/25 px-1.5 py-0.5 shrink-0">Séance libre du client</span>}
-                                {s.type_seance && <span className="text-[0.62rem] tracking-wider uppercase text-[#c9a84c] rounded-full border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">{s.type_seance}</span>}
-                                {s.semaine && <span className="text-[0.62rem] tracking-wider uppercase text-[var(--t-text-30)] rounded-full border border-[var(--t-border)] px-1.5 py-0.5 shrink-0">Sem. {s.semaine}</span>}
-                                <p className="text-xs text-[var(--t-text-70)] truncate">{s.titre}</p>
-                              </div>
-                              {s.date_prevue && <p className="text-[0.65rem] text-[var(--t-text-25)] mt-0.5">{new Date(s.date_prevue + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</p>}
-                            </div>
-                            <Icon icon={ChevronDown} size={10}
-                              className={`text-[var(--t-text-25)] shrink-0 transition-transform ${open ? "rotate-180" : ""}`}/>
-                          </button>
-                          <button onClick={() => deleteSeance(s.id)} disabled={deletingId === s.id} title="Supprimer cette séance" aria-label="Supprimer cette séance"
-                            className="shrink-0 mr-3 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors disabled:opacity-30">
-                            <Icon icon={Trash2} size={13} strokeWidth={1.8}/>
-                          </button>
-                        </div>
-                        {open && (
-                          <div className="px-4 pb-4 flex flex-col gap-3">
-                            <SeanceBody s={s} />
-                            <SeanceLoggedSummary seanceId={s.id} clientId={selected.id} exercicesRaw={s.exercices}/>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                    </div>
-                  ))}
               </div>
+            )}
+          </div>
+        </div>
+      )}
 
+      {/* Nouveau mésocycle — petite fenêtre plutôt qu'une carte dans la page */}
+      {showMesoForm && selected && !activeMeso && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={() => setShowMesoForm(false)}>
+          <div onClick={e => e.stopPropagation()} className="w-full max-w-md rounded-2xl border border-[var(--t-border)] bg-[var(--t-surface)] shadow-[0_20px_60px_-12px_rgba(0,0,0,0.4)] p-5 flex flex-col gap-3">
+            <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c]">Nouveau mésocycle</p>
+            <p className="text-[0.65rem] text-[var(--t-text-40)] -mt-1">Un bloc d&apos;entraînement nommé avec des dates : le calendrier se cale dessus (S1, S2…) et les séances y sont rattachées.</p>
+            <input autoFocus className={inp} placeholder="Nom (ex : Prise de masse — bloc 1)" value={mesoForm.nom}
+              onChange={e => setMesoForm(f => ({ ...f, nom: e.target.value }))}/>
+            <input className={inp} placeholder="Objectif (optionnel)" value={mesoForm.objectif}
+              onChange={e => setMesoForm(f => ({ ...f, objectif: e.target.value }))}/>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className={lbl}>Début</label>
+                <input type="date" className={inp} value={mesoForm.dateDebut} onChange={e => setMesoForm(f => ({ ...f, dateDebut: e.target.value }))}/>
+              </div>
+              <div>
+                <label className={lbl}>Fin</label>
+                <input type="date" className={inp} value={mesoForm.dateFin} onChange={e => setMesoForm(f => ({ ...f, dateFin: e.target.value }))}/>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => setShowMesoForm(false)}
+                className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] text-[0.6rem] tracking-wider uppercase py-2.5 rounded-xl hover:text-[var(--t-text-60)] transition-colors">
+                Annuler
+              </button>
+              <button onClick={submitMeso} disabled={mesoSaving || !mesoForm.nom.trim() || !mesoForm.dateDebut || !mesoForm.dateFin}
+                className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.6rem] font-bold tracking-wider uppercase py-2.5 rounded-xl disabled:opacity-40 transition-all">
+                {mesoSaving ? "…" : "Créer"}
+              </button>
             </div>
           </div>
         </div>
-      ) : null}
+      )}
 
       {/* Dupliquer une semaine sur la suivante, avec surcharge progressive optionnelle. */}
       {dup && selected && (() => {
@@ -913,8 +980,8 @@ export default function ProgrammesPage() {
       {/* Séance du calendrier : création sur un jour, modification d'une séance envoyée,
           ou consultation seule si déjà faite / créée par le client. */}
       {editing && selected && (
-        <div className="fixed inset-0 z-50 flex items-start md:items-center justify-center bg-black/40 backdrop-blur-sm p-3 md:p-6 overflow-y-auto" onClick={() => setEditing(null)}>
-          <div onClick={e => e.stopPropagation()} className="w-full max-w-2xl my-auto rounded-2xl border border-[var(--t-border)] bg-[var(--t-surface)] shadow-[0_20px_60px_-12px_rgba(0,0,0,0.4)] flex flex-col max-h-[92dvh]">
+        <div className="fixed inset-0 z-50 flex justify-end bg-black/30 backdrop-blur-[2px]" onClick={() => setEditing(null)}>
+          <div onClick={e => e.stopPropagation()} className="w-full max-w-2xl h-full bg-[var(--t-surface)] border-l border-[var(--t-border)] shadow-[-20px_0_60px_-20px_rgba(0,0,0,0.35)] flex flex-col animate-[slideIn_.2s_ease-out]">
             <div className="flex items-center justify-between gap-3 px-5 pt-4 pb-3 border-b border-[var(--t-border-soft)]">
               <div>
                 <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c]">
@@ -995,12 +1062,6 @@ export default function ProgrammesPage() {
         </div>
       )}
 
-      {!selected && (
-        <div className="flex-1 hidden md:flex flex-col items-center justify-center gap-3">
-          <Icon icon={FileText} size={36} strokeWidth={1} className="text-[var(--t-border)]"/>
-          <p className="text-[var(--t-text-15)] text-sm">Sélectionne un client pour lui créer un programme</p>
-        </div>
-      )}
     </div>
   );
 }

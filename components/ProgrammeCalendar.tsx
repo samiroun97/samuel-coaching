@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { type Mesocycle } from "@/lib/mesocycles";
+import { parseExercices } from "@/lib/exercices";
 import { Icon } from "@/components/Icon";
 import { ChevronLeft, ChevronRight, Copy, Plus } from "@/lib/solarIcons";
 
@@ -12,7 +13,7 @@ import { ChevronLeft, ChevronRight, Copy, Plus } from "@/lib/solarIcons";
 
 export type CalendarSeance = {
   id: string; titre: string; type_seance: string | null; date_prevue: string | null;
-  completed_at: string | null; created_by_client?: boolean;
+  completed_at: string | null; created_by_client?: boolean; exercices?: string | null;
 };
 
 export const TYPE_COLOR: Record<string, string> = {
@@ -65,19 +66,33 @@ export function ProgrammeCalendar({ seances, meso, weeklyTarget, onCreate, onOpe
 
   const drop = (iso: string) => { if (dragId) onMove(dragId, iso); setDragId(null); setOverDay(null); };
 
+  // Carte de séance (façon Everfit / TrueCoach) : titre, 2 premiers exercices en aperçu, et
+  // statut lisible d'un coup d'œil — faite (vert), manquée (passée sans être faite, rouge),
+  // à venir (couleur du type de séance).
   const chip = (s: CalendarSeance) => {
-    const color = TYPE_COLOR[s.type_seance ?? ""] ?? DEFAULT_COLOR;
+    const typeColor = TYPE_COLOR[s.type_seance ?? ""] ?? DEFAULT_COLOR;
+    const missed = !s.completed_at && !!s.date_prevue && s.date_prevue < todayISO;
+    const color = s.completed_at ? "#7eb8a0" : missed ? "#e07070" : typeColor;
+    const exNames = parseExercices(s.exercices).map(e => e.nom.trim()).filter(Boolean);
     return (
       <button key={s.id} draggable={!s.completed_at}
         onDragStart={e => { setDragId(s.id); e.dataTransfer.effectAllowed = "move"; }}
         onDragEnd={() => { setDragId(null); setOverDay(null); }}
         onClick={e => { e.stopPropagation(); onOpen(s.id); }}
-        title={s.completed_at ? `${s.titre} — faite` : `${s.titre} — glisser pour déplacer`}
-        className={`w-full text-left rounded-md px-1.5 py-1 text-[0.58rem] leading-tight truncate transition-all hover:brightness-95 ${s.completed_at ? "cursor-pointer" : "cursor-grab active:cursor-grabbing"} ${dragId === s.id ? "opacity-40" : ""}`}
-        style={{ backgroundColor: `${color}${s.completed_at ? "18" : "26"}`, color: s.completed_at ? "var(--t-text-40)" : "var(--t-text-80)", boxShadow: `inset 2px 0 0 ${color}` }}>
-        {s.completed_at && <span className="text-[#7eb8a0] mr-0.5">✓</span>}
-        {s.created_by_client && <span className="text-[#6ea8d9] mr-0.5" title="Séance libre du client">●</span>}
-        {s.titre}
+        title={s.completed_at ? `${s.titre} — faite` : missed ? `${s.titre} — pas faite` : `${s.titre} — glisser pour déplacer`}
+        className={`w-full text-left rounded-lg px-2 py-1.5 transition-all hover:-translate-y-px hover:shadow-[0_4px_12px_-6px_rgba(0,0,0,0.3)] ${s.completed_at ? "cursor-pointer" : "cursor-grab active:cursor-grabbing"} ${dragId === s.id ? "opacity-40" : ""}`}
+        style={{ backgroundColor: `${color}1c`, boxShadow: `inset 3px 0 0 ${color}` }}>
+        <p className="flex items-center gap-1 text-[0.62rem] font-medium leading-tight text-[var(--t-text-80)] truncate">
+          {s.completed_at && <span className="text-[#7eb8a0] shrink-0">✓</span>}
+          {missed && <span className="text-[#e07070] shrink-0">✕</span>}
+          {s.created_by_client && <span className="text-[#6ea8d9] shrink-0" title="Séance libre du client">●</span>}
+          <span className="truncate">{s.titre}</span>
+        </p>
+        {exNames.length > 0 && (
+          <p className="text-[0.52rem] leading-snug text-[var(--t-text-40)] mt-0.5 line-clamp-2 capitalize">
+            {exNames.slice(0, 2).join(" · ")}{exNames.length > 2 ? ` +${exNames.length - 2}` : ""}
+          </p>
+        )}
       </button>
     );
   };
@@ -103,9 +118,9 @@ export function ProgrammeCalendar({ seances, meso, weeklyTarget, onCreate, onOpe
       </div>
 
       <div className="overflow-x-auto -mx-1 px-1">
-        <div className="min-w-[640px] flex flex-col gap-1.5">
+        <div className="min-w-[760px] flex flex-col gap-2">
           {/* En-têtes jours */}
-          <div className="grid grid-cols-[64px_repeat(7,minmax(0,1fr))] gap-1.5">
+          <div className="grid grid-cols-[72px_repeat(7,minmax(0,1fr))] gap-2">
             <div/>
             {DAY_LABELS.map(d => <p key={d} className="text-[0.5rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] text-center">{d}</p>)}
           </div>
@@ -117,7 +132,7 @@ export function ProgrammeCalendar({ seances, meso, weeklyTarget, onCreate, onOpe
             const done = days.reduce((a, d) => a + (byDay.get(d)?.filter(s => s.completed_at).length ?? 0), 0);
             const isCurrent = days.includes(todayISO);
             return (
-              <div key={monday} className="grid grid-cols-[64px_repeat(7,minmax(0,1fr))] gap-1.5 group/week">
+              <div key={monday} className="grid grid-cols-[72px_repeat(7,minmax(0,1fr))] gap-2 group/week">
                 {/* En-tête de semaine */}
                 <div className={`rounded-lg px-1.5 py-1.5 flex flex-col justify-between ${isCurrent ? "bg-[#c9a84c]/10" : ""}`}>
                   <div>
@@ -144,7 +159,7 @@ export function ProgrammeCalendar({ seances, meso, weeklyTarget, onCreate, onOpe
                       onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setOverDay(null); }}
                       onDrop={e => { e.preventDefault(); drop(iso); }}
                       onClick={() => onCreate(iso)}
-                      className={`group/day relative min-h-[76px] rounded-lg border p-1 flex flex-col gap-1 cursor-pointer transition-colors ${isOver ? "border-[#c9a84c] bg-[#c9a84c]/10" : iso === todayISO ? "border-[#c9a84c]/50 bg-[var(--t-surface)]" : "border-[var(--t-border-soft)] bg-[var(--t-surface)]/60 hover:border-[var(--t-border)]"} ${past && !list.length ? "opacity-60" : ""}`}>
+                      className={`group/day relative min-h-[104px] rounded-xl border p-1.5 flex flex-col gap-1 cursor-pointer transition-colors ${isOver ? "border-[#c9a84c] bg-[#c9a84c]/10" : iso === todayISO ? "border-[#c9a84c]/50 bg-[var(--t-surface)]" : "border-[var(--t-border-soft)] bg-[var(--t-surface)]/60 hover:border-[var(--t-border)]"} ${past && !list.length ? "opacity-60" : ""}`}>
                       <p className={`text-[0.52rem] ${iso === todayISO ? "text-[#c9a84c] font-bold" : "text-[var(--t-text-30)]"}`}>{new Date(iso + "T12:00:00").getDate()}</p>
                       {list.map(chip)}
                       <span className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-[#c9a84c]/15 text-[#c9a84c] items-center justify-center hidden group-hover/day:flex">

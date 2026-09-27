@@ -255,6 +255,12 @@ body {
 .animate-heartbeat-sweep { animation: heartbeatSweep 2.4s linear infinite; }
 .animate-heartbeat-pulse { animation: heartbeatPulse 1.1s ease-in-out infinite; transform-origin: center; }
 
+/* Panneaux latéraux du CRM (Programmes : nouveau programme, édition de séance). */
+@keyframes slideIn {
+  from { transform: translateX(24px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
 @keyframes levitate {
   0%, 100% { transform: translateY(0); }
   50%      { transform: translateY(-6px); }
