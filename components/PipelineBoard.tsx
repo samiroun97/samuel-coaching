@@ -112,7 +112,7 @@ export function PipelineBoard({ variant = "page" }: { variant?: "page" | "sectio
       )}
 
       {/* Répartition — barre segmentée + légende */}
-      <div className={`max-w-6xl ${variant === "page" ? "mb-8" : ""} border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-2xl p-4 md:p-5`}>
+      <div className={`${variant === "page" ? "mb-8" : "max-w-6xl"} border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-2xl p-4 md:p-5`}>
         <div className="flex h-3 rounded-full overflow-hidden bg-[var(--t-track)] gap-[2px]">
           {STAGES.map(s => {
             const n = byStage.get(s.key)!.length;
@@ -147,7 +147,7 @@ export function PipelineBoard({ variant = "page" }: { variant?: "page" | "sectio
 
       {/* Board — uniquement sur la page Pipeline ; le dashboard n'affiche que la répartition. */}
       {variant === "page" && (
-      <div className="flex gap-3 md:gap-4 overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory">
+      <div className="flex gap-3 overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory lg:grid lg:grid-cols-6 lg:gap-2.5 lg:overflow-visible lg:snap-none">
         {STAGES.map(s => {
           const cards = byStage.get(s.key)!;
           const isOver = overCol === s.key && dragId !== null;
@@ -156,14 +156,14 @@ export function PipelineBoard({ variant = "page" }: { variant?: "page" | "sectio
               onDragOver={e => { e.preventDefault(); if (overCol !== s.key) setOverCol(s.key); }}
               onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setOverCol(null); }}
               onDrop={e => { e.preventDefault(); if (dragId) moveTo(dragId, s.key); setDragId(null); setOverCol(null); }}
-              className="snap-start shrink-0 w-[78vw] sm:w-64 md:w-72 rounded-2xl border flex flex-col transition-all duration-200"
+              className="snap-start shrink-0 w-[78vw] sm:w-64 lg:w-auto lg:min-w-0 rounded-2xl border flex flex-col transition-all duration-200"
               style={{
                 borderColor: isOver ? `${s.color}80` : "var(--t-text-7)",
                 background: isOver ? `${s.color}12` : `linear-gradient(180deg, ${s.color}0d, transparent 140px), var(--t-surface-2)`,
                 boxShadow: isOver ? `0 0 0 3px ${s.color}20` : undefined,
               }}>
               {/* En-tête de colonne */}
-              <div className="px-4 pt-3.5 pb-3">
+              <div className="px-4 lg:px-3 pt-3.5 pb-3">
                 <div className="h-1 w-10 rounded-full mb-3" style={{ backgroundColor: s.color }}/>
                 <div className="flex items-center justify-between">
                   <p className="text-[0.7rem] font-bold tracking-[0.18em] uppercase" style={{ color: s.color }}>{s.label}</p>
@@ -174,7 +174,7 @@ export function PipelineBoard({ variant = "page" }: { variant?: "page" | "sectio
               </div>
 
               {/* Cartes */}
-              <div className="flex flex-col gap-2 px-2.5 pb-3 min-h-[120px] flex-1">
+              <div className="flex flex-col gap-2 px-2.5 lg:px-2 pb-3 min-h-[120px] flex-1">
                 {cards.length === 0 && (
                   <div className="flex-1 rounded-xl border border-dashed flex items-center justify-center text-[0.6rem] tracking-wider uppercase text-[var(--t-text-20)] py-6"
                     style={{ borderColor: isOver ? `${s.color}80` : "var(--t-border)" }}>
@@ -189,9 +189,9 @@ export function PipelineBoard({ variant = "page" }: { variant?: "page" | "sectio
                     <div key={c.id} draggable
                       onDragStart={e => { setDragId(c.id); e.dataTransfer.effectAllowed = "move"; }}
                       onDragEnd={() => { setDragId(null); setOverCol(null); }}
-                      className={`group relative rounded-xl border bg-[var(--t-surface)] p-3 cursor-grab active:cursor-grabbing transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_20px_-8px_rgba(0,0,0,0.25)] ${dragId === c.id ? "opacity-40 scale-[0.98]" : ""}`}
+                      className={`group relative rounded-xl border bg-[var(--t-surface)] p-3 lg:p-2.5 cursor-grab active:cursor-grabbing transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_20px_-8px_rgba(0,0,0,0.25)] ${dragId === c.id ? "opacity-40 scale-[0.98]" : ""}`}
                       style={{ borderColor: "var(--t-border-soft)", boxShadow: `inset 3px 0 0 ${s.color}` }}>
-                      <div className="flex items-center gap-2.5">
+                      <div className="flex items-center gap-2.5 lg:gap-2">
                         <Avatar c={c} color={s.color}/>
                         <Link href={`/crm/clients?client=${c.id}`} className="min-w-0 flex-1" draggable={false}>
                           <p className="text-sm text-[var(--t-text-80)] font-medium truncate group-hover:text-[var(--t-text)]">{c.prenom} {c.nom}</p>
