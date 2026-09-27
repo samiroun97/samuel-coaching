@@ -11,15 +11,12 @@ import { SeanceBody } from "@/components/SeancePreview";
 import { SeanceLoggedSummary } from "@/components/SeanceLoggedSummary";
 import { Select } from "@/components/Select";
 import { ProgressionSuggestions } from "@/components/ProgressionSuggestions";
-import { type LibraryEntry, listLibrary, addLibraryEntry, deleteLibraryEntry } from "@/lib/exerciceLibrary";
+import { type LibraryEntry, listLibrary } from "@/lib/exerciceLibrary";
 import { type CatalogueEntry, loadCatalogue } from "@/lib/exercicesCatalogue";
 import { type ProgrammeTemplate, listTemplates, saveTemplate, deleteTemplate, templateToExercices } from "@/lib/programmeTemplates";
 import { getMyCoachId } from "@/lib/coach";
 import { WeekPlanning } from "@/components/WeekPlanning";
-import { ConsistencyHeatmap } from "@/components/ConsistencyHeatmap";
-import { loadDayStatuses, type DayStatus } from "@/lib/consistency";
-import { MuscleVolumeChart } from "@/components/MuscleVolumeChart";
-import { loadMuscleVolume } from "@/lib/muscleVolume";
+import Link from "next/link";
 import { type Mesocycle, loadActiveMesocycle, createMesocycle, deleteMesocycle } from "@/lib/mesocycles";
 import { MesocycleCard } from "@/components/MesocycleCard";
 import { Icon } from "@/components/Icon";
@@ -36,9 +33,33 @@ const STAGE_CFG: Record<string, { label: string; color: string }> = {
   reactive:   { label: "Réactivé",   color: "#6ea8d9" },
 };
 
-type Client = { id: string; email: string; prenom: string; nom: string; age: number; poids: number; taille: number; sexe: string; niveau_activite: string; experience: string; seances_par_semaine: number; duree_seance: string; lieu_entrainement: string; blessures: string; objectifs: string; objectif_type: string | null; pipeline_stage: string | null };
+type Client = { id: string; email: string; prenom: string; nom: string; age: number; poids: number; taille: number; sexe: string; niveau_activite: string; experience: string; seances_par_semaine: number; duree_seance: string; lieu_entrainement: string; blessures: string; objectifs: string; objectif_type: string | null; pipeline_stage: string | null; is_coach: boolean | null };
 type SeanceDraft = { titre: string; type_seance: string; date_prevue: string; semaine: string; description: string; exercices: ExerciceItem[]; notesLibres: string[] };
 type SentSeance = { id: string; titre: string; type_seance: string | null; date_prevue: string | null; semaine: number | null; description: string | null; exercices: string | null; notes_libres: string | null; completed_at: string | null; created_by_client?: boolean };
+
+// Regroupe les séances envoyées par semaine (lundi de la date prévue, ou de la date de fin
+// pour une séance libre sans date), la plus récente en haut, les séances sans date à la fin.
+function groupByWeek(seances: SentSeance[]): { key: string; label: string; items: SentSeance[] }[] {
+  const groups = new Map<string, SentSeance[]>();
+  for (const s of seances) {
+    const ref = s.date_prevue ? new Date(s.date_prevue + "T12:00:00") : s.completed_at ? new Date(s.completed_at) : null;
+    let key = "sans-date";
+    if (ref) {
+      const monday = new Date(ref);
+      monday.setDate(ref.getDate() - ((ref.getDay() + 6) % 7));
+      key = monday.toLocaleDateString("sv-SE");
+    }
+    groups.set(key, [...(groups.get(key) ?? []), s]);
+  }
+  return [...groups.entries()]
+    .sort(([a], [b]) => a === "sans-date" ? 1 : b === "sans-date" ? -1 : b.localeCompare(a))
+    .map(([key, items]) => ({
+      key,
+      label: key === "sans-date" ? "Sans date"
+        : `Semaine du ${new Date(key + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`,
+      items: items.sort((a, b) => (a.date_prevue ?? "").localeCompare(b.date_prevue ?? "")),
+    }));
+}
 
 const emptySeance = (): SeanceDraft => ({ titre: "", type_seance: "", date_prevue: "", semaine: "", description: "", exercices: [], notesLibres: [] });
 
@@ -56,16 +77,16 @@ export default function ProgrammesPage() {
   const [genDescription, setGenDescription] = useState("");
   const [sending,     setSending]     = useState(false);
   const [sentTo,      setSentTo]      = useState<string | null>(null);
+  // Bibliothèque perso : plus de formulaire dans le parcours de création (doublon du catalogue),
+  // mais les entrées existantes restent proposées dans la recherche d'exercices.
   const [library,      setLibrary]      = useState<LibraryEntry[]>([]);
-  const [showLibrary,  setShowLibrary]  = useState(false);
-  const [libForm,      setLibForm]      = useState({ nom: "", type: "", note_default: "", video_url: "" });
   const [templates,    setTemplates]    = useState<ProgrammeTemplate[]>([]);
+  const [templateDraft, setTemplateDraft] = useState<{ index: number; nom: string } | null>(null);
+  const [templateSaving, setTemplateSaving] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
   const [sentSeances,  setSentSeances]  = useState<SentSeance[]>([]);
   const [openSentId,   setOpenSentId]   = useState<string | null>(null);
   const [sentView,     setSentView]     = useState<"liste" | "semaine">("liste");
-  const [dayStatuses, setDayStatuses] = useState<Record<string, DayStatus>>({});
-  const [muscleVolume, setMuscleVolume] = useState<Record<string, number[]>>({});
   const [activeMeso,   setActiveMeso]   = useState<Mesocycle | null>(null);
   const [showMesoForm, setShowMesoForm] = useState(false);
   const [mesoForm, setMesoForm] = useState({ nom: "", objectif: "", dateDebut: "", dateFin: "" });
@@ -101,18 +122,6 @@ export default function ProgrammesPage() {
     supabase.auth.getUser().then(({ data }) => { if (data.user) getMyCoachId(data.user.id).then(setMyCoachId); });
   }, []);
 
-  const addLibItem = async () => {
-    if (!libForm.nom.trim() || !myCoachId) return;
-    try {
-      const entry = await addLibraryEntry(libForm, myCoachId);
-      setLibrary(prev => [...prev, entry].sort((a, b) => a.nom.localeCompare(b.nom)));
-      setLibForm({ nom: "", type: "", note_default: "", video_url: "" });
-    } catch (e: unknown) { setGenError(e instanceof Error ? e.message : "Erreur bibliothèque"); }
-  };
-  const removeLibItem = async (id: string) => {
-    try { await deleteLibraryEntry(id); setLibrary(prev => prev.filter(l => l.id !== id)); } catch { /* ignore */ }
-  };
-
   const applyTemplate = (t: ProgrammeTemplate) => {
     setDrafts(prev => [...prev, { ...emptySeance(), titre: t.nom, type_seance: t.type_seance || "", description: t.description || "", exercices: templateToExercices(t) }]);
     setShowTemplates(false);
@@ -120,13 +129,18 @@ export default function ProgrammesPage() {
   const removeTemplate = async (id: string) => {
     try { await deleteTemplate(id); setTemplates(prev => prev.filter(t => t.id !== id)); } catch { /* ignore */ }
   };
-  const saveAsTemplate = async (d: SeanceDraft) => {
-    const nom = window.prompt("Nom du modèle ?", d.titre);
-    if (!nom || !nom.trim() || !myCoachId) return;
+  // Nommage du modèle dans une petite fenêtre de l'app (au lieu de window.prompt).
+  const saveAsTemplate = async () => {
+    if (!templateDraft || !templateDraft.nom.trim() || !myCoachId || templateSaving) return;
+    const d = drafts[templateDraft.index];
+    if (!d) return;
+    setTemplateSaving(true);
     try {
-      const t = await saveTemplate({ nom, objectif: selected?.objectifs ?? "", type_seance: d.type_seance, description: d.description, exercices: d.exercices }, myCoachId);
+      const t = await saveTemplate({ nom: templateDraft.nom.trim(), objectif: selected?.objectifs ?? "", type_seance: d.type_seance, description: d.description, exercices: d.exercices }, myCoachId);
       setTemplates(prev => [t, ...prev]);
+      setTemplateDraft(null);
     } catch (e: unknown) { setGenError(e instanceof Error ? e.message : "Erreur modèle"); }
+    setTemplateSaving(false);
   };
   const duplicateDraft = (i: number) => {
     const clone: SeanceDraft = { ...structuredClone(drafts[i]), date_prevue: "" };
@@ -134,12 +148,14 @@ export default function ProgrammesPage() {
   };
 
   const load = async () => {
-    const [{ data: c, error: cErr }, { data: s }] = await Promise.all([
+    const [{ data: { user } }, { data: c, error: cErr }, { data: s }] = await Promise.all([
+      supabase.auth.getUser(),
       supabase.from("profiles").select("*").order("updated_at", { ascending: false }),
       supabase.from("programme_seances").select("assigned_to_email"),
     ]);
     if (cErr) setGenError(cErr.message);
-    setClients((c ?? []) as Client[]);
+    // Même filtre que Clients / Pipeline : le coach n'est pas son propre client.
+    setClients(((c ?? []) as Client[]).filter(cl => !cl.is_coach && cl.id !== user?.id));
     const counts = new Map<string, number>();
     for (const row of s ?? []) counts.set(row.assigned_to_email, (counts.get(row.assigned_to_email) ?? 0) + 1);
     setSeanceCount(counts);
@@ -154,12 +170,8 @@ export default function ProgrammesPage() {
   const selectClient = (c: Client) => {
     setSelected(c); setDrafts([]); setGenError(""); setSentTo(null); setGenDescription(""); setOpenSentId(null);
     loadSentSeances(c.email);
-    setDayStatuses({});
-    loadDayStatuses(c.id, c.objectif_type).then(setDayStatuses).catch(() => {});
-    setActiveMeso(null); setShowMesoForm(false);
+    setActiveMeso(null); setShowMesoForm(false); setTemplateDraft(null);
     loadActiveMesocycle(c.id).then(setActiveMeso).catch(() => {});
-    setMuscleVolume({});
-    loadMuscleVolume(c.id).then(setMuscleVolume).catch(() => {});
   };
 
   const submitMeso = async () => {
@@ -315,221 +327,56 @@ export default function ProgrammesPage() {
               <button onClick={() => setSelected(null)} aria-label="Retour à la liste des clients" className="md:hidden text-[var(--t-text-40)] hover:text-[var(--t-text-70)] transition-colors mt-1.5 shrink-0">
                 <Icon icon={ChevronLeft} size={18}/>
               </button>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className="text-[0.45rem] tracking-[0.2em] text-[var(--t-text-25)] uppercase truncate">{selected.email}</p>
                 <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl md:text-4xl text-[var(--t-text)] tracking-wide">{selected.prenom} {selected.nom}</h2>
                 <p className="text-[var(--t-text-30)] text-xs mt-0.5">{selected.age} ans · {selected.sexe} · {selected.poids} kg · {selected.experience || "expérience —"} · {selected.seances_par_semaine ? `${selected.seances_par_semaine}×/sem` : "—"}{selected.duree_seance ? ` · ${selected.duree_seance}` : ""}</p>
               </div>
+              {/* Régularité, volume, poids… vivent sur la fiche client : cette page ne sert qu'à programmer. */}
+              <Link href={`/crm/clients?client=${selected.id}`}
+                className="shrink-0 mt-1 px-3 py-1.5 rounded-xl border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-70)] hover:border-[var(--t-text-25)] transition-all text-[0.5rem] tracking-[0.15em] uppercase">
+                Voir la fiche →
+              </Link>
             </div>
           </div>
 
           <div className="flex-1 overflow-y-auto px-4 md:px-8 py-5 md:py-6">
             <div className="max-w-2xl flex flex-col gap-4">
 
-              {/* Objectif + contraintes */}
-              <div className="border border-[#c9a84c]/10 bg-[var(--t-surface-gold)] rounded-xl px-4 py-3">
-                <p className="text-[0.48rem] tracking-[0.15em] uppercase text-[#c9a84c] mb-1">Objectif</p>
-                <p className="text-xs text-[var(--t-text-60)] leading-relaxed">{selected.objectifs || "Non renseigné"}</p>
-                {selected.blessures && (
-                  <p className="text-[0.6rem] text-[#e09070]/80 mt-2">⚠ Blessures : {selected.blessures}</p>
-                )}
-                <p className="text-[0.55rem] text-[var(--t-text-25)] mt-2">Lieu : {selected.lieu_entrainement || "—"}</p>
+              {/* Contraintes à garder en tête en programmant — une ligne, pas une carte. */}
+              <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-[0.65rem] text-[var(--t-text-50)] leading-relaxed">
+                <span><span className="text-[0.48rem] tracking-[0.15em] uppercase text-[#c9a84c] mr-1.5">Objectif</span>{selected.objectifs || "Non renseigné"}</span>
+                {selected.blessures && <span className="text-[#e09070]">⚠ {selected.blessures}</span>}
+                <span className="text-[var(--t-text-30)]">📍 {selected.lieu_entrainement || "Lieu —"}</span>
               </div>
 
-              {/* Mésocycle — bloc d'entraînement nommé avec un objectif et des dates. Les
-                  séances envoyées pendant qu'il est actif y sont automatiquement rattachées. */}
-              {activeMeso ? (
-                <MesocycleCard meso={activeMeso} onDelete={removeMeso}/>
-              ) : showMesoForm ? (
-                <div className="border border-[#c9a84c]/25 bg-[#c9a84c]/5 rounded-xl p-4 flex flex-col gap-3">
-                  <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c]">Nouveau mésocycle</p>
-                  <input className={inp} placeholder="Nom (ex : Prise de masse — bloc 1)" value={mesoForm.nom}
-                    onChange={e => setMesoForm(f => ({ ...f, nom: e.target.value }))}/>
-                  <input className={inp} placeholder="Objectif (optionnel)" value={mesoForm.objectif}
-                    onChange={e => setMesoForm(f => ({ ...f, objectif: e.target.value }))}/>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className={lbl}>Début</label>
-                      <input type="date" className={inp} value={mesoForm.dateDebut}
-                        onChange={e => setMesoForm(f => ({ ...f, dateDebut: e.target.value }))}/>
-                    </div>
-                    <div>
-                      <label className={lbl}>Fin</label>
-                      <input type="date" className={inp} value={mesoForm.dateFin}
-                        onChange={e => setMesoForm(f => ({ ...f, dateFin: e.target.value }))}/>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => setShowMesoForm(false)}
-                      className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] text-[0.6rem] tracking-wider uppercase py-2.5 rounded-xl hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors">
-                      Annuler
-                    </button>
-                    <button onClick={submitMeso} disabled={mesoSaving || !mesoForm.nom.trim() || !mesoForm.dateDebut || !mesoForm.dateFin}
-                      className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.6rem] font-bold tracking-wider uppercase py-2.5 rounded-xl disabled:opacity-40 transition-all">
-                      {mesoSaving ? "…" : "Créer →"}
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <button onClick={() => setShowMesoForm(true)}
-                  className="border border-dashed border-[var(--t-border)] text-[var(--t-text-25)] text-[0.6rem] tracking-wider uppercase py-2.5 rounded-xl hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors">
-                  + Démarrer un mésocycle
-                </button>
-              )}
-
-              {/* Confirmation d'envoi */}
-              {sentTo === selected.email && (
-                <div className="border border-[#7eb8a0]/25 bg-[#7eb8a0]/5 rounded-xl px-4 py-3 text-center">
-                  <p className="text-xs text-[#7eb8a0]">Programme envoyé à {selected.prenom} ✓ — aperçu ci-dessous</p>
-                </div>
-              )}
-
-              <ProgressionSuggestions clientId={selected.id} />
-
-              {Object.keys(dayStatuses).length > 0 && (
-                <div className="border border-[var(--t-text-8)] bg-[var(--t-bg)] rounded-xl px-4 py-3">
-                  <ConsistencyHeatmap statuses={dayStatuses}/>
-                </div>
-              )}
-
-              {Object.keys(muscleVolume).length > 0 && (
-                <div className="border border-[var(--t-text-8)] bg-[var(--t-bg)] rounded-xl px-4 py-3">
-                  <MuscleVolumeChart byMuscle={muscleVolume}/>
-                </div>
-              )}
-
-              {/* Séances déjà envoyées — aperçu visuel identique à ce que le client voit */}
-              {sentSeances.length > 0 && (
-                <div className="border border-[var(--t-text-8)] bg-[var(--t-bg)] rounded-xl">
-                  <div className="flex items-center justify-between gap-2 px-4 pt-3 pb-2">
-                    <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[var(--t-text-40)]">
-                      Séances envoyées à {selected.prenom} ({sentSeances.length})
-                    </p>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <button onClick={() => setSentView("liste")}
-                        className={`text-[0.55rem] tracking-wider uppercase px-2 py-1 rounded-lg transition-colors ${sentView === "liste" ? "bg-[#c9a84c]/15 text-[#c9a84c]" : "text-[var(--t-text-25)] hover:text-[var(--t-text-50)]"}`}>
-                        Liste
-                      </button>
-                      <button onClick={() => setSentView("semaine")}
-                        className={`text-[0.55rem] tracking-wider uppercase px-2 py-1 rounded-lg transition-colors ${sentView === "semaine" ? "bg-[#c9a84c]/15 text-[#c9a84c]" : "text-[var(--t-text-25)] hover:text-[var(--t-text-50)]"}`}>
-                        Semaine
-                      </button>
-                    </div>
-                  </div>
-
-                  {sentView === "semaine" && (
-                    <div className="px-4 pb-4 border-t border-[var(--t-border-soft)] pt-3">
-                      <WeekPlanning seances={sentSeances} onOpen={id => { setSentView("liste"); setOpenSentId(id); }}/>
-                    </div>
-                  )}
-
-                  {sentView === "liste" && sentSeances.map(s => {
-                    const open = openSentId === s.id;
-                    return (
-                      <div key={s.id} className="border-t border-[var(--t-border-soft)]">
-                        <div className="w-full flex items-center gap-2">
-                          <button onClick={() => setOpenSentId(open ? null : s.id)}
-                            className="flex-1 min-w-0 text-left px-4 py-2.5 flex items-center justify-between gap-2 hover:bg-[var(--t-glass-bg)] transition-colors">
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-2">
-                                {s.completed_at && <span className="text-[0.7rem] text-[#7eb8a0] shrink-0">✓</span>}
-                                {s.created_by_client && <span className="text-[0.62rem] tracking-wider uppercase text-[#6ea8d9] rounded-full border border-[#6ea8d9]/25 px-1.5 py-0.5 shrink-0">Séance libre du client</span>}
-                                {s.type_seance && <span className="text-[0.62rem] tracking-wider uppercase text-[#c9a84c] rounded-full border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">{s.type_seance}</span>}
-                                {s.semaine && <span className="text-[0.62rem] tracking-wider uppercase text-[var(--t-text-30)] rounded-full border border-[var(--t-border)] px-1.5 py-0.5 shrink-0">Sem. {s.semaine}</span>}
-                                <p className="text-xs text-[var(--t-text-70)] truncate">{s.titre}</p>
-                              </div>
-                              {s.date_prevue && <p className="text-[0.65rem] text-[var(--t-text-25)] mt-0.5">{new Date(s.date_prevue + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</p>}
-                            </div>
-                            <Icon icon={ChevronDown} size={10}
-                              className={`text-[var(--t-text-25)] shrink-0 transition-transform ${open ? "rotate-180" : ""}`}/>
-                          </button>
-                          <button onClick={() => deleteSeance(s.id)} disabled={deletingId === s.id} title="Supprimer cette séance" aria-label="Supprimer cette séance"
-                            className="shrink-0 mr-3 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors disabled:opacity-30">
-                            <Icon icon={Trash2} size={13} strokeWidth={1.8}/>
-                          </button>
-                        </div>
-                        {open && (
-                          <div className="px-4 pb-4 flex flex-col gap-3">
-                            <SeanceBody s={s} />
-                            <SeanceLoggedSummary seanceId={s.id} clientId={selected.id} exercicesRaw={s.exercices}/>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* ── Nouveau programme : rupture visuelle avec le bloc aperçu client ci-dessus ── */}
-              <div className="flex items-center gap-3 mt-2">
-                <span className="text-[0.55rem] tracking-[0.25em] uppercase text-[#c9a84c]/70 shrink-0">Nouveau programme</span>
-                <div className="flex-1 h-px bg-[#c9a84c]/15"/>
-              </div>
-
-              {/* Bibliothèque d'exercices */}
-              <div className="border border-[var(--t-text-8)] bg-[var(--t-bg)] rounded-xl">
-                <button onClick={() => setShowLibrary(v => !v)} className="w-full flex items-center justify-between px-4 py-2.5 text-left">
-                  <span className="text-[0.55rem] tracking-[0.2em] uppercase text-[var(--t-text-40)]">Ma bibliothèque d&apos;exercices ({library.length})</span>
-                  <Icon icon={ChevronDown} size={10} className={`text-[var(--t-text-25)] transition-transform ${showLibrary ? "rotate-180" : ""}`}/>
-                </button>
-                {showLibrary && (
-                  <div className="px-4 pb-4 flex flex-col gap-2.5">
-                    {library.length > 0 && (
-                      <div className="flex flex-col gap-1 max-h-40 overflow-y-auto">
-                        {library.map(l => (
-                          <div key={l.id} className="flex items-center justify-between gap-2 rounded-xl border border-[var(--t-border-soft)] px-2.5 py-1.5">
-                            <span className="text-[0.62rem] text-[var(--t-text-50)] truncate">{l.nom}{l.type ? <span className="text-[var(--t-text-25)]"> · {l.type}</span> : null}</span>
-                            <button onClick={() => removeLibItem(l.id)} aria-label={`Retirer ${l.nom} de la bibliothèque`} className="shrink-0 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
-                              <Icon icon={X} size={10} strokeWidth={2}/>
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    <div className="grid grid-cols-2 gap-2">
-                      <input className={inp} placeholder="Nom de l'exercice" value={libForm.nom} onChange={e => setLibForm(f => ({ ...f, nom: e.target.value }))}/>
-                      <input className={inp} placeholder="Type (optionnel)" value={libForm.type} onChange={e => setLibForm(f => ({ ...f, type: e.target.value }))}/>
-                      <input className={inp} placeholder="Note par défaut (optionnel)" value={libForm.note_default} onChange={e => setLibForm(f => ({ ...f, note_default: e.target.value }))}/>
-                      <input className={inp} placeholder="Lien vidéo (optionnel)" value={libForm.video_url} onChange={e => setLibForm(f => ({ ...f, video_url: e.target.value }))}/>
-                    </div>
-                    <button onClick={addLibItem} disabled={!libForm.nom.trim()}
-                      className="border border-[var(--t-border)] text-[var(--t-text-30)] text-[0.55rem] tracking-[0.12em] uppercase py-2 rounded-xl hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors disabled:opacity-30">
-                      + Ajouter à la bibliothèque
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Génération */}
+              {/* ── Création d'abord : c'est la raison d'être de cette page ── */}
               {drafts.length === 0 && !showTemplates && (
-                <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-xl p-4 md:p-5 flex flex-col gap-3">
-                  <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c]">Programme ciblé</p>
-                  <p className="text-[0.65rem] text-[var(--t-text-35)] leading-relaxed">
-                    Génère {Math.min(Math.max(selected.seances_par_semaine || 3, 2), 6)} séances adaptées à l&apos;objectif, au niveau, au lieu et aux blessures de {selected.prenom}. Tu pourras tout modifier avant d&apos;envoyer.
-                  </p>
-                  <div>
-                    <label className="text-[0.5rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] block mb-1.5">
-                      Précisions pour ce programme (optionnel)
-                    </label>
+                <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-xl p-4 md:p-5 flex flex-col gap-4">
+                  <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c]">Nouveau programme</p>
+
+                  <div className="flex flex-col gap-2">
                     <textarea rows={2} className={`${inp} resize-none`}
-                      placeholder="Ex : reprise après blessure au genou, priorité sur le haut du corps ce mois-ci…"
+                      placeholder={`Précisions pour l'IA (optionnel) — ex : reprise après blessure au genou, priorité haut du corps…`}
                       value={genDescription} onChange={e => setGenDescription(e.target.value)}/>
-                    <p className="text-[0.55rem] text-[var(--t-text-20)] mt-1">Combiné avec le profil de {selected.prenom} (objectif enregistré, niveau, blessures, lieu…)</p>
-                  </div>
-                  <button onClick={generate} disabled={generating}
-                    className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.58rem] font-bold tracking-[0.18em] uppercase py-3 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-50 flex items-center justify-center gap-2">
-                    {generating ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Génération en cours…</> : "Générer avec l'IA →"}
-                  </button>
-                  <button onClick={() => setDrafts([emptySeance()])}
-                    className="border border-[var(--t-border)] text-[var(--t-text-30)] text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-xl hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">
-                    Ou créer manuellement
-                  </button>
-                  {templates.length > 0 && (
-                    <button onClick={() => setShowTemplates(true)}
-                      className="border border-[var(--t-border)] text-[var(--t-text-30)] text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-xl hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">
-                      Ou choisir un modèle ({templates.length})
+                    <button onClick={generate} disabled={generating}
+                      className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.58rem] font-bold tracking-[0.18em] uppercase py-3 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-50 flex items-center justify-center gap-2">
+                      {generating ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Génération en cours…</> : `Générer ${Math.min(Math.max(selected.seances_par_semaine || 3, 2), 6)} séances avec l'IA →`}
                     </button>
-                  )}
+                    <p className="text-[0.55rem] text-[var(--t-text-25)]">Basé sur l&apos;objectif, le niveau, le lieu et les blessures de {selected.prenom}. Tout reste modifiable avant l&apos;envoi.</p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <button onClick={() => setShowTemplates(true)} disabled={templates.length === 0}
+                      title={templates.length === 0 ? "Enregistre une séance comme modèle (bouton « Modèle ») pour la réutiliser ici" : undefined}
+                      className="border border-[var(--t-border)] bg-[var(--t-surface)] text-[var(--t-text-50)] text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-xl hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors disabled:opacity-40 disabled:hover:border-[var(--t-border)] disabled:hover:text-[var(--t-text-50)]">
+                      Partir d&apos;un modèle ({templates.length})
+                    </button>
+                    <button onClick={() => setDrafts([emptySeance()])}
+                      className="border border-[var(--t-border)] bg-[var(--t-surface)] text-[var(--t-text-50)] text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-xl hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors">
+                      Créer manuellement
+                    </button>
+                  </div>
                 </div>
               )}
 
@@ -568,7 +415,7 @@ export default function ProgrammesPage() {
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-[0.5rem] tracking-[0.2em] uppercase text-[#c9a84c]">Séance {i + 1}</span>
                         <div className="flex items-center gap-3">
-                          <button onClick={() => saveAsTemplate(d)} disabled={!d.titre.trim()} title="Enregistrer comme modèle"
+                          <button onClick={() => setTemplateDraft({ index: i, nom: d.titre })} disabled={!d.titre.trim()} title="Enregistrer comme modèle"
                             className="text-[0.48rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[#c9a84c] transition-colors disabled:opacity-30">
                             Modèle
                           </button>
@@ -636,10 +483,158 @@ export default function ProgrammesPage() {
                 </>
               )}
 
+              {/* Mésocycle — bloc d'entraînement nommé avec un objectif et des dates. Les
+                  séances envoyées pendant qu'il est actif y sont automatiquement rattachées. */}
+              {activeMeso ? (
+                <MesocycleCard meso={activeMeso} onDelete={removeMeso}/>
+              ) : showMesoForm ? (
+                <div className="border border-[#c9a84c]/25 bg-[#c9a84c]/5 rounded-xl p-4 flex flex-col gap-3">
+                  <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c]">Nouveau mésocycle</p>
+                  <input className={inp} placeholder="Nom (ex : Prise de masse — bloc 1)" value={mesoForm.nom}
+                    onChange={e => setMesoForm(f => ({ ...f, nom: e.target.value }))}/>
+                  <input className={inp} placeholder="Objectif (optionnel)" value={mesoForm.objectif}
+                    onChange={e => setMesoForm(f => ({ ...f, objectif: e.target.value }))}/>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className={lbl}>Début</label>
+                      <input type="date" className={inp} value={mesoForm.dateDebut}
+                        onChange={e => setMesoForm(f => ({ ...f, dateDebut: e.target.value }))}/>
+                    </div>
+                    <div>
+                      <label className={lbl}>Fin</label>
+                      <input type="date" className={inp} value={mesoForm.dateFin}
+                        onChange={e => setMesoForm(f => ({ ...f, dateFin: e.target.value }))}/>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => setShowMesoForm(false)}
+                      className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] text-[0.6rem] tracking-wider uppercase py-2.5 rounded-xl hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors">
+                      Annuler
+                    </button>
+                    <button onClick={submitMeso} disabled={mesoSaving || !mesoForm.nom.trim() || !mesoForm.dateDebut || !mesoForm.dateFin}
+                      className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.6rem] font-bold tracking-wider uppercase py-2.5 rounded-xl disabled:opacity-40 transition-all">
+                      {mesoSaving ? "…" : "Créer →"}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button onClick={() => setShowMesoForm(true)}
+                  className="border border-dashed border-[var(--t-border)] text-[var(--t-text-25)] text-[0.6rem] tracking-wider uppercase py-2.5 rounded-xl hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors">
+                  + Démarrer un mésocycle
+                </button>
+              )}
+
+              {/* Confirmation d'envoi */}
+              {sentTo === selected.email && (
+                <div className="border border-[#7eb8a0]/25 bg-[#7eb8a0]/5 rounded-xl px-4 py-3 text-center">
+                  <p className="text-xs text-[#7eb8a0]">Programme envoyé à {selected.prenom} ✓ — aperçu ci-dessous</p>
+                </div>
+              )}
+
+              <ProgressionSuggestions clientId={selected.id} />
+
+              {/* Séances déjà envoyées — aperçu visuel identique à ce que le client voit */}
+              {sentSeances.length > 0 && (
+                <div className="border border-[var(--t-text-8)] bg-[var(--t-bg)] rounded-xl">
+                  <div className="flex items-center justify-between gap-2 px-4 pt-3 pb-2">
+                    <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[var(--t-text-40)]">
+                      Séances envoyées à {selected.prenom} ({sentSeances.length})
+                    </p>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button onClick={() => setSentView("liste")}
+                        className={`text-[0.55rem] tracking-wider uppercase px-2 py-1 rounded-lg transition-colors ${sentView === "liste" ? "bg-[#c9a84c]/15 text-[#c9a84c]" : "text-[var(--t-text-25)] hover:text-[var(--t-text-50)]"}`}>
+                        Liste
+                      </button>
+                      <button onClick={() => setSentView("semaine")}
+                        className={`text-[0.55rem] tracking-wider uppercase px-2 py-1 rounded-lg transition-colors ${sentView === "semaine" ? "bg-[#c9a84c]/15 text-[#c9a84c]" : "text-[var(--t-text-25)] hover:text-[var(--t-text-50)]"}`}>
+                        Semaine
+                      </button>
+                    </div>
+                  </div>
+
+                  {sentView === "semaine" && (
+                    <div className="px-4 pb-4 border-t border-[var(--t-border-soft)] pt-3">
+                      <WeekPlanning seances={sentSeances} onOpen={id => { setSentView("liste"); setOpenSentId(id); }}/>
+                    </div>
+                  )}
+
+                  {sentView === "liste" && groupByWeek(sentSeances).map(g => (
+                    <div key={g.key}>
+                      <div className="flex items-center justify-between px-4 pt-3 pb-1.5 border-t border-[var(--t-border-soft)] bg-[var(--t-surface-2)]/60">
+                        <p className="text-[0.52rem] tracking-[0.18em] uppercase text-[var(--t-text-40)]">{g.label}</p>
+                        <p className="text-[0.52rem] text-[var(--t-text-30)]">
+                          <span className="text-[#7eb8a0]">{g.items.filter(s => s.completed_at).length}</span> / {g.items.length} faite{g.items.length > 1 ? "s" : ""}
+                        </p>
+                      </div>
+                  {g.items.map(s => {
+                    const open = openSentId === s.id;
+                    return (
+                      <div key={s.id} className="border-t border-[var(--t-border-soft)]">
+                        <div className="w-full flex items-center gap-2">
+                          <button onClick={() => setOpenSentId(open ? null : s.id)}
+                            className="flex-1 min-w-0 text-left px-4 py-2.5 flex items-center justify-between gap-2 hover:bg-[var(--t-glass-bg)] transition-colors">
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                {s.completed_at && <span className="text-[0.7rem] text-[#7eb8a0] shrink-0">✓</span>}
+                                {s.created_by_client && <span className="text-[0.62rem] tracking-wider uppercase text-[#6ea8d9] rounded-full border border-[#6ea8d9]/25 px-1.5 py-0.5 shrink-0">Séance libre du client</span>}
+                                {s.type_seance && <span className="text-[0.62rem] tracking-wider uppercase text-[#c9a84c] rounded-full border border-[#c9a84c]/20 px-1.5 py-0.5 shrink-0">{s.type_seance}</span>}
+                                {s.semaine && <span className="text-[0.62rem] tracking-wider uppercase text-[var(--t-text-30)] rounded-full border border-[var(--t-border)] px-1.5 py-0.5 shrink-0">Sem. {s.semaine}</span>}
+                                <p className="text-xs text-[var(--t-text-70)] truncate">{s.titre}</p>
+                              </div>
+                              {s.date_prevue && <p className="text-[0.65rem] text-[var(--t-text-25)] mt-0.5">{new Date(s.date_prevue + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</p>}
+                            </div>
+                            <Icon icon={ChevronDown} size={10}
+                              className={`text-[var(--t-text-25)] shrink-0 transition-transform ${open ? "rotate-180" : ""}`}/>
+                          </button>
+                          <button onClick={() => deleteSeance(s.id)} disabled={deletingId === s.id} title="Supprimer cette séance" aria-label="Supprimer cette séance"
+                            className="shrink-0 mr-3 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors disabled:opacity-30">
+                            <Icon icon={Trash2} size={13} strokeWidth={1.8}/>
+                          </button>
+                        </div>
+                        {open && (
+                          <div className="px-4 pb-4 flex flex-col gap-3">
+                            <SeanceBody s={s} />
+                            <SeanceLoggedSummary seanceId={s.id} clientId={selected.id} exercicesRaw={s.exercices}/>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+
             </div>
           </div>
         </div>
-      ) : (
+      ) : null}
+
+      {/* Nommer un modèle — fenêtre de l'app plutôt que le prompt natif du navigateur. */}
+      {templateDraft && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={() => setTemplateDraft(null)}>
+          <div onClick={e => e.stopPropagation()} className="w-full max-w-sm rounded-2xl border border-[var(--t-border)] bg-[var(--t-surface)] shadow-[0_20px_60px_-12px_rgba(0,0,0,0.4)] p-5 flex flex-col gap-3">
+            <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c]">Enregistrer comme modèle</p>
+            <p className="text-[0.65rem] text-[var(--t-text-40)]">Tu pourras le réutiliser pour n&apos;importe quel client via « Partir d&apos;un modèle ».</p>
+            <input autoFocus className={inp} placeholder="Nom du modèle" value={templateDraft.nom}
+              onChange={e => setTemplateDraft(t => t && { ...t, nom: e.target.value })}
+              onKeyDown={e => { if (e.key === "Enter") saveAsTemplate(); if (e.key === "Escape") setTemplateDraft(null); }}/>
+            <div className="flex gap-2">
+              <button onClick={() => setTemplateDraft(null)}
+                className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] text-[0.6rem] tracking-wider uppercase py-2.5 rounded-xl hover:text-[var(--t-text-60)] transition-colors">
+                Annuler
+              </button>
+              <button onClick={saveAsTemplate} disabled={!templateDraft.nom.trim() || templateSaving}
+                className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.6rem] font-bold tracking-wider uppercase py-2.5 rounded-xl disabled:opacity-40 transition-all">
+                {templateSaving ? "…" : "Enregistrer"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {!selected && (
         <div className="flex-1 hidden md:flex flex-col items-center justify-center gap-3">
           <Icon icon={FileText} size={36} strokeWidth={1} className="text-[var(--t-border)]"/>
           <p className="text-[var(--t-text-15)] text-sm">Sélectionne un client pour lui créer un programme</p>
