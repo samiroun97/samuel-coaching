@@ -10,13 +10,15 @@ export type SelectOption = { value: string; label: string };
 // navigateur (fond blanc, police système) — même limitation que CalendarPicker pour
 // les dates. Se ferme au clic extérieur / Échap / sélection.
 export function Select({
-  value, onChange, options, placeholder, triggerClassName = "", panelClassName = "", align = "left", disabled = false,
+  value, onChange, options, placeholder, triggerClassName = "", triggerStyle, panelClassName = "", align = "left", disabled = false,
 }: {
   value: string;
   onChange: (value: string) => void;
   options: SelectOption[];
   placeholder?: string;
   triggerClassName?: string;
+  // Couleur dynamique (ex. couleur de l'étape sélectionnée) — impossible en classe Tailwind.
+  triggerStyle?: React.CSSProperties;
   panelClassName?: string;
   align?: "left" | "right";
   disabled?: boolean;
@@ -37,7 +39,7 @@ export function Select({
 
   return (
     <div ref={ref} className="relative inline-block">
-      <button type="button" disabled={disabled} onClick={() => setOpen(o => !o)}
+      <button type="button" disabled={disabled} onClick={() => setOpen(o => !o)} style={triggerStyle}
         className={`flex items-center justify-between gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${triggerClassName}`}>
         <span className={`truncate ${current ? "" : "text-[var(--t-text-20)]"}`}>{current?.label ?? placeholder ?? "—"}</span>
         <Icon icon={ChevronDown} size={10} strokeWidth={2}
