@@ -13,17 +13,6 @@ type Msg    = { from_email: string; to_email: string; content: string; created_a
 type Ck     = { client_id: string; week_date: string; weight: number | null; compliance: number | null; created_at: string; profiles?: { prenom: string; nom: string } };
 type MesoEnding = { client_id: string; nom: string; date_fin: string };
 
-function KPI({ label, value, color, href }: { label: string; value: number | string; color?: string; href?: string }) {
-  const inner = (
-    <div className={`border bg-[var(--t-surface-2)] rounded-xl px-4 py-3 md:px-5 md:py-4 flex flex-col gap-1 ${href ? "hover:border-[var(--t-border-15)] transition-colors cursor-pointer" : ""}`}
-      style={{ borderColor: color ? `${color}25` : "var(--t-text-7)" }}>
-      <p style={{ fontFamily: "var(--font-bebas)", color: color ?? "var(--t-text)" }} className="text-3xl md:text-4xl tracking-wide leading-none">{value}</p>
-      <p className="text-[0.48rem] tracking-[0.2em] uppercase text-[var(--t-text-30)]">{label}</p>
-    </div>
-  );
-  return href ? <Link href={href}>{inner}</Link> : inner;
-}
-
 export default function CRMDashboard() {
   const [clients,  setClients]  = useState<Client[]>([]);
   const [msgs,     setMsgs]     = useState<Msg[]>([]);
@@ -88,12 +77,7 @@ export default function CRMDashboard() {
     return () => { supabase.removeChannel(ch); };
   }, []);
 
-  // ── Compute KPIs ──
-  const actifs    = clients.filter(c => (c.status ?? "actif") === "actif").length;
-  const enRisque  = clients.filter(c => (c.pipeline_stage ?? "actif") === "en_risque").length;
-  const churne    = clients.filter(c => (c.pipeline_stage ?? "actif") === "churne").length;
   const now       = Date.now();
-  const in14      = clients.filter(c => { if (!c.subscription_end) return false; const d = new Date(c.subscription_end).getTime(); return d > now && d < now + 14 * 86400000; }).length;
   // Onboarding/actif sans aucune séance envoyée : un prospect n'a pas encore de programme à
   // recevoir, ça ne compte donc pas comme un oubli à corriger.
   const sansProgramme = clients.filter(c => ["onboarding", "actif"].includes(c.pipeline_stage ?? "actif") && !(seanceCounts.get(c.email) ?? 0));
@@ -104,10 +88,6 @@ export default function CRMDashboard() {
     const client = m.from_email === myEmail ? m.to_email : m.from_email;
     if (client !== myEmail) convLastFrom.set(client, m);
   }
-  const nonRepondus = [...convLastFrom.entries()].filter(([email, m]) => m.from_email !== myEmail && !treated.has(email)).length;
-
-  const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().split("T")[0];
-  const ckThisWeek = checkins.filter(c => c.week_date >= weekAgo).length;
 
   // ── Alerts — tout ce qui attend une action du coach aujourd'hui, trié par urgence réelle
   // (temps depuis un message client / temps restant avant une échéance) plutôt que par type,
@@ -233,17 +213,6 @@ export default function CRMDashboard() {
             )}
           </div>
         )}
-      </div>
-
-      {/* KPIs — vue d'ensemble secondaire, sous l'action du jour */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 md:gap-3 mb-8">
-        <KPI label="Clients actifs"    value={actifs}       color="#7eb8a0" href="/crm/clients"/>
-        <KPI label="En risque"         value={enRisque}     color="#e09070" href="/crm/clients?stage=en_risque"/>
-        <KPI label="Churné"            value={churne}       color="#e07070" href="/crm/clients?stage=churne"/>
-        <KPI label="Exp. < 14j"        value={in14}         color="#c9a84c" href="/crm/clients"/>
-        <KPI label="Non répondus"      value={nonRepondus}  color="#c9a84c" href="/crm/inbox"/>
-        <KPI label="Sans programme"    value={sansProgramme.length} color="#c9a84c" href="/crm/programmes"/>
-        <KPI label="Check-ins / 7j"    value={ckThisWeek}  />
       </div>
 
       {/* Inviter un client — utilitaire occasionnel, pas une action urgente du jour */}
