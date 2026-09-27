@@ -307,6 +307,7 @@ export default function CRMDashboard() {
           )}
         </div>
 
-      </div>    </div>
+      </div>
+    </div>
   );
 }
