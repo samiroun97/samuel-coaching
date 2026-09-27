@@ -4,10 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { Icon } from "@/components/Icon";
+import { RichIcon } from "@/components/RichIcon";
 import { MessageCircle, Clock, AlertCircle, FileText, TrendingUp, CheckCircle2 } from "@/lib/solarIcons";
-
-const STAGE_LABEL: Record<string, string> = { prospect: "Prospect", onboarding: "Onboarding", actif: "Actif", en_risque: "En risque", churne: "Churné", reactive: "Réactivé" };
-const STAGE_COLOR: Record<string, string> = { prospect: "#888", onboarding: "#c9a84c", actif: "#7eb8a0", en_risque: "#e09070", churne: "#e07070", reactive: "#6ea8d9" };
 
 type Client = { id: string; email: string; prenom: string; nom: string; status: string | null; subscription_end: string | null; pipeline_stage: string | null; updated_at: string };
 type Msg    = { from_email: string; to_email: string; content: string; created_at: string };
@@ -193,8 +191,9 @@ export default function CRMDashboard() {
       </div>
 
       {/* ══ Aujourd'hui — ce qui attend une action, trié par urgence réelle ══ */}
-      <div className="border border-[#c9a84c]/25 bg-[var(--t-surface-gold)] rounded-2xl p-4 md:p-5 mb-8">
+      <div className="border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-2xl p-4 md:p-5 mb-8">
         <div className="flex items-center gap-3 mb-4">
+          <RichIcon name="hourglass" size={40}/>
           <span style={{ fontFamily: "var(--font-bebas)" }} className={`text-3xl tracking-wide leading-none ${alerts.length > 0 ? "text-[#c9a84c]" : "text-[#7eb8a0]"}`}>{alerts.length}</span>
           <div>
             <p className="text-sm font-bold text-[var(--t-text)]">
@@ -326,27 +325,6 @@ export default function CRMDashboard() {
           )}
         </div>
 
-      </div>
-
-      {/* Pipeline snapshot */}
-      <div className="mt-6 border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-xl p-4 md:p-5">
-        <div className="flex items-center justify-between mb-4">
-          <p className="text-[0.65rem] tracking-[0.22em] uppercase text-[#c9a84c]">Répartition pipeline</p>
-          <Link href="/crm/clients" className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">Vue complète →</Link>
-        </div>
-        <div className="flex gap-3 flex-wrap">
-          {Object.entries(STAGE_LABEL).map(([key, label]) => {
-            const count = clients.filter(c => (c.pipeline_stage ?? "actif") === key).length;
-            return (
-              <Link key={key} href={`/crm/clients?stage=${key}`} className="flex items-center gap-2 rounded-full border px-3 py-2 hover:bg-[var(--t-glass-bg)] transition-colors"
-                style={{ borderColor: `${STAGE_COLOR[key]}30` }}>
-                <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: STAGE_COLOR[key] }}/>
-                <p className="text-[0.65rem] tracking-wider uppercase" style={{ color: STAGE_COLOR[key] }}>{label}</p>
-                <p style={{ fontFamily: "var(--font-bebas)" }} className="text-lg text-[var(--t-text-70)] tracking-wide leading-none">{count}</p>
-              </Link>
-            );
-          })}
-        </div>
       </div>
     </div>
   );
