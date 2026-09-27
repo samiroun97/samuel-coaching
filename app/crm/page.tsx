@@ -5,6 +5,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
+import { PipelineBoard } from "@/components/PipelineBoard";
 import { MessageCircle, Clock, AlertCircle, FileText, TrendingUp, CheckCircle2 } from "@/lib/solarIcons";
 
 type Client = { id: string; email: string; prenom: string; nom: string; status: string | null; subscription_end: string | null; pipeline_stage: string | null; updated_at: string };
@@ -332,6 +333,11 @@ export default function CRMDashboard() {
           )}
         </div>
 
+      </div>
+
+      {/* Pipeline — même board que /crm/pipeline */}
+      <div className="mt-8">
+        <PipelineBoard variant="section"/>
       </div>
     </div>
   );
