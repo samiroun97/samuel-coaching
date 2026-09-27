@@ -148,6 +148,16 @@ export default function ClientsPage() {
     loadActiveMesocycle(c.id).then(setActiveMeso).catch(() => {});
   };
 
+  // Arrivée depuis une carte du board /crm/pipeline : ?client=<id> ouvre directement la fiche.
+  const clientParam = searchParams.get("client");
+  useEffect(() => {
+    if (!clientParam || loading || selected?.id === clientParam) return;
+    const c = clients.find(x => x.id === clientParam);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- ouverture ponctuelle depuis l'URL
+    if (c) selectClient(c);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clientParam, loading, clients]);
+
   const updateField = async (fields: Record<string, string | boolean | null>) => {
     if (!selected) return;
     setStatusSaving(true);

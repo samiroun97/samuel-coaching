@@ -8,7 +8,7 @@ import { startStateSync, SYNC_STATUS_EVENT } from "@/lib/syncStorage";
 import { isCoachUser, isCoachActive, isPlatformAdmin, getMyOwnBusinessName } from "@/lib/coach";
 import ThemeToggle from "@/components/ThemeToggle";
 import { Icon } from "@/components/Icon";
-import { LayoutGrid, Users, Share2, MessageSquare, FileText, LogOut, Eye } from "@/lib/solarIcons";
+import { LayoutGrid, Users, Layers, Share2, MessageSquare, FileText, LogOut, Eye } from "@/lib/solarIcons";
 
 export default function CRMLayout({ children }: { children: React.ReactNode }) {
   const router   = useRouter();
@@ -84,6 +84,7 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
   const nav = [
     { href: "/crm",            label: "Dashboard",  icon: LayoutGrid,    badge: 0 },
     { href: "/crm/clients",    label: "Clients",    icon: Users,         badge: 0 },
+    { href: "/crm/pipeline",   label: "Pipeline",   icon: Layers,        badge: 0 },
     { href: "/crm/programmes", label: "Programmes", icon: FileText,      badge: 0 },
     { href: "/crm/inbox",      label: "Inbox",      icon: MessageSquare, badge: unread },
   ];
