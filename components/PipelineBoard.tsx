@@ -9,8 +9,8 @@ import { MoreHorizontal, Clock, MessageCircle } from "@/lib/solarIcons";
 // Board kanban façon CRM open source (Twenty, Plane, Attio) : une colonne par étape du
 // pipeline, une carte par client, glisser-déposer pour changer d'étape. Sur mobile (pas de
 // drag HTML5 au toucher), le bouton "…" de chaque carte ouvre la liste des étapes.
-// Partagé entre /crm/pipeline (variant "page", avec grand titre) et le dashboard coach
-// (variant "section", titre de carte + lien vers la vue complète).
+// Partagé entre /crm/pipeline (variant "page" : grand titre + board) et le dashboard coach
+// (variant "section" : répartition seule + lien vers la vue complète).
 const STAGES = [
   { key: "prospect",   label: "Prospect",   color: "#8a8a8a", hint: "Premier contact" },
   { key: "onboarding", label: "Onboarding", color: "#c9a84c", hint: "Mise en route" },
@@ -105,14 +105,14 @@ export function PipelineBoard({ variant = "page" }: { variant?: "page" | "sectio
         <div className="flex items-center justify-between mb-4 max-w-6xl">
           <div>
             <p className="text-[0.65rem] tracking-[0.22em] uppercase text-[#c9a84c]">Pipeline</p>
-            <p className="text-[0.6rem] text-[var(--t-text-25)] mt-0.5">{total} client{total > 1 ? "s" : ""} · glisse une carte pour changer d&apos;étape</p>
+            <p className="text-[0.6rem] text-[var(--t-text-25)] mt-0.5">{total} client{total > 1 ? "s" : ""}</p>
           </div>
           <Link href="/crm/pipeline" className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">Vue complète →</Link>
         </div>
       )}
 
       {/* Répartition — barre segmentée + légende */}
-      <div className="max-w-6xl mb-8 border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-2xl p-4 md:p-5">
+      <div className={`max-w-6xl ${variant === "page" ? "mb-8" : ""} border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-2xl p-4 md:p-5`}>
         <div className="flex h-3 rounded-full overflow-hidden bg-[var(--t-track)] gap-[2px]">
           {STAGES.map(s => {
             const n = byStage.get(s.key)!.length;
@@ -145,7 +145,8 @@ export function PipelineBoard({ variant = "page" }: { variant?: "page" | "sectio
         <div className="max-w-6xl mb-4 rounded-xl border border-[#e07070]/30 bg-[#e07070]/10 px-4 py-2.5 text-xs text-[#e07070]">{error}</div>
       )}
 
-      {/* Board */}
+      {/* Board — uniquement sur la page Pipeline ; le dashboard n'affiche que la répartition. */}
+      {variant === "page" && (
       <div className="flex gap-3 md:gap-4 overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory">
         {STAGES.map(s => {
           const cards = byStage.get(s.key)!;
@@ -236,6 +237,7 @@ export function PipelineBoard({ variant = "page" }: { variant?: "page" | "sectio
           );
         })}
       </div>
+      )}
     </div>
   );
 }

@@ -304,7 +304,7 @@ export default function CRMDashboard() {
 
       </div>
 
-      {/* Pipeline — même board que /crm/pipeline */}
+      {/* Pipeline — répartition seule, le board détaillé est sur /crm/pipeline */}
       <div className="mt-8">
         <PipelineBoard variant="section"/>
       </div>
