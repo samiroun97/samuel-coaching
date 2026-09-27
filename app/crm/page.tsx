@@ -196,7 +196,10 @@ export default function CRMDashboard() {
           <div className="relative w-[72px] h-[72px] flex items-center justify-center shrink-0">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-lg pointer-events-none"
               style={{ width: 50, height: 50, backgroundColor: "#c9a84c", opacity: 0.16 }}/>
-            <RichIcon name="hourglass" size={72} className="relative animate-levitate drop-shadow-[0_10px_12px_rgba(0,0,0,0.14)]"/>
+            {/* Lévitation sur le wrapper, inclinaison sur l'icône : les deux utilisent `transform`. */}
+            <div className="relative animate-levitate">
+              <RichIcon name="hourglass" size={72} className="-rotate-12 drop-shadow-[0_10px_12px_rgba(0,0,0,0.14)]"/>
+            </div>
           </div>
           <span style={{ fontFamily: "var(--font-bebas)" }} className={`text-3xl tracking-wide leading-none ${alerts.length > 0 ? "text-[#c9a84c]" : "text-[#7eb8a0]"}`}>{alerts.length}</span>
           <div>
