@@ -51,6 +51,9 @@ type MealItem = { id: string; plan_id: string; meal_type: string; name: string; 
 
 const todayStr = () => new Date().toISOString().split("T")[0];
 
+// Colonnes de la liste en mode tableau (aucun client ouvert) : en-tête et lignes partagent la grille.
+const ROW_COLS = "grid-cols-[minmax(0,1.6fr)_110px_minmax(0,1.4fr)_100px_70px]";
+
 function ClientAvatar({ c, color, size = 36 }: { c: Pick<Client, "prenom" | "nom" | "avatar_url">; color: string; size?: number }) {
   if (c.avatar_url) {
     // eslint-disable-next-line @next/next/no-img-element
@@ -327,9 +330,14 @@ export default function ClientsPage() {
           </div>
         )}
 
-        {/* Sans client ouvert, la liste prend toute la largeur (grille de cartes) au lieu de
-            laisser une moitié d'écran vide "Sélectionne un client". */}
-        <div className={`flex-1 overflow-y-auto py-2 px-2 ${selected ? "" : "md:grid md:grid-cols-2 xl:grid-cols-3 md:gap-2 md:content-start md:p-4"}`}>
+        {/* Liste en lignes compactes. Sans client ouvert, elle prend toute la largeur et
+            affiche des colonnes en plus (étape, activité, abonnement, poids) façon tableau. */}
+        {!selected && (
+          <div className={`hidden md:grid ${ROW_COLS} gap-4 px-5 pt-3 pb-1.5 text-[0.48rem] tracking-[0.18em] uppercase text-[var(--t-text-25)]`}>
+            <span>Client</span><span>Étape</span><span>Activité</span><span>Abonnement</span><span className="text-right">Poids</span>
+          </div>
+        )}
+        <div className="flex-1 overflow-y-auto py-1 px-2">
           {filtered.map(c => {
             const stage = (c.pipeline_stage ?? "actif") as StageKey;
             const stageCfg = STAGE_CFG[stage] ?? STAGE_CFG.actif;
@@ -338,34 +346,43 @@ export default function ClientsPage() {
             const subDays = subEnd ? Math.ceil((subEnd.getTime() - nowTs) / 86400000) : null;
             const subSoon = subDays !== null && subDays <= 14;
             const isSelected = selected?.id === c.id;
+            const activity = stage !== "prospect" ? (
+              <span className="inline-flex items-center gap-1 text-[0.58rem] min-w-0" style={{ color: STATUS_LEVEL_COLOR[st.level] }}>
+                <ClientStatusDot status={st}/><span className="truncate">{activityLabel(st)}</span>
+              </span>
+            ) : <span className="text-[0.58rem] text-[var(--t-text-20)]">—</span>;
+            const stageBadge = (
+              <span className="text-[0.45rem] tracking-wider uppercase px-1.5 py-0.5 rounded-full shrink-0"
+                style={{ color: stageCfg.color, backgroundColor: `${stageCfg.color}14` }}>
+                {stageCfg.label}
+              </span>
+            );
             return (
               <button key={c.id} onClick={() => selectClient(c)}
-                className={`w-full text-left px-3 py-3 mb-1.5 md:mb-0 ${selected ? "md:mb-1.5" : ""} rounded-xl border transition-all ${isSelected ? "border-[#c9a84c]/30 bg-[#c9a84c]/5" : "border-[var(--t-border-soft)] bg-[var(--t-surface)]/40 hover:border-[var(--t-border)] hover:bg-[var(--t-glass-bg)]"}`}
-                style={{ boxShadow: `inset 3px 0 0 ${stageCfg.color}` }}>
-                <div className="flex items-center gap-3">
-                  <ClientAvatar c={c} color={stageCfg.color}/>
+                className={`w-full text-left px-3 py-2 border-b border-[var(--t-border-soft)] last:border-0 rounded-lg transition-colors ${isSelected ? "bg-[#c9a84c]/10" : "hover:bg-[var(--t-glass-bg)]"} ${selected ? "" : `md:grid ${ROW_COLS} md:gap-4 md:items-center`}`}>
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <ClientAvatar c={c} color={stageCfg.color} size={28}/>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
-                      <p className={`text-sm font-medium truncate ${isSelected ? "text-[var(--t-text)]" : "text-[var(--t-text-75)]"}`}>{c.prenom} {c.nom}</p>
-                      <span className="text-[0.45rem] tracking-wider uppercase px-1.5 py-0.5 rounded-full shrink-0"
-                        style={{ color: stageCfg.color, backgroundColor: `${stageCfg.color}14` }}>
-                        {stageCfg.label}
-                      </span>
+                      <p className={`text-[0.8rem] font-medium truncate ${isSelected ? "text-[var(--t-text)]" : "text-[var(--t-text-75)]"}`}>{c.prenom} {c.nom}</p>
+                      <span className={selected ? "" : "md:hidden"}>{stageBadge}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                      {stage !== "prospect" && (
-                        <span className="inline-flex items-center gap-1 text-[0.58rem]" style={{ color: STATUS_LEVEL_COLOR[st.level] }}>
-                          <ClientStatusDot status={st}/>{activityLabel(st)}
-                        </span>
-                      )}
-                      {subSoon && (
-                        <span className="text-[0.52rem] px-1.5 py-0.5 rounded-full bg-[#e09070]/12 text-[#e09070]">
-                          {subDays! <= 0 ? "Abo. expiré" : `Abo. ${subDays}j`}
-                        </span>
-                      )}
+                    <div className={`flex items-center gap-1.5 mt-0.5 min-w-0 ${selected ? "" : "md:hidden"}`}>
+                      {activity}
+                      {subSoon && <span className="text-[0.52rem] text-[#e09070] shrink-0">· {subDays! <= 0 ? "Abo. expiré" : `Abo. ${subDays}j`}</span>}
                     </div>
                   </div>
                 </div>
+                {!selected && (
+                  <>
+                    <span className="hidden md:block">{stageBadge}</span>
+                    <span className="hidden md:flex min-w-0">{activity}</span>
+                    <span className={`hidden md:block text-[0.6rem] ${subSoon ? "text-[#e09070]" : "text-[var(--t-text-35)]"}`}>
+                      {subEnd ? (subDays! <= 0 ? "Expiré" : subEnd.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "2-digit" })) : "—"}
+                    </span>
+                    <span className="hidden md:block text-[0.65rem] text-[var(--t-text-40)] text-right">{c.poids ? `${c.poids} kg` : "—"}</span>
+                  </>
+                )}
               </button>
             );
           })}
