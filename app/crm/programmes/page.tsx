@@ -17,6 +17,7 @@ import { type ProgrammeTemplate, listTemplates, saveTemplate, deleteTemplate, te
 import { getMyCoachId } from "@/lib/coach";
 import { WeekPlanning } from "@/components/WeekPlanning";
 import Link from "next/link";
+import { hasBlessure } from "@/lib/blessures";
 import { type Mesocycle, loadActiveMesocycle, createMesocycle, deleteMesocycle } from "@/lib/mesocycles";
 import { MesocycleCard } from "@/components/MesocycleCard";
 import { Icon } from "@/components/Icon";
@@ -346,7 +347,7 @@ export default function ProgrammesPage() {
               {/* Contraintes à garder en tête en programmant — une ligne, pas une carte. */}
               <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-[0.65rem] text-[var(--t-text-50)] leading-relaxed">
                 <span><span className="text-[0.48rem] tracking-[0.15em] uppercase text-[#c9a84c] mr-1.5">Objectif</span>{selected.objectifs || "Non renseigné"}</span>
-                {selected.blessures && <span className="text-[#e09070]">⚠ {selected.blessures}</span>}
+                {hasBlessure(selected.blessures) && <span className="text-[#e09070]">⚠ {selected.blessures}</span>}
                 <span className="text-[var(--t-text-30)]">📍 {selected.lieu_entrainement || "Lieu —"}</span>
               </div>
 

@@ -19,6 +19,7 @@ import { type Mesocycle, loadActiveMesocycle } from "@/lib/mesocycles";
 import { MesocycleCard } from "@/components/MesocycleCard";
 import { loadPersonalRecords, type PRCard } from "@/lib/personalRecords";
 import { Sparkline } from "@/components/Sparkline";
+import { hasBlessure } from "@/lib/blessures";
 
 const LEVEL_RANK: Record<ClientStatus["level"], number> = { risque: 0, attention: 1, ok: 2 };
 
@@ -560,7 +561,7 @@ export default function ClientsPage() {
                     </div>
                     <div>
                       <p className="text-[0.48rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mb-0.5">Blessures / contraintes</p>
-                      <p className={`text-xs leading-relaxed line-clamp-2 ${selected.blessures ? "text-[#e09070]" : "text-[var(--t-text-40)]"}`}>{selected.blessures || "Aucune signalée"}</p>
+                      <p className={`text-xs leading-relaxed line-clamp-2 ${hasBlessure(selected.blessures) ? "text-[#e09070]" : "text-[var(--t-text-40)]"}`}>{hasBlessure(selected.blessures) ? selected.blessures : "Aucune signalée"}</p>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
