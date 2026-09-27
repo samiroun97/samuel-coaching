@@ -171,6 +171,11 @@ export default function CRMDashboard() {
         </p>
       </div>
 
+      {/* Pipeline — répartition seule, le board détaillé est sur /crm/pipeline */}
+      <div className="mb-8">
+        <PipelineBoard variant="section"/>
+      </div>
+
       {/* ══ Aujourd'hui — ce qui attend une action, trié par urgence réelle ══ */}
       <div className="border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-2xl p-4 md:p-5 mb-8">
         <div className="flex items-center gap-3 mb-4">
@@ -302,12 +307,6 @@ export default function CRMDashboard() {
           )}
         </div>
 
-      </div>
-
-      {/* Pipeline — répartition seule, le board détaillé est sur /crm/pipeline */}
-      <div className="mt-8">
-        <PipelineBoard variant="section"/>
-      </div>
-    </div>
+      </div>    </div>
   );
 }
