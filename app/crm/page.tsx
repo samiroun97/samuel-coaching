@@ -281,7 +281,16 @@ export default function CRMDashboard() {
         {/* Recent messages */}
         <div className="border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-xl p-4 md:p-5">
           <div className="flex items-center justify-between mb-4">
-            <p className="text-[0.65rem] tracking-[0.22em] uppercase text-[#c9a84c]">Messages en attente</p>
+            <div className="flex items-center gap-3">
+              <div className="relative w-12 h-12 flex items-center justify-center shrink-0">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-lg pointer-events-none"
+                  style={{ width: 34, height: 34, backgroundColor: "#c9a84c", opacity: 0.16 }}/>
+                <div className="relative animate-levitate">
+                  <RichIcon name="messages" size={48} className="drop-shadow-[0_8px_10px_rgba(0,0,0,0.14)]"/>
+                </div>
+              </div>
+              <p className="text-[0.65rem] tracking-[0.22em] uppercase text-[#c9a84c]">Messages en attente</p>
+            </div>
             <Link href="/crm/inbox" className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">Inbox →</Link>
           </div>
           {recentMsgs.length === 0 ? (

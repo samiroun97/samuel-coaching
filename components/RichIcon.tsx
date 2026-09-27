@@ -22,6 +22,8 @@ const RICH_ICON_SRC = {
   chrono: "/icons-rich/chrono.webp",
   // Sablier fourni par le client — en-tête "clients qui attendent une action" du dashboard coach.
   hourglass: "/icons-rich/sablier.webp",
+  // Bulles de discussion fournies par le client — carte "Messages en attente" du dashboard coach.
+  messages: "/icons-rich/message.webp",
   // Monogramme de marque — badge autonome (fond sombre déjà intégré au fichier, pas un
   // simple trait transparent), à réserver aux moments hero (voir public/icons/logo-source.svg
   // pour l'original, jamais utilisé nulle part avant cette passe).
