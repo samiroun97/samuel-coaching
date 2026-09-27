@@ -97,8 +97,8 @@ export function ProgrammeWeekView({ seances, meso, weeklyTarget, onCreate, onOpe
             <ul className="flex flex-col gap-0.5 pt-0.5 border-t border-[var(--t-border-soft)]">
               {exs.slice(0, 3).map((ex, i) => (
                 <li key={i} className="flex items-baseline justify-between gap-2 text-[0.68rem] pt-1">
-                  <span className="text-[var(--t-text-70)] truncate capitalize">{ex.nom}</span>
-                  <span className="text-[var(--t-text-40)] shrink-0 tabular-nums">{summarizeExercice(ex).replace(" · ", " ")}</span>
+                  <span className="text-[var(--t-text-70)] truncate capitalize min-w-0">{ex.nom}</span>
+                  {ex.mode !== "libre" && <span className="text-[var(--t-text-40)] shrink-0 tabular-nums max-w-[60%] truncate">{summarizeExercice(ex)}</span>}
                 </li>
               ))}
               {exs.length > 3 && <li className="text-[0.65rem] text-[var(--t-text-40)] pt-0.5">+ {exs.length - 3} exercice{exs.length - 3 > 1 ? "s" : ""}</li>}
@@ -122,7 +122,7 @@ export function ProgrammeWeekView({ seances, meso, weeklyTarget, onCreate, onOpe
               {focusNum ? `Semaine ${focusNum} · ` : ""}{fmtShort(focus)} – {fmtShort(addDays(focus, 6))}
             </h3>
             <p className="text-[0.78rem] text-[var(--t-text-50)] mt-1">
-              <span className="text-[#7eb8a0] font-semibold">{focusStats.done}</span> / {target || 0} séance{target > 1 ? "s" : ""} faite{focusStats.done > 1 ? "s" : ""}
+              <span className="text-[#7eb8a0] font-semibold">{focusStats.done}</span> / {target || 0} séance{target > 1 ? "s" : ""} faite{target > 1 ? "s" : ""}
               {focusStats.planned > 0 && focusStats.planned !== target ? ` · ${focusStats.planned} planifiée${focusStats.planned > 1 ? "s" : ""}` : ""}
             </p>
           </div>
