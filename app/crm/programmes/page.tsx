@@ -8,8 +8,10 @@ import { type ExerciceItem, serializeExercices, normalizeExercice } from "@/lib/
 import { serializeNotesLibres } from "@/lib/notesLibres";
 import { SeanceBody } from "@/components/SeancePreview";
 import { SeanceLoggedSummary } from "@/components/SeanceLoggedSummary";
+import { Select } from "@/components/Select";
 import { SeanceForm, type SeanceDraft, emptySeance, draftFromSeance } from "@/components/SeanceForm";
 import { ProgrammeCalendar, mesoWeekNum, addDays } from "@/components/ProgrammeCalendar";
+import { type ProgrammeBiblio, listProgrammes, saveProgramme, deleteProgramme, seancesToProgramme, dateFor, mondayISO } from "@/lib/programmeBibliotheque";
 import { ProgressionSuggestions } from "@/components/ProgressionSuggestions";
 import { type LibraryEntry, listLibrary } from "@/lib/exerciceLibrary";
 import { type CatalogueEntry, loadCatalogue } from "@/lib/exercicesCatalogue";
@@ -303,6 +305,85 @@ export default function ProgrammesPage() {
     await loadSentSeances(selected.email);
   };
 
+  // ── Programmes réutilisables (bibliothèque multi-semaines) ──
+  const [programmes, setProgrammes] = useState<ProgrammeBiblio[]>([]);
+  const [saveProg, setSaveProg] = useState<{ nom: string; objectif: string; start: string; weeks: number } | null>(null);
+  const [assign, setAssign] = useState<{ programmeId: string | null; start: string; clientIds: string[] } | null>(null);
+  const [progBusy, setProgBusy] = useState(false);
+  useEffect(() => { listProgrammes().then(setProgrammes).catch(() => { /* table absente : fonction masquée */ }); }, []);
+
+  const coachDated = sentSeances.filter(s => !s.created_by_client && s.date_prevue);
+
+  const openSaveProgramme = () => {
+    if (!selected || !coachDated.length) return;
+    const dates = coachDated.map(s => s.date_prevue!).sort();
+    const start = activeMeso ? mondayISO(activeMeso.date_debut) : mondayISO(dates[0]);
+    const lastMonday = mondayISO(dates[dates.length - 1]);
+    const weeks = Math.min(12, Math.max(1, Math.round((new Date(lastMonday + "T12:00:00").getTime() - new Date(start + "T12:00:00").getTime()) / (7 * 86400000)) + 1));
+    setSaveProg({ nom: activeMeso?.nom ?? `Programme ${selected.prenom}`, objectif: selected.objectifs ?? "", start, weeks });
+  };
+  const saveProgPreview = saveProg ? seancesToProgramme(sentSeances, mondayISO(saveProg.start), saveProg.weeks) : [];
+
+  const confirmSaveProgramme = async () => {
+    if (!saveProg || !myCoachId || !saveProg.nom.trim() || !saveProgPreview.length || progBusy) return;
+    setProgBusy(true);
+    try {
+      const p = await saveProgramme({ nom: saveProg.nom, objectif: saveProg.objectif, nb_semaines: saveProg.weeks, seances: saveProgPreview }, myCoachId);
+      setProgrammes(prev => [p, ...prev]);
+      setSaveProg(null);
+      flash(`Programme « ${p.nom} » enregistré ✓ — réutilisable via « Appliquer un programme »`);
+    } catch (e: unknown) { setGenError(e instanceof Error ? e.message : "Erreur programme"); }
+    setProgBusy(false);
+  };
+
+  const openAssign = () => {
+    if (!selected) return;
+    // Départ par défaut : lundi prochain (ou aujourd'hui si on est lundi).
+    const today = new Date().toLocaleDateString("sv-SE");
+    const m = mondayISO(today);
+    setAssign({ programmeId: programmes[0]?.id ?? null, start: m === today ? m : addDays(m, 7), clientIds: [selected.id] });
+  };
+
+  const confirmAssign = async () => {
+    const p = programmes.find(x => x.id === assign?.programmeId);
+    if (!assign || !p || !assign.clientIds.length || !selected || progBusy) return;
+    setProgBusy(true);
+    const start = mondayISO(assign.start);
+    const targets = clients.filter(c => assign.clientIds.includes(c.id));
+    const rows = targets.flatMap(c => p.seances.map(s => {
+      const date = dateFor(start, s);
+      // Mésocycle/semaine : on connaît le mésocycle actif du client ouvert ; pour les autres,
+      // numéro de semaine du programme et pas de rattachement.
+      const own = c.id === selected.id ? planningFields(date) : null;
+      return {
+        client_id: c.id, assigned_to_email: c.email,
+        titre: s.titre, type_seance: s.type_seance, description: s.description,
+        exercices: s.exercices, notes_libres: s.notes_libres,
+        date_prevue: date,
+        semaine: own?.semaine ?? s.semaine + 1,
+        mesocycle_id: own?.mesocycle_id ?? null,
+      };
+    }));
+    const { error } = await supabase.from("programme_seances").insert(rows);
+    setProgBusy(false);
+    if (error) { setGenError(error.message); return; }
+    setAssign(null);
+    setSentView("calendrier");
+    flash(`« ${p.nom} » appliqué à ${targets.length} client${targets.length > 1 ? "s" : ""} (${rows.length} séances) ✓`);
+    await load();
+    await loadSentSeances(selected.email);
+  };
+
+  const removeProgramme = async (id: string) => {
+    const p = programmes.find(x => x.id === id);
+    if (!p || !window.confirm(`Supprimer le programme « ${p.nom} » de ta bibliothèque ? Les séances déjà envoyées restent intactes.`)) return;
+    try {
+      await deleteProgramme(id);
+      setProgrammes(prev => prev.filter(x => x.id !== id));
+      setAssign(a => a && a.programmeId === id ? { ...a, programmeId: null } : a);
+    } catch (e: unknown) { setGenError(e instanceof Error ? e.message : "Erreur programme"); }
+  };
+
   const sendAll = async () => {
     if (!selected || sending) return;
     const valid = drafts.filter(d => d.titre.trim());
@@ -428,11 +509,16 @@ export default function ProgrammesPage() {
                     <p className="text-[0.55rem] text-[var(--t-text-25)]">Basé sur l&apos;objectif, le niveau, le lieu et les blessures de {selected.prenom}. Tout reste modifiable avant l&apos;envoi.</p>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <button onClick={openAssign} disabled={programmes.length === 0}
+                      title={programmes.length === 0 ? "Enregistre un planning comme programme (depuis le calendrier) pour le réappliquer ici" : undefined}
+                      className="border border-[#c9a84c]/40 bg-[var(--t-surface)] text-[#c9a84c] text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-xl hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-40 disabled:border-[var(--t-border)] disabled:text-[var(--t-text-50)] disabled:hover:bg-[var(--t-surface)]">
+                      Appliquer un programme ({programmes.length})
+                    </button>
                     <button onClick={() => setShowTemplates(true)} disabled={templates.length === 0}
                       title={templates.length === 0 ? "Enregistre une séance comme modèle (bouton « Modèle ») pour la réutiliser ici" : undefined}
                       className="border border-[var(--t-border)] bg-[var(--t-surface)] text-[var(--t-text-50)] text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-xl hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors disabled:opacity-40 disabled:hover:border-[var(--t-border)] disabled:hover:text-[var(--t-text-50)]">
-                      Partir d&apos;un modèle ({templates.length})
+                      Modèle de séance ({templates.length})
                     </button>
                     <button onClick={() => setDrafts([emptySeance()])}
                       className="border border-[var(--t-border)] bg-[var(--t-surface)] text-[var(--t-text-50)] text-[0.55rem] tracking-[0.12em] uppercase py-2.5 rounded-xl hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors">
@@ -571,6 +657,15 @@ export default function ProgrammesPage() {
                     </div>
                   </div>
 
+                  {coachDated.length > 0 && (
+                    <div className="px-4 pb-2 -mt-1">
+                      <button onClick={openSaveProgramme}
+                        className="text-[0.52rem] tracking-[0.12em] uppercase text-[var(--t-text-35)] hover:text-[#c9a84c] transition-colors">
+                        ⤓ Enregistrer ce planning comme programme réutilisable
+                      </button>
+                    </div>
+                  )}
+
                   {calMsg && <p className="mx-4 mb-2 rounded-lg bg-[#7eb8a0]/10 text-[#7eb8a0] text-[0.65rem] px-3 py-1.5">{calMsg}</p>}
 
                   {sentView === "calendrier" && (
@@ -634,6 +729,123 @@ export default function ProgrammesPage() {
           </div>
         </div>
       ) : null}
+
+      {/* Enregistrer le planning du client comme programme multi-semaines réutilisable. */}
+      {saveProg && selected && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={() => setSaveProg(null)}>
+          <div onClick={e => e.stopPropagation()} className="w-full max-w-md rounded-2xl border border-[var(--t-border)] bg-[var(--t-surface)] shadow-[0_20px_60px_-12px_rgba(0,0,0,0.4)] p-5 flex flex-col gap-3">
+            <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c]">Enregistrer comme programme</p>
+            <p className="text-[0.65rem] text-[var(--t-text-40)] -mt-1">Les séances du planning de {selected.prenom} deviennent un gabarit (semaine, jour) que tu pourras appliquer à n&apos;importe quel client.</p>
+            <input autoFocus className={inp} placeholder="Nom du programme (ex : Sèche débutant 4 semaines)" value={saveProg.nom}
+              onChange={e => setSaveProg(p => p && { ...p, nom: e.target.value })}/>
+            <input className={inp} placeholder="Objectif (optionnel)" value={saveProg.objectif}
+              onChange={e => setSaveProg(p => p && { ...p, objectif: e.target.value })}/>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className={lbl}>À partir de la semaine du</label>
+                <input type="date" className={inp} value={saveProg.start} onChange={e => e.target.value && setSaveProg(p => p && { ...p, start: mondayISO(e.target.value) })}/>
+              </div>
+              <div>
+                <label className={lbl}>Durée</label>
+                <Select value={String(saveProg.weeks)} onChange={v => setSaveProg(p => p && { ...p, weeks: Number(v) })}
+                  options={Array.from({ length: 12 }, (_, i) => ({ value: String(i + 1), label: `${i + 1} semaine${i ? "s" : ""}` }))} triggerClassName={inp}/>
+              </div>
+            </div>
+            <div className="rounded-xl bg-[var(--t-surface-2)] px-3 py-2.5 max-h-40 overflow-y-auto">
+              {saveProgPreview.length === 0 ? (
+                <p className="text-[0.65rem] text-[#e09070]">Aucune séance datée dans cette période.</p>
+              ) : (
+                <>
+                  <p className="text-[0.55rem] tracking-wider uppercase text-[var(--t-text-35)] mb-1.5">{saveProgPreview.length} séance{saveProgPreview.length > 1 ? "s" : ""} sur {saveProg.weeks} semaine{saveProg.weeks > 1 ? "s" : ""}</p>
+                  {saveProgPreview.map((s, i) => (
+                    <p key={i} className="text-[0.65rem] text-[var(--t-text-60)] truncate">
+                      <span className="text-[var(--t-text-30)]">S{s.semaine + 1} · {["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"][s.jour]}</span> — {s.titre}
+                    </p>
+                  ))}
+                </>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => setSaveProg(null)}
+                className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] text-[0.6rem] tracking-wider uppercase py-2.5 rounded-xl hover:text-[var(--t-text-60)] transition-colors">
+                Annuler
+              </button>
+              <button onClick={confirmSaveProgramme} disabled={!saveProg.nom.trim() || !saveProgPreview.length || progBusy}
+                className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.6rem] font-bold tracking-wider uppercase py-2.5 rounded-xl disabled:opacity-40 transition-all">
+                {progBusy ? "…" : "Enregistrer"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Appliquer un programme de la bibliothèque à un ou plusieurs clients. */}
+      {assign && selected && (() => {
+        const p = programmes.find(x => x.id === assign.programmeId);
+        const start = mondayISO(assign.start);
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={() => setAssign(null)}>
+            <div onClick={e => e.stopPropagation()} className="w-full max-w-lg rounded-2xl border border-[var(--t-border)] bg-[var(--t-surface)] shadow-[0_20px_60px_-12px_rgba(0,0,0,0.4)] p-5 flex flex-col gap-4 max-h-[92dvh] overflow-y-auto">
+              <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c]">Appliquer un programme</p>
+
+              <div>
+                <label className={lbl}>Programme</label>
+                <div className="flex flex-col gap-1.5">
+                  {programmes.map(x => (
+                    <div key={x.id} className={`flex items-center gap-2 rounded-xl border px-3 py-2 transition-colors ${assign.programmeId === x.id ? "border-[#c9a84c]/50 bg-[#c9a84c]/8" : "border-[var(--t-border-soft)] hover:border-[var(--t-border)]"}`}>
+                      <button onClick={() => setAssign(a => a && { ...a, programmeId: x.id })} className="flex-1 min-w-0 text-left">
+                        <p className="text-xs text-[var(--t-text-75)] truncate">{x.nom}</p>
+                        <p className="text-[0.55rem] text-[var(--t-text-30)] truncate">{x.nb_semaines} sem. · {x.seances.length} séances{x.objectif ? ` · ${x.objectif}` : ""}</p>
+                      </button>
+                      <button onClick={() => removeProgramme(x.id)} aria-label={`Supprimer le programme ${x.nom}`} className="shrink-0 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
+                        <Icon icon={Trash2} size={12}/>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className={lbl}>Début (lundi)</label>
+                <input type="date" className={inp} value={start} onChange={e => e.target.value && setAssign(a => a && { ...a, start: mondayISO(e.target.value) })}/>
+                {p && (
+                  <p className="text-[0.58rem] text-[var(--t-text-30)] mt-1">
+                    Du {new Date(start + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })} au {new Date(addDays(start, p.nb_semaines * 7 - 1) + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })} · {p.seances.length} séances par client
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className={lbl}>Clients ({assign.clientIds.length})</label>
+                <div className="flex flex-col gap-1 max-h-48 overflow-y-auto">
+                  {[selected, ...clients.filter(c => c.id !== selected.id)].map(c => {
+                    const on = assign.clientIds.includes(c.id);
+                    return (
+                      <label key={c.id} className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-[var(--t-glass-bg)] cursor-pointer">
+                        <input type="checkbox" checked={on} className="accent-[#c9a84c]"
+                          onChange={() => setAssign(a => a && { ...a, clientIds: on ? a.clientIds.filter(id => id !== c.id) : [...a.clientIds, c.id] })}/>
+                        <span className="text-xs text-[var(--t-text-70)]">{c.prenom} {c.nom}</span>
+                        {c.id === selected.id && <span className="text-[0.5rem] tracking-wider uppercase text-[#c9a84c]">client ouvert</span>}
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <button onClick={() => setAssign(null)}
+                  className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] text-[0.6rem] tracking-wider uppercase py-2.5 rounded-xl hover:text-[var(--t-text-60)] transition-colors">
+                  Annuler
+                </button>
+                <button onClick={confirmAssign} disabled={!p || !assign.clientIds.length || progBusy}
+                  className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.6rem] font-bold tracking-wider uppercase py-2.5 rounded-xl disabled:opacity-40 transition-all">
+                  {progBusy ? "…" : `Envoyer à ${assign.clientIds.length} client${assign.clientIds.length > 1 ? "s" : ""}`}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Séance du calendrier : création sur un jour, modification d'une séance envoyée,
           ou consultation seule si déjà faite / créée par le client. */}
