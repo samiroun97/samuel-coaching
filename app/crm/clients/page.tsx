@@ -53,7 +53,7 @@ type MealItem = { id: string; plan_id: string; meal_type: string; name: string; 
 const todayStr = () => new Date().toISOString().split("T")[0];
 
 // Colonnes de la liste en mode tableau (aucun client ouvert) : en-tête et lignes partagent la grille.
-const ROW_COLS = "grid-cols-[minmax(0,1.6fr)_110px_minmax(0,1.4fr)_100px_70px]";
+const ROW_COLS = "grid-cols-[minmax(0,1fr)_90px_60px]";
 
 function ClientAvatar({ c, color, size = 36 }: { c: Pick<Client, "prenom" | "nom" | "avatar_url">; color: string; size?: number }) {
   if (c.avatar_url) {
@@ -338,14 +338,14 @@ export default function ClientsPage() {
           </div>
         )}
 
-        {/* Liste en lignes compactes. Sans client ouvert, elle prend toute la largeur et
-            affiche des colonnes en plus (étape, activité, abonnement, poids) façon tableau. */}
+        {/* Liste en lignes compactes : étape et activité sur la ligne du nom. Sans client ouvert,
+            deux colonnes en plus (abonnement, poids), dans une largeur contenue plutôt qu'étalée. */}
         {!selected && (
-          <div className={`hidden md:grid ${ROW_COLS} gap-4 px-5 pt-3 pb-1.5 text-[0.48rem] tracking-[0.18em] uppercase text-[var(--t-text-25)]`}>
-            <span>Client</span><span>Étape</span><span>Activité</span><span>Abonnement</span><span className="text-right">Poids</span>
+          <div className={`hidden md:grid ${ROW_COLS} gap-4 px-5 pt-3 pb-1.5 max-w-3xl text-[0.48rem] tracking-[0.18em] uppercase text-[var(--t-text-25)]`}>
+            <span>Client</span><span>Abonnement</span><span className="text-right">Poids</span>
           </div>
         )}
-        <div className="flex-1 overflow-y-auto py-1 px-2">
+        <div className={`flex-1 overflow-y-auto py-1 px-2 ${selected ? "" : "md:max-w-3xl"}`}>
           {filtered.map(c => {
             const stage = (c.pipeline_stage ?? "actif") as StageKey;
             const stageCfg = STAGE_CFG[stage] ?? STAGE_CFG.actif;
@@ -371,9 +371,10 @@ export default function ClientsPage() {
                 <div className="flex items-center gap-2.5 min-w-0">
                   <ClientAvatar c={c} color={stageCfg.color} size={28}/>
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
+                    <div className={`flex items-center gap-2 min-w-0 ${selected ? "justify-between" : "justify-between md:justify-start"}`}>
                       <p className={`text-[0.8rem] font-medium truncate ${isSelected ? "text-[var(--t-text)]" : "text-[var(--t-text-75)]"}`}>{c.prenom} {c.nom}</p>
-                      <span className={selected ? "" : "md:hidden"}>{stageBadge}</span>
+                      {stageBadge}
+                      {!selected && <span className="hidden md:inline-flex min-w-0">{activity}</span>}
                     </div>
                     <div className={`flex items-center gap-1.5 mt-0.5 min-w-0 ${selected ? "" : "md:hidden"}`}>
                       {activity}
@@ -383,8 +384,6 @@ export default function ClientsPage() {
                 </div>
                 {!selected && (
                   <>
-                    <span className="hidden md:block">{stageBadge}</span>
-                    <span className="hidden md:flex min-w-0">{activity}</span>
                     <span className={`hidden md:block text-[0.6rem] ${subSoon ? "text-[#e09070]" : "text-[var(--t-text-35)]"}`}>
                       {subEnd ? (subDays! <= 0 ? "Expiré" : subEnd.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "2-digit" })) : "—"}
                     </span>
