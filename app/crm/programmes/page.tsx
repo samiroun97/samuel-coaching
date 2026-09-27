@@ -11,6 +11,8 @@ import { SeanceLoggedSummary } from "@/components/SeanceLoggedSummary";
 import { Select } from "@/components/Select";
 import { SeanceForm, type SeanceDraft, emptySeance, draftFromSeance } from "@/components/SeanceForm";
 import { ProgrammeCalendar, mesoWeekNum, addDays } from "@/components/ProgrammeCalendar";
+import { type ProgressionRule, NO_PROGRESSION, applyProgression } from "@/lib/surchargeProgressive";
+import { ProgressionTable } from "@/components/ProgressionTable";
 import { type ProgrammeBiblio, listProgrammes, saveProgramme, deleteProgramme, seancesToProgramme, dateFor, mondayISO } from "@/lib/programmeBibliotheque";
 import { ProgressionSuggestions } from "@/components/ProgressionSuggestions";
 import { type LibraryEntry, listLibrary } from "@/lib/exerciceLibrary";
@@ -84,7 +86,7 @@ export default function ProgrammesPage() {
   const [showTemplates, setShowTemplates] = useState(false);
   const [sentSeances,  setSentSeances]  = useState<SentSeance[]>([]);
   const [openSentId,   setOpenSentId]   = useState<string | null>(null);
-  const [sentView,     setSentView]     = useState<"calendrier" | "liste">("calendrier");
+  const [sentView,     setSentView]     = useState<"calendrier" | "progression" | "liste">("calendrier");
   const [activeMeso,   setActiveMeso]   = useState<Mesocycle | null>(null);
   const [showMesoForm, setShowMesoForm] = useState(false);
   const [mesoForm, setMesoForm] = useState({ nom: "", objectif: "", dateDebut: "", dateFin: "" });
@@ -282,9 +284,12 @@ export default function ProgrammesPage() {
     }
   };
 
-  // Copie les séances (du coach) d'une semaine sur la semaine suivante, à J+7, non faites.
-  const duplicateWeek = async (monday: string) => {
+  // Copie les séances (du coach) d'une semaine sur la semaine suivante, à J+7, non faites,
+  // avec en option une surcharge progressive (+kg, +%, +reps) appliquée aux exercices.
+  const [dup, setDup] = useState<{ monday: string; rule: ProgressionRule } | null>(null);
+  const duplicateWeek = async (monday: string, rule: ProgressionRule = NO_PROGRESSION) => {
     if (!selected || busyWeek) return;
+    setDup(null);
     const sunday = addDays(monday, 6);
     const source = sentSeances.filter(s => !s.created_by_client && s.date_prevue && s.date_prevue >= monday && s.date_prevue <= sunday);
     if (!source.length) return;
@@ -295,13 +300,14 @@ export default function ProgrammesPage() {
       titre: s.titre,
       type_seance: s.type_seance,
       description: s.description,
-      exercices: s.exercices,
+      exercices: applyProgression(s.exercices, rule),
       notes_libres: s.notes_libres,
       ...planningFields(addDays(s.date_prevue!, 7)),
     })));
     setBusyWeek(null);
     if (error) { setGenError(error.message); return; }
-    flash(`${source.length} séance${source.length > 1 ? "s" : ""} copiée${source.length > 1 ? "s" : ""} sur la semaine suivante ✓`);
+    const prog = [rule.kg && `+${rule.kg} kg`, rule.pct && `+${rule.pct} %`, rule.reps && `+${rule.reps} rep`].filter(Boolean).join(", ");
+    flash(`${source.length} séance${source.length > 1 ? "s" : ""} copiée${source.length > 1 ? "s" : ""} sur la semaine suivante${prog ? ` (${prog})` : ""} ✓`);
     await loadSentSeances(selected.email);
   };
 
@@ -648,10 +654,10 @@ export default function ProgrammesPage() {
                       Planning de {selected.prenom} ({sentSeances.length} séance{sentSeances.length > 1 ? "s" : ""})
                     </p>
                     <div className="flex items-center gap-1 shrink-0">
-                      {(["calendrier", "liste"] as const).map(v => (
+                      {(["calendrier", "progression", "liste"] as const).map(v => (
                         <button key={v} onClick={() => setSentView(v)}
                           className={`text-[0.55rem] tracking-wider uppercase px-2 py-1 rounded-lg transition-colors ${sentView === v ? "bg-[#c9a84c]/15 text-[#c9a84c]" : "text-[var(--t-text-25)] hover:text-[var(--t-text-50)]"}`}>
-                          {v === "calendrier" ? "Calendrier" : "Liste"}
+                          {v === "calendrier" ? "Calendrier" : v === "progression" ? "Progression" : "Liste"}
                         </button>
                       ))}
                     </div>
@@ -671,7 +677,13 @@ export default function ProgrammesPage() {
                   {sentView === "calendrier" && (
                     <div className="px-4 pb-4 border-t border-[var(--t-border-soft)] pt-3">
                       <ProgrammeCalendar seances={sentSeances} meso={activeMeso} weeklyTarget={selected.seances_par_semaine || 0}
-                        onCreate={openCreate} onOpen={openEdit} onMove={moveSeance} onDuplicateWeek={duplicateWeek} busyWeek={busyWeek}/>
+                        onCreate={openCreate} onOpen={openEdit} onMove={moveSeance} onDuplicateWeek={m => setDup({ monday: m, rule: NO_PROGRESSION })} busyWeek={busyWeek}/>
+                    </div>
+                  )}
+
+                  {sentView === "progression" && (
+                    <div className="px-4 pb-4 border-t border-[var(--t-border-soft)] pt-3">
+                      <ProgressionTable seances={sentSeances} meso={activeMeso} onOpen={openEdit}/>
                     </div>
                   )}
 
@@ -729,6 +741,57 @@ export default function ProgrammesPage() {
           </div>
         </div>
       ) : null}
+
+      {/* Dupliquer une semaine sur la suivante, avec surcharge progressive optionnelle. */}
+      {dup && selected && (() => {
+        const sunday = addDays(dup.monday, 6);
+        const n = sentSeances.filter(s => !s.created_by_client && s.date_prevue && s.date_prevue >= dup.monday && s.date_prevue <= sunday).length;
+        const setRule = (patch: Partial<ProgressionRule>) => setDup(d => d && { ...d, rule: { ...d.rule, ...patch } });
+        const chip = (active: boolean, label: string, onClick: () => void) => (
+          <button key={label} onClick={onClick}
+            className={`px-3 py-1.5 rounded-lg border text-[0.6rem] transition-colors ${active ? "border-[#c9a84c] bg-[#c9a84c]/12 text-[#c9a84c]" : "border-[var(--t-border)] text-[var(--t-text-50)] hover:border-[var(--t-text-25)]"}`}>
+            {label}
+          </button>
+        );
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={() => setDup(null)}>
+            <div onClick={e => e.stopPropagation()} className="w-full max-w-sm rounded-2xl border border-[var(--t-border)] bg-[var(--t-surface)] shadow-[0_20px_60px_-12px_rgba(0,0,0,0.4)] p-5 flex flex-col gap-4">
+              <div>
+                <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c]">Dupliquer la semaine</p>
+                <p className="text-[0.65rem] text-[var(--t-text-40)] mt-1">
+                  {n} séance{n > 1 ? "s" : ""} du {new Date(dup.monday + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" })} copiée{n > 1 ? "s" : ""} sur la semaine suivante.
+                </p>
+              </div>
+              <div>
+                <p className={lbl}>Charge</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {chip(!dup.rule.kg && !dup.rule.pct, "Identique", () => setRule({ kg: 0, pct: 0 }))}
+                  {[1, 2.5, 5].map(k => chip(dup.rule.kg === k, `+${String(k).replace(".", ",")} kg`, () => setRule({ kg: k, pct: 0 })))}
+                  {[2.5, 5].map(p => chip(dup.rule.pct === p, `+${String(p).replace(".", ",")} %`, () => setRule({ pct: p, kg: 0 })))}
+                </div>
+              </div>
+              <div>
+                <p className={lbl}>Répétitions</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {chip(!dup.rule.reps, "Identiques", () => setRule({ reps: 0 }))}
+                  {[1, 2].map(r => chip(dup.rule.reps === r, `+${r} rep${r > 1 ? "s" : ""}`, () => setRule({ reps: r })))}
+                </div>
+              </div>
+              <p className="text-[0.55rem] text-[var(--t-text-25)] -mt-1">Appliqué aux charges et reps chiffrées (ex. « 60 », « 8-10 ») ; le reste (« max », texte libre, exercices au temps) est copié tel quel. Tout reste modifiable ensuite.</p>
+              <div className="flex gap-2">
+                <button onClick={() => setDup(null)}
+                  className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] text-[0.6rem] tracking-wider uppercase py-2.5 rounded-xl hover:text-[var(--t-text-60)] transition-colors">
+                  Annuler
+                </button>
+                <button onClick={() => duplicateWeek(dup.monday, dup.rule)} disabled={!n || !!busyWeek}
+                  className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.6rem] font-bold tracking-wider uppercase py-2.5 rounded-xl disabled:opacity-40 transition-all">
+                  Dupliquer
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Enregistrer le planning du client comme programme multi-semaines réutilisable. */}
       {saveProg && selected && (
