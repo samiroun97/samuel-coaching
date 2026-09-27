@@ -6,24 +6,21 @@ import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
 import { type ExerciceItem, serializeExercices, normalizeExercice } from "@/lib/exercices";
 import { serializeNotesLibres } from "@/lib/notesLibres";
-import ExerciceEditor from "@/components/ExerciceEditor";
 import { SeanceBody } from "@/components/SeancePreview";
 import { SeanceLoggedSummary } from "@/components/SeanceLoggedSummary";
-import { Select } from "@/components/Select";
+import { SeanceForm, type SeanceDraft, emptySeance, draftFromSeance } from "@/components/SeanceForm";
+import { ProgrammeCalendar, mesoWeekNum, addDays } from "@/components/ProgrammeCalendar";
 import { ProgressionSuggestions } from "@/components/ProgressionSuggestions";
 import { type LibraryEntry, listLibrary } from "@/lib/exerciceLibrary";
 import { type CatalogueEntry, loadCatalogue } from "@/lib/exercicesCatalogue";
 import { type ProgrammeTemplate, listTemplates, saveTemplate, deleteTemplate, templateToExercices } from "@/lib/programmeTemplates";
 import { getMyCoachId } from "@/lib/coach";
-import { WeekPlanning } from "@/components/WeekPlanning";
 import Link from "next/link";
 import { hasBlessure } from "@/lib/blessures";
 import { type Mesocycle, loadActiveMesocycle, createMesocycle, deleteMesocycle } from "@/lib/mesocycles";
 import { MesocycleCard } from "@/components/MesocycleCard";
 import { Icon } from "@/components/Icon";
-import { ChevronLeft, ChevronDown, ChevronUp, Trash2, X, Copy, FileText } from "@/lib/solarIcons";
-
-const SEANCE_TYPES = ["Haut du corps","Bas du corps","Full body","Cardio","Boxe","Natation","CrossFit","Yoga","Autre"];
+import { ChevronLeft, ChevronDown, Trash2, X, Copy, FileText } from "@/lib/solarIcons";
 
 const STAGE_CFG: Record<string, { label: string; color: string }> = {
   prospect:   { label: "Prospect",   color: "#888" },
@@ -35,7 +32,6 @@ const STAGE_CFG: Record<string, { label: string; color: string }> = {
 };
 
 type Client = { id: string; email: string; prenom: string; nom: string; age: number; poids: number; taille: number; sexe: string; niveau_activite: string; experience: string; seances_par_semaine: number; duree_seance: string; lieu_entrainement: string; blessures: string; objectifs: string; objectif_type: string | null; pipeline_stage: string | null; is_coach: boolean | null };
-type SeanceDraft = { titre: string; type_seance: string; date_prevue: string; semaine: string; description: string; exercices: ExerciceItem[]; notesLibres: string[] };
 type SentSeance = { id: string; titre: string; type_seance: string | null; date_prevue: string | null; semaine: number | null; description: string | null; exercices: string | null; notes_libres: string | null; completed_at: string | null; created_by_client?: boolean };
 
 // Regroupe les séances envoyées par semaine (lundi de la date prévue, ou de la date de fin
@@ -62,7 +58,6 @@ function groupByWeek(seances: SentSeance[]): { key: string; label: string; items
     }));
 }
 
-const emptySeance = (): SeanceDraft => ({ titre: "", type_seance: "", date_prevue: "", semaine: "", description: "", exercices: [], notesLibres: [] });
 
 export default function ProgrammesPage() {
   const searchParams   = useSearchParams();
@@ -87,7 +82,7 @@ export default function ProgrammesPage() {
   const [showTemplates, setShowTemplates] = useState(false);
   const [sentSeances,  setSentSeances]  = useState<SentSeance[]>([]);
   const [openSentId,   setOpenSentId]   = useState<string | null>(null);
-  const [sentView,     setSentView]     = useState<"liste" | "semaine">("liste");
+  const [sentView,     setSentView]     = useState<"calendrier" | "liste">("calendrier");
   const [activeMeso,   setActiveMeso]   = useState<Mesocycle | null>(null);
   const [showMesoForm, setShowMesoForm] = useState(false);
   const [mesoForm, setMesoForm] = useState({ nom: "", objectif: "", dateDebut: "", dateFin: "" });
@@ -217,22 +212,95 @@ export default function ProgrammesPage() {
   const setDraft = (i: number, patch: Partial<SeanceDraft>) =>
     setDrafts(prev => prev.map((d, j) => j === i ? { ...d, ...patch } : d));
 
-  // Notes libres d'une séance : des points en texte libre qui ne sont pas des exercices
-  // (ex: "bien s'hydrater avant", "focus respiration"…). Chaque note est sa propre carte,
-  // réordonnable comme les exercices (monter/descendre), et peut elle-même contenir
-  // plusieurs lignes/puces.
-  const addNoteLibre = (i: number) => setDraft(i, { notesLibres: [...drafts[i].notesLibres, ""] });
-  const setNoteLibre = (i: number, ni: number, value: string) =>
-    setDraft(i, { notesLibres: drafts[i].notesLibres.map((n, j) => j === ni ? value : n) });
-  const removeNoteLibre = (i: number, ni: number) =>
-    setDraft(i, { notesLibres: drafts[i].notesLibres.filter((_, j) => j !== ni) });
-  const moveNoteLibre = (i: number, ni: number, dir: -1 | 1) => {
-    const notes = drafts[i].notesLibres;
-    const target = ni + dir;
-    if (target < 0 || target >= notes.length) return;
-    const next = [...notes];
-    [next[ni], next[target]] = [next[target], next[ni]];
-    setDraft(i, { notesLibres: next });
+  // Rattachement au mésocycle actif + numéro de semaine calculés depuis la date : une séance
+  // datée hors du mésocycle n'y est pas rattachée, une séance sans date l'est (comportement historique).
+  const planningFields = (date: string | null) => {
+    const week = date ? mesoWeekNum(activeMeso, date) : null;
+    return {
+      date_prevue: date || null,
+      semaine: week,
+      mesocycle_id: activeMeso && (!date || week !== null) ? activeMeso.id : null,
+    };
+  };
+  const rowFromDraft = (d: SeanceDraft) => ({
+    titre: d.titre.trim(),
+    type_seance: d.type_seance || null,
+    description: d.description || null,
+    exercices: serializeExercices(d.exercices),
+    notes_libres: serializeNotesLibres(d.notesLibres),
+    ...planningFields(d.date_prevue || null),
+  });
+
+  // ── Calendrier de planification ──
+  // editing.id = null → nouvelle séance (clic sur un jour vide), sinon modification d'une séance envoyée.
+  const [editing, setEditing] = useState<{ id: string | null; draft: SeanceDraft; readOnly: boolean } | null>(null);
+  const [editSaving, setEditSaving] = useState(false);
+  const [busyWeek, setBusyWeek] = useState<string | null>(null);
+  const [calMsg, setCalMsg] = useState("");
+  const flash = (m: string) => { setCalMsg(m); setTimeout(() => setCalMsg(""), 3500); };
+
+  const openCreate = (date: string) => setEditing({ id: null, draft: emptySeance(date), readOnly: false });
+  const openEdit = (id: string) => {
+    const s = sentSeances.find(x => x.id === id);
+    // Séance déjà faite ou créée par le client : consultation seulement (le log du client en dépend).
+    if (s) setEditing({ id, draft: draftFromSeance(s), readOnly: !!s.completed_at || !!s.created_by_client });
+  };
+
+  const saveEdit = async () => {
+    if (!selected || !editing || !editing.draft.titre.trim() || editSaving) return;
+    setEditSaving(true);
+    const row = rowFromDraft(editing.draft);
+    const { error } = editing.id
+      ? await supabase.from("programme_seances").update(row).eq("id", editing.id)
+      : await supabase.from("programme_seances").insert({ ...row, client_id: selected.id, assigned_to_email: selected.email });
+    setEditSaving(false);
+    if (error) { setGenError(error.message); return; }
+    flash(editing.id ? "Séance modifiée ✓" : `Séance ajoutée au programme de ${selected.prenom} ✓`);
+    setEditing(null);
+    await loadSentSeances(selected.email);
+    if (!editing.id) await load();
+  };
+
+  const deleteFromEdit = async () => {
+    if (!editing?.id) return;
+    await deleteSeance(editing.id);
+    setEditing(null);
+  };
+
+  // Glisser-déposer : mise à jour optimiste, retour en arrière si l'écriture échoue.
+  const moveSeance = async (id: string, date: string) => {
+    const prev = sentSeances.find(s => s.id === id);
+    if (!prev || prev.date_prevue === date || prev.completed_at) return;
+    const fields = planningFields(date);
+    setSentSeances(list => list.map(s => s.id === id ? { ...s, date_prevue: date, semaine: fields.semaine } : s));
+    const { error } = await supabase.from("programme_seances").update(fields).eq("id", id);
+    if (error) {
+      setSentSeances(list => list.map(s => s.id === id ? prev : s));
+      setGenError(error.message);
+    }
+  };
+
+  // Copie les séances (du coach) d'une semaine sur la semaine suivante, à J+7, non faites.
+  const duplicateWeek = async (monday: string) => {
+    if (!selected || busyWeek) return;
+    const sunday = addDays(monday, 6);
+    const source = sentSeances.filter(s => !s.created_by_client && s.date_prevue && s.date_prevue >= monday && s.date_prevue <= sunday);
+    if (!source.length) return;
+    setBusyWeek(monday);
+    const { error } = await supabase.from("programme_seances").insert(source.map(s => ({
+      client_id: selected.id,
+      assigned_to_email: selected.email,
+      titre: s.titre,
+      type_seance: s.type_seance,
+      description: s.description,
+      exercices: s.exercices,
+      notes_libres: s.notes_libres,
+      ...planningFields(addDays(s.date_prevue!, 7)),
+    })));
+    setBusyWeek(null);
+    if (error) { setGenError(error.message); return; }
+    flash(`${source.length} séance${source.length > 1 ? "s" : ""} copiée${source.length > 1 ? "s" : ""} sur la semaine suivante ✓`);
+    await loadSentSeances(selected.email);
   };
 
   const sendAll = async () => {
@@ -243,14 +311,7 @@ export default function ProgrammesPage() {
     const { data: inserted, error } = await supabase.from("programme_seances").insert(valid.map(d => ({
       client_id: selected.id,
       assigned_to_email: selected.email,
-      mesocycle_id: activeMeso?.id ?? null,
-      titre: d.titre.trim(),
-      type_seance: d.type_seance || null,
-      date_prevue: d.date_prevue || null,
-      semaine: d.semaine ? parseInt(d.semaine) || null : null,
-      description: d.description || null,
-      exercices: serializeExercices(d.exercices),
-      notes_libres: serializeNotesLibres(d.notesLibres),
+      ...rowFromDraft(d),
     }))).select();
     setSending(false);
     if (error) { setGenError(error.message); return; }
@@ -428,47 +489,7 @@ export default function ProgrammesPage() {
                           </button>
                         </div>
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div><label className={lbl}>Titre *</label><input className={inp} value={d.titre} onChange={e => setDraft(i, { titre: e.target.value })}/></div>
-                        <div><label className={lbl}>Type</label>
-                          <Select value={d.type_seance} onChange={v => setDraft(i, { type_seance: v })} placeholder="Choisir…"
-                            options={SEANCE_TYPES.map(t => ({ value: t, label: t }))} triggerClassName={inp}/>
-                        </div>
-                      </div>
-                      <div><label className={lbl}>Description</label><textarea className={`${inp} resize-none`} rows={2} value={d.description} onChange={e => setDraft(i, { description: e.target.value })}/></div>
-                      <div>
-                        <label className={lbl}>Exercices</label>
-                        <ExerciceEditor items={d.exercices} onChange={items => setDraft(i, { exercices: items })} library={library} catalogue={catalogue}/>
-                      </div>
-                      <div>
-                        <label className={lbl}>Notes libres (optionnel)</label>
-                        <p className="text-[0.55rem] text-[var(--t-text-20)] mb-2 -mt-1">Pas forcément des exercices : consignes, rappels, précisions… Chaque note = un point affiché avec une puce, réordonnable comme les exercices.</p>
-                        <div className="flex flex-col gap-2">
-                          {d.notesLibres.map((n, ni) => (
-                            <div key={ni} className="border border-[var(--t-text-8)] bg-[var(--t-bg)] rounded-xl p-2.5 flex items-start gap-2">
-                              <div className="shrink-0 flex flex-col border border-[var(--t-border)] rounded-md overflow-hidden mt-0.5">
-                                <button type="button" onClick={() => moveNoteLibre(i, ni, -1)} disabled={ni === 0} title="Monter" aria-label="Monter cette note"
-                                  className="w-5 h-4 flex items-center justify-center text-[var(--t-text-30)] hover:text-[#c9a84c] hover:bg-[var(--t-track)] transition-colors disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-[var(--t-text-30)] border-b border-[var(--t-border)]">
-                                  <Icon icon={ChevronUp} size={10} strokeWidth={2.5}/>
-                                </button>
-                                <button type="button" onClick={() => moveNoteLibre(i, ni, 1)} disabled={ni === d.notesLibres.length - 1} title="Descendre" aria-label="Descendre cette note"
-                                  className="w-5 h-4 flex items-center justify-center text-[var(--t-text-30)] hover:text-[#c9a84c] hover:bg-[var(--t-track)] transition-colors disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-[var(--t-text-30)]">
-                                  <Icon icon={ChevronDown} size={10} strokeWidth={2.5}/>
-                                </button>
-                              </div>
-                              <textarea className={`${inp} resize-none`} rows={2} placeholder="Ex : arriver 10 min en avance pour l'échauffement…"
-                                value={n} onChange={e => setNoteLibre(i, ni, e.target.value)}/>
-                              <button type="button" onClick={() => removeNoteLibre(i, ni)} aria-label="Supprimer cette note" className="shrink-0 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors mt-2">
-                                <Icon icon={X} size={12} strokeWidth={2}/>
-                              </button>
-                            </div>
-                          ))}
-                          <button type="button" onClick={() => addNoteLibre(i)}
-                            className="border border-[var(--t-border)] text-[var(--t-text-30)] text-[0.55rem] tracking-[0.12em] uppercase py-2 rounded-xl hover:border-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">
-                            + Ajouter une note libre
-                          </button>
-                        </div>
-                      </div>
+                      <SeanceForm draft={d} onChange={patch => setDraft(i, patch)} library={library} catalogue={catalogue}/>
                     </div>
                   ))}
 
@@ -534,29 +555,33 @@ export default function ProgrammesPage() {
 
               <ProgressionSuggestions clientId={selected.id} />
 
-              {/* Séances déjà envoyées — aperçu visuel identique à ce que le client voit */}
-              {sentSeances.length > 0 && (
-                <div className="border border-[var(--t-text-8)] bg-[var(--t-bg)] rounded-xl">
+              {/* Planning du client : calendrier (créer / déplacer / dupliquer / modifier) ou liste détaillée */}
+              <div className="border border-[var(--t-text-8)] bg-[var(--t-bg)] rounded-xl">
                   <div className="flex items-center justify-between gap-2 px-4 pt-3 pb-2">
                     <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[var(--t-text-40)]">
-                      Séances envoyées à {selected.prenom} ({sentSeances.length})
+                      Planning de {selected.prenom} ({sentSeances.length} séance{sentSeances.length > 1 ? "s" : ""})
                     </p>
                     <div className="flex items-center gap-1 shrink-0">
-                      <button onClick={() => setSentView("liste")}
-                        className={`text-[0.55rem] tracking-wider uppercase px-2 py-1 rounded-lg transition-colors ${sentView === "liste" ? "bg-[#c9a84c]/15 text-[#c9a84c]" : "text-[var(--t-text-25)] hover:text-[var(--t-text-50)]"}`}>
-                        Liste
-                      </button>
-                      <button onClick={() => setSentView("semaine")}
-                        className={`text-[0.55rem] tracking-wider uppercase px-2 py-1 rounded-lg transition-colors ${sentView === "semaine" ? "bg-[#c9a84c]/15 text-[#c9a84c]" : "text-[var(--t-text-25)] hover:text-[var(--t-text-50)]"}`}>
-                        Semaine
-                      </button>
+                      {(["calendrier", "liste"] as const).map(v => (
+                        <button key={v} onClick={() => setSentView(v)}
+                          className={`text-[0.55rem] tracking-wider uppercase px-2 py-1 rounded-lg transition-colors ${sentView === v ? "bg-[#c9a84c]/15 text-[#c9a84c]" : "text-[var(--t-text-25)] hover:text-[var(--t-text-50)]"}`}>
+                          {v === "calendrier" ? "Calendrier" : "Liste"}
+                        </button>
+                      ))}
                     </div>
                   </div>
 
-                  {sentView === "semaine" && (
+                  {calMsg && <p className="mx-4 mb-2 rounded-lg bg-[#7eb8a0]/10 text-[#7eb8a0] text-[0.65rem] px-3 py-1.5">{calMsg}</p>}
+
+                  {sentView === "calendrier" && (
                     <div className="px-4 pb-4 border-t border-[var(--t-border-soft)] pt-3">
-                      <WeekPlanning seances={sentSeances} onOpen={id => { setSentView("liste"); setOpenSentId(id); }}/>
+                      <ProgrammeCalendar seances={sentSeances} meso={activeMeso} weeklyTarget={selected.seances_par_semaine || 0}
+                        onCreate={openCreate} onOpen={openEdit} onMove={moveSeance} onDuplicateWeek={duplicateWeek} busyWeek={busyWeek}/>
                     </div>
+                  )}
+
+                  {sentView === "liste" && sentSeances.length === 0 && (
+                    <p className="px-4 pb-4 pt-3 border-t border-[var(--t-border-soft)] text-xs text-[var(--t-text-25)]">Aucune séance pour l&apos;instant.</p>
                   )}
 
                   {sentView === "liste" && groupByWeek(sentSeances).map(g => (
@@ -603,14 +628,74 @@ export default function ProgrammesPage() {
                   })}
                     </div>
                   ))}
-                </div>
-              )}
-
+              </div>
 
             </div>
           </div>
         </div>
       ) : null}
+
+      {/* Séance du calendrier : création sur un jour, modification d'une séance envoyée,
+          ou consultation seule si déjà faite / créée par le client. */}
+      {editing && selected && (
+        <div className="fixed inset-0 z-50 flex items-start md:items-center justify-center bg-black/40 backdrop-blur-sm p-3 md:p-6 overflow-y-auto" onClick={() => setEditing(null)}>
+          <div onClick={e => e.stopPropagation()} className="w-full max-w-2xl my-auto rounded-2xl border border-[var(--t-border)] bg-[var(--t-surface)] shadow-[0_20px_60px_-12px_rgba(0,0,0,0.4)] flex flex-col max-h-[92dvh]">
+            <div className="flex items-center justify-between gap-3 px-5 pt-4 pb-3 border-b border-[var(--t-border-soft)]">
+              <div>
+                <p className="text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c]">
+                  {editing.id ? (editing.readOnly ? "Séance" : "Modifier la séance") : "Nouvelle séance"}
+                </p>
+                <p className="text-[0.62rem] text-[var(--t-text-35)] mt-0.5">
+                  {editing.draft.date_prevue
+                    ? new Date(editing.draft.date_prevue + "T12:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })
+                    : "Sans date"}
+                  {(() => { const w = editing.draft.date_prevue ? mesoWeekNum(activeMeso, editing.draft.date_prevue) : null; return w ? ` · ${activeMeso!.nom} S${w}` : ""; })()}
+                </p>
+              </div>
+              <button onClick={() => setEditing(null)} aria-label="Fermer" className="text-[var(--t-text-25)] hover:text-[var(--t-text-60)] transition-colors">
+                <Icon icon={X} size={16}/>
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-5 py-4">
+              {editing.readOnly ? (() => {
+                const s = sentSeances.find(x => x.id === editing.id);
+                return s ? (
+                  <div className="flex flex-col gap-3">
+                    <p className="text-[0.62rem] text-[var(--t-text-40)]">
+                      {s.completed_at ? "Séance déjà faite par le client : elle n'est plus modifiable, voici ce qu'il a enregistré." : "Séance libre créée par le client."}
+                    </p>
+                    <SeanceBody s={s}/>
+                    <SeanceLoggedSummary seanceId={s.id} clientId={selected.id} exercicesRaw={s.exercices}/>
+                  </div>
+                ) : null;
+              })() : (
+                <SeanceForm draft={editing.draft} onChange={patch => setEditing(e => e && { ...e, draft: { ...e.draft, ...patch } })}
+                  library={library} catalogue={catalogue}/>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 px-5 py-3 border-t border-[var(--t-border-soft)]">
+              {editing.id && (
+                <button onClick={deleteFromEdit} disabled={deletingId === editing.id}
+                  className="flex items-center gap-1.5 text-[0.55rem] tracking-wider uppercase text-[#e07070]/70 hover:text-[#e07070] transition-colors disabled:opacity-40 mr-auto">
+                  <Icon icon={Trash2} size={12}/> Supprimer
+                </button>
+              )}
+              <button onClick={() => setEditing(null)}
+                className={`${editing.id ? "" : "ml-auto"} px-4 py-2.5 border border-[var(--t-border)] text-[var(--t-text-40)] text-[0.58rem] tracking-wider uppercase rounded-xl hover:text-[var(--t-text-60)] transition-colors`}>
+                {editing.readOnly ? "Fermer" : "Annuler"}
+              </button>
+              {!editing.readOnly && (
+                <button onClick={saveEdit} disabled={!editing.draft.titre.trim() || editSaving}
+                  className="px-5 py-2.5 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.58rem] font-bold tracking-wider uppercase rounded-xl disabled:opacity-40 transition-all">
+                  {editSaving ? "…" : editing.id ? "Enregistrer" : `Envoyer à ${selected.prenom}`}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Nommer un modèle — fenêtre de l'app plutôt que le prompt natif du navigateur. */}
       {templateDraft && (
