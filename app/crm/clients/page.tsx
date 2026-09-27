@@ -45,7 +45,8 @@ type Seance   = { id: string; titre: string; type_seance: string | null; date_pr
 type Note     = { id: string; client_id: string; content: string; created_at: string };
 type Checkin  = { id: string; client_id: string; week_date: string; weight: number | null; body_fat: number | null; compliance: number | null; energy: number | null; notes: string | null };
 type FoodItem = { name: string; calories: number; proteines: number; glucides: number; lipides: number; repas?: string | null };
-type DaySummary = { date: string; calories: number; proteines: number; glucides: number; lipides: number; foods: FoodItem[] | null };
+type DaySummary = { date: string; calories: number; proteines: number; glucides: number; lipides: number; foods: FoodItem[] | null; goal_calories?: number | null; goal_proteines?: number | null };
+type LastMsg  = { from_email: string; content: string; created_at: string };
 type MealPlan = { id: string; name: string; notes: string | null; is_active: boolean };
 type MealItem = { id: string; plan_id: string; meal_type: string; name: string; calories: number; proteines: number; glucides: number; lipides: number };
 
@@ -105,6 +106,7 @@ export default function ClientsPage() {
   const [activePlanId, setActivePlanId] = useState<string | null>(null);
   const [journal,      setJournal]      = useState<DaySummary[]>([]);
   const [bodyFat,      setBodyFat]      = useState<number | null>(null);
+  const [lastMsg,      setLastMsg]      = useState<LastMsg | null>(null);
   // Vue d'ensemble : mêmes sources que côté client (régularité, records, volume,
   // mésocycle), jamais montrées au coach jusqu'ici — d'où la navigation éclatée
   // entre cette page (nutrition/poids) et /crm/programmes (séances) pour tout voir.
@@ -154,12 +156,18 @@ export default function ClientsPage() {
   const selectClient = async (c: Client) => {
     setSelected(c); setTab("apercu"); setBodyFat(null);
     setNoteInput(""); setCkForm({ week_date: todayStr(), weight: "", body_fat: "", compliance: 0, notes: "" });
-    setDayStatuses({}); setRecords([]); setMuscleVolume({}); setActiveMeso(null);
+    setDayStatuses({}); setRecords([]); setMuscleVolume({}); setActiveMeso(null); setLastMsg(null);
+    // Dernier message échangé avec ce client (RLS : uniquement mes conversations) — aperçu
+    // dans la vue d'ensemble, en tâche de fond pour ne pas retarder la fiche.
+    supabase.from("messages").select("from_email,content,created_at")
+      .or(`from_email.eq."${c.email}",to_email.eq."${c.email}"`)
+      .order("created_at", { ascending: false }).limit(1)
+      .then(({ data }) => setLastMsg((data?.[0] as LastMsg | undefined) ?? null));
     const [{ data: s }, { data: n }, { data: ck }, { data: js }, { data: bf }] = await Promise.all([
       supabase.from("programme_seances").select("*").eq("assigned_to_email", c.email).order("created_at", { ascending: false }),
       supabase.from("coach_notes").select("*").eq("client_id", c.id).order("created_at", { ascending: false }),
       supabase.from("weekly_checkins").select("*").eq("client_id", c.id).order("week_date", { ascending: false }),
-      supabase.from("daily_summaries").select("date,calories,proteines,glucides,lipides,foods").eq("user_id", c.id).order("date", { ascending: false }).limit(14),
+      supabase.from("daily_summaries").select("date,calories,proteines,glucides,lipides,foods,goal_calories,goal_proteines").eq("user_id", c.id).order("date", { ascending: false }).limit(14),
       supabase.from("body_fat_entries").select("body_fat").eq("user_id", c.id).order("date", { ascending: false }).limit(1),
     ]);
     setSeances((s ?? []) as Seance[]); setNotes((n ?? []) as Note[]); setCheckins((ck ?? []) as Checkin[]);
@@ -539,6 +547,167 @@ export default function ClientsPage() {
                     </Link>
                   </div>
                 )}
+
+                {/* 1 · Résumé client — l'essentiel du Profil, utile à chaque préparation de programme. */}
+                <div className="border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-xl p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c]">Résumé</p>
+                    <button onClick={() => setTab("profil")} className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">Profil complet →</button>
+                  </div>
+                  <div className="grid sm:grid-cols-2 gap-x-6 gap-y-3">
+                    <div className="sm:col-span-2">
+                      <p className="text-[0.48rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mb-0.5">Objectif{selected.objectif_echeance && ` · échéance ${selected.objectif_echeance}`}</p>
+                      <p className="text-xs text-[var(--t-text-70)] leading-relaxed line-clamp-2">{selected.objectifs || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-[0.48rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mb-0.5">Blessures / contraintes</p>
+                      <p className={`text-xs leading-relaxed line-clamp-2 ${selected.blessures ? "text-[#e09070]" : "text-[var(--t-text-40)]"}`}>{selected.blessures || "Aucune signalée"}</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <p className="text-[0.48rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mb-0.5">Fréquence</p>
+                        <p className="text-xs text-[var(--t-text-70)]">{selected.seances_par_semaine ? `${selected.seances_par_semaine}× / sem.` : "—"}</p>
+                      </div>
+                      <div>
+                        <p className="text-[0.48rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mb-0.5">Lieu</p>
+                        <p className="text-xs text-[var(--t-text-70)] truncate">{selected.lieu_entrainement || "—"}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2 · Dernière note coach + dernier message — reprendre le fil sans changer d'onglet. */}
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div className="border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-xl p-4 flex flex-col">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c]">Dernière note</p>
+                      <button onClick={() => setTab("notes")} className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">
+                        {notes.length ? `Toutes (${notes.length}) →` : "Ajouter →"}
+                      </button>
+                    </div>
+                    {notes[0] ? (
+                      <>
+                        <p className="text-xs text-[var(--t-text-65)] leading-relaxed line-clamp-3">{notes[0].content}</p>
+                        <p className="text-[0.5rem] text-[var(--t-text-25)] mt-auto pt-2">{new Date(notes[0].created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}</p>
+                      </>
+                    ) : <p className="text-xs text-[var(--t-text-25)]">Aucune note pour l&apos;instant.</p>}
+                  </div>
+                  <div className="border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-xl p-4 flex flex-col">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c]">Dernier message</p>
+                      <Link href={`/crm/inbox?client=${encodeURIComponent(selected.email)}`} className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">Inbox →</Link>
+                    </div>
+                    {lastMsg ? (
+                      <>
+                        <p className="text-xs text-[var(--t-text-65)] leading-relaxed line-clamp-3">
+                          <span className="text-[var(--t-text-35)]">{lastMsg.from_email === selected.email ? `${selected.prenom} : ` : "Toi : "}</span>{lastMsg.content}
+                        </p>
+                        <p className="text-[0.5rem] text-[var(--t-text-25)] mt-auto pt-2">{new Date(lastMsg.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}</p>
+                      </>
+                    ) : <p className="text-xs text-[var(--t-text-25)]">Aucun échange pour l&apos;instant.</p>}
+                  </div>
+                </div>
+
+                {/* 3 · Programme en cours — prochaine séance, semaine en cours vs fréquence visée. */}
+                {seances.length > 0 && (() => {
+                  const todayISO = new Date(nowTs).toLocaleDateString("sv-SE");
+                  const weekStart = new Date(nowTs); weekStart.setHours(0, 0, 0, 0); weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
+                  const doneThisWeek = seances.filter(s => s.completed_at && new Date(s.completed_at) >= weekStart).length;
+                  const target = selected.seances_par_semaine || 0;
+                  const next = seances.filter(s => !s.completed_at && s.date_prevue && s.date_prevue >= todayISO)
+                    .sort((a, b) => a.date_prevue!.localeCompare(b.date_prevue!))[0]
+                    ?? seances.find(s => !s.completed_at);
+                  const lastDone = seances.filter(s => s.completed_at).sort((a, b) => b.completed_at!.localeCompare(a.completed_at!))[0];
+                  const pending = seances.filter(s => !s.completed_at).length;
+                  return (
+                    <div className="border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-xl p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c]">Programme en cours</p>
+                        <Link href={`/crm/programmes?client=${encodeURIComponent(selected.email)}`} className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">Gérer →</Link>
+                      </div>
+                      <div className="grid sm:grid-cols-3 gap-4">
+                        <div>
+                          <p className="text-[0.48rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mb-1">Cette semaine</p>
+                          <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl leading-none text-[var(--t-text)] tracking-wide">
+                            {doneThisWeek}{target ? <span className="text-[var(--t-text-30)]"> / {target}</span> : null}
+                          </p>
+                          {target > 0 && (
+                            <div className="flex gap-1 mt-2">
+                              {Array.from({ length: target }, (_, i) => (
+                                <div key={i} className="h-1.5 flex-1 rounded-full" style={{ backgroundColor: i < doneThisWeek ? "#7eb8a0" : "var(--t-track)" }}/>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[0.48rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mb-1">Prochaine séance</p>
+                          <p className="text-xs text-[var(--t-text-75)] truncate">{next ? next.titre : "—"}</p>
+                          <p className="text-[0.55rem] text-[var(--t-text-30)] mt-0.5">
+                            {next?.date_prevue ? new Date(next.date_prevue + "T12:00:00").toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" }) : next ? "Sans date" : "Rien de prévu"}
+                            {pending > 1 && ` · ${pending} à faire`}
+                          </p>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[0.48rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mb-1">Dernière terminée</p>
+                          <p className="text-xs text-[var(--t-text-75)] truncate">{lastDone ? lastDone.titre : "—"}</p>
+                          <p className="text-[0.55rem] text-[var(--t-text-30)] mt-0.5">
+                            {lastDone ? new Date(lastDone.completed_at!).toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" }) : "Aucune pour l'instant"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* 4 · Nutrition 7 jours — moyennes vs objectif (snapshot du jour dans daily_summaries). */}
+                {(() => {
+                  const since = new Date(nowTs); since.setDate(since.getDate() - 6);
+                  const sinceISO = since.toLocaleDateString("sv-SE");
+                  const days = journal.filter(d => d.date >= sinceISO && d.calories > 0);
+                  if (days.length === 0) return (
+                    <div className="border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-xl px-4 py-3 flex items-center justify-between">
+                      <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c]">Nutrition · 7 jours</p>
+                      <p className="text-xs text-[var(--t-text-25)]">Rien de loggé cette semaine</p>
+                    </div>
+                  );
+                  const avg = (f: (d: DaySummary) => number) => Math.round(days.reduce((a, d) => a + f(d), 0) / days.length);
+                  const withGoal = days.filter(d => d.goal_calories);
+                  const goalKcal = withGoal.length ? Math.round(withGoal.reduce((a, d) => a + (d.goal_calories ?? 0), 0) / withGoal.length) : null;
+                  const withPGoal = days.filter(d => d.goal_proteines);
+                  const goalProt = withPGoal.length ? Math.round(withPGoal.reduce((a, d) => a + (d.goal_proteines ?? 0), 0) / withPGoal.length) : null;
+                  const rows = [
+                    { label: "Calories", value: avg(d => d.calories), goal: goalKcal, unit: "kcal" },
+                    { label: "Protéines", value: avg(d => d.proteines), goal: goalProt, unit: "g" },
+                  ];
+                  return (
+                    <div className="border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-xl p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c]">Nutrition · 7 jours</p>
+                        <button onClick={() => setTab("journal")} className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">{days.length}/7 jours loggés · Journal →</button>
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        {rows.map(r => {
+                          const pct = r.goal ? Math.round((r.value / r.goal) * 100) : null;
+                          const color = pct === null ? "#c9a84c" : pct >= 90 && pct <= 110 ? "#7eb8a0" : pct >= 75 && pct <= 125 ? "#c9a84c" : "#e07070";
+                          return (
+                            <div key={r.label}>
+                              <div className="flex items-baseline justify-between mb-1.5">
+                                <p className="text-[0.48rem] tracking-[0.15em] uppercase text-[var(--t-text-30)]">{r.label} / jour</p>
+                                <p className="text-xs text-[var(--t-text-70)]">
+                                  <span className="font-medium" style={{ color }}>{r.value}</span>
+                                  <span className="text-[var(--t-text-30)]">{r.goal ? ` / ${r.goal}` : ""} {r.unit}</span>
+                                </p>
+                              </div>
+                              <div className="h-1.5 rounded-full bg-[var(--t-track)] overflow-hidden">
+                                <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(pct ?? 100, 100)}%`, backgroundColor: color }}/>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 <div className="border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-xl p-4">
                   <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-3">Régularité · 16 semaines</p>
