@@ -510,9 +510,9 @@ export default function ProgrammesPage() {
         const kpi = (icon: Parameters<typeof RichIcon>[0]["name"], label: string, value: React.ReactNode, sub: React.ReactNode, onClick?: () => void) => (
           <button onClick={onClick} disabled={!onClick}
             className="group/kpi text-left rounded-2xl border border-[var(--t-border-soft)] bg-[var(--t-surface)] px-4 py-3.5 flex items-center gap-3 shadow-[0_2px_14px_-8px_rgba(0,0,0,0.15)] enabled:hover:border-[#c9a84c]/40 enabled:hover:-translate-y-0.5 transition-all">
-            <div className="relative w-11 h-11 flex items-center justify-center shrink-0">
-              <div className="absolute inset-1 rounded-full blur-md bg-[#c9a84c] opacity-15"/>
-              <RichIcon name={icon} size={40} className="relative drop-shadow-[0_4px_8px_rgba(0,0,0,0.12)]"/>
+            <div className="relative w-16 h-16 flex items-center justify-center shrink-0">
+              <div className="absolute inset-2 rounded-full blur-lg bg-[#c9a84c] opacity-15"/>
+              <RichIcon name={icon} size={60} className="relative drop-shadow-[0_6px_10px_rgba(0,0,0,0.14)]"/>
             </div>
             <div className="min-w-0">
               <p className="text-[0.66rem] font-semibold uppercase tracking-[0.1em] text-[var(--t-text-50)]">{label}</p>
