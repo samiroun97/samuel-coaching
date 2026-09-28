@@ -69,7 +69,7 @@ function ExerciceCard({ entry, onOpen }: { entry: CatalogueEntry; onOpen: () => 
   return (
     <button type="button" onClick={onOpen}
       className="group flex flex-col text-left border border-[var(--t-border-soft)] bg-[var(--t-surface)] rounded-xl overflow-hidden hover:border-[#c9a84c]/40 transition-colors">
-      <div className="aspect-square w-full bg-[var(--t-surface-2)] flex items-center justify-center overflow-hidden">
+      <div className="aspect-square w-full bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] flex items-center justify-center overflow-hidden">
         {entry.image_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={entry.image_url} alt="" loading="lazy"
@@ -159,7 +159,7 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
         <>
           <div className="px-5 pb-3 shrink-0 flex items-center gap-2">
             <input
-              className="flex-1 min-w-0 bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
+              className="flex-1 min-w-0 bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
               placeholder="Rechercher un exercice…" value={query} onChange={e => setQuery(e.target.value)}
             />
             {equipements.length > 0 && <FilterDropdown value={equipement ?? ""} onChange={v => setEquipement(v || null)} options={equipements.map(eq => ({ value: eq, label: eq }))}/>}
@@ -251,7 +251,7 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                     {recentEntries.map(e => (
                       <button key={e.id} type="button" onClick={() => setDetailEntry(e)}
                         className="shrink-0 w-24 flex flex-col text-left border border-[var(--t-border-soft)] bg-[var(--t-surface)] rounded-xl overflow-hidden hover:border-[#c9a84c]/40 transition-colors">
-                        <div className="aspect-square w-full bg-[var(--t-surface-2)] flex items-center justify-center overflow-hidden">
+                        <div className="aspect-square w-full bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] flex items-center justify-center overflow-hidden">
                           {e.image_url ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={e.image_url} alt="" loading="lazy" className="w-full h-full object-cover"/>

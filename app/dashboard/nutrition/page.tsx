@@ -1211,7 +1211,7 @@ export default function NutritionPage() {
 
       {/* ── Plan de Samuel ── */}
       {mealPlan && (
-        <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-xl mb-6">
+        <div className="border border-[#c9a84c]/20 bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl mb-6">
           <div className="flex items-center justify-between px-5 py-3 border-b border-[#c9a84c]/10">
             <div>
               <div className="flex items-center gap-2">
@@ -1382,7 +1382,7 @@ export default function NutritionPage() {
       {/* ══ ADD FOOD MODAL ══ */}
       {showAdd && (
         <div className="fixed inset-0 bg-black/75 z-50 flex items-center justify-center px-4" onClick={resetModal}>
-          <div className="bg-[var(--t-surface-2)] rounded-xl border border-[var(--t-border)] w-full max-w-lg h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <div className="bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl border border-[var(--t-border)] w-full max-w-lg h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
 
             <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[var(--t-border-soft)]">
               <h3 style={{ fontFamily:"var(--font-bebas)" }} className="text-xl tracking-wider text-[var(--t-text)]">Ajouter un repas</h3>
@@ -1538,7 +1538,7 @@ export default function NutritionPage() {
                             <p className="text-[0.62rem] text-[var(--t-text-40)] leading-relaxed">
                               Décris ce qui te semble incorrect. Ta photo sera envoyée à Samuel avec ton message pour l&apos;aider à améliorer l&apos;IA (normalement elle n&apos;est jamais conservée).
                             </p>
-                            <textarea className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={3}
+                            <textarea className="w-full bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={3}
                               placeholder="Ex : ce plat fait bien plus que 400 kcal, il y avait de l'huile et du fromage en plus..."
                               value={reportComment} onChange={e => setReportComment(e.target.value)}/>
                             <div className="flex gap-2">
@@ -1679,7 +1679,7 @@ export default function NutritionPage() {
                       + Créer un produit
                     </button>
                   ) : (
-                    <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-xl p-4 flex flex-col gap-3">
+                    <div className="border border-[#c9a84c]/20 bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl p-4 flex flex-col gap-3">
                       <div className="flex items-center justify-between">
                         <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c]">Nouveau produit</p>
                         <button onClick={() => { setShowNewProd(false); setNewProd(emptyProd); }} className="text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">
@@ -1802,7 +1802,7 @@ export default function NutritionPage() {
       {/* ══ GOALS MODAL ══ */}
       {showGoals && (
         <div className="fixed inset-0 bg-black/75 z-50 flex items-end justify-center" onClick={() => setShowGoals(false)}>
-          <div className="bg-[var(--t-surface-2)] rounded-xl border border-[var(--t-border)] w-full max-w-lg p-6" onClick={e => e.stopPropagation()}>
+          <div className="bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl border border-[var(--t-border)] w-full max-w-lg p-6" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-5">
               <h3 style={{ fontFamily:"var(--font-bebas)" }} className="text-xl tracking-wider text-[var(--t-text)]">Objectifs journaliers</h3>
               <button onClick={() => setShowGoals(false)} className="text-[var(--t-text-30)] hover:text-[var(--t-text-60)] transition-colors">

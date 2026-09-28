@@ -29,7 +29,7 @@ function Row({ entry, onAdd, onInfo }: { entry: CatalogueEntry; onAdd: () => voi
   return (
     <div className="flex items-center gap-2.5 rounded-2xl hover:bg-[var(--t-glass-bg)] transition-colors">
       <button type="button" onClick={onAdd} className="flex items-center gap-3.5 flex-1 min-w-0 text-left px-2.5 py-2.5">
-        <span className="shrink-0 w-20 h-20 rounded-xl overflow-hidden bg-[var(--t-surface-2)] flex items-center justify-center">
+        <span className="shrink-0 w-20 h-20 rounded-xl overflow-hidden bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] flex items-center justify-center">
           {entry.image_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={entry.image_url} alt="" loading="lazy" className="w-full h-full object-cover"/>
@@ -98,7 +98,7 @@ export function ExercicePicker({ catalogue, onPick, onClose }: {
       <div className="shrink-0 border-b border-[var(--t-border-soft)]">
         <div className="flex items-center gap-2 px-4 pt-3.5 pb-2.5 max-w-lg mx-auto w-full">
           <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Rechercher un exercice…"
-            className="flex-1 min-w-0 bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-base px-3.5 py-2.5 text-[var(--t-text)] placeholder-[var(--t-text-20)] focus:outline-none focus:border-[#c9a84c]/40 transition-colors"/>
+            className="flex-1 min-w-0 bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border)] rounded-xl text-base px-3.5 py-2.5 text-[var(--t-text)] placeholder-[var(--t-text-20)] focus:outline-none focus:border-[#c9a84c]/40 transition-colors"/>
           <button onClick={onClose} className="shrink-0 w-11 h-11 flex items-center justify-center text-[var(--t-text-30)] hover:text-[var(--t-text)] transition-colors -mr-2.5">
             <Icon icon={X} size={20} strokeWidth={2}/>
           </button>

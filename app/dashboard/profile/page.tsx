@@ -394,7 +394,7 @@ export default function ProfilePage() {
 
               <div>
                 <label className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-40)] block mb-1.5">Ton objectif, en détail</label>
-                <textarea className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={4}
+                <textarea className="w-full bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={4}
                   placeholder="Ex : perdre 5 kg de graisse tout en gardant ma masse musculaire, pour être à l'aise cet été..."
                   value={objForm.objectifs} onChange={e => setObjForm(f => ({ ...f, objectifs: e.target.value }))}/>
               </div>
@@ -412,7 +412,7 @@ export default function ProfilePage() {
                 <div className="relative flex items-center gap-2">
                   <span className="text-[0.58rem] text-[var(--t-text-25)] uppercase tracking-wider shrink-0">ou une date précise</span>
                   <button type="button" onClick={() => setShowEcheancePicker(o => !o)}
-                    className="bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] text-xs px-3 py-2 hover:border-[#c9a84c]/40 transition-colors">
+                    className="bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] text-xs px-3 py-2 hover:border-[#c9a84c]/40 transition-colors">
                     {objForm.echeanceDate
                       ? new Date(objForm.echeanceDate + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })
                       : "Choisir une date"}
@@ -499,14 +499,14 @@ export default function ProfilePage() {
 
               <div>
                 <label className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-40)] block mb-1.5">Blessures</label>
-                <textarea className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={2}
+                <textarea className="w-full bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={2}
                   placeholder="Ex : douleur genou gauche... (ou 'aucune')"
                   value={objForm.blessures} onChange={e => setObjForm(f => ({ ...f, blessures: e.target.value }))}/>
               </div>
 
               <div>
                 <label className="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--t-text-40)] block mb-1.5">Alimentation</label>
-                <textarea className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={2}
+                <textarea className="w-full bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={2}
                   placeholder="Ex : végétarien, allergie... (ou 'standard')"
                   value={objForm.alimentation} onChange={e => setObjForm(f => ({ ...f, alimentation: e.target.value }))}/>
               </div>

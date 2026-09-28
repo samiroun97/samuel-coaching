@@ -636,7 +636,7 @@ export default function ProgrammePage() {
           Bordure adoucie (refonte) : une section hero se distingue par son fond teinté,
           pas par un contour dur — la bordure franche reste réservée aux vraies cartes
           actionnables (une séance, un exercice) pour garder une hiérarchie lisible. */}
-      <div className="border border-[#c9a84c]/10 bg-[var(--t-surface-gold)] rounded-2xl p-5 mb-6">
+      <div className="border border-[#c9a84c]/10 bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-2xl p-5 mb-6">
         <div className="flex items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-2.5">
             <Icon icon={Flame} fill="currentColor" stroke="none"
@@ -935,7 +935,7 @@ export default function ProgrammePage() {
               <p className="text-[0.62rem] text-[#7eb8a0] text-center py-1">Signalement envoyé, merci ! 🙏</p>
             ) : showActReportForm ? (
               <div className="border border-[var(--t-border)] bg-[var(--t-bg)] rounded-xl p-4 flex flex-col gap-3">
-                <textarea className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={3}
+                <textarea className="w-full bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={3}
                   placeholder="Ex : pour cette durée et cette activité, ça me semble bien trop élevé..."
                   value={actReportComment} onChange={e => setActReportComment(e.target.value)}/>
                 <div className="flex gap-2">
@@ -1107,7 +1107,7 @@ export default function ProgrammePage() {
 
       {/* ── Mon programme (séances envoyées par Samuel + séances libres) ── */}
       {coachSeances.length > 0 && (
-        <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-xl mb-6">
+        <div className="border border-[#c9a84c]/20 bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl mb-6">
           <div className="px-5 py-3 border-b border-[#c9a84c]/10 flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[#c9a84c]">Mon programme</p>
@@ -1184,7 +1184,7 @@ export default function ProgrammePage() {
                       <p className="text-[0.6rem] text-[#7eb8a0] text-center mt-2">Signalement envoyé, merci ! 🙏</p>
                     ) : reportingSeanceId === s.id ? (
                       <div className="border border-[var(--t-border)] bg-[var(--t-bg)] rounded-xl p-3 mt-2 flex flex-col gap-2">
-                        <textarea className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={2}
+                        <textarea className="w-full bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={2}
                           placeholder="Ex : la charge suggérée est trop lourde pour cet exercice à mon niveau..."
                           value={seanceReportComment} onChange={e => setSeanceReportComment(e.target.value)}/>
                         <div className="flex gap-2">

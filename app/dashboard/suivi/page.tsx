@@ -752,7 +752,7 @@ export default function SuiviPage() {
       {reportError && <p className="text-xs text-[#e07070] rounded-xl border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2 mb-4">{reportError}</p>}
 
       {/* ── Pesée ── */}
-      <div className={`rounded-xl border p-4 mb-4 flex items-center gap-4 ${alreadySelected ? "border-[var(--t-border-soft)] bg-[var(--t-surface-2)]" : "border-[#c9a84c]/25 bg-[#c9a84c]/5"}`}>
+      <div className={`rounded-xl border p-4 mb-4 flex items-center gap-4 ${alreadySelected ? "border-[var(--t-border-soft)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)]" : "border-[#c9a84c]/25 bg-[#c9a84c]/5"}`}>
         <RichIcon name="scale" size={40}/>
         <div className="flex-1 min-w-0">
           <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-0.5">
@@ -789,7 +789,7 @@ export default function SuiviPage() {
       </div>
 
       {/* ── Carte Body fat + explication ── */}
-      <div className={`border rounded-xl mb-4 ${!needsBF ? "border-[var(--t-border)] bg-[var(--t-surface)]" : "border-[var(--t-border-soft)] bg-[var(--t-surface-2)]"}`}>
+      <div className={`border rounded-xl mb-4 ${!needsBF ? "border-[var(--t-border)] bg-[var(--t-surface)]" : "border-[var(--t-border-soft)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)]"}`}>
         <div className="p-5">
           <div className="flex items-center justify-between mb-3">
             <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c]">Body fat actuel</p>
@@ -947,7 +947,7 @@ export default function SuiviPage() {
 
               {/* Date du check-in : par défaut aujourd'hui, modifiable si les photos ont été
                   prises un autre jour (ex : upload différé). */}
-              <div className="relative border border-[var(--t-text-8)] bg-[var(--t-surface-2)] rounded-xl px-4 py-3 flex items-center justify-between">
+              <div className="relative border border-[var(--t-text-8)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl px-4 py-3 flex items-center justify-between">
                 <p className="text-[0.7rem] tracking-[0.1em] uppercase text-[var(--t-text-50)]">Date du check-in</p>
                 <button type="button" onClick={() => setShowEstimateDatePicker(o => !o)}
                   className="bg-[var(--t-bg)] border border-[var(--t-border)] text-[var(--t-text-70)] text-[0.7rem] px-2.5 py-1.5 rounded hover:border-[#c9a84c]/40 transition-colors">
@@ -961,7 +961,7 @@ export default function SuiviPage() {
               </div>
 
               {/* Toggle partage coach */}
-              <div className="border border-[var(--t-text-8)] bg-[var(--t-surface-2)] rounded-xl px-4 py-3 flex items-center justify-between">
+              <div className="border border-[var(--t-text-8)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl px-4 py-3 flex items-center justify-between">
                 <div>
                   <p className="text-[0.7rem] tracking-[0.1em] uppercase text-[var(--t-text-50)]">Partager avec Samuel</p>
                   <p className="text-[0.62rem] text-[var(--t-text-25)] mt-0.5">
@@ -997,7 +997,7 @@ export default function SuiviPage() {
                     <p className="text-[0.62rem] text-[var(--t-text-40)] leading-relaxed">
                       Décris ce qui te semble incorrect. Tes photos seront envoyées à Samuel avec ton message pour l&apos;aider à améliorer l&apos;IA.
                     </p>
-                    <textarea className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={3}
+                    <textarea className="w-full bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors resize-none" rows={3}
                       placeholder="Ex : le % me semble beaucoup trop élevé, je m'entraîne depuis 2 ans et je suis plutôt sec..."
                       value={reportComment} onChange={e => setReportComment(e.target.value)}/>
                     <div className="flex gap-2">

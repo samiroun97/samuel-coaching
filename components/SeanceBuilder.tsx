@@ -142,7 +142,7 @@ export default function SeanceBuilder({ items, onChange, catalogue }: {
         return (
           <div key={i} className="border border-[var(--t-border-soft)] bg-[var(--t-surface)] rounded-2xl p-4 flex flex-col gap-3.5 shadow-[0_2px_14px_-6px_rgba(0,0,0,0.18)]">
             <div className="flex items-center gap-3">
-              <div className="relative shrink-0 w-11 h-11 rounded-xl overflow-hidden bg-[var(--t-surface-2)] border border-[var(--t-border-soft)] flex items-center justify-center">
+              <div className="relative shrink-0 w-11 h-11 rounded-xl overflow-hidden bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border-soft)] flex items-center justify-center">
                 {thumbUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={thumbUrl} alt="" className="w-full h-full object-cover"/>
@@ -254,7 +254,7 @@ export default function SeanceBuilder({ items, onChange, catalogue }: {
             {noteFor.has(i) && (
               <textarea rows={2} value={ex.note} onChange={e => update(i, { note: e.target.value })}
                 placeholder="Note (optionnel) : ressenti, variante…"
-                className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-3 py-2.5 resize-none focus:outline-none focus:border-[#c9a84c]/40 transition-colors"/>
+                className="w-full bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-3 py-2.5 resize-none focus:outline-none focus:border-[#c9a84c]/40 transition-colors"/>
             )}
           </div>
         );

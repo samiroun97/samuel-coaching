@@ -288,7 +288,7 @@ export default function AccueilPage() {
       <DateNav date={selectedDate} onChange={setSelectedDate} />
 
       {/* ── Pesée ── */}
-      <div className={`rounded-xl border p-4 mb-4 flex items-center gap-4 ${entryForDate ? "border-[var(--t-border-soft)] bg-[var(--t-surface-2)]" : "border-[#c9a84c]/25 bg-[#c9a84c]/5"}`}>
+      <div className={`rounded-xl border p-4 mb-4 flex items-center gap-4 ${entryForDate ? "border-[var(--t-border-soft)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)]" : "border-[#c9a84c]/25 bg-[#c9a84c]/5"}`}>
         <RichIcon name="scale" size={48}/>
         <div className="flex-1 min-w-0">
           <p className="text-[0.7rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-0.5">

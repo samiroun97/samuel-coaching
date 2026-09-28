@@ -75,7 +75,7 @@ export function SeanceRecap({ seance, clientId, clientBodyweight }: {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-2xl p-4 flex flex-col gap-4">
+      <div className="border border-[#c9a84c]/20 bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-2xl p-4 flex flex-col gap-4">
         <div className="flex items-center gap-3.5">
           {pct != null ? (
             <div className="relative w-16 h-16 shrink-0 flex items-center justify-center">
