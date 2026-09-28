@@ -18,6 +18,16 @@ import { ChevronDown, ChevronLeft, ChevronRight, Check, Pencil, Plus, X } from "
 import { mondayISOOf, todayISO } from "@/lib/planning";
 
 type Profile      = { prenom?: string; sexe?: string; poids?: number; taille?: number; age?: number; objectifs?: string; objectif_type?: string; seances_par_semaine?: number; experience?: string; niveau_activite?: string };
+// Mensurations du check-in hebdo (colonnes de weekly_checkins, en cm).
+const MEASURES = [
+  { key: "waist", label: "Tour de taille", hint: "au nombril" },
+  { key: "hips",  label: "Hanches",        hint: "point le plus large" },
+  { key: "chest", label: "Poitrine",       hint: "sous les aisselles" },
+  { key: "arm",   label: "Bras",           hint: "biceps, relâché" },
+  { key: "thigh", label: "Cuisse",         hint: "mi-cuisse" },
+] as const;
+type MeasureKey = typeof MEASURES[number]["key"];
+
 type BodyFatEntry = {
   id: string; date: string; body_fat: number; note: string;
   points_forts?: string; points_faibles?: string; conseils?: string; shared?: boolean;
@@ -204,6 +214,13 @@ export default function SuiviPage() {
   const [ckEnergy,  setCkEnergy]  = useState(0);
   const [ckComp,    setCkComp]    = useState(0);
   const [ckNotes,   setCkNotes]   = useState("");
+  const [ckSleep,   setCkSleep]   = useState(0);
+  const [ckStress,  setCkStress]  = useState(0);
+  const [ckHunger,  setCkHunger]  = useState(0);
+  // Mensurations (cm), pré-remplies avec le dernier check-in : d'une semaine à l'autre on
+  // ne corrige que ce qui a bougé.
+  const [ckMeasures, setCkMeasures] = useState<Record<MeasureKey, string>>({ waist: "", hips: "", chest: "", arm: "", thigh: "" });
+  const [ckMeasuresOpen, setCkMeasuresOpen] = useState(false);
   const [ckSaving,  setCkSaving]  = useState(false);
   const [ckDone,    setCkDone]    = useState(false);
   const [lastCkDate, setLastCkDate] = useState<string | null>(null);
@@ -258,8 +275,12 @@ export default function SuiviPage() {
 
       // Dernier check-in envoyé
       const { data: ck } = await supabase.from("weekly_checkins")
-        .select("week_date").eq("client_id", user.id).order("week_date", { ascending: false }).limit(1);
-      if (ck?.[0]) setLastCkDate(ck[0].week_date);
+        .select("week_date,waist,hips,chest,arm,thigh").eq("client_id", user.id).order("week_date", { ascending: false }).limit(1);
+      if (ck?.[0]) {
+        setLastCkDate(ck[0].week_date);
+        const last = ck[0] as Record<MeasureKey, number | null>;
+        setCkMeasures(Object.fromEntries(MEASURES.map(m => [m.key, last[m.key] != null ? String(last[m.key]) : ""])) as Record<MeasureKey, string>);
+      }
     })();
   }, []);
 
@@ -271,6 +292,11 @@ export default function SuiviPage() {
       weight: ckWeight ? parseFloat(ckWeight.replace(",", ".")) : null,
       compliance: ckComp || null, energy: ckEnergy || null,
       notes: ckNotes || null,
+      sleep: ckSleep || null, stress: ckStress || null, hunger: ckHunger || null,
+      ...Object.fromEntries(MEASURES.map(m => {
+        const v = parseFloat(ckMeasures[m.key].replace(",", "."));
+        return [m.key, Number.isFinite(v) && v > 0 ? v : null];
+      })),
     }, { onConflict: "client_id,week_date" });
     setCkSaving(false);
     if (!error) {
@@ -649,7 +675,7 @@ export default function SuiviPage() {
             <div>
               <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-0.5">Check-in de la semaine</p>
               <p className="text-[0.7rem] text-[var(--t-text-35)] tracking-wider">
-                {ckDoneThisWeek ? "✓ Envoyé à Samuel cette semaine — modifier" : "Fais ton point du dimanche : poids, énergie, adhérence"}
+                {ckDoneThisWeek ? "✓ Envoyé à Samuel cette semaine — modifier" : "Fais ton point du dimanche : poids, ressenti, mensurations"}
               </p>
             </div>
             <Icon icon={ChevronDown} size={14}
@@ -664,23 +690,45 @@ export default function SuiviPage() {
                     className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] text-base px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40" placeholder="78.0"/>
                 </div>
               </div>
-              <div>
-                <label className="text-[0.7rem] tracking-[0.15em] uppercase text-[var(--t-text-40)] block mb-1.5">Énergie / forme — 1 faible · 5 top</label>
-                <div className="flex gap-2">
-                  {[1,2,3,4,5].map(n => (
-                    <button key={n} onClick={() => setCkEnergy(n)}
-                      className={`flex-1 h-10 rounded-xl border text-sm font-bold transition-all ${ckEnergy >= n ? "bg-[#7eb8a0] border-[#7eb8a0] text-black" : "border-[var(--t-border-15)] text-[var(--t-text-25)]"}`}>{n}</button>
-                  ))}
+              {([
+                { label: "Énergie / forme — 1 faible · 5 top",           value: ckEnergy, set: setCkEnergy, color: "#7eb8a0" },
+                { label: "Qualité du sommeil — 1 mauvaise · 5 top",      value: ckSleep,  set: setCkSleep,  color: "#7eb8a0" },
+                { label: "Niveau de stress — 1 serein · 5 très élevé",   value: ckStress, set: setCkStress, color: "#e0a070" },
+                { label: "Faim / fringales — 1 aucune · 5 constantes",   value: ckHunger, set: setCkHunger, color: "#e0a070" },
+                { label: "Adhérence au plan — 1 difficile · 5 parfaite", value: ckComp,   set: setCkComp,   color: "#c9a84c" },
+              ]).map(r => (
+                <div key={r.label}>
+                  <label className="text-[0.7rem] tracking-[0.15em] uppercase text-[var(--t-text-40)] block mb-1.5">{r.label}</label>
+                  <div className="flex gap-2">
+                    {[1,2,3,4,5].map(n => (
+                      <button key={n} onClick={() => r.set(n)}
+                        className={`flex-1 h-10 rounded-xl border text-sm font-bold transition-all ${r.value >= n ? "text-black" : "border-[var(--t-border-15)] text-[var(--t-text-25)]"}`}
+                        style={r.value >= n ? { backgroundColor: r.color, borderColor: r.color } : undefined}>{n}</button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-              <div>
-                <label className="text-[0.7rem] tracking-[0.15em] uppercase text-[var(--t-text-40)] block mb-1.5">Adhérence au plan — 1 difficile · 5 parfaite</label>
-                <div className="flex gap-2">
-                  {[1,2,3,4,5].map(n => (
-                    <button key={n} onClick={() => setCkComp(n)}
-                      className={`flex-1 h-10 rounded-xl border text-sm font-bold transition-all ${ckComp >= n ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-[var(--t-border-15)] text-[var(--t-text-25)]"}`}>{n}</button>
-                  ))}
-                </div>
+              ))}
+              <div className="rounded-xl border border-[var(--t-border-soft)]">
+                <button type="button" onClick={() => setCkMeasuresOpen(o => !o)} className="w-full flex items-center justify-between px-3 py-2.5 text-left">
+                  <span className="text-[0.7rem] tracking-[0.15em] uppercase text-[var(--t-text-40)]">Mensurations (cm) · optionnel</span>
+                  <Icon icon={ChevronDown} size={12} className={`text-[var(--t-text-30)] transition-transform ${ckMeasuresOpen ? "rotate-180" : ""}`}/>
+                </button>
+                {ckMeasuresOpen && (
+                  <div className="px-3 pb-3">
+                    <p className="text-[0.68rem] text-[var(--t-text-40)] mb-2.5">Mesure le matin à jeun, ruban à plat, toujours au même endroit.</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                      {MEASURES.map(m => (
+                        <div key={m.key}>
+                          <label className="text-[0.62rem] tracking-wider uppercase text-[var(--t-text-40)] block mb-1">{m.label}</label>
+                          <input type="number" inputMode="decimal" step="0.5" value={ckMeasures[m.key]}
+                            onChange={e => setCkMeasures(prev => ({ ...prev, [m.key]: e.target.value }))}
+                            placeholder={m.hint}
+                            className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] text-base px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40"/>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
               <div>
                 <label className="text-[0.7rem] tracking-[0.15em] uppercase text-[var(--t-text-40)] block mb-1.5">Un mot pour Samuel</label>

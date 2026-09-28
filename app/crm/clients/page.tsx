@@ -45,7 +45,14 @@ type Client   = { id: string; email: string; prenom: string; nom: string; age: n
 type PendingSignup = { id: string; email: string; full_name: string | null; created_at: string; email_confirmed_at: string | null };
 type Seance   = { id: string; titre: string; type_seance: string | null; date_prevue: string | null; semaine: number | null; description: string | null; exercices: string | null; completed_at: string | null };
 type Note     = { id: string; client_id: string; content: string; created_at: string };
-type Checkin  = { id: string; client_id: string; week_date: string; weight: number | null; body_fat: number | null; compliance: number | null; energy: number | null; notes: string | null };
+type Checkin  = { id: string; client_id: string; week_date: string; weight: number | null; body_fat: number | null; compliance: number | null; energy: number | null; notes: string | null;
+  sleep?: number | null; stress?: number | null; hunger?: number | null;
+  waist?: number | null; hips?: number | null; chest?: number | null; arm?: number | null; thigh?: number | null };
+// Mensurations saisies par le client dans son check-in (cm).
+const CK_MEASURES = [
+  { key: "waist", label: "Taille" }, { key: "hips", label: "Hanches" }, { key: "chest", label: "Poitrine" },
+  { key: "arm", label: "Bras" }, { key: "thigh", label: "Cuisse" },
+] as const;
 type FoodItem = { name: string; calories: number; proteines: number; glucides: number; lipides: number; repas?: string | null };
 type DaySummary = { date: string; calories: number; proteines: number; glucides: number; lipides: number; foods: FoodItem[] | null; goal_calories?: number | null; goal_proteines?: number | null };
 type LastMsg  = { from_email: string; content: string; created_at: string };
@@ -890,7 +897,7 @@ export default function ClientsPage() {
                   </button>
                 </div>
                 {checkins.length === 0 ? <p className="text-[var(--t-text-20)] text-xs text-center py-4">Aucun check-in</p>
-                  : checkins.map(ck => (
+                  : checkins.map((ck, i) => (
                     <div key={ck.id} className="border border-[var(--t-text-8)] bg-[var(--t-surface)] rounded-xl px-5 py-4 flex items-start justify-between gap-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-4 mb-1.5">
@@ -903,7 +910,29 @@ export default function ClientsPage() {
                           {ck.weight && <span className="text-sm text-[var(--t-text-70)] font-medium">{ck.weight} kg</span>}
                           {ck.body_fat && <span className="text-sm text-[#7eb8a0]">{ck.body_fat}% BF</span>}
                           {ck.energy && <span className="text-[0.6rem] tracking-wider uppercase text-[#7eb8a0]/70">Énergie {ck.energy}/5</span>}
+                          {ck.sleep && <span className="text-[0.6rem] tracking-wider uppercase text-[#7eb8a0]/70">Sommeil {ck.sleep}/5</span>}
+                          {/* Stress et faim : échelle inversée (5 = mauvais), en orange dès 4. */}
+                          {ck.stress && <span className={`text-[0.6rem] tracking-wider uppercase ${ck.stress >= 4 ? "text-[#e0a070]" : "text-[var(--t-text-40)]"}`}>Stress {ck.stress}/5</span>}
+                          {ck.hunger && <span className={`text-[0.6rem] tracking-wider uppercase ${ck.hunger >= 4 ? "text-[#e0a070]" : "text-[var(--t-text-40)]"}`}>Faim {ck.hunger}/5</span>}
                         </div>
+                        {CK_MEASURES.some(m => ck[m.key] != null) && (
+                          <div className="flex gap-x-4 gap-y-0.5 mb-1 flex-wrap text-[0.7rem] text-[var(--t-text-50)]">
+                            {CK_MEASURES.map(m => {
+                              const v = ck[m.key];
+                              if (v == null) return null;
+                              // Écart avec le check-in précédent (liste triée du plus récent au plus ancien).
+                              const prev = checkins.slice(i + 1).find(c => c[m.key] != null)?.[m.key];
+                              const d = prev != null ? Math.round((v - prev) * 10) / 10 : null;
+                              return (
+                                <span key={m.key}>
+                                  {m.label} <span className="text-[var(--t-text-70)] font-medium">{v} cm</span>
+                                  {/* Couleur neutre : une baisse n'est bonne que pour certaines zones (taille oui, bras non). */}
+                                  {d != null && d !== 0 && <span className="text-[var(--t-text-35)]"> ({d > 0 ? "+" : ""}{d})</span>}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        )}
                         {ck.notes && <p className="text-xs text-[var(--t-text-35)] leading-relaxed">{ck.notes}</p>}
                       </div>
                       <button onClick={async () => { await supabase.from("weekly_checkins").delete().eq("id", ck.id); setCheckins(prev => prev.filter(x => x.id !== ck.id)); }}
