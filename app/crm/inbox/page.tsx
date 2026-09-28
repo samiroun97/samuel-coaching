@@ -221,7 +221,7 @@ export default function InboxPage() {
             const isActive = activeEmail === conv.email;
             return (
               <button key={conv.email} onClick={() => setActiveEmail(conv.email)}
-                className={`w-full text-left px-4 py-3.5 mb-1 border transition-all ${isActive ? "border-[#c9a84c]/30 bg-[#c9a84c]/5 rounded-xl" : conv.unread ? "border-[#e07070]/15 bg-[#e07070]/3 rounded-xl" : "border-[var(--t-border-soft)] hover:border-[var(--t-border)] hover:bg-[var(--t-glass-bg)] rounded-xl"}`}>
+                className={`w-full text-left px-4 py-3.5 mb-1.5 border transition-all shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] ${isActive ? "border-[#c9a84c]/40 bg-[var(--t-surface)] ring-1 ring-[#c9a84c]/30 rounded-xl" : conv.unread ? "border-[#e07070]/25 bg-[var(--t-surface)] rounded-xl" : "bg-[var(--t-surface)] border-[var(--t-border-soft)] hover:border-[var(--t-border)] rounded-xl"}`}>
                 <div className="flex items-start justify-between gap-2 mb-1">
                   <div className="flex items-center gap-2 min-w-0">
                     {conv.unread && <span className="w-1.5 h-1.5 rounded-full bg-[#e07070] shrink-0"/>}
