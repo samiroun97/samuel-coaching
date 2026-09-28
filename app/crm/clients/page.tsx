@@ -270,7 +270,7 @@ export default function ClientsPage() {
     setPlanSaving(false);
   };
 
-  const inp = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
+  const inp = "w-full bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
   const lbl = "text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c] block mb-1.5";
 
   const filtered = clients.filter(c => {
@@ -322,7 +322,7 @@ export default function ClientsPage() {
         </div>
 
         {pendingSignups.length > 0 && (
-          <div className="border-b border-[#c9a84c]/10 bg-[var(--t-surface-gold)] rounded-xl px-4 md:px-5 py-3 shrink-0">
+          <div className="border-b border-[#c9a84c]/10 bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl px-4 md:px-5 py-3 shrink-0">
             <p className="text-[0.5rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-2">
               Inscriptions en attente ({pendingSignups.length})
             </p>
@@ -538,7 +538,7 @@ export default function ClientsPage() {
                   return (
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
                       {tiles.map(t => (
-                        <div key={t.label} className="border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-xl px-3.5 py-3">
+                        <div key={t.label} className="border border-[var(--t-text-7)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl px-3.5 py-3">
                           <p className="text-[0.48rem] tracking-[0.18em] uppercase text-[var(--t-text-30)]">{t.label}</p>
                           <p style={{ fontFamily: "var(--font-bebas)", color: t.color }} className="text-3xl tracking-wide leading-none mt-1.5">{t.value}</p>
                           <p className="text-[0.55rem] text-[var(--t-text-25)] mt-1 truncate">{t.sub}</p>
@@ -563,7 +563,7 @@ export default function ClientsPage() {
                 )}
 
                 {/* 1 · Résumé client — l'essentiel du Profil, utile à chaque préparation de programme. */}
-                <div className="border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-xl p-4">
+                <div className="border border-[var(--t-text-7)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl p-4">
                   <div className="flex items-center justify-between mb-3">
                     <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c]">Résumé</p>
                     <button onClick={() => setTab("profil")} className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">Profil complet →</button>
@@ -592,7 +592,7 @@ export default function ClientsPage() {
 
                 {/* 2 · Dernière note coach + dernier message — reprendre le fil sans changer d'onglet. */}
                 <div className="grid sm:grid-cols-2 gap-3">
-                  <div className="border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-xl p-4 flex flex-col">
+                  <div className="border border-[var(--t-text-7)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl p-4 flex flex-col">
                     <div className="flex items-center justify-between mb-2">
                       <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c]">Dernière note</p>
                       <button onClick={() => setTab("notes")} className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">
@@ -606,7 +606,7 @@ export default function ClientsPage() {
                       </>
                     ) : <p className="text-xs text-[var(--t-text-25)]">Aucune note pour l&apos;instant.</p>}
                   </div>
-                  <div className="border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-xl p-4 flex flex-col">
+                  <div className="border border-[var(--t-text-7)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl p-4 flex flex-col">
                     <div className="flex items-center justify-between mb-2">
                       <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c]">Dernier message</p>
                       <Link href={`/crm/inbox?client=${encodeURIComponent(selected.email)}`} className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">Inbox →</Link>
@@ -634,7 +634,7 @@ export default function ClientsPage() {
                   const lastDone = seances.filter(s => s.completed_at).sort((a, b) => b.completed_at!.localeCompare(a.completed_at!))[0];
                   const pending = seances.filter(s => !s.completed_at).length;
                   return (
-                    <div className="border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-xl p-4">
+                    <div className="border border-[var(--t-text-7)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl p-4">
                       <div className="flex items-center justify-between mb-3">
                         <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c]">Programme en cours</p>
                         <Link href={`/crm/programmes?client=${encodeURIComponent(selected.email)}`} className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">Gérer →</Link>
@@ -679,7 +679,7 @@ export default function ClientsPage() {
                   const sinceISO = since.toLocaleDateString("sv-SE");
                   const days = journal.filter(d => d.date >= sinceISO && d.calories > 0);
                   if (days.length === 0) return (
-                    <div className="border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-xl px-4 py-3 flex items-center justify-between">
+                    <div className="border border-[var(--t-text-7)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl px-4 py-3 flex items-center justify-between">
                       <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c]">Nutrition · 7 jours</p>
                       <p className="text-xs text-[var(--t-text-25)]">Rien de loggé cette semaine</p>
                     </div>
@@ -694,7 +694,7 @@ export default function ClientsPage() {
                     { label: "Protéines", value: avg(d => d.proteines), goal: goalProt, unit: "g" },
                   ];
                   return (
-                    <div className="border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-xl p-4">
+                    <div className="border border-[var(--t-text-7)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl p-4">
                       <div className="flex items-center justify-between mb-3">
                         <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c]">Nutrition · 7 jours</p>
                         <button onClick={() => setTab("journal")} className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">{days.length}/7 jours loggés · Journal →</button>
@@ -723,7 +723,7 @@ export default function ClientsPage() {
                   );
                 })()}
 
-                <div className="border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-xl p-4">
+                <div className="border border-[var(--t-text-7)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl p-4">
                   <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-3">Régularité · 16 semaines</p>
                   <ConsistencyStrip statuses={dayStatuses}/>
                 </div>
@@ -731,7 +731,7 @@ export default function ClientsPage() {
                 {(() => {
                   const weightPoints = [...checkins].reverse().map(c => c.weight).filter((w): w is number => w != null);
                   return weightPoints.length > 1 ? (
-                    <div className="border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-xl p-4">
+                    <div className="border border-[var(--t-text-7)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl p-4">
                       <div className="flex items-center justify-between mb-2">
                         <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c]">Poids</p>
                         <p style={{ fontFamily: "var(--font-bebas)" }} className="text-xl text-[var(--t-text)] tracking-wide">{weightPoints[weightPoints.length - 1]} kg</p>
@@ -744,7 +744,7 @@ export default function ClientsPage() {
                 {activeMeso && <MesocycleCard meso={activeMeso}/>}
 
                 {Object.keys(muscleVolume).length > 0 && (
-                  <div className="border border-[var(--t-text-8)] bg-[var(--t-surface-2)] rounded-xl p-4">
+                  <div className="border border-[var(--t-text-8)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl p-4">
                     <MuscleVolumeChart byMuscle={muscleVolume}/>
                   </div>
                 )}
@@ -754,7 +754,7 @@ export default function ClientsPage() {
                     <p className="text-[0.62rem] tracking-[0.2em] uppercase text-[var(--t-text-30)] mb-3">Records personnels</p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                       {records.map(r => (
-                        <div key={r.nom} className="border border-[var(--t-text-8)] bg-[var(--t-surface-2)] rounded-2xl p-3.5 flex flex-col gap-2">
+                        <div key={r.nom} className="border border-[var(--t-text-8)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-2xl p-3.5 flex flex-col gap-2">
                           <p className="text-[0.68rem] text-[var(--t-text-60)] font-medium capitalize truncate">{r.nom}</p>
                           <div className="flex items-baseline gap-1">
                             <span style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl text-[var(--t-text)] tracking-wide leading-none">{r.currentKg}</span>
@@ -801,7 +801,7 @@ export default function ClientsPage() {
                   <p className="text-[0.48rem] tracking-[0.15em] uppercase text-[#c9a84c] mb-1">Blessures</p>
                   <p className="text-xs text-[var(--t-text-55)] leading-relaxed">{selected.blessures || "—"}</p>
                 </div>
-                <div className="col-span-2 border border-[#c9a84c]/10 bg-[var(--t-surface-gold)] rounded-xl px-4 py-3">
+                <div className="col-span-2 border border-[#c9a84c]/10 bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl px-4 py-3">
                   <div className="flex items-start justify-between gap-3 mb-1">
                     <p className="text-[0.48rem] tracking-[0.15em] uppercase text-[#c9a84c]">Objectifs{selected.objectif_echeance && ` · Échéance : ${selected.objectif_echeance}`}</p>
                     {selected.objectif_pending ? (
@@ -824,7 +824,7 @@ export default function ClientsPage() {
             {/* NOTES */}
             {tab === "notes" && (
               <div className="max-w-2xl flex flex-col gap-4">
-                <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-xl p-5">
+                <div className="border border-[#c9a84c]/20 bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl p-5">
                   <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-3">Nouvelle note</p>
                   <textarea className={`${inp} resize-none mb-3`} rows={4} placeholder="Observations, ajustements, retours séance…" value={noteInput} onChange={e => setNoteInput(e.target.value)}/>
                   <button onClick={addNote} disabled={noteSaving || !noteInput.trim()} className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.58rem] font-bold tracking-[0.18em] uppercase py-2.5 px-5 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40">
@@ -852,7 +852,7 @@ export default function ClientsPage() {
             {/* CHECK-INS */}
             {tab === "checkin" && (
               <div className="max-w-2xl flex flex-col gap-4">
-                <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-xl p-5">
+                <div className="border border-[#c9a84c]/20 bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl p-5">
                   <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Check-in hebdomadaire</p>
                   <div className="grid grid-cols-3 gap-3 mb-3">
                     <div className="relative">
@@ -913,7 +913,7 @@ export default function ClientsPage() {
             {/* REPAS */}
             {tab === "repas" && (
               <div className="max-w-2xl flex flex-col gap-5">
-                <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-xl p-5">
+                <div className="border border-[#c9a84c]/20 bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl p-5">
                   <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">{activePlanId ? "Plan actif" : `Créer un plan — ${selected.prenom}`}</p>
                   {!activePlanId ? (
                     <div className="flex flex-col gap-3">

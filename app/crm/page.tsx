@@ -177,7 +177,7 @@ export default function CRMDashboard() {
       </div>
 
       {/* ══ Aujourd'hui — ce qui attend une action, trié par urgence réelle ══ */}
-      <div className="border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-2xl p-4 md:p-5 mb-8">
+      <div className="border border-[var(--t-text-7)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-2xl p-4 md:p-5 mb-8">
         <div className="flex items-center gap-3 mb-4">
           <div className="relative w-[72px] h-[72px] flex items-center justify-center shrink-0">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-lg pointer-events-none"
@@ -222,7 +222,7 @@ export default function CRMDashboard() {
 
       {/* Inviter un client — utilitaire occasionnel, pas une action urgente du jour */}
       {inviteCode && (
-        <div className="border border-[var(--t-border-soft)] bg-[var(--t-surface-2)] rounded-xl p-4 md:p-5 mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="border border-[var(--t-border-soft)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl p-4 md:p-5 mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <p className="text-[0.6rem] tracking-[0.22em] uppercase text-[var(--t-text-30)] mb-1">Inviter un client</p>
             <p className="text-xs text-[var(--t-text-40)]">Code coach : <span style={{ fontFamily: "var(--font-bebas)" }} className="text-[var(--t-text)] tracking-[0.2em] text-sm">{inviteCode}</span></p>
@@ -244,7 +244,7 @@ export default function CRMDashboard() {
       <div className="grid md:grid-cols-2 gap-6">
 
         {/* Recent check-ins */}
-        <div className="border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-xl p-4 md:p-5">
+        <div className="border border-[var(--t-text-7)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl p-4 md:p-5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="relative w-12 h-12 flex items-center justify-center shrink-0">
@@ -288,7 +288,7 @@ export default function CRMDashboard() {
         </div>
 
         {/* Recent messages */}
-        <div className="border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-xl p-4 md:p-5">
+        <div className="border border-[var(--t-text-7)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl p-4 md:p-5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="relative w-12 h-12 flex items-center justify-center shrink-0">

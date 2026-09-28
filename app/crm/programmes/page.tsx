@@ -424,7 +424,7 @@ export default function ProgrammesPage() {
     await loadSentSeances(selected.email);
   };
 
-  const inp = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
+  const inp = "w-full bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
   const lbl = "text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c] block mb-1.5";
 
   if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="w-5 h-5 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/></div>;
@@ -451,10 +451,10 @@ export default function ProgrammesPage() {
         <div className="px-4 md:px-5 pt-5 md:pt-6 pb-4 border-b border-[var(--t-border-soft)]">
           <p className="text-[0.62rem] font-semibold tracking-[0.25em] text-[#c9a84c] uppercase mb-1">Plateforme coaching</p>
           <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-[var(--t-text)] tracking-wide mb-3 leading-none">PROGRAMMES</h1>
-          <div className="flex p-1 rounded-xl bg-[var(--t-surface-2)] border border-[var(--t-border-soft)]">
+          <div className="flex p-1 rounded-xl bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border-soft)]">
             {([["sans", "À programmer", sans.length, "#e09070"], ["avec", "En cours", avec.length, "#7eb8a0"]] as const).map(([k, label, n, color]) => (
               <button key={k} onClick={() => setFilter(k)}
-                className={`flex-1 py-2 rounded-lg text-[0.75rem] font-medium transition-all flex items-center justify-center gap-1.5 ${filter === k ? "bg-[var(--t-surface)] text-[var(--t-text)] shadow-[0_1px_6px_rgba(0,0,0,0.08)]" : "text-[var(--t-text-50)] hover:text-[var(--t-text-80)]"}`}>
+                className={`flex-1 py-2 rounded-lg text-[0.75rem] font-medium transition-all flex items-center justify-center gap-1.5 ${filter === k ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black shadow-[0_4px_12px_-6px_rgba(201,168,76,0.7)]" : "text-[var(--t-text-50)] hover:text-[var(--t-text-80)]"}`}>
                 {label}
                 <span className="min-w-5 h-5 px-1.5 rounded-full text-[0.65rem] font-bold flex items-center justify-center" style={{ color, backgroundColor: `${color}1f` }}>{n}</span>
               </button>
@@ -661,10 +661,10 @@ export default function ProgrammesPage() {
 
               {/* Planning : Semaine (principal) · Progression · Liste */}
               <div className="flex items-center justify-between gap-3">
-                <div className="flex p-1 rounded-xl bg-[var(--t-surface-2)] border border-[var(--t-border-soft)]">
+                <div className="flex p-1 rounded-xl bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border-soft)]">
                   {(["calendrier", "progression", "liste"] as const).map(v => (
                     <button key={v} onClick={() => setSentView(v)}
-                      className={`px-4 py-1.5 rounded-lg text-[0.78rem] font-medium transition-all ${sentView === v ? "bg-[var(--t-surface)] text-[var(--t-text)] shadow-[0_1px_6px_rgba(0,0,0,0.08)]" : "text-[var(--t-text-50)] hover:text-[var(--t-text-80)]"}`}>
+                      className={`px-4 py-1.5 rounded-lg text-[0.78rem] font-medium transition-all ${sentView === v ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black shadow-[0_4px_12px_-6px_rgba(201,168,76,0.7)]" : "text-[var(--t-text-50)] hover:text-[var(--t-text-80)]"}`}>
                       {v === "calendrier" ? "Semaine" : v === "progression" ? "Progression" : "Liste"}
                     </button>
                   ))}
@@ -766,7 +766,7 @@ export default function ProgrammesPage() {
             <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-4">
               {drafts.length === 0 && !showTemplates && (
                 <>
-                  <div className="rounded-2xl border border-[#c9a84c]/25 bg-[var(--t-surface-gold)] p-4 flex flex-col gap-2.5">
+                  <div className="rounded-2xl border border-[#c9a84c]/25 bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] p-4 flex flex-col gap-2.5">
                     <p className="text-[0.6rem] tracking-[0.18em] uppercase text-[#c9a84c]">✦ Générer avec l&apos;IA</p>
                     <textarea rows={3} autoFocus className={`${inp} resize-none`}
                       placeholder="Précisions (optionnel) — ex : reprise après blessure au genou, priorité haut du corps…"
@@ -957,7 +957,7 @@ export default function ProgrammesPage() {
                   options={Array.from({ length: 12 }, (_, i) => ({ value: String(i + 1), label: `${i + 1} semaine${i ? "s" : ""}` }))} triggerClassName={inp}/>
               </div>
             </div>
-            <div className="rounded-xl bg-[var(--t-surface-2)] px-3 py-2.5 max-h-40 overflow-y-auto">
+            <div className="rounded-xl bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] px-3 py-2.5 max-h-40 overflow-y-auto">
               {saveProgPreview.length === 0 ? (
                 <p className="text-[0.65rem] text-[#e09070]">Aucune séance datée dans cette période.</p>
               ) : (

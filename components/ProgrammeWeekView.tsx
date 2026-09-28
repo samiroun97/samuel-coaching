@@ -157,7 +157,7 @@ export function ProgrammeWeekView({ seances, meso, weeklyTarget, onCreate, onOpe
             const d = new Date(iso + "T12:00:00");
             return (
               <div key={iso} {...dropProps(iso)}
-                className={`snap-start shrink-0 w-[46vw] sm:w-[30vw] md:w-auto min-w-0 rounded-2xl border flex flex-col transition-colors ${isOver ? "border-[#c9a84c] bg-[#c9a84c]/10" : isToday ? "border-[#c9a84c]/50 bg-[#c9a84c]/[0.05]" : "border-[var(--t-border-soft)] bg-[var(--t-surface-2)]/60"}`}>
+                className={`snap-start shrink-0 w-[46vw] sm:w-[30vw] md:w-auto min-w-0 rounded-2xl border flex flex-col transition-colors ${isOver ? "border-[#c9a84c] bg-[#c9a84c]/10" : isToday ? "border-[#c9a84c]/50 bg-[#c9a84c]/[0.05]" : "border-[var(--t-border-soft)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)]"}`}>
                 <div className="flex items-baseline justify-between px-2.5 pt-2 pb-1.5">
                   <span className={`text-[0.72rem] font-semibold uppercase tracking-wide ${isToday ? "text-[#c9a84c]" : "text-[var(--t-text-50)]"}`}>{DAY_SHORT[(d.getDay() + 6) % 7]}</span>
                   <span className={`text-[0.8rem] font-semibold tabular-nums ${isToday ? "w-6 h-6 -my-1 rounded-full bg-[#c9a84c] text-black flex items-center justify-center text-[0.72rem]" : iso < today ? "text-[var(--t-text-30)]" : "text-[var(--t-text-70)]"}`}>{d.getDate()}</span>

@@ -49,7 +49,7 @@ export function ProgressionSuggestions({ clientId }: { clientId: string }) {
   if (rows === null || rows.length === 0) return null;
 
   return (
-    <div className="border border-[#c9a84c]/20 bg-[var(--t-surface-gold)] rounded-xl">
+    <div className="border border-[#c9a84c]/20 bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl">
       <button onClick={() => setOpen(o => !o)}
         className="w-full flex items-center justify-between px-4 py-3 text-left">
         <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[#c9a84c]">

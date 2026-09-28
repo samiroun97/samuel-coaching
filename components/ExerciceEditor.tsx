@@ -11,9 +11,9 @@ import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
 import { Layers, Repeat, Dumbbell, Clock, ChevronUp, ChevronDown, Camera, X, Copy, ChevronRight, Plus, Eye, Pencil } from "@/lib/solarIcons";
 
-const inp = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
-const inpSm = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-2.5 py-2 text-center focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
-const inpXs = "w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-2 py-2 text-center focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
+const inp = "w-full bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
+const inpSm = "w-full bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-2.5 py-2 text-center focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
+const inpXs = "w-full bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border)] rounded-lg text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-2 py-2 text-center focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
 
 const IconSeries = () => <Icon icon={Layers} size={9} strokeWidth={2.5}/>;
 const IconReps = () => <Icon icon={Repeat} size={9} strokeWidth={2.5}/>;
@@ -54,7 +54,7 @@ function ExerciceThumb({ catalogue, ex, onChange }: { catalogue: CatalogueEntry[
     <div className="shrink-0 flex flex-col items-center gap-1 mt-0.5">
       <div className="relative">
         <button type="button" onClick={() => editable && inputRef.current?.click()} disabled={!editable}
-          className={`w-12 h-12 rounded-xl overflow-hidden bg-[var(--t-surface-2)] border border-[var(--t-border-soft)] flex items-center justify-center transition-colors ${editable ? "hover:border-[#c9a84c]/40" : ""}`}>
+          className={`w-12 h-12 rounded-xl overflow-hidden bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border-soft)] flex items-center justify-center transition-colors ${editable ? "hover:border-[#c9a84c]/40" : ""}`}>
           {imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={imageUrl} alt="" className="w-full h-full object-cover"/>
@@ -246,7 +246,7 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
 
             {!simplified && (
               <div className="flex items-center gap-2 mt-2.5">
-                <div className="inline-flex bg-[var(--t-surface-2)] rounded-full p-0.5">
+                <div className="inline-flex bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-full p-0.5">
                   {MODES.map(m => (
                     <button key={m.key} type="button" onClick={() => setMode(i, m.key)}
                       className={`px-2.5 py-1 rounded-full text-[0.56rem] tracking-[0.08em] uppercase transition-colors ${ex.mode === m.key ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-[var(--t-text-35)] hover:text-[var(--t-text-60)]"}`}>
@@ -292,7 +292,7 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
             {ex.bodyweight && (
               <div>
                 <p className="text-[0.6rem] tracking-[0.12em] uppercase text-[var(--t-text-25)] mb-1.5 px-1">% du poids</p>
-                <div className="bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl px-3 py-3 focus-within:border-[#c9a84c]/40 transition-colors">
+                <div className="bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border)] rounded-xl px-3 py-3 focus-within:border-[#c9a84c]/40 transition-colors">
                   <input className="w-full bg-transparent text-center text-base text-[var(--t-text)] placeholder-[var(--t-text-15)] outline-none"
                     inputMode="numeric" placeholder="100" value={ex.bodyweightPct}
                     onChange={e => update(i, { bodyweightPct: e.target.value })}/>
@@ -318,7 +318,7 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
                   <NumberStepper size="lg" value={ex[f.key]} placeholder={f.placeholder} step={f.step}
                     onChange={v => update(i, { [f.key]: v })}/>
                 ) : (
-                  <div className="bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl px-3 py-3 focus-within:border-[#c9a84c]/40 transition-colors">
+                  <div className="bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border)] rounded-xl px-3 py-3 focus-within:border-[#c9a84c]/40 transition-colors">
                     <input className="w-full bg-transparent text-center text-base text-[var(--t-text)] placeholder-[var(--t-text-15)] outline-none"
                       placeholder={f.placeholder} value={ex[f.key]} onChange={e => update(i, { [f.key]: e.target.value })} />
                   </div>
@@ -417,7 +417,7 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
     const imageUrl = catalogueEntry?.image_url || ex.imageUrl || null;
     return (
       <div key={i} className="flex items-start gap-3 border border-[var(--t-border-soft)] bg-[var(--t-surface)] rounded-xl px-3.5 py-3">
-        <div className="shrink-0 w-11 h-11 rounded-lg overflow-hidden bg-[var(--t-surface-2)] flex items-center justify-center">
+        <div className="shrink-0 w-11 h-11 rounded-lg overflow-hidden bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] flex items-center justify-center">
           {imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={imageUrl} alt="" className="w-full h-full object-cover"/>
@@ -430,7 +430,7 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
           {sets.length > 0 ? (
             <div className="flex flex-wrap gap-1 mt-1.5">
               {sets.map((s, si) => (
-                <span key={si} className="text-[0.58rem] tracking-wide bg-[var(--t-surface-2)] border border-[var(--t-border-soft)] rounded-full px-2 py-0.5 text-[var(--t-text-40)] whitespace-nowrap">
+                <span key={si} className="text-[0.58rem] tracking-wide bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border-soft)] rounded-full px-2 py-0.5 text-[var(--t-text-40)] whitespace-nowrap">
                   {s.reps || "?"} × {ex.bodyweight ? `PDC${s.poids ? `+${s.poids}` : ""}` : (s.poids || "?")}
                 </span>
               ))}

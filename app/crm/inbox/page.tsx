@@ -333,7 +333,7 @@ export default function InboxPage() {
                                 <span className="text-[0.45rem] text-[var(--t-text-40)]">%</span>
                               </div>
                             </div>
-                            <div className="px-4 py-3 bg-[var(--t-surface-2)] flex flex-col gap-3">
+                            <div className="px-4 py-3 bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] flex flex-col gap-3">
                               <p className="text-[0.65rem] text-[var(--t-text-55)] leading-relaxed">{bff.comment}</p>
                               {bff.photos?.length > 0 && (
                                 <div className="flex flex-wrap gap-2">
@@ -356,11 +356,11 @@ export default function InboxPage() {
                                   <div className="flex gap-2 items-center">
                                     <input type="number" step="0.1" placeholder="% correct (optionnel)" value={correctionValue}
                                       onChange={e => setCorrectionValue(e.target.value)}
-                                      className="w-32 bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-2.5 py-2 focus:outline-none focus:border-[#c9a84c]/40"/>
+                                      className="w-32 bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-2.5 py-2 focus:outline-none focus:border-[#c9a84c]/40"/>
                                   </div>
                                   <textarea rows={2} placeholder="Ce que l'IA a mal évalué et comment corriger (ex : sous-estime le gras abdominal chez les hommes avec cette morphologie...)"
                                     value={correctionComment} onChange={e => setCorrectionComment(e.target.value)}
-                                    className="w-full bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-2.5 py-2 focus:outline-none focus:border-[#c9a84c]/40 resize-none"/>
+                                    className="w-full bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-2.5 py-2 focus:outline-none focus:border-[#c9a84c]/40 resize-none"/>
                                   <div className="flex gap-2">
                                     <button onClick={() => { setCorrectingId(null); setCorrectionComment(""); setCorrectionValue(""); }}
                                       className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-xl text-[0.55rem] tracking-wider uppercase py-2 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors">
@@ -398,7 +398,7 @@ export default function InboxPage() {
                                 <span className="text-[0.45rem] text-[var(--t-text-40)]">%</span>
                               </div>
                             </div>
-                            <div className="px-4 py-3 bg-[var(--t-surface-2)] flex flex-col gap-2">
+                            <div className="px-4 py-3 bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] flex flex-col gap-2">
                               {bfc.note && <p className="text-[0.65rem] text-[var(--t-text-40)] italic">{bfc.note}</p>}
                               {bfc.points_forts   && <div className="flex gap-2"><span className="text-[0.45rem] text-[#7eb8a0] uppercase tracking-wider shrink-0 w-16 pt-px">Points forts</span><p className="text-[0.65rem] text-[var(--t-text-50)] leading-relaxed">{bfc.points_forts}</p></div>}
                               {bfc.points_faibles && <div className="flex gap-2"><span className="text-[0.45rem] text-[#e07070] uppercase tracking-wider shrink-0 w-16 pt-px">À travailler</span><p className="text-[0.65rem] text-[var(--t-text-50)] leading-relaxed">{bfc.points_faibles}</p></div>}
@@ -426,7 +426,7 @@ export default function InboxPage() {
                                 </div>
                               )}
                             </div>
-                            <div className="px-4 py-3 bg-[var(--t-surface-2)] flex flex-col gap-1">
+                            <div className="px-4 py-3 bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] flex flex-col gap-1">
                               <p className="text-xs text-[var(--t-text-70)]">{pa.nom}</p>
                               <p className="text-[0.62rem] text-[var(--t-text-40)] leading-relaxed">{pa.basis}</p>
                             </div>
@@ -444,7 +444,7 @@ export default function InboxPage() {
                               <span className="text-sm">{cfg.emoji}</span>
                               <span className="text-[0.48rem] tracking-[0.2em] uppercase font-bold" style={{ color: cfg.color }}>{cfg.label}</span>
                             </div>
-                            <div className="px-4 py-3 text-xs leading-relaxed whitespace-pre-line text-[var(--t-text-75)] bg-[var(--t-surface-2)]">{fb.text}</div>
+                            <div className="px-4 py-3 text-xs leading-relaxed whitespace-pre-line text-[var(--t-text-75)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)]">{fb.text}</div>
                           </div>
                         );
                       }

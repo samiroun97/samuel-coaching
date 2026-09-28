@@ -112,7 +112,7 @@ export function PipelineBoard({ variant = "page" }: { variant?: "page" | "sectio
       )}
 
       {/* Répartition — barre segmentée + légende */}
-      <div className={`${variant === "page" ? "mb-8" : "max-w-6xl"} border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-2xl p-4 md:p-5`}>
+      <div className={`${variant === "page" ? "mb-8" : "max-w-6xl"} border border-[var(--t-text-7)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-2xl p-4 md:p-5`}>
         <div className="flex h-3 rounded-full overflow-hidden bg-[var(--t-track)] gap-[2px]">
           {STAGES.map(s => {
             const n = byStage.get(s.key)!.length;
@@ -159,7 +159,7 @@ export function PipelineBoard({ variant = "page" }: { variant?: "page" | "sectio
               className="snap-start shrink-0 w-[78vw] sm:w-64 lg:w-auto lg:min-w-0 rounded-2xl border flex flex-col transition-all duration-200"
               style={{
                 borderColor: isOver ? `${s.color}80` : "var(--t-text-7)",
-                background: isOver ? `${s.color}12` : `linear-gradient(180deg, ${s.color}0d, transparent 140px), var(--t-surface-2)`,
+                background: isOver ? `${s.color}12` : `linear-gradient(180deg, ${s.color}0d, transparent 140px), var(--t-surface)`,
                 boxShadow: isOver ? `0 0 0 3px ${s.color}20` : undefined,
               }}>
               {/* En-tête de colonne */}
