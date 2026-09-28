@@ -126,6 +126,23 @@ export default function OnboardingPage() {
       updated_at: new Date().toISOString(),
     });
     if (error) { setError(`Erreur: ${error.message}`); setLoading(false); return; }
+    // Code d'invitation du coach (lien ?invite=CODE, gardé en localStorage ou dans les
+    // métadonnées du compte) consommé ICI, dès que le profil existe (coach_clients le
+    // référence) : jusqu'ici il ne l'était qu'au rechargement suivant de l'app (layout),
+    // si bien qu'un inscrit qui ne revenait pas restait « sans coach ».
+    const meta = (user.user_metadata ?? {}) as { invite_code?: string | null };
+    let pending: string | null = null;
+    try { pending = localStorage.getItem("pending_invite_code"); } catch { /* ignore */ }
+    pending = pending || meta.invite_code || null;
+    if (pending) {
+      try {
+        const res = await apiPost("/api/coach/join", { code: pending });
+        if (res.ok) {
+          try { localStorage.removeItem("pending_invite_code"); } catch { /* ignore */ }
+          if (meta.invite_code) await supabase.auth.updateUser({ data: { invite_code: null } }).catch(() => {});
+        }
+      } catch { /* best-effort : retenté à la prochaine ouverture (layout) */ }
+    }
     // Rattache l'adhérent à un coach s'il ne l'est pas déjà (voir /api/onboarding/link-coach) —
     // best-effort : une erreur ici ne doit jamais bloquer l'accès au dashboard.
     try { await apiPost("/api/onboarding/link-coach", {}); } catch { /* ignore */ }

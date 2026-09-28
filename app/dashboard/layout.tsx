@@ -49,10 +49,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       // seule fois au premier login (email confirmé) — voir app/api/coach/register.
       // Même schéma que pending_invite_code ci-dessous, mais un nouveau coach n'a
       // encore aucune ligne coaches/is_coach tant que cet appel n'a pas eu lieu.
-      const pendingCoachSignup = localStorage.getItem("pending_coach_signup");
+      // Repli sur les métadonnées du compte (posées à l'inscription, voir /login) : le lien de
+      // confirmation d'e-mail s'ouvre souvent dans un autre navigateur, sans ce localStorage.
+      const meta = (data.user.user_metadata ?? {}) as { invite_code?: string | null; coach_business_name?: string | null };
+      const pendingCoachSignup = localStorage.getItem("pending_coach_signup") || meta.coach_business_name || null;
       if (pendingCoachSignup) {
         localStorage.removeItem("pending_coach_signup");
         try { await apiPost("/api/coach/register", { businessName: pendingCoachSignup }); } catch { /* ignore */ }
+        if (meta.coach_business_name) supabase.auth.updateUser({ data: { coach_business_name: null } }).then(() => {});
         router.push("/crm/clients");
         return;
       }
@@ -99,10 +103,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       // Code d'invitation coach déposé sur /login (?invite=CODE) : le consommer
       // une seule fois — remplace le rattachement provisoire par le vrai coach.
       if (!coach) {
-        const pending = localStorage.getItem("pending_invite_code");
+        const pending = localStorage.getItem("pending_invite_code") || meta.invite_code || null;
         if (pending) {
-          localStorage.removeItem("pending_invite_code");
-          try { await apiPost("/api/coach/join", { code: pending }); } catch { /* ignore */ }
+          // Consommé une seule fois quand il réussit : sinon chaque ouverture ré-écraserait un
+          // changement de coach. En cas d'échec (réseau), on le garde pour la prochaine ouverture.
+          try {
+            const res = await apiPost("/api/coach/join", { code: pending });
+            if (res.ok || res.status === 404) {
+              localStorage.removeItem("pending_invite_code");
+              if (meta.invite_code) await supabase.auth.updateUser({ data: { invite_code: null } }).catch(() => {});
+            }
+          } catch { /* ignore */ }
         }
       }
 

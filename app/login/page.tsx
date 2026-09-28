@@ -155,11 +155,21 @@ export default function LoginPage() {
         router.push("/dashboard");
       }
     } else {
+      // Code d'invitation et inscription coach aussi rangés dans les métadonnées du compte :
+      // le lien de confirmation d'e-mail s'ouvre souvent dans un AUTRE navigateur (app Gmail…)
+      // où le localStorage de cette page n'existe pas — le client n'était alors jamais rattaché
+      // à son coach (cas réel : inscrits restés « sans coach »). Consommés dans dashboard/layout.
+      let inviteCode: string | null = null;
+      try { inviteCode = localStorage.getItem("pending_invite_code"); } catch { /* ignore */ }
       const { error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
         options: {
-          data: { full_name: nom.trim() },
+          data: {
+            full_name: nom.trim(),
+            ...(inviteCode && !isCoachSignup ? { invite_code: inviteCode } : {}),
+            ...(isCoachSignup ? { coach_business_name: businessName.trim() } : {}),
+          },
           emailRedirectTo: `${window.location.origin}/dashboard`,
         },
       });
