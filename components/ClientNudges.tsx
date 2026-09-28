@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { isPushSupported, subscribeToPush } from "@/lib/push";
 import { mondayISOOf, todayISO } from "@/lib/planning";
 import { RichIcon } from "@/components/RichIcon";
+import { isCoachUser } from "@/lib/coach";
 
 // Relances en tête du dashboard client, pour les deux gestes qui font vivre le suivi et
 // que personne ne faisait (audit du 28.09.2026 : 0 abonné aux rappels, 0 check-in) :
@@ -21,6 +22,9 @@ export function ClientNudges({ userId }: { userId: string }) {
 
   useEffect(() => {
     (async () => {
+      // Relances réservées aux clients : le coach en aperçu de l'espace client ne fait pas
+      // de check-in (formulaire masqué pour lui dans Suivi) et reçoit déjà ses propres alertes.
+      if (await isCoachUser(userId)) return;
       // Notifications : proposées si le navigateur les gère, pas encore accordées/abonnées,
       // et pas masquées récemment.
       if (isPushSupported()) {
