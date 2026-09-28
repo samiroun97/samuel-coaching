@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { startStateSync, SYNC_STATUS_EVENT } from "@/lib/syncStorage";
 import { isCoachUser, isCoachActive, isPlatformAdmin, getMyOwnBusinessName } from "@/lib/coach";
 import ThemeToggle from "@/components/ThemeToggle";
+import { ModeSwitch } from "@/components/ModeSwitch";
 import { Icon } from "@/components/Icon";
 import { LayoutGrid, Users, Layers, Share2, MessageSquare, FileText, LogOut, Eye, Star } from "@/lib/solarIcons";
 
@@ -136,13 +137,10 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
           {isAdmin && (
             <Link href="/operateur"
               className="flex items-center gap-2.5 px-3 py-2.5 text-[0.6rem] tracking-[0.1em] uppercase text-[#c9a84c] hover:text-[var(--t-text-70)] border-l-2 border-transparent hover:border-[#c9a84c] transition-all">
-              <Icon icon={Share2} size={15}/>CRM
+              <Icon icon={Share2} size={15}/>Vue plateforme
             </Link>
           )}
-          <Link href="/dashboard?preview=1"
-            className="flex items-center gap-2.5 px-3 py-2.5 text-[0.6rem] tracking-[0.1em] uppercase text-[var(--t-text-20)] hover:text-[var(--t-text-50)] border-l-2 border-transparent hover:border-[var(--t-border)] transition-all">
-            <Icon icon={Eye} size={15}/>Mon espace perso
-          </Link>
+          <ModeSwitch mode="coach" className="mx-2 self-start"/>
           <button onClick={async () => { await supabase.auth.signOut(); router.push("/login"); }}
             className="flex items-center gap-2.5 px-3 py-2.5 text-[0.6rem] tracking-[0.1em] uppercase text-[var(--t-text-20)] hover:text-[var(--t-text-50)] border-l-2 border-transparent transition-all w-full">
             <Icon icon={LogOut} size={15}/>Déconnexion
@@ -191,7 +189,7 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
           <Link href="/operateur"
             className="flex-1 flex flex-col items-center gap-1 py-2.5 text-[0.45rem] tracking-[0.08em] uppercase text-[#c9a84c] transition-all">
             <Icon icon={Share2} size={15}/>
-            CRM
+            Plateforme
           </Link>
         )}
       </nav>

@@ -1,41 +1,89 @@
 "use client";
 export const dynamic = "force-dynamic";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
 import { isPlatformAdmin } from "@/lib/coach";
 import { OperateurIaCorrections } from "@/components/OperateurIaCorrections";
-import { Icon } from "@/components/Icon";
-import { ChevronLeft } from "@/lib/solarIcons";
+import { ModeSwitch } from "@/components/ModeSwitch";
 
-type CoachRow = {
-  id: string; businessName: string | null; email: string; prenom: string; nom: string;
-  code: string | null; createdAt: string; isActive: boolean; clientCount: number;
+type Kind = "operateur" | "coach" | "client" | "solo";
+type SubInfo = { plan: string | null; planLabel: string | null; subStatus: string | null; trialEndsAt: string | null; active: boolean | null };
+type CoachRow = SubInfo & {
+  id: string; profileId: string; businessName: string | null; email: string; prenom: string; nom: string;
+  code: string | null; createdAt: string; isActive: boolean; isOperator: boolean; clientCount: number; maxClients: number | null;
 };
-type OperateurData = { coaches: CoachRow[]; totalCoaches: number; totalClients: number; totalSeances: number; totalMessages: number };
+type UserRow = SubInfo & {
+  id: string; email: string; prenom: string; nom: string; objectifs: string;
+  createdAt: string | null; lastSeenAt: string | null; kind: Kind;
+  coachId: string | null; coachName: string | null; onboarded: boolean;
+};
+type Totals = {
+  users: number; newThisWeek: number; unlinked: number; coaches: number; clients: number;
+  trialing: number; paying: number; mrr: number; seances: number; messages: number;
+};
+type OperateurData = { coaches: CoachRow[]; users: UserRow[]; totals: Totals; billingReady: boolean };
 
-function KPI({ label, value }: { label: string; value: number | string }) {
+const KIND_CFG: Record<Kind, { label: string; color: string }> = {
+  operateur: { label: "Opérateur",     color: "#c9a84c" },
+  coach:     { label: "Coach",         color: "#8fa8d8" },
+  client:    { label: "Client",        color: "#7eb8a0" },
+  solo:      { label: "Non rattaché",  color: "#e0a070" },
+};
+
+const fmtDate = (iso: string | null) => iso ? new Date(iso).toLocaleDateString("fr-CH", { day: "numeric", month: "short", year: "numeric" }) : "—";
+function ago(iso: string | null) {
+  if (!iso) return "jamais";
+  const d = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  return d <= 0 ? "aujourd'hui" : d === 1 ? "hier" : `il y a ${d} j`;
+}
+
+const card = "rounded-2xl border border-[var(--t-border-soft)] bg-[var(--t-surface)] shadow-[0_2px_14px_-8px_rgba(0,0,0,0.15)]";
+
+function KPI({ label, value, sub, accent }: { label: string; value: number | string; sub?: string; accent?: string }) {
   return (
-    <div className="border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-xl px-4 py-3 md:px-5 md:py-4 flex flex-col gap-1">
-      <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl md:text-4xl text-[var(--t-text)] tracking-wide leading-none">{value}</p>
-      <p className="text-[0.48rem] tracking-[0.2em] uppercase text-[var(--t-text-30)]">{label}</p>
+    <div className={`${card} px-4 py-3`}>
+      <p className="text-[0.62rem] font-semibold uppercase tracking-[0.1em] text-[var(--t-text-50)]">{label}</p>
+      <p style={{ fontFamily: "var(--font-bebas)", color: accent }} className="text-3xl text-[var(--t-text)] tracking-wide leading-none mt-1">{value}</p>
+      {sub && <p className="text-[0.66rem] text-[var(--t-text-40)] mt-1">{sub}</p>}
     </div>
   );
 }
 
-// Espace réservé à l'opérateur de la plateforme (profiles.is_platform_admin) — vue transverse
-// sur tous les coachs inscrits, distincte du CRM (/crm) où chaque coach ne voit que ses propres
-// clients. Garde d'accès faite ici même plutôt que dans un layout partagé : cette route ne doit
-// jamais être atteignable par un coach normal, même en tapant l'URL directement.
+function Badge({ kind }: { kind: Kind }) {
+  const c = KIND_CFG[kind];
+  return (
+    <span className="text-[0.58rem] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full border whitespace-nowrap"
+      style={{ color: c.color, borderColor: `${c.color}55`, backgroundColor: `${c.color}12` }}>{c.label}</span>
+  );
+}
+
+function PlanCell({ u, billingReady }: { u: SubInfo; billingReady: boolean }) {
+  if (!billingReady) return <span className="text-[var(--t-text-30)]">—</span>;
+  if (!u.plan) return <span className="text-[var(--t-text-30)]">Aucune</span>;
+  const trial = u.subStatus === "trialing";
+  return (
+    <span className={u.active ? "text-[var(--t-text-70)]" : "text-[#e07070]"}>
+      {u.planLabel}{trial ? ` · essai${u.trialEndsAt && u.active ? ` jusqu'au ${fmtDate(u.trialEndsAt)}` : " terminé"}` : u.active ? "" : " · inactif"}
+    </span>
+  );
+}
+
+// CRM opérateur (profiles.is_platform_admin) — vue globale de la plateforme, distincte du CRM
+// coach (/crm, scopé aux clients de CE coach) : tous les inscrits, dont ceux arrivés sans code
+// d'invitation (rattachables à un coach d'ici), tous les coachs et leur formule. Garde d'accès
+// faite ici même : la route ne doit jamais être atteignable par un coach normal.
 export default function OperateurPage() {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
   const [allowed,  setAllowed]  = useState(false);
   const [data,     setData]     = useState<OperateurData | null>(null);
   const [error,    setError]    = useState("");
-  const [togglingId, setTogglingId] = useState<string | null>(null);
-  const [section, setSection] = useState<"coachs" | "ia">("coachs");
+  const [busyId,   setBusyId]   = useState<string | null>(null);
+  const [section,  setSection]  = useState<"apercu" | "utilisateurs" | "coachs" | "ia">("apercu");
+  const [filter,   setFilter]   = useState<"all" | Kind>("all");
+  const [search,   setSearch]   = useState("");
 
   const load = async () => {
     const res = await apiPost("/api/operateur/data", {});
@@ -56,38 +104,105 @@ export default function OperateurPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const toggleCoach = async (coachId: string, nextActive: boolean) => {
-    setTogglingId(coachId);
-    const res = await apiPost("/api/operateur/toggle-coach", { coachId, isActive: nextActive });
-    if (res.ok) await load();
-    setTogglingId(null);
+  const myCoach = data?.coaches.find(c => c.isOperator) ?? null;
+
+  const assign = async (clientId: string, coachId: string | null) => {
+    setBusyId(clientId); setError("");
+    const res = await apiPost("/api/operateur/assign-client", { clientId, coachId });
+    if (!res.ok) setError((await res.json().catch(() => ({}))).error ?? "Rattachement impossible.");
+    await load();
+    setBusyId(null);
   };
 
-  if (checking || (!allowed)) return (
+  const toggleCoach = async (coachId: string, nextActive: boolean) => {
+    setBusyId(coachId);
+    const res = await apiPost("/api/operateur/toggle-coach", { coachId, isActive: nextActive });
+    if (res.ok) await load();
+    setBusyId(null);
+  };
+
+  const users = useMemo(() => {
+    if (!data) return [];
+    const q = search.trim().toLowerCase();
+    return data.users.filter(u =>
+      (filter === "all" || u.kind === filter) &&
+      (!q || `${u.prenom} ${u.nom} ${u.email} ${u.coachName ?? ""}`.toLowerCase().includes(q)));
+  }, [data, filter, search]);
+
+  if (checking || !allowed) return (
     <div className="min-h-screen bg-[var(--t-bg2)] flex items-center justify-center">
       <div className="w-5 h-5 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>
     </div>
   );
 
+  const unlinked = data?.users.filter(u => u.kind === "solo") ?? [];
+
+  const AssignControl = ({ u }: { u: UserRow }) => {
+    if (u.kind === "coach" || u.kind === "operateur" || !data) return null;
+    return (
+      <div className="flex items-center gap-2">
+        {u.kind === "solo" && myCoach && (
+          <button onClick={() => assign(u.id, myCoach.id)} disabled={busyId === u.id}
+            className="px-3 py-1.5 rounded-lg bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.62rem] font-bold tracking-wider uppercase whitespace-nowrap disabled:opacity-50">
+            {busyId === u.id ? "…" : "Prendre en charge"}
+          </button>
+        )}
+        <select value={u.coachId ?? ""} disabled={busyId === u.id}
+          onChange={e => assign(u.id, e.target.value || null)}
+          aria-label="Coach"
+          className="bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg text-[0.7rem] text-[var(--t-text-70)] px-2 py-1.5 max-w-[11rem] focus:outline-none focus:border-[#c9a84c]/40">
+          <option value="">Sans coach</option>
+          {data.coaches.map(c => <option key={c.id} value={c.id}>{c.businessName || `${c.prenom} ${c.nom}`}</option>)}
+        </select>
+      </div>
+    );
+  };
+
+  const UserLine = ({ u }: { u: UserRow }) => (
+    <div className="px-4 py-3 flex flex-col md:flex-row md:items-center gap-2 md:gap-4 border-b border-[var(--t-border-soft)] last:border-0">
+      <div className="min-w-0 md:w-[30%]">
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className="text-sm font-semibold text-[var(--t-text)] truncate">{u.prenom || u.nom ? `${u.prenom} ${u.nom}`.trim() : "Sans nom"}</p>
+          <Badge kind={u.kind}/>
+          {!u.onboarded && <span className="text-[0.58rem] text-[var(--t-text-40)]">profil incomplet</span>}
+        </div>
+        <p className="text-[0.7rem] text-[var(--t-text-40)] truncate">{u.email}</p>
+      </div>
+      <div className="grid grid-cols-3 gap-3 text-[0.7rem] md:flex-1">
+        <div><p className="text-[var(--t-text-30)] uppercase tracking-wider text-[0.55rem]">Coach</p><p className="text-[var(--t-text-70)] truncate">{u.coachName ?? "—"}</p></div>
+        <div><p className="text-[var(--t-text-30)] uppercase tracking-wider text-[0.55rem]">Formule</p><p className="truncate"><PlanCell u={u} billingReady={!!data?.billingReady}/></p></div>
+        <div><p className="text-[var(--t-text-30)] uppercase tracking-wider text-[0.55rem]">Inscrit · vu</p><p className="text-[var(--t-text-70)] truncate">{fmtDate(u.createdAt)} · {ago(u.lastSeenAt)}</p></div>
+      </div>
+      <div className="md:w-auto shrink-0"><AssignControl u={u}/></div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-[var(--t-bg2)] p-4 md:p-8 max-w-6xl mx-auto">
-      <div className="mb-6 md:mb-8 flex items-center justify-between">
+      <div className="mb-6 flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <p className="text-[0.65rem] tracking-[0.35em] text-[#c9a84c] uppercase mb-1">CRM — Vue plateforme</p>
-          <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl md:text-5xl text-[var(--t-text)] tracking-wide">{section === "coachs" ? "COACHS" : "CORRECTIONS IA"}</h1>
+          <p className="text-[0.65rem] tracking-[0.35em] text-[#c9a84c] uppercase mb-1">CRM opérateur · vue plateforme</p>
+          <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl md:text-5xl text-[var(--t-text)] tracking-wide">PLATEFORME</h1>
         </div>
-        <button onClick={() => router.push("/crm/clients")}
-          className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-[var(--t-border)] text-[var(--t-text-50)] text-[0.6rem] tracking-[0.15em] uppercase hover:border-[#c9a84c]/40 hover:text-[var(--t-text-80)] transition-all shrink-0">
-          <Icon icon={ChevronLeft} size={12} strokeWidth={2}/>
-          Plateforme coaching
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => router.push("/crm")}
+            className="px-4 py-2 rounded-full border border-[var(--t-border)] bg-[var(--t-surface)] text-[var(--t-text-60)] text-[0.62rem] font-semibold tracking-[0.12em] uppercase hover:border-[#c9a84c]/40 hover:text-[var(--t-text)] transition-all">
+            Mon CRM coach
+          </button>
+          <ModeSwitch mode="coach"/>
+        </div>
       </div>
 
-      <div className="flex border border-[var(--t-border)] mb-6 rounded-xl overflow-hidden">
-        {([{ key: "coachs", label: "Coachs" }, { key: "ia", label: "Corrections IA" }] as const).map(t => (
+      <div className="flex rounded-xl border border-[var(--t-border-soft)] bg-[var(--t-surface)] p-1 mb-6 overflow-x-auto">
+        {([
+          { key: "apercu", label: "Vue d'ensemble" },
+          { key: "utilisateurs", label: `Utilisateurs${data ? ` (${data.totals.users})` : ""}` },
+          { key: "coachs", label: `Coachs${data ? ` (${data.totals.coaches})` : ""}` },
+          { key: "ia", label: "Corrections IA" },
+        ] as const).map(t => (
           <button key={t.key} onClick={() => setSection(t.key)}
-            className={`flex-1 py-3 text-[0.68rem] tracking-[0.15em] uppercase transition-colors ${
-              section === t.key ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black font-bold" : "text-[var(--t-text-40)] hover:text-[var(--t-text-70)] hover:bg-[var(--t-glass-bg)]"}`}>
+            className={`flex-1 whitespace-nowrap px-3 py-2 rounded-lg text-[0.68rem] font-semibold tracking-[0.08em] uppercase transition-colors ${
+              section === t.key ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-[var(--t-text-40)] hover:text-[var(--t-text-70)]"}`}>
             {t.label}
           </button>
         ))}
@@ -97,65 +212,94 @@ export default function OperateurPage() {
 
       {section === "ia" && <OperateurIaCorrections/>}
 
-      {section === "coachs" && data && (
-        <>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 md:gap-3 mb-8">
-            <KPI label="Coachs inscrits" value={data.totalCoaches}/>
-            <KPI label="Clients au total" value={data.totalClients}/>
-            <KPI label="Séances envoyées" value={data.totalSeances}/>
-            <KPI label="Messages échangés" value={data.totalMessages}/>
+      {section === "apercu" && data && (
+        <div className="flex flex-col gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <KPI label="Utilisateurs" value={data.totals.users} sub={`+${data.totals.newThisWeek} cette semaine`}/>
+            <KPI label="Non rattachés" value={data.totals.unlinked} sub="inscrits sans coach" accent={data.totals.unlinked ? "#e0a070" : undefined}/>
+            <KPI label="Coachs" value={data.totals.coaches} sub={`${data.totals.clients} clients rattachés`}/>
+            <KPI label="Revenu mensuel" value={data.billingReady ? `${data.totals.mrr} CHF` : "—"}
+              sub={data.billingReady ? `${data.totals.paying} payant${data.totals.paying > 1 ? "s" : ""} · ${data.totals.trialing} en essai` : "formules pas encore activées"}/>
           </div>
 
-          <div className="border border-[var(--t-text-7)] bg-[var(--t-surface-2)] rounded-xl overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="text-[0.5rem] tracking-[0.15em] uppercase text-[var(--t-text-25)] border-b border-[var(--t-border-soft)]">
-                    <th className="px-4 py-3 font-medium">Activité</th>
-                    <th className="px-4 py-3 font-medium">Coach</th>
-                    <th className="px-4 py-3 font-medium">Code</th>
-                    <th className="px-4 py-3 font-medium text-center">Clients</th>
-                    <th className="px-4 py-3 font-medium">Inscrit le</th>
-                    <th className="px-4 py-3 font-medium">Statut</th>
-                    <th className="px-4 py-3 font-medium"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.coaches.map(c => (
-                    <tr key={c.id} className="border-b border-[var(--t-border-soft)] last:border-0">
-                      <td className="px-4 py-3 text-sm text-[var(--t-text-70)]">{c.businessName || "—"}</td>
-                      <td className="px-4 py-3 text-xs text-[var(--t-text-40)]">
-                        <p>{c.prenom} {c.nom}</p>
-                        <p className="text-[var(--t-text-20)]">{c.email}</p>
-                      </td>
-                      <td className="px-4 py-3 text-xs text-[var(--t-text-40)] tracking-wider">{c.code ?? "—"}</td>
-                      <td className="px-4 py-3 text-sm text-[var(--t-text-60)] text-center">{c.clientCount}</td>
-                      <td className="px-4 py-3 text-xs text-[var(--t-text-30)]">
-                        {new Date(c.createdAt).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`text-[0.55rem] tracking-wider uppercase px-2 py-1 rounded-full border ${
-                          c.isActive ? "border-[#7eb8a0]/30 text-[#7eb8a0] bg-[#7eb8a0]/5" : "border-[#e07070]/30 text-[#e07070] bg-[#e07070]/5"
-                        }`}>
-                          {c.isActive ? "Actif" : "Suspendu"}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <button onClick={() => toggleCoach(c.id, !c.isActive)} disabled={togglingId === c.id}
-                          className="text-[0.55rem] tracking-[0.1em] uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-60)] transition-colors disabled:opacity-40 whitespace-nowrap">
-                          {togglingId === c.id ? "…" : c.isActive ? "Suspendre" : "Réactiver"}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                  {data.coaches.length === 0 && (
-                    <tr><td colSpan={7} className="px-4 py-6 text-center text-xs text-[var(--t-text-20)]">Aucun coach inscrit</td></tr>
-                  )}
-                </tbody>
-              </table>
+          <div className={card}>
+            <div className="px-4 py-3 border-b border-[var(--t-border-soft)] flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[0.9rem] font-semibold text-[var(--t-text)]">Inscrits sans coach</p>
+                <p className="text-[0.7rem] text-[var(--t-text-40)]">Arrivés sans code d&apos;invitation : invisibles dans ton CRM coach tant qu&apos;ils ne sont pas pris en charge.</p>
+              </div>
+              {unlinked.length > 0 && (
+                <button onClick={() => { setFilter("solo"); setSection("utilisateurs"); }} className="text-[0.66rem] text-[#c9a84c] whitespace-nowrap hover:underline">Tout voir →</button>
+              )}
+            </div>
+            {unlinked.length === 0
+              ? <p className="px-4 py-6 text-center text-xs text-[var(--t-text-30)]">Aucun inscrit sans coach.</p>
+              : unlinked.slice(0, 8).map(u => <UserLine key={u.id} u={u}/>)}
+          </div>
+
+          <div className={card}>
+            <div className="px-4 py-3 border-b border-[var(--t-border-soft)]">
+              <p className="text-[0.9rem] font-semibold text-[var(--t-text)]">Derniers inscrits</p>
+            </div>
+            {data.users.slice(0, 8).map(u => <UserLine key={u.id} u={u}/>)}
+          </div>
+        </div>
+      )}
+
+      {section === "utilisateurs" && data && (
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher un nom, un e-mail, un coach…"
+              className="flex-1 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl text-sm text-[var(--t-text)] px-3.5 py-2.5 focus:outline-none focus:border-[#c9a84c]/40"/>
+            <div className="flex rounded-xl border border-[var(--t-border-soft)] bg-[var(--t-surface)] p-1 overflow-x-auto">
+              {(["all", "solo", "client", "coach"] as const).map(f => (
+                <button key={f} onClick={() => setFilter(f)}
+                  className={`px-3 py-1.5 rounded-lg text-[0.66rem] font-semibold whitespace-nowrap transition-colors ${filter === f ? "bg-[#c9a84c]/15 text-[#a8893a]" : "text-[var(--t-text-40)]"}`}>
+                  {f === "all" ? "Tous" : KIND_CFG[f].label}
+                </button>
+              ))}
             </div>
           </div>
-        </>
+          <div className={card}>
+            {users.length === 0
+              ? <p className="px-4 py-6 text-center text-xs text-[var(--t-text-30)]">Aucun utilisateur.</p>
+              : users.map(u => <UserLine key={u.id} u={u}/>)}
+          </div>
+        </div>
+      )}
+
+      {section === "coachs" && data && (
+        <div className={card}>
+          {data.coaches.map(c => (
+            <div key={c.id} className="px-4 py-3 flex flex-col md:flex-row md:items-center gap-2 md:gap-4 border-b border-[var(--t-border-soft)] last:border-0">
+              <div className="min-w-0 md:w-[30%]">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="text-sm font-semibold text-[var(--t-text)] truncate">{c.businessName || "—"}</p>
+                  {c.isOperator && <Badge kind="operateur"/>}
+                </div>
+                <p className="text-[0.7rem] text-[var(--t-text-40)] truncate">{c.prenom} {c.nom} · {c.email}</p>
+              </div>
+              <div className="grid grid-cols-4 gap-3 text-[0.7rem] md:flex-1">
+                <div><p className="text-[var(--t-text-30)] uppercase tracking-wider text-[0.55rem]">Code</p><p className="text-[var(--t-text-70)] tracking-wider">{c.code ?? "—"}</p></div>
+                <div><p className="text-[var(--t-text-30)] uppercase tracking-wider text-[0.55rem]">Clients</p><p className="text-[var(--t-text-70)]">{c.clientCount}{c.maxClients !== null ? ` / ${c.maxClients}` : ""}</p></div>
+                <div><p className="text-[var(--t-text-30)] uppercase tracking-wider text-[0.55rem]">Formule</p><p className="truncate">{c.isOperator ? <span className="text-[var(--t-text-70)]">Opérateur</span> : <PlanCell u={c} billingReady={data.billingReady}/>}</p></div>
+                <div><p className="text-[var(--t-text-30)] uppercase tracking-wider text-[0.55rem]">Inscrit</p><p className="text-[var(--t-text-70)]">{fmtDate(c.createdAt)}</p></div>
+              </div>
+              {!c.isOperator && (
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className={`text-[0.58rem] tracking-wider uppercase px-2 py-0.5 rounded-full border ${c.isActive ? "border-[#7eb8a0]/30 text-[#7eb8a0]" : "border-[#e07070]/30 text-[#e07070]"}`}>
+                    {c.isActive ? "Actif" : "Suspendu"}
+                  </span>
+                  <button onClick={() => toggleCoach(c.id, !c.isActive)} disabled={busyId === c.id}
+                    className="text-[0.62rem] tracking-[0.08em] uppercase text-[var(--t-text-40)] hover:text-[var(--t-text-70)] disabled:opacity-40">
+                    {busyId === c.id ? "…" : c.isActive ? "Suspendre" : "Réactiver"}
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
+          {data.coaches.length === 0 && <p className="px-4 py-6 text-center text-xs text-[var(--t-text-30)]">Aucun coach inscrit</p>}
+        </div>
       )}
     </div>
   );

@@ -6,12 +6,15 @@ import { supabase } from "@/lib/supabase";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
 import { PipelineBoard } from "@/components/PipelineBoard";
-import { MessageCircle, Clock, AlertCircle, FileText, TrendingUp, CheckCircle2 } from "@/lib/solarIcons";
+import { MessageCircle, Clock, AlertCircle, FileText, TrendingUp, CheckCircle2, User } from "@/lib/solarIcons";
+import { apiPost } from "@/lib/apiClient";
+import { isPlatformAdmin } from "@/lib/coach";
 
 type Client = { id: string; email: string; prenom: string; nom: string; status: string | null; subscription_end: string | null; pipeline_stage: string | null; updated_at: string };
 type Msg    = { from_email: string; to_email: string; content: string; created_at: string };
 type Ck     = { client_id: string; week_date: string; weight: number | null; compliance: number | null; created_at: string; profiles?: { prenom: string; nom: string } };
 type MesoEnding = { client_id: string; nom: string; date_fin: string };
+type Unlinked = { id: string; prenom: string; nom: string; email: string; kind: string; createdAt: string | null };
 
 export default function CRMDashboard() {
   const [clients,  setClients]  = useState<Client[]>([]);
@@ -24,6 +27,7 @@ export default function CRMDashboard() {
   const [myEmail,  setMyEmail]  = useState("");
   const [inviteCode, setInviteCode] = useState("");
   const [copied,     setCopied]     = useState<"code" | "link" | null>(null);
+  const [unlinked,   setUnlinked]   = useState<Unlinked[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -32,6 +36,13 @@ export default function CRMDashboard() {
       if (user) {
         const { data: coach } = await supabase.from("coaches").select("code").eq("profile_id", user.id).single();
         if (coach?.code) setInviteCode(coach.code);
+        // Opérateur : les inscrits arrivés sans code d'invitation n'apparaissent dans aucun CRM
+        // coach (RLS) — on les remonte ici en alerte, avec renvoi vers la vue plateforme.
+        if (await isPlatformAdmin(user.id)) {
+          apiPost("/api/operateur/data", {}).then(r => r.ok ? r.json() : null).then(d => {
+            if (d?.users) setUnlinked((d.users as Unlinked[]).filter(u => u.kind === "solo"));
+          }).catch(() => {});
+        }
       }
       const todayISO = new Date().toISOString().split("T")[0];
       const in7ISO   = new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0];
@@ -92,7 +103,7 @@ export default function CRMDashboard() {
   // ── Alerts — tout ce qui attend une action du coach aujourd'hui, trié par urgence réelle
   // (temps depuis un message client / temps restant avant une échéance) plutôt que par type,
   // pour que "message vieux de 3 jours" passe devant "abonnement qui expire dans 10 jours". ──
-  type AlertType = "message" | "risque" | "abonnement" | "churn" | "sans_programme" | "mesocycle";
+  type AlertType = "message" | "risque" | "abonnement" | "churn" | "sans_programme" | "mesocycle" | "sans_coach";
   type Alert = { type: AlertType; label: string; sub: string; href: string; color: string; urgency: number };
   const alerts: Alert[] = [];
 
@@ -123,11 +134,16 @@ export default function CRMDashboard() {
     const daysLeft = Math.ceil((new Date(me.date_fin).getTime() - now) / 86400000);
     alerts.push({ type: "mesocycle", label: `${name} — mésocycle "${me.nom}"`, sub: daysLeft <= 0 ? "Se termine aujourd'hui" : `Se termine dans ${daysLeft}j`, href: p ? `/crm/programmes?client=${encodeURIComponent(p.email)}` : "/crm/clients", color: "#c9a84c", urgency: Math.max(daysLeft, 0) });
   });
+  unlinked.forEach(u => {
+    const name = `${u.prenom} ${u.nom}`.trim() || u.email;
+    const days = u.createdAt ? Math.floor((now - new Date(u.createdAt).getTime()) / 86400000) : null;
+    alerts.push({ type: "sans_coach", label: `${name} — inscrit sans coach`, sub: days === null ? "À prendre en charge" : days <= 0 ? "Inscrit aujourd'hui" : `Inscrit il y a ${days}j`, href: "/operateur", color: "#e0a070", urgency: 2 });
+  });
   alerts.sort((a, b) => a.urgency - b.urgency);
 
   const ALERT_ICON: Record<AlertType, typeof MessageCircle> = {
     message: MessageCircle, abonnement: Clock, risque: AlertCircle,
-    churn: AlertCircle, sans_programme: FileText, mesocycle: TrendingUp,
+    churn: AlertCircle, sans_programme: FileText, mesocycle: TrendingUp, sans_coach: User,
   };
 
   // Recent check-ins enriched with client name
