@@ -22,7 +22,6 @@ const jsonLd = {
   url: "https://samuel-coaching.ch",
   areaServed: { "@type": "City", name: "Lausanne" },
   address: { "@type": "PostalAddress", addressLocality: "Lausanne", addressRegion: "Vaud", addressCountry: "CH" },
-  priceRange: "80–390 CHF",
   sameAs: ["https://www.instagram.com/samw.coaching/"],
 };
 

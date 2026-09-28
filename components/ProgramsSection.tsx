@@ -2,8 +2,7 @@ const programs = [
   {
     label: "45 MINUTES",
     name: "BILAN GRATUIT",
-    price: "Gratuit",
-    sub: "Sans engagement",
+    sub: "Gratuit · sans engagement",
     features: [
       "Évaluation métabolique",
       "Bilan général",
@@ -15,7 +14,6 @@ const programs = [
   {
     label: "1 MOIS",
     name: "SUIVI",
-    price: "390 CHF",
     sub: "1 mois de suivi",
     features: [
       "Bilan physique complet",
@@ -30,8 +28,7 @@ const programs = [
   {
     label: "À LA SÉANCE",
     name: "PRÉSENTIEL",
-    price: "80 CHF",
-    sub: "par séance",
+    sub: "À la séance, sans engagement",
     features: [
       "Entraînement en présentiel",
       "Objectif précis défini ensemble",
@@ -87,11 +84,9 @@ export default function ProgramsSection() {
                 ))}
               </ul>
 
+              {/* Tarifs volontairement non affichés sur le site (communiqués en direct au bilan). */}
               <div className="border-t border-white/10 pt-6 mb-6">
-                <p style={{ fontFamily: "var(--font-bebas)" }} className={`text-4xl ${p.highlight ? "text-[#c9a84c]" : "text-white"}`}>
-                  {p.price}
-                </p>
-                <p className="text-white/40 text-xs mt-1">{p.sub}</p>
+                <p className="text-white/40 text-xs">{p.sub}</p>
               </div>
 
               <a

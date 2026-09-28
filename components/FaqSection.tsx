@@ -16,7 +16,7 @@ const FAQ = [
   },
   {
     q: "Y a-t-il un engagement dans la durée ?",
-    a: "Le bilan de 45 minutes est gratuit et sans aucun engagement. Ensuite, tu choisis : à la séance (80 CHF) sans engagement, ou un suivi mensuel (390 CHF/mois) que tu peux arrêter quand tu veux. Pas de contrat piège.",
+    a: "Le bilan de 45 minutes est gratuit et sans aucun engagement. Ensuite, tu choisis : à la séance, sans engagement, ou un suivi mensuel que tu peux arrêter quand tu veux. Pas de contrat piège.",
   },
   {
     q: "Je débute totalement, est-ce pour moi ?",
