@@ -28,6 +28,9 @@ const RICH_ICON_SRC = {
   checkin: "/icons-rich/checkin.webp",
   // Équipe médaillée sous 3 étoiles, fournie par le client — en-tête de la page Clients du CRM.
   clients: "/icons-rich/clients.webp",
+  // Fournies par le client — cartes de résumé de CRM > Programmes.
+  bloc: "/icons-rich/bloc.webp",               // "Bloc en cours" (montre, haltères, gourde, pommes)
+  nextSession: "/icons-rich/prochaine-seance.webp", // "Prochaine séance" (medecine balls 5/10 kg)
   // Monogramme de marque — badge autonome (fond sombre déjà intégré au fichier, pas un
   // simple trait transparent), à réserver aux moments hero (voir public/icons/logo-source.svg
   // pour l'original, jamais utilisé nulle part avant cette passe).

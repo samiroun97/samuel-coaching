@@ -617,11 +617,11 @@ export default function ProgrammesPage() {
                   weekTarget ? (
                     <span className="flex gap-1 mt-1">{Array.from({ length: Math.min(weekTarget, 7) }, (_, i) => <span key={i} className="w-4 h-1.5 rounded-full" style={{ backgroundColor: i < weekDone ? "#7eb8a0" : "var(--t-track)" }}/>)}</span>
                   ) : "Aucune séance prévue")}
-                {kpi("chrono", "Prochaine séance",
+                {kpi("nextSession", "Prochaine séance",
                   nextS ? <span className="capitalize">{fmtDay(nextS.date_prevue!)}</span> : "—",
                   nextS ? nextS.titre : "Rien de planifié",
                   nextS ? () => openEdit(nextS.id) : () => openCreate(today))}
-                {kpi("hourglass", "Bloc en cours",
+                {kpi("bloc", "Bloc en cours",
                   prog && activeMeso ? <>S{prog.weekNum}<span className="text-[var(--t-text-40)] font-medium"> / {prog.totalWeeks}</span></> : "Aucun",
                   prog && activeMeso ? (
                     <span className="flex items-center gap-1.5 mt-1"><span className="w-16 h-1.5 rounded-full bg-[var(--t-track)] overflow-hidden inline-block"><span className="block h-full rounded-full bg-[#c9a84c]" style={{ width: `${prog.pct}%` }}/></span><span className="truncate">{activeMeso.nom}</span></span>
