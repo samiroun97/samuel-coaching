@@ -305,16 +305,16 @@ export default function ClientsPage() {
               <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-[var(--t-text)] tracking-wide leading-none">CLIENTS</h1>
             </div>
           </div>
-          <input className={`${inp} mb-3 md:max-w-md`} placeholder="Rechercher un client…" value={search} onChange={e => setSearch(e.target.value)}/>
+          <input className={`w-full bg-[var(--t-surface)] border border-[var(--t-border-soft)] shadow-[0_2px_10px_-6px_rgba(0,0,0,0.12)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-30)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/50 transition-colors mb-3 md:max-w-md`} placeholder="Rechercher un client…" value={search} onChange={e => setSearch(e.target.value)}/>
           <div className="flex gap-2 flex-wrap">
             <Select value={filterStage} onChange={setFilterStage}
               options={[{ value: "all", label: "Tous stages" }, ...Object.entries(STAGE_CFG).map(([k, v]) => ({ value: k, label: v.label }))]}
-              triggerClassName="bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text-50)] text-[0.5rem] px-2 py-1.5"/>
+              triggerClassName="bg-[var(--t-surface)] border border-[var(--t-border-soft)] shadow-[0_2px_8px_-5px_rgba(0,0,0,0.12)] rounded-xl text-[var(--t-text-60)] text-[0.68rem] px-2.5 py-1.5"/>
             <Select value={filterStatus} onChange={setFilterStatus}
               options={[{ value: "all", label: "Tous statuts" }, ...Object.entries(STATUS_CFG).map(([k, v]) => ({ value: k, label: v.label }))]}
-              triggerClassName="bg-[var(--t-surface-2)] border border-[var(--t-border)] rounded-xl text-[var(--t-text-50)] text-[0.5rem] px-2 py-1.5"/>
+              triggerClassName="bg-[var(--t-surface)] border border-[var(--t-border-soft)] shadow-[0_2px_8px_-5px_rgba(0,0,0,0.12)] rounded-xl text-[var(--t-text-60)] text-[0.68rem] px-2.5 py-1.5"/>
             <button onClick={() => setSortByStatus(v => !v)}
-              className={`text-[0.5rem] tracking-[0.08em] uppercase px-2 py-1.5 rounded-xl border transition-colors ${sortByStatus ? "border-[#e07070]/40 text-[#e07070] bg-[#e07070]/5" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[var(--t-text-25)]"}`}>
+              className={`text-[0.68rem] px-2.5 py-1.5 rounded-xl border transition-colors shadow-[0_2px_8px_-5px_rgba(0,0,0,0.12)] ${sortByStatus ? "border-[#e07070]/40 text-[#e07070] bg-[#e07070]/8" : "bg-[var(--t-surface)] border-[var(--t-border-soft)] text-[var(--t-text-60)] hover:border-[var(--t-text-25)]"}`}>
               ⚠ Priorité
             </button>
           </div>
@@ -483,8 +483,9 @@ export default function ClientsPage() {
             </div>
           </div>
 
-          {/* Tabs */}
-          <div className="flex border-b border-[var(--t-border-soft)] px-4 md:px-8 shrink-0 overflow-x-auto">
+          {/* Tabs — barre blanche segmentée qui se détache du fond crème (même style que Programmes) */}
+          <div className="px-4 md:px-8 pt-3 pb-3 border-b border-[var(--t-border-soft)] shrink-0 overflow-x-auto">
+          <div className="inline-flex items-center gap-1 p-1 rounded-2xl bg-[var(--t-surface)] border border-[var(--t-border-soft)] shadow-[0_2px_12px_-6px_rgba(0,0,0,0.12)]">
             {([
               { key: "apercu",     label: "Vue d'ensemble" },
               { key: "profil",     label: "Profil" },
@@ -494,17 +495,18 @@ export default function ClientsPage() {
               { key: "journal",    label: `Journal (${journal.length})` },
             ] as const).map(({ key, label }) => (
               <button key={key} onClick={() => setTab(key)}
-                className={`py-3 mr-5 text-[0.58rem] tracking-[0.12em] uppercase border-b-2 transition-colors whitespace-nowrap ${tab === key ? "border-[#c9a84c] text-[#c9a84c]" : "border-transparent text-[var(--t-text-30)] hover:text-[var(--t-text-50)]"}`}>
+                className={`px-3.5 py-2 rounded-xl text-[0.75rem] font-medium transition-all whitespace-nowrap ${tab === key ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black shadow-[0_4px_12px_-6px_rgba(201,168,76,0.7)]" : "text-[var(--t-text-50)] hover:text-[var(--t-text)] hover:bg-[var(--t-glass-bg)]"}`}>
                 {label}
               </button>
             ))}
             {/* Renvoie vers la même section Programmes (bibliothèque + modèles + IA) que le menu
                 CRM, pré-sélectionnée sur ce client — plus de formulaire de séance dupliqué ici. */}
             <Link href={`/crm/programmes?client=${encodeURIComponent(selected.email)}`}
-              className="py-3 mr-5 text-[0.58rem] tracking-[0.12em] uppercase border-b-2 border-transparent text-[var(--t-text-30)] hover:text-[var(--t-text-50)] transition-colors whitespace-nowrap flex items-center gap-1">
+              className="px-3.5 py-2 rounded-xl text-[0.75rem] font-medium text-[var(--t-text-50)] hover:text-[var(--t-text)] hover:bg-[var(--t-glass-bg)] transition-all whitespace-nowrap flex items-center gap-1.5">
               Programme ({seances.length})
-              <Icon icon={ExternalLink} size={9} strokeWidth={2}/>
+              <Icon icon={ExternalLink} size={11} strokeWidth={2}/>
             </Link>
+          </div>
           </div>
 
           {/* Tab content */}
