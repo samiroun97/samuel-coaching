@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { flushQueue, pendingOps, runOrQueue } from "@/lib/offlineQueue";
 
 // Palier d'une série dégressive ou d'une montée en charge d'échauffement — voir DropStep/
 // warmupSteps dans SeanceLive.tsx, dont c'est exactement la forme persistée telle quelle.
@@ -61,9 +62,31 @@ export function parseRestSeconds(text: string | null | undefined, fallback = 90)
   return n <= 10 ? Math.round(n * 60) : Math.round(n);
 }
 
+// Lecture fusionnée avec les écritures encore en attente hors ligne (voir lib/offlineQueue.ts) :
+// une séance rouverte pendant/après une coupure affiche les séries validées sur l'appareil,
+// même si elles ne sont pas encore arrivées dans Supabase.
 export async function loadSeanceLogs(seanceId: string): Promise<SeanceLogRow[]> {
-  const { data } = await supabase.from("seance_logs").select("*").eq("seance_id", seanceId);
-  return (data ?? []) as SeanceLogRow[];
+  await flushQueue();
+  // Dernière lecture réussie gardée en cache : sans réseau, on repart d'elle plutôt que de
+  // n'afficher que les séries en attente (les séries déjà synchronisées sembleraient perdues).
+  const cacheKey = `seance_logs_cache_${seanceId}`;
+  const { data, error } = await supabase.from("seance_logs").select("*").eq("seance_id", seanceId);
+  let server = (data ?? []) as SeanceLogRow[];
+  if (error) {
+    try { server = JSON.parse(localStorage.getItem(cacheKey) ?? "[]") as SeanceLogRow[]; } catch { /* ignore */ }
+  } else {
+    try { localStorage.setItem(cacheKey, JSON.stringify(server)); } catch { /* ignore */ }
+  }
+  const rows = new Map(server.map(r => [`${r.exercice_index}-${r.set_index}`, r]));
+  for (const op of pendingOps()) {
+    if (op.kind === "upsertLog" && op.row.seance_id === seanceId) {
+      const k = `${op.row.exercice_index}-${op.row.set_index}`;
+      rows.set(k, { id: rows.get(k)?.id ?? `pending-${k}`, ...op.row } as SeanceLogRow);
+    } else if (op.kind === "deleteLog" && op.seanceId === seanceId) {
+      rows.delete(`${op.exerciceIndex}-${op.setIndex}`);
+    }
+  }
+  return [...rows.values()];
 }
 
 export async function saveSetLog(params: {
@@ -71,24 +94,26 @@ export async function saveSetLog(params: {
   setIndex: number; poids: number | null; reps: number | null; rir: number | null;
   warmup?: boolean; drops?: LogStep[] | null; warmupSteps?: LogStep[] | null;
 }): Promise<void> {
-  await supabase.from("seance_logs").upsert(
-    {
-      seance_id: params.seanceId, client_id: params.clientId,
-      exercice_index: params.exerciceIndex, exercice_nom: params.exerciceNom,
-      set_index: params.setIndex,
-      poids_reel: params.poids, reps_reel: params.reps, rir_reel: params.rir,
-      logged_at: new Date().toISOString(),
-      warmup: params.warmup ?? false,
-      drops: params.drops?.length ? params.drops : null,
-      warmup_steps: params.warmupSteps?.length ? params.warmupSteps : null,
-    },
-    { onConflict: "seance_id,exercice_index,set_index" }
-  );
+  await runOrQueue({ kind: "upsertLog", row: {
+    seance_id: params.seanceId, client_id: params.clientId,
+    exercice_index: params.exerciceIndex, exercice_nom: params.exerciceNom,
+    set_index: params.setIndex,
+    poids_reel: params.poids, reps_reel: params.reps, rir_reel: params.rir,
+    logged_at: new Date().toISOString(),
+    warmup: params.warmup ?? false,
+    drops: params.drops?.length ? params.drops : null,
+    warmup_steps: params.warmupSteps?.length ? params.warmupSteps : null,
+  } });
 }
 
 export async function deleteSetLog(seanceId: string, exerciceIndex: number, setIndex: number): Promise<void> {
-  await supabase.from("seance_logs").delete()
-    .eq("seance_id", seanceId).eq("exercice_index", exerciceIndex).eq("set_index", setIndex);
+  await runOrQueue({ kind: "deleteLog", seanceId, exerciceIndex, setIndex });
+}
+
+// Fin de séance : mise en file elle aussi, pour qu'une séance terminée sans réseau soit
+// bien marquée comme faite au retour de la connexion.
+export async function completeSeance(seanceId: string): Promise<void> {
+  await runOrQueue({ kind: "complete", seanceId, completedAt: new Date().toISOString() });
 }
 
 // Meilleur 1RM estimé de ce client pour un exercice donné, tous programmes confondus — sert

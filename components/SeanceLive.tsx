@@ -6,8 +6,9 @@ import { useWakeLock } from "@/lib/useWakeLock";
 import { getMyCoachEmail } from "@/lib/coach";
 import {
   estimate1RM, isNewRecord, parseRestSeconds,
-  loadSeanceLogs, saveSetLog, deleteSetLog, loadExerciceHistory, type LastPerformance,
+  loadSeanceLogs, saveSetLog, deleteSetLog, completeSeance, loadExerciceHistory, type LastPerformance,
 } from "@/lib/workoutLog";
+import { OfflineSyncBar } from "@/components/OfflineSyncBar";
 import { loadExerciceSessionOutcomes, suggestProgression, type ProgressionSuggestion } from "@/lib/progression";
 import { loadCatalogue, type CatalogueEntry } from "@/lib/exercicesCatalogue";
 import { ExercicePicker } from "@/components/ExercicePicker";
@@ -853,7 +854,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
 
   const finish = async () => {
     setFinishing(true);
-    await supabase.from("programme_seances").update({ completed_at: new Date().toISOString() }).eq("id", seance.id);
+    await completeSeance(seance.id);
     localStorage.removeItem(`seance_start_${seance.id}`);
     setFinishing(false);
     setSummary({
@@ -893,6 +894,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
   if (summary) {
     return (
       <div className="fixed inset-0 bg-[var(--t-bg)] z-50 flex flex-col overflow-y-auto">
+        <OfflineSyncBar/>
         <div className="flex-1 px-6 py-10 max-w-md mx-auto w-full flex flex-col items-center text-center gap-6">
           {/* Le monogramme de marque n'apparaissait nulle part dans l'app — l'écran de fin
               de séance est le moment le plus chargé émotionnellement du parcours, le bon
@@ -987,6 +989,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
 
   return (
     <div className="fixed inset-0 bg-[var(--t-bg)] z-50 flex flex-col">
+      <OfflineSyncBar/>
       <div className="flex items-center justify-between px-5 py-3.5 shrink-0 gap-3 max-w-lg mx-auto w-full">
         <div className="flex items-center -ml-2.5 shrink-0">
           <button onClick={onClose} title="Fermer — reprendre plus tard"
