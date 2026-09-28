@@ -20,6 +20,7 @@ import { MesocycleCard } from "@/components/MesocycleCard";
 import { loadPersonalRecords, type PRCard } from "@/lib/personalRecords";
 import { Sparkline } from "@/components/Sparkline";
 import { hasBlessure } from "@/lib/blessures";
+import { RichIcon } from "@/components/RichIcon";
 
 const LEVEL_RANK: Record<ClientStatus["level"], number> = { risque: 0, attention: 1, ok: 2 };
 
@@ -291,8 +292,19 @@ export default function ClientsPage() {
       {/* ── Left: list (plein écran sur mobile quand aucun client sélectionné) ── */}
       <div className={`flex-col border-r border-[var(--t-border-soft)] bg-[var(--t-bg)] ${selected ? "hidden md:flex w-72 shrink-0" : "flex flex-1"}`}>
         <div className="px-4 md:px-5 pt-5 md:pt-6 pb-4 border-b border-[var(--t-border-soft)]">
-          <p className="text-[0.5rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-1">Plateforme coaching</p>
-          <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-[var(--t-text)] tracking-wide mb-3">CLIENTS</h1>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="relative w-14 h-14 flex items-center justify-center shrink-0">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-lg pointer-events-none"
+                style={{ width: 40, height: 40, backgroundColor: "#c9a84c", opacity: 0.16 }}/>
+              <div className="relative animate-levitate">
+                <RichIcon name="clients" size={56} className="drop-shadow-[0_8px_10px_rgba(0,0,0,0.14)]"/>
+              </div>
+            </div>
+            <div>
+              <p className="text-[0.5rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-1">Plateforme coaching</p>
+              <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-[var(--t-text)] tracking-wide leading-none">CLIENTS</h1>
+            </div>
+          </div>
           <input className={`${inp} mb-3 md:max-w-md`} placeholder="Rechercher un client…" value={search} onChange={e => setSearch(e.target.value)}/>
           <div className="flex gap-2 flex-wrap">
             <Select value={filterStage} onChange={setFilterStage}

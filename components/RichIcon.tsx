@@ -26,6 +26,8 @@ const RICH_ICON_SRC = {
   messages: "/icons-rich/message.webp",
   // Calendrier coché fourni par le client — carte "Derniers check-ins" du dashboard coach.
   checkin: "/icons-rich/checkin.webp",
+  // Équipe médaillée sous 3 étoiles, fournie par le client — en-tête de la page Clients du CRM.
+  clients: "/icons-rich/clients.webp",
   // Monogramme de marque — badge autonome (fond sombre déjà intégré au fichier, pas un
   // simple trait transparent), à réserver aux moments hero (voir public/icons/logo-source.svg
   // pour l'original, jamais utilisé nulle part avant cette passe).
