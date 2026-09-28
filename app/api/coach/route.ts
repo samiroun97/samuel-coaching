@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@supabase/supabase-js";
 import { requireUser } from "@/lib/apiAuth";
+import { checkAiQuota } from "@/lib/aiQuota";
 
 const buildSystemPrompt = (coachName: string) => `Tu es un assistant IA intégré à l'application ${coachName}, une plateforme de coaching fitness personnalisé.
 
@@ -23,6 +24,8 @@ export async function POST(req: NextRequest) {
   try {
     const user = await requireUser(req);
     if (!user) return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    const quota = await checkAiQuota(user.id, "coach");
+    if (quota) return quota;
 
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) return NextResponse.json({ error: "Clé API manquante" }, { status: 500 });

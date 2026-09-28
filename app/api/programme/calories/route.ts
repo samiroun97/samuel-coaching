@@ -2,11 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@supabase/supabase-js";
 import { requireUser } from "@/lib/apiAuth";
+import { checkAiQuota } from "@/lib/aiQuota";
 
 export async function POST(req: NextRequest) {
   try {
     const caller = await requireUser(req);
     if (!caller) return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    const quota = await checkAiQuota(caller.id, "programme/calories");
+    if (quota) return quota;
 
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) return NextResponse.json({ error: "Clé API manquante" }, { status: 500 });

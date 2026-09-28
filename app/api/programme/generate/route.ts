@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@supabase/supabase-js";
 import { requireUser } from "@/lib/apiAuth";
+import { checkAiQuota, requireCoach } from "@/lib/aiQuota";
 import { EXERCICE_TYPES } from "@/lib/exercices";
 
 const SEANCE_TYPES = ["Haut du corps", "Bas du corps", "Full body", "Cardio", "Boxe", "Natation", "CrossFit", "Yoga", "Autre"];
@@ -48,6 +49,9 @@ export async function POST(req: NextRequest) {
   try {
     const caller = await requireUser(req);
     if (!caller) return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    // Génération de programme = coachs uniquement (modèle le plus coûteux), avec plafond journalier.
+    const guard = (await requireCoach(caller.id)) ?? (await checkAiQuota(caller.id, "programme/generate"));
+    if (guard) return guard;
 
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) return NextResponse.json({ error: "Clé API manquante" }, { status: 500 });

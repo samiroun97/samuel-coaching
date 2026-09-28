@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@supabase/supabase-js";
 import { requireUser } from "@/lib/apiAuth";
+import { checkAiQuota } from "@/lib/aiQuota";
 import { buildIngredientReferences } from "@/lib/foodLookup";
 
 const PROMPT = `Tu es un nutritionniste expert. Analyse ce repas.
@@ -24,6 +25,8 @@ export async function POST(req: NextRequest) {
   try {
     const caller = await requireUser(req);
     if (!caller) return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    const quota = await checkAiQuota(caller.id, "nutrition/analyze");
+    if (quota) return quota;
 
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
