@@ -41,6 +41,14 @@ export async function loadClientStatuses(coachEmail: string): Promise<Map<string
     if (client === coachEmail) continue;
     lastMsgByClient.set(client, { from: m.from_email, at: m.created_at });
   }
+  // Conversations marquées "traitées" dans l'Inbox (synchronisées entre appareils via user_state,
+  // voir lib/syncStorage) : même règle que le Dashboard et l'Inbox, pour qu'un client ne soit
+  // jamais "Message en attente" ici et "Tout est répondu" là-bas.
+  const treated = readTreatedConvs();
+  for (const email of treated) {
+    const last = lastMsgByClient.get(email);
+    if (last && last.from !== coachEmail) lastMsgByClient.delete(email);
+  }
 
   const now = Date.now();
   const emails = new Set([...lastSeanceByEmail.keys(), ...lastMsgByClient.keys()]);
@@ -54,6 +62,19 @@ export async function loadClientStatuses(coachEmail: string): Promise<Map<string
     result.set(email, { level: computeLevel(daysSinceSeance, pendingMessageDays), daysSinceSeance, pendingMessageDays });
   }
   return result;
+}
+
+// Conversations que le coach a marquées "traitées" dans l'Inbox (clé localStorage synchronisée).
+export function readTreatedConvs(): Set<string> {
+  if (typeof window === "undefined") return new Set();
+  try { return new Set(JSON.parse(localStorage.getItem("crm_treated_convs") ?? "[]")); } catch { return new Set(); }
+}
+
+// "Vu il y a…" à partir de profiles.last_seen_at (mis à jour à l'ouverture de l'app client).
+export function lastSeenLabel(iso: string | null | undefined, now = Date.now()): { label: string; days: number | null } {
+  if (!iso) return { label: "Jamais connecté", days: null };
+  const days = Math.floor((now - new Date(iso).getTime()) / 86400000);
+  return { label: days <= 0 ? "Vu aujourd'hui" : days === 1 ? "Vu hier" : `Vu il y a ${days}j`, days };
 }
 
 export function statusFor(statuses: Map<string, ClientStatus>, email: string): ClientStatus {

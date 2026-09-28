@@ -15,6 +15,7 @@ import { type WeightEntry, loadWeightHistory, upsertWeightEntry, deleteWeightEnt
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
 import { ChevronDown, ChevronLeft, ChevronRight, Check, Pencil, Plus, X } from "@/lib/solarIcons";
+import { mondayISOOf, todayISO } from "@/lib/planning";
 
 type Profile      = { prenom?: string; sexe?: string; poids?: number; taille?: number; age?: number; objectifs?: string; objectif_type?: string; seances_par_semaine?: number; experience?: string; niveau_activite?: string };
 type BodyFatEntry = {
@@ -207,12 +208,20 @@ export default function SuiviPage() {
   const [ckDone,    setCkDone]    = useState(false);
   const [lastCkDate, setLastCkDate] = useState<string | null>(null);
 
-  // Lundi de la semaine en cours (référence du check-in)
-  const weekMonday = (() => {
-    const d = new Date(); const day = (d.getDay() + 6) % 7;
-    d.setDate(d.getDate() - day); return d.toISOString().split("T")[0];
-  })();
+  // Lundi de la semaine en cours (référence du check-in), en date LOCALE : l'ancien calcul via
+  // toISOString() (UTC) rattachait un check-in fait le lundi entre 0h et 2h (heure suisse) à la
+  // semaine précédente.
+  const weekMonday = mondayISOOf(todayISO());
   const ckDoneThisWeek = lastCkDate === weekMonday;
+
+  // Arrivée depuis la relance du dashboard ou la notification du dimanche (#checkin) :
+  // ouvre directement le formulaire et le fait défiler à l'écran.
+  useEffect(() => {
+    if (typeof window === "undefined" || window.location.hash !== "#checkin") return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- ouverture ponctuelle depuis l'URL
+    setCkOpen(true);
+    setTimeout(() => document.getElementById("checkin")?.scrollIntoView({ behavior: "smooth", block: "start" }), 300);
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -635,7 +644,7 @@ export default function SuiviPage() {
 
       {/* ── Check-in hebdomadaire (client → coach) ── */}
       {!isCoach && (
-        <div className={`border rounded-xl mb-6 ${ckDoneThisWeek && !ckOpen ? "border-[#7eb8a0]/25 bg-[#7eb8a0]/5" : "border-[#c9a84c]/25 bg-[#c9a84c]/5"}`}>
+        <div id="checkin" className={`scroll-mt-4 border rounded-xl mb-6 ${ckDoneThisWeek && !ckOpen ? "border-[#7eb8a0]/25 bg-[#7eb8a0]/5" : "border-[#c9a84c]/25 bg-[#c9a84c]/5"}`}>
           <button onClick={() => setCkOpen(o => !o)} className="w-full flex items-center justify-between px-5 py-4 text-left">
             <div>
               <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-0.5">Check-in de la semaine</p>

@@ -8,6 +8,7 @@ import { useSelectedDate } from "@/lib/useSelectedDate";
 import { syncSteps } from "@/lib/steps";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
+import { ClientNudges } from "@/components/ClientNudges";
 import { Check, Pencil, ChevronRight } from "@/lib/solarIcons";
 
 type Profile = {
@@ -279,6 +280,9 @@ export default function AccueilPage() {
           </p>
         </div>
       </div>
+
+      {/* ── Relances : check-in de la semaine + activation des rappels ── */}
+      {userId && <ClientNudges userId={userId}/>}
 
       {/* ── Sélecteur de date global ── */}
       <DateNav date={selectedDate} onChange={setSelectedDate} />

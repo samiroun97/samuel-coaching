@@ -17,8 +17,9 @@ export async function GET(req: NextRequest) {
   }
 
   const meal = req.nextUrl.searchParams.get("meal") ?? "";
+  const isCheckin = req.nextUrl.searchParams.get("type") === "checkin";
   const mealLabel = MEAL_LABELS[meal];
-  if (!mealLabel) return NextResponse.json({ error: "Paramètre meal invalide" }, { status: 400 });
+  if (!mealLabel && !isCheckin) return NextResponse.json({ error: "Paramètre meal invalide" }, { status: 400 });
 
   const serviceKey   = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const vapidPublic  = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
@@ -29,6 +30,37 @@ export async function GET(req: NextRequest) {
 
   webpush.setVapidDetails("mailto:sam97waelti@gmail.com", vapidPublic, vapidPrivate);
   const admin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceKey);
+
+  // ── Rappel hebdomadaire du check-in (cron du dimanche soir, voir vercel.json) ──
+  // Uniquement aux clients qui n'ont pas encore envoyé le check-in de la semaine en cours.
+  if (isCheckin) {
+    const now = new Date();
+    const monday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - ((now.getUTCDay() + 6) % 7)));
+    const mondayISO = monday.toISOString().split("T")[0];
+    const [{ data: subs }, { data: done }] = await Promise.all([
+      admin.from("push_subscriptions").select("id,user_id,endpoint,p256dh,auth"),
+      admin.from("weekly_checkins").select("client_id").eq("week_date", mondayISO),
+    ]);
+    const doneSet = new Set((done ?? []).map(d => d.client_id));
+    let sent = 0, removed = 0;
+    await Promise.all((subs ?? []).map(async (s) => {
+      if (doneSet.has(s.user_id)) return;
+      try {
+        await webpush.sendNotification(
+          { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
+          JSON.stringify({ title: "Check-in de la semaine", body: "2 minutes pour faire le point avec ton coach : poids, énergie, ressenti ✍️", url: "/dashboard/suivi#checkin" })
+        );
+        sent++;
+      } catch (err: unknown) {
+        const statusCode = (err as { statusCode?: number })?.statusCode;
+        if (statusCode === 404 || statusCode === 410) {
+          await admin.from("push_subscriptions").delete().eq("id", s.id);
+          removed++;
+        }
+      }
+    }));
+    return NextResponse.json({ ok: true, type: "checkin", week: mondayISO, sent, removed, candidates: (subs ?? []).length });
+  }
 
   const today = new Date().toISOString().split("T")[0];
   // "dejeuner"/"diner" (déjà validés ci-dessus via MEAL_LABELS) correspondent exactement aux

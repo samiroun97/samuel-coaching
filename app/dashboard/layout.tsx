@@ -82,6 +82,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         if (!profile?.prenom) { router.push("/dashboard/onboarding"); return; }
       }
 
+      // Dernière visite du client (profiles.last_seen_at) : affichée au coach dans Clients /
+      // Pipeline. Au plus une écriture par heure et par appareil, en tâche de fond. Jamais pour
+      // le coach en aperçu (ce serait sa visite, pas celle d'un client).
+      if (!coach) {
+        try {
+          const key = `last_seen_ping_${data.user.id}`;
+          const last = Number(localStorage.getItem(key) ?? 0);
+          if (Date.now() - last > 3600000) {
+            localStorage.setItem(key, String(Date.now()));
+            supabase.from("profiles").update({ last_seen_at: new Date().toISOString() }).eq("id", data.user.id).then(() => {});
+          }
+        } catch { /* stockage indisponible : on retentera à la prochaine ouverture */ }
+      }
+
       // Code d'invitation coach déposé sur /login (?invite=CODE) : le consommer
       // une seule fois — remplace le rattachement provisoire par le vrai coach.
       if (!coach) {

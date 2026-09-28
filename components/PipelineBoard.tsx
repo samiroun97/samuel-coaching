@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { loadClientStatuses, statusFor, STATUS_LEVEL_COLOR, type ClientStatus } from "@/lib/clientStatus";
+import { loadClientStatuses, statusFor, lastSeenLabel, STATUS_LEVEL_COLOR, type ClientStatus } from "@/lib/clientStatus";
 import { Icon } from "@/components/Icon";
 import { MoreHorizontal, Clock, MessageCircle } from "@/lib/solarIcons";
 
@@ -21,7 +21,7 @@ const STAGES = [
 ] as const;
 type StageKey = typeof STAGES[number]["key"];
 
-type Client = { id: string; email: string; prenom: string; nom: string; avatar_url: string | null; pipeline_stage: StageKey | null; subscription_end: string | null; is_coach: boolean | null };
+type Client = { id: string; email: string; prenom: string; nom: string; avatar_url: string | null; pipeline_stage: StageKey | null; subscription_end: string | null; is_coach: boolean | null; last_seen_at: string | null };
 
 const stageOf = (c: Client): StageKey => c.pipeline_stage ?? "actif";
 
@@ -58,7 +58,7 @@ export function PipelineBoard({ variant = "page" }: { variant?: "page" | "sectio
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       const { data } = await supabase.from("profiles")
-        .select("id,email,prenom,nom,avatar_url,pipeline_stage,subscription_end,is_coach")
+        .select("id,email,prenom,nom,avatar_url,pipeline_stage,subscription_end,is_coach,last_seen_at")
         .order("updated_at", { ascending: false });
       setClients(((data ?? []) as Client[]).filter(c => !c.is_coach && c.id !== user?.id));
       setLoading(false);
@@ -210,6 +210,7 @@ export function PipelineBoard({ variant = "page" }: { variant?: "page" | "sectio
                           <Icon icon={st.pendingMessageDays !== null ? MessageCircle : Clock} size={10}/>
                           {activityText(st)}
                         </span>
+                        <span className="text-[0.58rem] text-[var(--t-text-40)]">{lastSeenLabel(c.last_seen_at, now).label}</span>
                         {expiring && (
                           <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[0.58rem] bg-[#c9a84c]/12 text-[#c9a84c]">
                             Exp. {daysLeft}j

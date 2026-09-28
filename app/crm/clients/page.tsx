@@ -8,7 +8,7 @@ import { apiPost } from "@/lib/apiClient";
 import { CalendarPicker } from "@/components/CalendarPicker";
 import { Select } from "@/components/Select";
 import { ClientStatusDot } from "@/components/ClientStatusDot";
-import { loadClientStatuses, statusFor, STATUS_LEVEL_COLOR, type ClientStatus } from "@/lib/clientStatus";
+import { loadClientStatuses, statusFor, lastSeenLabel, STATUS_LEVEL_COLOR, type ClientStatus } from "@/lib/clientStatus";
 import { Icon } from "@/components/Icon";
 import { X, ChevronLeft, MessageSquare, Trash2, ExternalLink } from "@/lib/solarIcons";
 import { ConsistencyStrip } from "@/components/ConsistencyStrip";
@@ -41,7 +41,7 @@ const STAGE_CFG = {
 type StatusKey = keyof typeof STATUS_CFG;
 type StageKey  = keyof typeof STAGE_CFG;
 
-type Client   = { id: string; email: string; prenom: string; nom: string; age: number; poids: number; taille: number; sexe: string; niveau_activite: string; experience: string; seances_par_semaine: number; lieu_entrainement: string; blessures: string; alimentation: string; sommeil_stress: string; objectifs: string; objectif_echeance: string | null; objectif_pending: boolean; objectif_type: string | null; updated_at: string; status: StatusKey | null; subscription_end: string | null; pipeline_stage: StageKey | null; avatar_url: string | null; is_coach: boolean | null };
+type Client   = { id: string; email: string; prenom: string; nom: string; age: number; poids: number; taille: number; sexe: string; niveau_activite: string; experience: string; seances_par_semaine: number; lieu_entrainement: string; blessures: string; alimentation: string; sommeil_stress: string; objectifs: string; objectif_echeance: string | null; objectif_pending: boolean; objectif_type: string | null; updated_at: string; status: StatusKey | null; subscription_end: string | null; pipeline_stage: StageKey | null; avatar_url: string | null; is_coach: boolean | null; last_seen_at: string | null };
 type PendingSignup = { id: string; email: string; full_name: string | null; created_at: string; email_confirmed_at: string | null };
 type Seance   = { id: string; titre: string; type_seance: string | null; date_prevue: string | null; semaine: number | null; description: string | null; exercices: string | null; completed_at: string | null };
 type Note     = { id: string; client_id: string; content: string; created_at: string };
@@ -55,7 +55,7 @@ type MealItem = { id: string; plan_id: string; meal_type: string; name: string; 
 const todayStr = () => new Date().toISOString().split("T")[0];
 
 // Colonnes de la liste en mode tableau (aucun client ouvert) : en-tête et lignes partagent la grille.
-const ROW_COLS = "grid-cols-[minmax(0,1fr)_90px_60px]";
+const ROW_COLS = "grid-cols-[minmax(0,1fr)_110px_90px_60px]";
 
 function ClientAvatar({ c, color, size = 36 }: { c: Pick<Client, "prenom" | "nom" | "avatar_url">; color: string; size?: number }) {
   if (c.avatar_url) {
@@ -355,7 +355,7 @@ export default function ClientsPage() {
             deux colonnes en plus (abonnement, poids), dans une largeur contenue plutôt qu'étalée. */}
         {!selected && (
           <div className={`hidden md:grid ${ROW_COLS} gap-4 px-5 pt-3 pb-1.5 max-w-3xl text-[0.48rem] tracking-[0.18em] uppercase text-[var(--t-text-25)]`}>
-            <span>Client</span><span>Abonnement</span><span className="text-right">Poids</span>
+            <span>Client</span><span>Dernière visite</span><span>Abonnement</span><span className="text-right">Poids</span>
           </div>
         )}
         <div className={`flex-1 overflow-y-auto py-1 px-2 ${selected ? "" : "md:max-w-3xl"}`}>
@@ -397,6 +397,11 @@ export default function ClientsPage() {
                 </div>
                 {!selected && (
                   <>
+                    {(() => {
+                      const seen = lastSeenLabel(c.last_seen_at, nowTs);
+                      const color = seen.days === null ? "text-[var(--t-text-30)]" : seen.days <= 3 ? "text-[#5f9a82]" : seen.days <= 10 ? "text-[#c9a84c]" : "text-[#e07070]";
+                      return <span className={`hidden md:block text-[0.62rem] ${color}`}>{seen.label}</span>;
+                    })()}
                     <span className={`hidden md:block text-[0.6rem] ${subSoon ? "text-[#e09070]" : "text-[var(--t-text-35)]"}`}>
                       {subEnd ? (subDays! <= 0 ? "Expiré" : subEnd.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "2-digit" })) : "—"}
                     </span>
@@ -424,7 +429,7 @@ export default function ClientsPage() {
                 <div className="min-w-0">
                 <p className="text-[0.45rem] tracking-[0.2em] text-[var(--t-text-25)] uppercase truncate">{selected.email}</p>
                 <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl md:text-4xl text-[var(--t-text)] tracking-wide leading-none mt-0.5">{selected.prenom} {selected.nom}</h2>
-                <p className="text-[var(--t-text-30)] text-xs mt-1">{selected.age} ans · {selected.sexe} · {selected.poids} kg · {selected.taille} cm{bodyFat !== null && ` · Body fat ${bodyFat}%`}</p>
+                <p className="text-[var(--t-text-30)] text-xs mt-1">{selected.age} ans · {selected.sexe} · {selected.poids} kg · {selected.taille} cm{bodyFat !== null && ` · Body fat ${bodyFat}%`} · <span className="text-[var(--t-text-50)]">{lastSeenLabel(selected.last_seen_at, nowTs).label}</span></p>
                 </div>
               </div>
               <div className="flex items-center gap-3 shrink-0">
