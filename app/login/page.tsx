@@ -77,6 +77,9 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [nom, setNom] = useState("");
   const [isCoachSignup, setIsCoachSignup] = useState(false);
+  // Consentement explicite à l'inscription (CGV + confidentialité, dont données de santé
+  // et traitement par l'IA) — requis par la nLPD pour des données sensibles.
+  const [consent, setConsent] = useState(false);
   const [businessName, setBusinessName] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -108,6 +111,7 @@ export default function LoginPage() {
   const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleGoogleLogin = async () => {
+    if (mode === "register" && !consent) { setError("Merci d'accepter les conditions générales et la politique de confidentialité."); return; }
     setError(""); setGoogleLoading(true);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -138,6 +142,7 @@ export default function LoginPage() {
     if (mode === "register" && isCoachSignup && !businessName.trim()) { setError("Merci d'indiquer le nom de ton activité."); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setError("Cette adresse email n'est pas valide (ex : ton@email.com)."); return; }
     if (password.length < 6) { setError("Le mot de passe doit contenir au moins 6 caractères."); return; }
+    if (mode === "register" && !consent) { setError("Merci d'accepter les conditions générales et la politique de confidentialité."); return; }
 
     setLoading(true);
 
@@ -306,6 +311,25 @@ export default function LoginPage() {
                   </button>
                 )}
               </div>
+            )}
+
+            {mode === "register" && (
+              <button type="button" onClick={() => setConsent(v => !v)} className="w-full flex items-start gap-3 text-left">
+                <span className={`shrink-0 mt-0.5 w-4 h-4 rounded border flex items-center justify-center transition-colors ${consent ? "bg-[#c9a84c] border-[#c9a84c]" : "border-white/20"}`}>
+                  {consent && <Icon icon={Check} size={10} strokeWidth={3} className="text-black"/>}
+                </span>
+                <span className="text-[0.7rem] text-white/50 leading-relaxed">
+                  J&apos;accepte les <Link href="/cgv" target="_blank" onClick={e => e.stopPropagation()} className="underline hover:text-[#c9a84c]">conditions générales</Link> et
+                  la <Link href="/mentions-legales#donnees-personnelles" target="_blank" onClick={e => e.stopPropagation()} className="underline hover:text-[#c9a84c]">politique de confidentialité</Link>,
+                  y compris le traitement de mes données de santé (poids, mensurations, photos, alimentation) et leur analyse par l&apos;IA.
+                </span>
+              </button>
+            )}
+            {mode === "login" && (
+              <p className="text-[0.62rem] text-white/25 leading-relaxed">
+                En te connectant, tu acceptes les <Link href="/cgv" className="underline">conditions générales</Link> et
+                la <Link href="/mentions-legales#donnees-personnelles" className="underline">politique de confidentialité</Link>.
+              </p>
             )}
 
             {error && <p className="text-red-400 text-xs">{error}</p>}

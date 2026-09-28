@@ -27,13 +27,54 @@ export default function MentionsLegalesPage() {
 
           <section id="donnees-personnelles">
             <h2 className="text-white font-semibold text-base mb-3 uppercase tracking-widest text-[0.75rem] text-[#c9a84c]">
-              Données Personnelles
+              Politique de confidentialité
             </h2>
+            <div className="flex flex-col gap-3">
+              <p>
+                Cette politique s&apos;applique au site et à l&apos;application Samuel Coaching, conformément à la loi fédérale
+                sur la protection des données (nLPD) et, pour les utilisateurs situés dans l&apos;Union européenne, au RGPD.
+                Responsable du traitement : Samuel Waelti, Samuel Coaching, Lausanne — sam97waelti@gmail.com.
+              </p>
+              <p>
+                <strong className="text-white/80">Données traitées.</strong> Formulaire de contact : prénom, objectif, message.
+                Application : identité et e-mail, profil (âge, taille, sexe, objectifs, niveau, blessures, alimentation, sommeil
+                et stress), poids, mensurations, estimations de masse grasse, photos corporelles, repas et nutrition, séances
+                d&apos;entraînement, pas, check-ins et messages. Une partie de ces données sont des <em>données sensibles relatives à la santé</em> :
+                elles ne sont traitées qu&apos;avec ton consentement explicite, donné à l&apos;inscription.
+              </p>
+              <p>
+                <strong className="text-white/80">Finalités.</strong> Fournir l&apos;application et ton suivi, permettre à ton coach
+                (si tu en as un) de t&apos;accompagner, t&apos;envoyer les rappels que tu actives, gérer ton abonnement et sa facturation.
+                Aucune donnée n&apos;est vendue ni utilisée à des fins publicitaires.
+              </p>
+              <p>
+                <strong className="text-white/80">Ton coach.</strong> Si tu rejoins un coach avec son code, il accède à ton profil et à
+                ton suivi (hors photos que tu ne partages pas). Pour te détacher de ton coach, écris-nous à l&apos;adresse ci-dessus.
+              </p>
+              <p>
+                <strong className="text-white/80">Prestataires.</strong> Supabase (base de données et fichiers, hébergés dans l&apos;UE — Irlande),
+                Vercel Inc. (hébergement de l&apos;application, États-Unis), Anthropic PBC (analyse par intelligence artificielle des photos
+                de repas et corporelles et des données nécessaires aux conseils, États-Unis), Stripe (paiements) et Open Food Facts
+                (recherche d&apos;aliments, sans donnée personnelle). Les transferts vers les États-Unis sont encadrés par des garanties
+                contractuelles appropriées. Les données transmises à l&apos;IA servent uniquement à produire la réponse demandée.
+              </p>
+              <p>
+                <strong className="text-white/80">Conservation.</strong> Tant que ton compte existe. La suppression du compte (Compte ›
+                Préférences) efface tes données et tes photos ; les données de facturation sont conservées le temps imposé par la loi (10 ans).
+              </p>
+              <p>
+                <strong className="text-white/80">Tes droits.</strong> Accès, rectification, effacement, remise de tes données et retrait
+                de ton consentement à tout moment, en écrivant à sam97waelti@gmail.com. Tu peux aussi t&apos;adresser au Préposé fédéral à la
+                protection des données et à la transparence (PFPDT).
+              </p>
+            </div>
+          </section>
+
+          <section id="cgv">
+            <h2 className="text-white font-semibold text-base mb-3 uppercase tracking-widest text-[0.75rem] text-[#c9a84c]">Conditions générales</h2>
             <p>
-              Les données collectées via le formulaire de contact (prénom, objectif, message) sont utilisées uniquement pour répondre à vos demandes et ne sont pas partagées avec des tiers.
-            </p>
-            <p className="mt-3">
-              Conformément au RGPD, vous disposez d&apos;un droit d&apos;accès, de rectification et de suppression de vos données. Pour exercer ce droit, contactez : sam97waelti@gmail.com
+              Les conditions d&apos;utilisation et d&apos;abonnement de l&apos;application sont disponibles sur la page{" "}
+              <Link href="/cgv" className="text-[#c9a84c] hover:text-white transition-colors underline">Conditions générales</Link>.
             </p>
           </section>
 

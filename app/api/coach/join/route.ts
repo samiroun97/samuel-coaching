@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { requireUser } from "@/lib/apiAuth";
+import { getEntitlement } from "@/lib/entitlements";
 
 // Rattache l'appelant (client) au coach propriétaire du code fourni, en
 // remplaçant tout lien existant — "rejoindre" un coach via son code déplace
@@ -21,8 +22,22 @@ export async function POST(req: NextRequest) {
     const { data: caller } = await admin.from("profiles").select("is_coach").eq("id", user.id).single();
     if (caller?.is_coach) return NextResponse.json({ error: "Un coach ne peut pas rejoindre un autre coach" }, { status: 400 });
 
-    const { data: coach } = await admin.from("coaches").select("id, business_name").eq("code", clean).maybeSingle();
+    const { data: coach } = await admin.from("coaches").select("id, business_name, profile_id").eq("code", clean).maybeSingle();
     if (!coach) return NextResponse.json({ error: "Code invalide" }, { status: 404 });
+
+    // Nombre de clients plafonné par la formule du coach (Coach Base 10, Premium 30 — voir
+    // lib/plans.ts). Un client déjà rattaché à ce coach ne compte pas comme un nouveau.
+    const ent = await getEntitlement(admin, coach.profile_id);
+    if (ent.tier === "none") {
+      return NextResponse.json({ error: "L'abonnement de ce coach est inactif — contacte-le directement." }, { status: 403 });
+    }
+    if (ent.maxClients !== null) {
+      const { count } = await admin.from("coach_clients").select("id", { count: "exact", head: true })
+        .eq("coach_id", coach.id).neq("client_id", user.id);
+      if ((count ?? 0) >= ent.maxClients) {
+        return NextResponse.json({ error: "Ce coach a atteint le nombre maximum de clients de sa formule — contacte-le directement." }, { status: 403 });
+      }
+    }
 
     await admin.from("coach_clients").delete().eq("client_id", user.id);
     const { error } = await admin.from("coach_clients").insert({ coach_id: coach.id, client_id: user.id });

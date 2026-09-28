@@ -8,7 +8,7 @@ import { startStateSync, SYNC_STATUS_EVENT } from "@/lib/syncStorage";
 import { isCoachUser, isCoachActive, isPlatformAdmin, getMyOwnBusinessName } from "@/lib/coach";
 import ThemeToggle from "@/components/ThemeToggle";
 import { Icon } from "@/components/Icon";
-import { LayoutGrid, Users, Layers, Share2, MessageSquare, FileText, LogOut, Eye } from "@/lib/solarIcons";
+import { LayoutGrid, Users, Layers, Share2, MessageSquare, FileText, LogOut, Eye, Star } from "@/lib/solarIcons";
 
 export default function CRMLayout({ children }: { children: React.ReactNode }) {
   const router   = useRouter();
@@ -87,6 +87,7 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
     { href: "/crm/pipeline",   label: "Pipeline",   icon: Layers,        badge: 0 },
     { href: "/crm/programmes", label: "Programmes", icon: FileText,      badge: 0 },
     { href: "/crm/inbox",      label: "Inbox",      icon: MessageSquare, badge: unread },
+    { href: "/crm/abonnement", label: "Abonnement", icon: Star,          badge: 0 },
   ];
 
   if (!ready) return (
@@ -165,7 +166,8 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
 
       {/* Bottom nav — mobile only */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[var(--t-bg)] border-t border-[var(--t-border-soft)] flex z-10 pb-[env(safe-area-inset-bottom)]">
-        {nav.map(({ href, label, icon, badge }) => {
+        {/* Abonnement hors barre mobile (déjà 6 entrées) : accessible via Mon espace perso › Compte. */}
+        {nav.filter(n => n.href !== "/crm/abonnement").map(({ href, label, icon, badge }) => {
           const active = pathname === href || (href !== "/crm" && pathname.startsWith(href));
           return (
             <Link key={href} href={href}
