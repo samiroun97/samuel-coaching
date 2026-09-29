@@ -168,7 +168,7 @@ export default function PreferencesPage() {
 
   const savePassword = async () => {
     setPwdError(""); setPwdSaved(false);
-    if (newPassword.length < 6) { setPwdError("Le mot de passe doit contenir au moins 6 caractères."); return; }
+    if (newPassword.length < 8) { setPwdError("Le mot de passe doit contenir au moins 8 caractères."); return; }
     if (newPassword !== confirmPassword) { setPwdError("Les deux mots de passe ne correspondent pas."); return; }
     setPwdSaving(true);
     const { error: err } = await supabase.auth.updateUser({ password: newPassword });

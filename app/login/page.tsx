@@ -102,7 +102,7 @@ export default function LoginPage() {
     const m = message.toLowerCase();
     if (m.includes("already registered") || m.includes("already exists")) return "Un compte existe déjà avec cet email. Essaie de te connecter.";
     if (m.includes("invalid login credentials")) return "Email ou mot de passe incorrect.";
-    if (m.includes("password") && (m.includes("short") || m.includes("at least"))) return "Le mot de passe doit contenir au moins 6 caractères.";
+    if (m.includes("password") && (m.includes("short") || m.includes("at least"))) return "Le mot de passe doit contenir au moins 8 caractères.";
     if (m.includes("email") && (m.includes("invalid") || m.includes("valid"))) return "Cette adresse email n'est pas valide.";
     if (m.includes("rate limit")) return "Trop de tentatives, réessaie dans quelques minutes.";
     return message;
@@ -141,7 +141,9 @@ export default function LoginPage() {
     if (mode === "register" && !nom.trim()) { setError("Merci d'indiquer ton prénom."); return; }
     if (mode === "register" && isCoachSignup && !businessName.trim()) { setError("Merci d'indiquer le nom de ton activité."); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setError("Cette adresse email n'est pas valide (ex : ton@email.com)."); return; }
-    if (password.length < 6) { setError("Le mot de passe doit contenir au moins 6 caractères."); return; }
+    // 8 caractères minimum pour un NOUVEAU mot de passe (recommandation Supabase) ; la connexion
+    // garde 6 pour ne pas bloquer les comptes existants créés avec l'ancienne règle.
+    if (password.length < (mode === "register" ? 8 : 6)) { setError(`Le mot de passe doit contenir au moins ${mode === "register" ? 8 : 6} caractères.`); return; }
     if (mode === "register" && !consent) { setError("Merci d'accepter les conditions générales et la politique de confidentialité."); return; }
 
     setLoading(true);
@@ -313,7 +315,7 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full bg-[#0a0a0a] border border-white/10 text-white placeholder-white/20 text-sm px-4 py-3 rounded-xl focus:outline-none focus:border-[#c9a84c]/50"
                 />
-                {mode === "register" && <p className="text-white/25 text-[0.65rem] mt-1.5">Au moins 6 caractères, rien de plus compliqué.</p>}
+                {mode === "register" && <p className="text-white/25 text-[0.65rem] mt-1.5">Au moins 8 caractères, rien de plus compliqué.</p>}
                 {mode === "login" && (
                   <button type="button" onClick={() => { setMode("forgot"); setError(""); setSuccess(""); }}
                     className="text-white/30 hover:text-[#c9a84c] text-[0.65rem] mt-2 transition-colors">
