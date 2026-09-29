@@ -136,8 +136,9 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
 
         <div className="px-2 py-3 border-t border-[var(--t-border-soft)] flex flex-col gap-2">
           {isAdmin && (
-            <Link href="/operateur"
-              className="flex items-center gap-2.5 px-3 py-2.5 text-[0.6rem] tracking-[0.1em] uppercase text-[#c9a84c] hover:text-[var(--t-text-70)] border-l-2 border-transparent hover:border-[#c9a84c] transition-all">
+            <Link href="/crm/plateforme"
+              className={`flex items-center gap-2.5 px-3 py-2.5 text-[0.6rem] tracking-[0.1em] uppercase text-[#c9a84c] hover:text-[var(--t-text-70)] border-l-2 hover:border-[#c9a84c] transition-all ${
+                pathname.startsWith("/crm/plateforme") ? "bg-[#c9a84c]/5 border-[#c9a84c]" : "border-transparent"}`}>
               <Icon icon={Share2} size={15}/>Vue plateforme
             </Link>
           )}
@@ -188,7 +189,7 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
           Aperçu
         </Link>
         {isAdmin && (
-          <Link href="/operateur"
+          <Link href="/crm/plateforme"
             className="flex-1 flex flex-col items-center gap-1 py-2.5 text-[0.45rem] tracking-[0.08em] uppercase text-[#c9a84c] transition-all">
             <Icon icon={Share2} size={15}/>
             Plateforme

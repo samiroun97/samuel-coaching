@@ -137,7 +137,7 @@ export default function CRMDashboard() {
   unlinked.forEach(u => {
     const name = `${u.prenom} ${u.nom}`.trim() || u.email;
     const days = u.createdAt ? Math.floor((now - new Date(u.createdAt).getTime()) / 86400000) : null;
-    alerts.push({ type: "sans_coach", label: `${name} — inscrit sans coach`, sub: days === null ? "À prendre en charge" : days <= 0 ? "Inscrit aujourd'hui" : `Inscrit il y a ${days}j`, href: "/operateur", color: "#e0a070", urgency: 2 });
+    alerts.push({ type: "sans_coach", label: `${name} — inscrit sans coach`, sub: days === null ? "À prendre en charge" : days <= 0 ? "Inscrit aujourd'hui" : `Inscrit il y a ${days}j`, href: "/crm/plateforme", color: "#e0a070", urgency: 2 });
   });
   alerts.sort((a, b) => a.urgency - b.urgency);
 
