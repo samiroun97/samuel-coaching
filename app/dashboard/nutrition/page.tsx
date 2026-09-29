@@ -1272,12 +1272,13 @@ export default function NutritionPage() {
           <input type="text" value={dietaryPrefs} onChange={e => setDietaryPrefs(e.target.value)}
             placeholder="Allergies, intolérances, régime (ex: sans lactose, sans gluten, pas de porc, végétarien…)"
             className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-[0.7rem] px-3.5 py-2.5 mb-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"/>
-          <button onClick={generateIdeas} disabled={ideaLoading || !canGenerateIdeas}
+          <button data-loading={ideaLoading || undefined} onClick={generateIdeas} disabled={ideaLoading || !canGenerateIdeas}
             className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.72rem] font-bold tracking-[0.18em] uppercase py-3.5 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40 disabled:hover:translate-y-0 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             {ideaLoading
-              ? <><Loader size={28} className="-my-2"/>Génération…</>
+              ? <>Génération…</>
               : <><Icon icon={Plus} size={12} strokeWidth={2}/>Générer une idée repas</>}
           </button>
+{ideaLoading && <div className="flex justify-center pt-3"><Loader size={80}/></div>}
         </div>
 
         <div className="flex gap-1.5 px-5 pt-3 pb-1">
@@ -1405,19 +1406,17 @@ export default function NutritionPage() {
                   <div className="grid grid-cols-2 gap-2">
                     <button onClick={() => photoRef.current?.click()} disabled={analyzing || photoProcessing}
                       className="flex items-center justify-center gap-2 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-xl text-[0.7rem] tracking-[0.1em] uppercase px-3 py-2.5 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors disabled:opacity-40">
-                      {photoProcessing ? <Loader size={28} className="-my-2"/> : (
-                        <Icon icon={Camera} size={14} strokeWidth={1.5} className="shrink-0"/>
-                      )}
+                      <Icon icon={Camera} size={14} strokeWidth={1.5} className="shrink-0"/>
                       {photoProcessing ? "Traitement…" : photoPreview ? "Reprendre une photo" : "Prendre une photo"}
                     </button>
                     <button onClick={() => galleryRef.current?.click()} disabled={analyzing || photoProcessing}
                       className="flex items-center justify-center gap-2 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-xl text-[0.7rem] tracking-[0.1em] uppercase px-3 py-2.5 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors disabled:opacity-40">
-                      {photoProcessing ? <Loader size={28} className="-my-2"/> : (
-                        <Icon icon={ImageIcon} size={14} strokeWidth={1.5} className="shrink-0"/>
-                      )}
+                      <Icon icon={ImageIcon} size={14} strokeWidth={1.5} className="shrink-0"/>
                       {photoProcessing ? "Traitement…" : photoPreview ? "Changer la photo" : "Choisir une photo"}
                     </button>
                   </div>
+                  {/* Animation sous les boutons (dedans, trop petite pour être vue). */}
+                  {photoProcessing && <div className="flex justify-center"><Loader size={80}/></div>}
                   <input ref={photoRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={selectPhoto}/>
                   <input ref={galleryRef} type="file" accept="image/*" className="hidden" onChange={selectPhoto}/>
 
@@ -1468,10 +1467,11 @@ export default function NutritionPage() {
                   </div>
 
                   {!aiResult && (
-                    <button onClick={runAnalysis} disabled={analyzing || (!photoPreview && !description.trim())}
+                    <><button data-loading={analyzing || undefined} onClick={runAnalysis} disabled={analyzing || (!photoPreview && !description.trim())}
                       className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                      {analyzing ? <><Loader size={28} className="-my-2"/>Analyse en cours…</> : "Estimer les macros avec l'IA →"}
+                      {analyzing ? <>Analyse en cours…</> : "Estimer les macros avec l'IA →"}
                     </button>
+{analyzing && <div className="flex justify-center pt-3"><Loader size={80}/></div>}</>
                   )}
 
                   {aiError && <p className="text-xs text-[#e07070] rounded-xl border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2">{aiError}</p>}

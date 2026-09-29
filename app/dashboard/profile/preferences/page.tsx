@@ -295,12 +295,13 @@ export default function PreferencesPage() {
             {error && <p className="text-xs text-[#e07070] rounded-xl border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2">{error}</p>}
             {saved && <p className="text-xs text-[#7eb8a0] rounded-xl border border-[#7eb8a0]/20 bg-[#7eb8a0]/5 px-3 py-2">Profil mis à jour ✓ — le BMR sera recalculé automatiquement</p>}
 
-            <button onClick={save} disabled={saving}
+            <button data-loading={saving || undefined} onClick={save} disabled={saving}
               className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-50 flex items-center justify-center gap-2">
               {saving
-                ? <><Loader size={28} className="-my-2"/>Enregistrement…</>
+                ? <>Enregistrement…</>
                 : "Enregistrer"}
             </button>
+{saving && <div className="flex justify-center pt-3"><Loader size={80}/></div>}
           </div>
         </Row>
       </div>
@@ -421,12 +422,13 @@ export default function PreferencesPage() {
             {pwdError && <p className="text-xs text-[#e07070] rounded-xl border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2">{pwdError}</p>}
             {pwdSaved && <p className="text-xs text-[#7eb8a0] rounded-xl border border-[#7eb8a0]/20 bg-[#7eb8a0]/5 px-3 py-2">Mot de passe mis à jour ✓</p>}
 
-            <button onClick={savePassword} disabled={pwdSaving}
+            <button data-loading={pwdSaving || undefined} onClick={savePassword} disabled={pwdSaving}
               className="border border-[#c9a84c]/30 text-[#c9a84c] rounded-xl text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
               {pwdSaving
-                ? <><Loader size={30} className="-my-2"/>Enregistrement…</>
+                ? <>Enregistrement…</>
                 : "Changer le mot de passe"}
             </button>
+{pwdSaving && <div className="flex justify-center pt-3"><Loader size={80}/></div>}
           </div>
         </Row>
 
@@ -444,12 +446,13 @@ export default function PreferencesPage() {
             {emailError && <p className="text-xs text-[#e07070] rounded-xl border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2">{emailError}</p>}
             {emailSent && <p className="text-xs text-[#7eb8a0] rounded-xl border border-[#7eb8a0]/20 bg-[#7eb8a0]/5 px-3 py-2 leading-relaxed">Vérifie ta boîte mail pour confirmer le changement — l&apos;adresse actuelle reste active tant que ce n&apos;est pas fait.</p>}
 
-            <button onClick={saveEmail} disabled={emailSaving}
+            <button data-loading={emailSaving || undefined} onClick={saveEmail} disabled={emailSaving}
               className="border border-[#c9a84c]/30 text-[#c9a84c] rounded-xl text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
               {emailSaving
-                ? <><Loader size={30} className="-my-2"/>Envoi…</>
+                ? <>Envoi…</>
                 : "Changer l'email"}
             </button>
+{emailSaving && <div className="flex justify-center pt-3"><Loader size={80}/></div>}
           </div>
         </Row>
       </div>
@@ -494,10 +497,10 @@ export default function PreferencesPage() {
                   className="flex-1 border border-[var(--t-border)] text-[var(--t-text-50)] rounded-xl text-[0.7rem] font-bold tracking-[0.15em] uppercase py-3 hover:bg-[var(--t-glass-bg)] transition-colors disabled:opacity-50">
                   Annuler
                 </button>
-                <button onClick={deleteAccount} disabled={deleteConfirm.trim().toUpperCase() !== "SUPPRIMER" || deleting}
+                <button data-loading={deleting || undefined} onClick={deleteAccount} disabled={deleteConfirm.trim().toUpperCase() !== "SUPPRIMER" || deleting}
                   className="flex-1 bg-[#e07070] text-black rounded-xl text-[0.7rem] font-bold tracking-[0.15em] uppercase py-3 hover:brightness-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                   {deleting
-                    ? <><Loader size={28} className="-my-2"/>Suppression…</>
+                    ? <>Suppression…</>
                     : "Supprimer"}
                 </button>
               </div>

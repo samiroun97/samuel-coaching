@@ -404,3 +404,28 @@ body {
     @apply font-sans;
   }
 }
+/* Bouton en cours d'action (attribut data-loading) : il garde sa couleur au lieu de pâlir
+   comme un bouton désactivé, et un reflet lumineux le balaie. L'animation de chargement
+   s'affiche à côté/en dessous du bouton (dedans, sur fond doré, elle était invisible). */
+button[data-loading] {
+  position: relative;
+  overflow: hidden;
+  opacity: 1 !important;
+  cursor: wait !important;
+}
+button[data-loading]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.55) 50%, transparent 70%);
+  background-size: 220% 100%;
+  animation: btn-loading-sheen 1.3s linear infinite;
+  pointer-events: none;
+}
+@keyframes btn-loading-sheen {
+  from { background-position: 160% 0; }
+  to   { background-position: -60% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  button[data-loading]::after { animation: none; }
+}

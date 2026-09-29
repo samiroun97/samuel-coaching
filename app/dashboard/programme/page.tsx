@@ -959,12 +959,13 @@ export default function ProgrammePage() {
             )}
           </div>
         ) : (
-          <button onClick={estimate} disabled={!activity.trim() || estimating}
+          <><button data-loading={estimating || undefined} onClick={estimate} disabled={!activity.trim() || estimating}
             className="border border-[var(--t-border)] text-[var(--t-text-40)] rounded-xl text-[0.7rem] tracking-[0.15em] uppercase py-3 hover:border-[#e0672f]/40 hover:text-[#e0672f] transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             {estimating
-              ? <><Loader size={28} className="-my-2"/>Estimation en cours…</>
+              ? <>Estimation en cours…</>
               : <><TdeeIcon size={14}/>Estimer les calories brûlées</>}
           </button>
+{estimating && <div className="flex justify-center pt-3"><Loader size={80}/></div>}</>
         )}
         </>
         )}
@@ -1115,10 +1116,10 @@ export default function ProgrammePage() {
               <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[#c9a84c]">Mon programme</p>
               <span className="text-[0.62rem] text-[var(--t-text-25)] uppercase tracking-wider">{coachSeances.length} séance{coachSeances.length > 1 ? "s" : ""}</span>
             </div>
-            <button onClick={downloadPdf} disabled={exportingPdf}
+            <button onClick={downloadPdf} disabled={exportingPdf} data-loading={exportingPdf || undefined}
               className="shrink-0 flex items-center gap-1 text-[#c9a84c] text-[0.6rem] font-bold tracking-[0.12em] uppercase py-2 hover:opacity-75 active:scale-95 transition-all disabled:opacity-40">
               {exportingPdf ? (
-                <Loader size={30} className="-my-2"/>
+                <Loader size={40} className="-my-3"/>
               ) : (
                 <RichIcon name="download" size={34} className="-my-3.5 drop-shadow-[0_4px_8px_rgba(201,168,76,0.45)]"/>
               )}

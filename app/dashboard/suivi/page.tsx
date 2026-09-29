@@ -786,12 +786,13 @@ export default function SuiviPage() {
           )}
         </div>
 
-        <button onClick={downloadWeeklyReport} disabled={reportLoading}
+        <button data-loading={reportLoading || undefined} onClick={downloadWeeklyReport} disabled={reportLoading}
           className="w-full bg-gradient-to-br from-[#f0dfa4] via-[#e2c97e] to-[#b8933f] text-black text-[0.85rem] font-bold tracking-[0.2em] uppercase py-5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] active:scale-[0.98] active:brightness-95 transition-all duration-150 disabled:opacity-40 flex items-center justify-center gap-2">
           {reportLoading
-            ? <><Loader size={28} className="-my-2"/>Préparation…</>
+            ? <>Préparation…</>
             : "Voir le bilan PDF →"}
         </button>
+{reportLoading && <div className="flex justify-center pt-3"><Loader size={80}/></div>}
       </div>
       {reportError && <p className="text-xs text-[#e07070] rounded-xl border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2 mb-4">{reportError}</p>}
 
@@ -1065,12 +1066,13 @@ export default function SuiviPage() {
               {reportSent && <p className="text-[0.62rem] text-[#7eb8a0] text-center py-1">Signalement envoyé, merci ! 🙏</p>}
             </div>
           ) : (
-            <button onClick={estimate} disabled={photoCount === 0 || estimating}
+            <><button data-loading={estimating || undefined} onClick={estimate} disabled={photoCount === 0 || estimating}
               className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
               {estimating
-                ? <><Loader size={28} className="-my-2"/>Analyse en cours…</>
+                ? <>Analyse en cours…</>
                 : `Estimer avec l'IA · ${photoCount}/5 photo${photoCount > 1 ? "s" : ""} →`}
             </button>
+{estimating && <div className="flex justify-center pt-3"><Loader size={80}/></div>}</>
           )}
         </div>
       )}
