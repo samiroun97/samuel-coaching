@@ -1,6 +1,6 @@
 -- ══════════════════════════════════════════════════════════════
 -- Migration : sécurité des rôles + table des abonnements (formules)
--- Appliquée le 28.09.2026 (via MCP Supabase)
+-- À appliquer dans Supabase › SQL Editor (préparée le 28.09.2026)
 -- ══════════════════════════════════════════════════════════════
 
 -- 1) FAILLE : update_own_profile laissait un utilisateur modifier TOUTES les colonnes de
