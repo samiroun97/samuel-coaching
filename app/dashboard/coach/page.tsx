@@ -163,7 +163,7 @@ export default function CoachPage() {
                   <Icon icon={Bot} size={13} strokeWidth={1.5} className="text-[#c9a84c]"/>
                 </div>
                 <div className="bg-[var(--t-surface)] border border-[var(--t-border)] rounded-xl px-4 py-3 flex items-center gap-1.5">
-                  <Loader size={28}/>
+                  <Loader size={40}/>
                 </div>
               </div>
             )}

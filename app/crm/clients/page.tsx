@@ -292,7 +292,7 @@ export default function ClientsPage() {
     filtered.sort((a, b) => LEVEL_RANK[statusFor(statuses, a.email).level] - LEVEL_RANK[statusFor(statuses, b.email).level]);
   }
 
-  if (loading) return <div className="flex items-center justify-center min-h-screen"><Loader size={64}/></div>;
+  if (loading) return <div className="flex items-center justify-center min-h-screen"><Loader size={96}/></div>;
 
   return (
     <div className="flex h-[calc(100dvh-50px-env(safe-area-inset-bottom))] md:h-screen overflow-hidden">

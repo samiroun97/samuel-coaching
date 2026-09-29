@@ -428,7 +428,7 @@ export default function ProgrammesPage() {
   const inp = "w-full bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
   const lbl = "text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c] block mb-1.5";
 
-  if (loading) return <div className="flex items-center justify-center min-h-screen"><Loader size={64}/></div>;
+  if (loading) return <div className="flex items-center justify-center min-h-screen"><Loader size={96}/></div>;
 
   const initials = (c: Pick<Client, "prenom" | "nom">) => `${c.prenom?.[0] ?? ""}${c.nom?.[0] ?? ""}`.toUpperCase() || "?";
   const Avatar = ({ c, size, color }: { c: Client; size: number; color: string }) => c.avatar_url ? (
@@ -776,7 +776,7 @@ export default function ProgrammesPage() {
                       value={genDescription} onChange={e => setGenDescription(e.target.value)}/>
                     <button onClick={generate} disabled={generating}
                       className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.58rem] font-bold tracking-[0.18em] uppercase py-3 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:-translate-y-0.5 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
-                      {generating ? <><Loader size={20} className="-my-1"/>Génération en cours…</> : `Générer ${Math.min(Math.max(selected.seances_par_semaine || 3, 2), 6)} séances →`}
+                      {generating ? <><Loader size={28} className="-my-2"/>Génération en cours…</> : `Générer ${Math.min(Math.max(selected.seances_par_semaine || 3, 2), 6)} séances →`}
                     </button>
                     <p className="text-[0.55rem] text-[var(--t-text-30)]">Basé sur l&apos;objectif, le niveau, le lieu et les blessures de {selected.prenom}. Tout reste modifiable avant l&apos;envoi.</p>
                   </div>
@@ -846,7 +846,7 @@ export default function ProgrammesPage() {
                 <p className="text-[0.55rem] text-[var(--t-text-30)] flex-1">Les séances sans date arrivent dans « Sans date » : glisse-les ensuite sur un jour.</p>
                 <button onClick={sendAll} disabled={sending || !drafts.some(d => d.titre.trim())}
                   className="px-5 py-3 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.58rem] font-bold tracking-[0.15em] uppercase rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] disabled:opacity-40 flex items-center gap-2 shrink-0">
-                  {sending ? <><Loader size={20} className="-my-1"/>Envoi…</> : `Envoyer à ${selected.prenom} →`}
+                  {sending ? <><Loader size={28} className="-my-2"/>Envoi…</> : `Envoyer à ${selected.prenom} →`}
                 </button>
               </div>
             )}

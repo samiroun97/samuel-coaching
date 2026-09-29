@@ -48,7 +48,7 @@ export default function MesFacturesPage() {
   return (
     <div className="px-4 md:px-8 py-6 md:py-8 max-w-3xl flex flex-col gap-5">
       <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-5xl text-[var(--t-text)] tracking-wide leading-none">SÉANCES & FACTURES</h1>
-      {loading ? <div className="flex justify-center py-16"><Loader size={64}/></div> : (
+      {loading ? <div className="flex justify-center py-16"><Loader size={96}/></div> : (
         <>
           <Section title="Mes packs">
             {active.length === 0 ? <Empty text="Aucun pack de séances en cours."/> : active.map(({ p, u }) => (

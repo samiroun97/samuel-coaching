@@ -84,7 +84,7 @@ export function PipelineBoard({ variant = "page" }: { variant?: "page" | "sectio
 
   if (loading) return (
     <div className={`flex items-center justify-center ${variant === "page" ? "h-full min-h-screen" : "py-12"}`}>
-      <Loader size={64}/>
+      <Loader size={96}/>
     </div>
   );
 

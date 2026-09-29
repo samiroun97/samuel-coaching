@@ -95,7 +95,7 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
 
   if (!ready) return (
     <div className="min-h-screen bg-[var(--t-bg2)] flex items-center justify-center">
-      <Loader size={64}/>
+      <Loader size={96}/>
     </div>
   );
 

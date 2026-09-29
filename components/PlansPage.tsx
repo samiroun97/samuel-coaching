@@ -27,7 +27,7 @@ export function PlansPage() {
   }, []);
 
   if (error) return <p className="text-sm text-[#e07070]">{error}</p>;
-  if (!me) return <div className="flex justify-center py-16"><Loader size={64}/></div>;
+  if (!me) return <div className="flex justify-center py-16"><Loader size={96}/></div>;
 
   const ent = me.entitlement;
   const isOwner = ent.kind === "owner";

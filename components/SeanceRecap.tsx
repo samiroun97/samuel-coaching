@@ -65,7 +65,7 @@ export function SeanceRecap({ seance, clientId, clientBodyweight }: {
     return () => { cancelled = true; };
   }, [seance.id, seance.exercices, clientId, clientBodyweight]);
 
-  if (!loaded) return <div className="flex justify-center py-6"><Loader size={56}/></div>;
+  if (!loaded) return <div className="flex justify-center py-6"><Loader size={80}/></div>;
   if (!analysis) return <SeanceBody s={seance}/>;
 
   const runs = groupExerciceRuns(parseExercices(seance.exercices));

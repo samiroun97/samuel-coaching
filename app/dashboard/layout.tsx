@@ -159,7 +159,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (!ready) return (
     <div className="min-h-screen bg-[var(--t-bg)] flex items-center justify-center">
-      <Loader size={64}/>
+      <Loader size={96}/>
     </div>
   );
 

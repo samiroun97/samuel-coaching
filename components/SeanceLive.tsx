@@ -1090,7 +1090,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
 
       <div className="flex-1 overflow-y-auto px-4 pb-28 max-w-lg mx-auto w-full" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         {!loaded ? (
-          <div className="flex justify-center py-8"><Loader size={56}/></div>
+          <div className="flex justify-center py-8"><Loader size={80}/></div>
         ) : (() => {
           // Bloc Bibliothèque/Nom libre — extrait car nécessaire à deux endroits : après
           // l'exercice affiché quand la séance en a déjà, et seul quand elle est encore vide

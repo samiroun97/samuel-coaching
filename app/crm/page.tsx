@@ -173,7 +173,7 @@ export default function CRMDashboard() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-full min-h-screen">
-      <Loader size={64}/>
+      <Loader size={96}/>
     </div>
   );
 

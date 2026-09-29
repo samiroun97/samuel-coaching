@@ -1275,7 +1275,7 @@ export default function NutritionPage() {
           <button onClick={generateIdeas} disabled={ideaLoading || !canGenerateIdeas}
             className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.72rem] font-bold tracking-[0.18em] uppercase py-3.5 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40 disabled:hover:translate-y-0 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             {ideaLoading
-              ? <><Loader size={20} className="-my-1"/>Génération…</>
+              ? <><Loader size={28} className="-my-2"/>Génération…</>
               : <><Icon icon={Plus} size={12} strokeWidth={2}/>Générer une idée repas</>}
           </button>
         </div>
@@ -1405,14 +1405,14 @@ export default function NutritionPage() {
                   <div className="grid grid-cols-2 gap-2">
                     <button onClick={() => photoRef.current?.click()} disabled={analyzing || photoProcessing}
                       className="flex items-center justify-center gap-2 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-xl text-[0.7rem] tracking-[0.1em] uppercase px-3 py-2.5 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors disabled:opacity-40">
-                      {photoProcessing ? <Loader size={20} className="-my-1"/> : (
+                      {photoProcessing ? <Loader size={28} className="-my-2"/> : (
                         <Icon icon={Camera} size={14} strokeWidth={1.5} className="shrink-0"/>
                       )}
                       {photoProcessing ? "Traitement…" : photoPreview ? "Reprendre une photo" : "Prendre une photo"}
                     </button>
                     <button onClick={() => galleryRef.current?.click()} disabled={analyzing || photoProcessing}
                       className="flex items-center justify-center gap-2 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-xl text-[0.7rem] tracking-[0.1em] uppercase px-3 py-2.5 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors disabled:opacity-40">
-                      {photoProcessing ? <Loader size={20} className="-my-1"/> : (
+                      {photoProcessing ? <Loader size={28} className="-my-2"/> : (
                         <Icon icon={ImageIcon} size={14} strokeWidth={1.5} className="shrink-0"/>
                       )}
                       {photoProcessing ? "Traitement…" : photoPreview ? "Changer la photo" : "Choisir une photo"}
@@ -1470,7 +1470,7 @@ export default function NutritionPage() {
                   {!aiResult && (
                     <button onClick={runAnalysis} disabled={analyzing || (!photoPreview && !description.trim())}
                       className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                      {analyzing ? <><Loader size={20} className="-my-1"/>Analyse en cours…</> : "Estimer les macros avec l'IA →"}
+                      {analyzing ? <><Loader size={28} className="-my-2"/>Analyse en cours…</> : "Estimer les macros avec l'IA →"}
                     </button>
                   )}
 
@@ -1585,7 +1585,7 @@ export default function NutritionPage() {
                   <div className="relative">
                     <input className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm pl-4 pr-10 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
                       placeholder="Rechercher un aliment par nom…" value={query} onChange={e => { setQuery(e.target.value); setSelected(null); setScanError(""); }}/>
-                    {searching && <div className="absolute right-3 top-1/2 -translate-y-1/2"><Loader size={20} className="-my-1"/></div>}
+                    {searching && <div className="absolute right-3 top-1/2 -translate-y-1/2"><Loader size={28} className="-my-2"/></div>}
                   </div>
                   {scanError && <p className="text-[0.7rem] text-[#e07070]">{scanError}</p>}
 

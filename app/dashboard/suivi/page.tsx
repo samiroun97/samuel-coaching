@@ -789,7 +789,7 @@ export default function SuiviPage() {
         <button onClick={downloadWeeklyReport} disabled={reportLoading}
           className="w-full bg-gradient-to-br from-[#f0dfa4] via-[#e2c97e] to-[#b8933f] text-black text-[0.85rem] font-bold tracking-[0.2em] uppercase py-5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] active:scale-[0.98] active:brightness-95 transition-all duration-150 disabled:opacity-40 flex items-center justify-center gap-2">
           {reportLoading
-            ? <><Loader size={20} className="-my-1"/>Préparation…</>
+            ? <><Loader size={28} className="-my-2"/>Préparation…</>
             : "Voir le bilan PDF →"}
         </button>
       </div>
@@ -1068,7 +1068,7 @@ export default function SuiviPage() {
             <button onClick={estimate} disabled={photoCount === 0 || estimating}
               className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
               {estimating
-                ? <><Loader size={20} className="-my-1"/>Analyse en cours…</>
+                ? <><Loader size={28} className="-my-2"/>Analyse en cours…</>
                 : `Estimer avec l'IA · ${photoCount}/5 photo${photoCount > 1 ? "s" : ""} →`}
             </button>
           )}

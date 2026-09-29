@@ -12,7 +12,7 @@ export default function CrmIaRedirect() {
   useEffect(() => { router.replace("/crm/plateforme"); }, [router]);
   return (
     <div className="min-h-screen bg-[var(--t-bg)] flex items-center justify-center">
-      <Loader size={64}/>
+      <Loader size={96}/>
     </div>
   );
 }

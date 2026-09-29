@@ -134,7 +134,7 @@ export default function OperateurPage() {
 
   if (checking || !allowed) return (
     <div className="flex-1 flex items-center justify-center py-24">
-      <Loader size={64}/>
+      <Loader size={96}/>
     </div>
   );
 

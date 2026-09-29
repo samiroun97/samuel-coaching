@@ -115,7 +115,7 @@ export function OperateurIaCorrections() {
     setNoteText("");
   };
 
-  if (loading) return <div className="flex items-center justify-center py-16"><Loader size={64}/></div>;
+  if (loading) return <div className="flex items-center justify-center py-16"><Loader size={96}/></div>;
 
   return (
     <div>

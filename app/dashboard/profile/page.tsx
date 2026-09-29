@@ -209,7 +209,7 @@ export default function ProfilePage() {
           </div>
           {avatarUploading ? (
             <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center">
-              <Loader size={30}/>
+              <Loader size={40}/>
             </div>
           ) : (
             <span className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full bg-[#c9a84c] border-2 border-[var(--t-surface)] flex items-center justify-center shadow-[0_1px_3px_rgba(0,0,0,0.2)]">

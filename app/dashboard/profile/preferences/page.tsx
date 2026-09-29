@@ -298,7 +298,7 @@ export default function PreferencesPage() {
             <button onClick={save} disabled={saving}
               className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-50 flex items-center justify-center gap-2">
               {saving
-                ? <><Loader size={20} className="-my-1"/>Enregistrement…</>
+                ? <><Loader size={28} className="-my-2"/>Enregistrement…</>
                 : "Enregistrer"}
             </button>
           </div>
@@ -357,7 +357,7 @@ export default function PreferencesPage() {
           onClick={() => { toggle("steps"); if (openSection !== "steps" && !stepsToken) loadStepsToken(); }}>
           {stepsLoading && !stepsToken ? (
             <div className="flex items-center gap-2 text-xs text-[var(--t-text-30)]">
-              <Loader size={22}/>Génération du lien…
+              <Loader size={30} className="-my-2"/>Génération du lien…
             </div>
           ) : stepsToken ? (
             <div className="flex flex-col gap-4">
@@ -424,7 +424,7 @@ export default function PreferencesPage() {
             <button onClick={savePassword} disabled={pwdSaving}
               className="border border-[#c9a84c]/30 text-[#c9a84c] rounded-xl text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
               {pwdSaving
-                ? <><Loader size={22}/>Enregistrement…</>
+                ? <><Loader size={30} className="-my-2"/>Enregistrement…</>
                 : "Changer le mot de passe"}
             </button>
           </div>
@@ -447,7 +447,7 @@ export default function PreferencesPage() {
             <button onClick={saveEmail} disabled={emailSaving}
               className="border border-[#c9a84c]/30 text-[#c9a84c] rounded-xl text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
               {emailSaving
-                ? <><Loader size={22}/>Envoi…</>
+                ? <><Loader size={30} className="-my-2"/>Envoi…</>
                 : "Changer l'email"}
             </button>
           </div>
@@ -497,7 +497,7 @@ export default function PreferencesPage() {
                 <button onClick={deleteAccount} disabled={deleteConfirm.trim().toUpperCase() !== "SUPPRIMER" || deleting}
                   className="flex-1 bg-[#e07070] text-black rounded-xl text-[0.7rem] font-bold tracking-[0.15em] uppercase py-3 hover:brightness-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                   {deleting
-                    ? <><Loader size={20} className="-my-1"/>Suppression…</>
+                    ? <><Loader size={28} className="-my-2"/>Suppression…</>
                     : "Supprimer"}
                 </button>
               </div>

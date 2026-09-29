@@ -201,7 +201,7 @@ export default function InboxPage() {
     setSending(false);
   };
 
-  if (loading) return <div className="flex items-center justify-center min-h-screen"><Loader size={64}/></div>;
+  if (loading) return <div className="flex items-center justify-center min-h-screen"><Loader size={96}/></div>;
 
   return (
     <div className="flex h-[calc(100dvh-50px-env(safe-area-inset-bottom))] md:h-screen overflow-hidden">

@@ -8,7 +8,7 @@ import animationData from "@/lib/lottie/loader.json";
 // verre blanc → ivoire. Lecteur lottie-web SVG (avec effets : le halo flou du centre) chargé à la demande :
 // jamais plus d'un ou deux chargements à l'écran, contrairement aux icônes de liste qui
 // avaient dû repasser en SVG statique (cf. AddExerciceIcon.tsx).
-export function Loader({ size = 64, className = "" }: { size?: number; className?: string }) {
+export function Loader({ size = 96, className = "" }: { size?: number; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
