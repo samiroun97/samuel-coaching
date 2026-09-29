@@ -60,7 +60,11 @@ export async function POST(req: NextRequest) {
       };
     }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-    const userRows = (profiles ?? []).map(p => {
+    const userRows: ({
+      id: string; email: string; prenom: string; nom: string; objectifs: string;
+      createdAt: string | null; lastSeenAt: string | null; kind: string;
+      coachId: string | null; coachName: string | null; onboarded: boolean;
+    } & ReturnType<typeof subInfo>)[] = (profiles ?? []).map(p => {
       const link = linkByClient.get(p.id);
       const coach = link ? coachById.get(link.coach_id) : undefined;
       const kind = p.is_platform_admin ? "operateur" : p.is_coach ? "coach" : link ? "client" : "solo";
@@ -72,7 +76,22 @@ export async function POST(req: NextRequest) {
         onboarded: !!p.prenom,
         ...subInfo(p.id),
       };
-    }).sort((a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime());
+    });
+
+    // Inscrits qui n'ont pas terminé le questionnaire d'accueil : compte de connexion mais
+    // aucune ligne profiles (créée à la fin de l'onboarding) — invisibles partout ailleurs.
+    const { data: authList } = await admin.auth.admin.listUsers({ perPage: 1000 });
+    for (const u of authList?.users ?? []) {
+      if (profileById.has(u.id)) continue;
+      const meta = (u.user_metadata ?? {}) as { full_name?: string };
+      userRows.push({
+        id: u.id, email: u.email ?? "", prenom: meta.full_name ?? "", nom: "", objectifs: "",
+        createdAt: u.created_at, lastSeenAt: u.last_sign_in_at ?? null,
+        kind: "solo", coachId: null, coachName: null, onboarded: false,
+        ...subInfo(u.id),
+      });
+    }
+    userRows.sort((a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime());
 
     // Revenu mensuel récurrent estimé : formules actives payantes (hors essai), annuel ramené au mois.
     const mrr = subs.filter(s => s.status !== "trialing" && isSubActive(s))

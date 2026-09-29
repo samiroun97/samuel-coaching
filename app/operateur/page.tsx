@@ -142,6 +142,9 @@ export default function OperateurPage() {
 
   const AssignControl = ({ u }: { u: UserRow }) => {
     if (u.kind === "coach" || u.kind === "operateur" || !data) return null;
+    // Pas encore de profil (questionnaire non terminé) : rattachement impossible (coach_clients
+    // référence profiles) — il se fera tout seul avec son code d'invitation à la fin du questionnaire.
+    if (!u.onboarded) return <span className="text-[0.66rem] text-[var(--t-text-40)] whitespace-nowrap">Questionnaire non terminé</span>;
     return (
       <div className="flex items-center gap-2">
         {u.kind === "solo" && myCoach && (
@@ -167,7 +170,7 @@ export default function OperateurPage() {
         <div className="flex items-center gap-2 flex-wrap">
           <p className="text-sm font-semibold text-[var(--t-text)] truncate">{u.prenom || u.nom ? `${u.prenom} ${u.nom}`.trim() : "Sans nom"}</p>
           <Badge kind={u.kind}/>
-          {!u.onboarded && <span className="text-[0.58rem] text-[var(--t-text-40)]">profil incomplet</span>}
+          {!u.onboarded && <span className="text-[0.58rem] text-[#e0a070]">questionnaire non terminé</span>}
         </div>
         <p className="text-[0.7rem] text-[var(--t-text-40)] truncate">{u.email}</p>
       </div>
