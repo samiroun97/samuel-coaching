@@ -2,9 +2,10 @@
 import { useEffect, useRef } from "react";
 import animationData from "@/lib/lottie/loader.json";
 
-// Indicateur de chargement de l'app : l'animation Lottie fournie par Samuel (anneau doré et
-// étoiles), fond noir et contour sombre retirés pour s'afficher proprement sur les thèmes
-// clair comme sombre. Lecteur lottie-web SVG (avec effets : le halo flou du centre) chargé à la demande :
+// Indicateur de chargement de l'app : l'animation Lottie « bulle IA » fournie par Samuel
+// (bulle de verre, arcs qui tournent, étoiles), recolorée dans la palette de l'app : violets,
+// bleus et cyan d'origine → or, bronze, champagne ; arcs blancs → or (visibles sur fond clair) ;
+// verre blanc → ivoire. Lecteur lottie-web SVG (avec effets : le halo flou du centre) chargé à la demande :
 // jamais plus d'un ou deux chargements à l'écran, contrairement aux icônes de liste qui
 // avaient dû repasser en SVG statique (cf. AddExerciceIcon.tsx).
 export function Loader({ size = 64, className = "" }: { size?: number; className?: string }) {
