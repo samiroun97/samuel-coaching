@@ -313,7 +313,10 @@ export default function ClientsPage() {
               <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-[var(--t-text)] tracking-wide leading-none">CLIENTS</h1>
             </div>
           </div>
-          <input className={`w-full bg-[var(--t-surface)] border border-[var(--t-border-soft)] shadow-[0_2px_10px_-6px_rgba(0,0,0,0.12)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-30)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/50 transition-colors mb-3 md:max-w-md`} placeholder="Rechercher un client…" value={search} onChange={e => setSearch(e.target.value)}/>
+          <div className="relative mb-3 md:max-w-md">
+            <RichIcon name="uiSearch" size={24} className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none"/>
+            <input className={`w-full bg-[var(--t-surface)] border border-[var(--t-border-soft)] shadow-[0_2px_10px_-6px_rgba(0,0,0,0.12)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-30)] text-sm pl-11 pr-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/50 transition-colors`} placeholder="Rechercher un client…" value={search} onChange={e => setSearch(e.target.value)}/>
+          </div>
           <div className="flex gap-2 flex-wrap">
             <Select value={filterStage} onChange={setFilterStage}
               options={[{ value: "all", label: "Tous stages" }, ...Object.entries(STAGE_CFG).map(([k, v]) => ({ value: k, label: v.label }))]}

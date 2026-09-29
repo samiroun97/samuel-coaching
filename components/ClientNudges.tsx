@@ -121,7 +121,7 @@ export function ClientNudges({ userId }: { userId: string }) {
         <div className="flex items-center gap-4 rounded-2xl border border-[var(--t-border-soft)] bg-[var(--t-surface)] px-4 py-3.5 shadow-[0_2px_14px_-8px_rgba(0,0,0,0.18)]">
           <div className="relative w-12 h-12 flex items-center justify-center shrink-0">
             <div className="absolute inset-1 rounded-full blur-md bg-[#c9a84c] opacity-15"/>
-            <RichIcon name="chrono" size={44} className="relative"/>
+            <RichIcon name="uiBell" size={44} className="relative"/>
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-[0.9rem] font-semibold text-[var(--t-text)]">

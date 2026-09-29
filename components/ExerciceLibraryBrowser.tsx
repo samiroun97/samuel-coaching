@@ -8,6 +8,7 @@ import { CIBLE_TO_LIB, LIB_TO_CIBLE, CATEGORY_ORDER, HIDDEN_CHIPS } from "@/lib/
 import { Icon } from "@/components/Icon";
 import { ExerciceDetailView } from "@/components/ExerciceDetailView";
 import { Filter, Dumbbell, X, LayoutGrid, PersonStanding } from "@/lib/solarIcons";
+import { RichIcon } from "@/components/RichIcon";
 
 // Bouton icône seul (pas de texte visible) avec pastille dorée quand un filtre est actif —
 // plus discret qu'un menu déroulant classique et plus proche des conventions mobiles
@@ -158,10 +159,13 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
       {!detailEntry && (
         <>
           <div className="px-5 pb-3 shrink-0 flex items-center gap-2">
-            <input
-              className="flex-1 min-w-0 bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
-              placeholder="Rechercher un exercice…" value={query} onChange={e => setQuery(e.target.value)}
-            />
+            <div className="relative flex-1 min-w-0">
+              <RichIcon name="uiSearch" size={24} className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none"/>
+              <input
+                className="w-full bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm pl-11 pr-3 py-2 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
+                placeholder="Rechercher un exercice…" value={query} onChange={e => setQuery(e.target.value)}
+              />
+            </div>
             {equipements.length > 0 && <FilterDropdown value={equipement ?? ""} onChange={v => setEquipement(v || null)} options={equipements.map(eq => ({ value: eq, label: eq }))}/>}
             <div className="shrink-0 flex border border-[var(--t-border)] rounded-full p-0.5">
               <button type="button" onClick={() => setViewMode("grid")} title="Vue grille"

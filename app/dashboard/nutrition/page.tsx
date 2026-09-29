@@ -1582,7 +1582,8 @@ export default function NutritionPage() {
                   </div>
 
                   <div className="relative">
-                    <input className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm pl-4 pr-10 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
+                    <RichIcon name="uiSearch" size={24} className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none"/>
+                    <input className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm pl-11 pr-10 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
                       placeholder="Rechercher un aliment par nom…" value={query} onChange={e => { setQuery(e.target.value); setSelected(null); setScanError(""); }}/>
                     {searching && <div className="absolute right-3 top-1/2 -translate-y-1/2"><Loader size={34} className="-my-3"/></div>}
                   </div>

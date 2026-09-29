@@ -38,6 +38,20 @@ const RICH_ICON_SRC = {
   // Badge autonome (même principe que monogram) — icône de téléchargement fournie par le
   // client pour tous les boutons de téléchargement de l'app (ex. export PDF programme).
   download: "/icons-rich/download.webp",
+  // Icônes d'interface 3D (packs IconScout « Dark Gold Basic UI » — Hariz Design — et voisins
+  // du même auteur), recolorées aux couleurs de l'app : tuile or, symbole blanc (même langage
+  // que les boutons dorés à texte blanc et la bulle de chargement). Réservées aux boutons-icônes
+  // et champs (loupe, calendrier…) ; les petites flèches/croix restent des icônes fines.
+  uiAdd: "/icons-rich/ui/add.webp",
+  uiCheck: "/icons-rich/ui/check.webp",
+  uiBell: "/icons-rich/ui/bell.webp",
+  uiDownload: "/icons-rich/ui/download.webp",
+  uiGraph: "/icons-rich/ui/graph.webp",
+  uiCalendar: "/icons-rich/ui/calendar.webp",
+  uiSearch: "/icons-rich/ui/search.webp",
+  uiShare: "/icons-rich/ui/share.webp",
+  uiMail: "/icons-rich/ui/mail.webp",
+  uiDocument: "/icons-rich/ui/document.webp",
 } as const;
 
 export type RichIconName = keyof typeof RICH_ICON_SRC;

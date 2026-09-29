@@ -9,6 +9,7 @@ import { ExerciceDetailView } from "@/components/ExerciceDetailView";
 import { AddExerciceIcon } from "@/components/AddExerciceIcon";
 import { InfoIcon } from "@/components/InfoIcon";
 import { Dumbbell, X, Plus } from "@/lib/solarIcons";
+import { RichIcon } from "@/components/RichIcon";
 
 // Sélecteur d'exercice épuré, dédié au client (SeanceBuilder) — contrairement à
 // ExerciceLibraryBrowser (CRM coach : grille de vignettes + vue silhouette + filtre
@@ -97,8 +98,11 @@ export function ExercicePicker({ catalogue, onPick, onClose }: {
     <div className="fixed inset-0 z-[60] bg-[var(--t-bg)] flex flex-col">
       <div className="shrink-0 border-b border-[var(--t-border-soft)]">
         <div className="flex items-center gap-2 px-4 pt-3.5 pb-2.5 max-w-lg mx-auto w-full">
-          <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Rechercher un exercice…"
-            className="flex-1 min-w-0 bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border)] rounded-xl text-base px-3.5 py-2.5 text-[var(--t-text)] placeholder-[var(--t-text-20)] focus:outline-none focus:border-[#c9a84c]/40 transition-colors"/>
+          <div className="relative flex-1 min-w-0">
+            <RichIcon name="uiSearch" size={24} className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none"/>
+            <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Rechercher un exercice…"
+              className="w-full bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border)] rounded-xl text-base pl-11 pr-3.5 py-2.5 text-[var(--t-text)] placeholder-[var(--t-text-20)] focus:outline-none focus:border-[#c9a84c]/40 transition-colors"/>
+          </div>
           <button onClick={onClose} className="shrink-0 w-11 h-11 flex items-center justify-center text-[var(--t-text-30)] hover:text-[var(--t-text)] transition-colors -mr-2.5">
             <Icon icon={X} size={20} strokeWidth={2}/>
           </button>
