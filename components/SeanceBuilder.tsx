@@ -152,7 +152,7 @@ export default function SeanceBuilder({ items, onChange, catalogue }: {
                 )}
                 {uploading === i && (
                   <span className="absolute inset-0 bg-black/60 flex items-center justify-center text-white">
-                    <Loader size={28} className="-my-2"/>
+                    <Loader size={28} className="-my-2" tone="dark"/>
                   </span>
                 )}
               </div>

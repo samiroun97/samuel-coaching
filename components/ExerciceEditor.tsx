@@ -65,7 +65,7 @@ function ExerciceThumb({ catalogue, ex, onChange }: { catalogue: CatalogueEntry[
         </button>
         {editable && uploading && (
           <span className="absolute inset-0 rounded-xl bg-black/60 flex items-center justify-center text-white">
-            <Loader size={28} className="-my-2"/>
+            <Loader size={28} className="-my-2" tone="dark"/>
           </span>
         )}
         {editable && !uploading && (
