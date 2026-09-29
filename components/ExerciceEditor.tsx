@@ -75,7 +75,7 @@ function ExerciceThumb({ catalogue, ex, onChange }: { catalogue: CatalogueEntry[
               <Icon icon={X} size={8} strokeWidth={3.5}/>
             </button>
           ) : (
-            <span className="absolute -bottom-1.5 -right-1.5 w-5 h-5 rounded-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black flex items-center justify-center pointer-events-none">
+            <span className="absolute -bottom-1.5 -right-1.5 w-5 h-5 rounded-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold flex items-center justify-center pointer-events-none">
               <IconCamera/>
             </span>
           )
@@ -250,7 +250,7 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
                 <div className="inline-flex bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-full p-0.5">
                   {MODES.map(m => (
                     <button key={m.key} type="button" onClick={() => setMode(i, m.key)}
-                      className={`px-2.5 py-1 rounded-full text-[0.56rem] tracking-[0.08em] uppercase transition-colors ${ex.mode === m.key ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-[var(--t-text-35)] hover:text-[var(--t-text-60)]"}`}>
+                      className={`px-2.5 py-1 rounded-full text-[0.56rem] tracking-[0.08em] uppercase transition-colors ${ex.mode === m.key ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold" : "text-[var(--t-text-35)] hover:text-[var(--t-text-60)]"}`}>
                       {m.label}
                     </button>
                   ))}
@@ -348,13 +348,13 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
                   const active = !customRepos[i] && exerciceRepos(i) === v;
                   return (
                     <button key={v || "off"} type="button" onClick={() => setRepos(i, v)}
-                      className={`text-[0.56rem] tracking-[0.08em] uppercase px-2.5 py-1 rounded-full border transition-colors ${active ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-35)] hover:border-[#c9a84c]/40"}`}>
+                      className={`text-[0.56rem] tracking-[0.08em] uppercase px-2.5 py-1 rounded-full border transition-colors ${active ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold border-transparent" : "border-[var(--t-border)] text-[var(--t-text-35)] hover:border-[#c9a84c]/40"}`}>
                       {REST_LABELS[v]}
                     </button>
                   );
                 })}
                 <button type="button" onClick={() => setCustomRepos(p => ({ ...p, [i]: true }))}
-                  className={`text-[0.56rem] tracking-[0.08em] uppercase px-2.5 py-1 rounded-full border transition-colors ${customRepos[i] || !REST_PRESETS.includes(exerciceRepos(i)) ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-35)] hover:border-[#c9a84c]/40"}`}>
+                  className={`text-[0.56rem] tracking-[0.08em] uppercase px-2.5 py-1 rounded-full border transition-colors ${customRepos[i] || !REST_PRESETS.includes(exerciceRepos(i)) ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold border-transparent" : "border-[var(--t-border)] text-[var(--t-text-35)] hover:border-[#c9a84c]/40"}`}>
                   Perso
                 </button>
               </div>
@@ -576,7 +576,7 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
           </div>
           <button type="button" onClick={() => setPreviewMode(v => !v)}
             className={`shrink-0 flex items-center gap-1.5 px-3.5 text-[0.58rem] font-bold tracking-[0.08em] uppercase border-l border-[#c9a84c]/20 transition-colors ${
-              previewMode ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-[#c9a84c] hover:bg-[#c9a84c]/10"}`}>
+              previewMode ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold" : "text-[#c9a84c] hover:bg-[#c9a84c]/10"}`}>
             <Icon icon={previewMode ? Pencil : Eye} size={13} strokeWidth={2}/>
             {previewMode ? "Éditer" : "Aperçu"}
           </button>

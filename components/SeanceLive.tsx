@@ -155,7 +155,7 @@ function SetRow({ target, idx, log, prev, isExtra, canRemove, bodyweight, repKin
           done ? "border-[#7eb8a0]/40 bg-[#7eb8a0]/[0.08]" : warmup ? "border-[#e0834a]/35 bg-[#e0834a]/[0.06]" : drops.length > 0 ? "border-[#8aa0e0]/35 bg-[#8aa0e0]/[0.06]" : isExtra ? "border-[#c9a84c]/25 bg-[#c9a84c]/[0.04]" : "border-[var(--t-border-soft)] bg-[var(--t-bg)]"}`}>
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5 min-w-0">
-            <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${done ? "bg-[#7eb8a0] text-black" : "bg-[var(--t-track)] text-[var(--t-text-40)]"}`}>{idx + 1}</span>
+            <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${done ? "bg-[#7eb8a0] text-white" : "bg-[var(--t-track)] text-[var(--t-text-40)]"}`}>{idx + 1}</span>
             {hasPrev && (
               done ? (
                 <span className="text-xs text-[var(--t-text-20)] truncate">Préc. {fmtPrev(prev, repKind)}</span>
@@ -182,7 +182,7 @@ function SetRow({ target, idx, log, prev, isExtra, canRemove, bodyweight, repKin
               Éch.
             </button>
             <button onClick={onToggle}
-              className={`w-12 h-12 rounded-full border-2 shrink-0 flex items-center justify-center transition-all active:scale-90 ${done ? "bg-[#7eb8a0] border-[#7eb8a0] text-black" : "border-[var(--t-border)] text-transparent hover:border-[#7eb8a0]/50"}`}>
+              className={`w-12 h-12 rounded-full border-2 shrink-0 flex items-center justify-center transition-all active:scale-90 ${done ? "bg-[#7eb8a0] border-[#7eb8a0] text-white" : "border-[var(--t-border)] text-transparent hover:border-[#7eb8a0]/50"}`}>
               <Icon icon={Check} size={22} strokeWidth={3}/>
             </button>
           </div>
@@ -904,7 +904,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
           <div className="relative w-20 h-20 shrink-0">
             <RichIcon name="monogram" size={80} className="rounded-full drop-shadow-[0_8px_20px_rgba(201,168,76,0.35)]"/>
             <span className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-[#7eb8a0] border-2 border-[var(--t-bg)] flex items-center justify-center">
-              <Icon icon={Check} size={13} className="text-black"/>
+              <Icon icon={Check} size={13} className="text-white"/>
             </span>
           </div>
           <div>
@@ -966,7 +966,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
                           Ignorer
                         </button>
                         <button onClick={() => acceptSuggestion(nom, suggestion)} disabled={sendingNom === nom}
-                          className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.58rem] font-bold tracking-wider uppercase py-1.5 rounded-lg disabled:opacity-50 transition-all">
+                          className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.58rem] font-bold tracking-wider uppercase py-1.5 rounded-lg disabled:opacity-50 transition-all">
                           {sendingNom === nom ? "…" : "Accepter"}
                         </button>
                       </div>
@@ -978,7 +978,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
           )}
 
           <button onClick={onFinish}
-            className="w-full py-3 rounded-xl text-xs font-bold tracking-[0.15em] uppercase bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black shadow-[0_4px_16px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_20px_-4px_rgba(201,168,76,0.8)] transition-all mt-2">
+            className="w-full py-3 rounded-xl text-xs font-bold tracking-[0.15em] uppercase bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold shadow-[0_4px_16px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_20px_-4px_rgba(201,168,76,0.8)] transition-all mt-2">
             Fermer
           </button>
         </div>
@@ -1008,7 +1008,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
         </div>
         <p style={{ fontFamily: "var(--font-bebas)" }} className="text-xl tracking-wider text-[var(--t-text)] truncate flex-1 text-center">{seance.titre}</p>
         <button onClick={finish} disabled={finishing}
-          className="shrink-0 rounded-full text-xs font-bold tracking-[0.12em] uppercase px-5 py-3 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black shadow-[0_3px_12px_-4px_rgba(201,168,76,0.6)] transition-all disabled:opacity-50">
+          className="shrink-0 rounded-full text-xs font-bold tracking-[0.12em] uppercase px-5 py-3 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold shadow-[0_3px_12px_-4px_rgba(201,168,76,0.6)] transition-all disabled:opacity-50">
           {finishing ? "…" : "Terminer"}
         </button>
       </div>
@@ -1104,7 +1104,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
                   placeholder="Nom de l'exercice"
                   className="flex-1 min-w-0 bg-[var(--t-surface)] border border-[#c9a84c]/40 rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2 focus:outline-none"/>
                 <button onClick={addExercice} disabled={!newExerciceNom.trim()}
-                  className="shrink-0 w-11 h-11 rounded-xl bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black flex items-center justify-center disabled:opacity-40 transition-opacity">
+                  className="shrink-0 w-11 h-11 rounded-xl bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold flex items-center justify-center disabled:opacity-40 transition-opacity">
                   <Icon icon={Check} size={17} strokeWidth={2.5}/>
                 </button>
                 <button onClick={() => { setAddingExercice(false); setNewExerciceNom(""); }}
@@ -1162,7 +1162,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
               {runIdx < runs.length - 1 ? (
                 <button onClick={goNext}
                   className={`w-full py-4 rounded-2xl text-sm font-bold tracking-[0.1em] uppercase transition-all duration-200 flex items-center justify-center gap-2 ${
-                    complete ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black shadow-[0_4px_16px_-6px_rgba(201,168,76,0.6)] hover:-translate-y-0.5"
+                    complete ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold shadow-[0_4px_16px_-6px_rgba(201,168,76,0.6)] hover:-translate-y-0.5"
                              : "border border-[var(--t-border)] text-[var(--t-text-30)] hover:text-[var(--t-text-60)] hover:border-[var(--t-text-20)]"}`}>
                   Exercice suivant <span aria-hidden>→</span>
                 </button>
@@ -1176,7 +1176,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
                 <button type="button" onClick={() => setLinkSuperset(v => !v)}
                   className="w-full flex items-center gap-2 text-left px-1 py-1">
                   <span className={`w-4 h-4 rounded shrink-0 border flex items-center justify-center transition-colors ${linkSuperset ? "bg-[#c9a84c] border-[#c9a84c]" : "border-[var(--t-border)]"}`}>
-                    {linkSuperset && <Icon icon={Check} size={10} strokeWidth={3} className="text-black"/>}
+                    {linkSuperset && <Icon icon={Check} size={10} strokeWidth={3} className="text-white"/>}
                   </span>
                   <span className={`text-[0.62rem] tracking-wide transition-colors ${linkSuperset ? "text-[#c9a84c]" : "text-[var(--t-text-25)]"}`}>
                     Le prochain exercice ajouté rejoint « {exercices[run.indices[0]]?.nom || "cet exercice"} »{run.indices.length > 1 ? " (déjà groupé)" : ""}

@@ -658,7 +658,7 @@ export default function SuiviPage() {
             <p className="text-[0.62rem] text-[var(--t-text-30)] mt-0.5 tracking-wider">Recommandé toutes les 2 semaines</p>
           </div>
           <button onClick={() => { setShowUpload(true); setShowManual(false); }}
-            className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.68rem] font-bold tracking-[0.15em] uppercase px-4 py-2 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl shrink-0 ml-4">
+            className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.68rem] font-bold tracking-[0.15em] uppercase px-4 py-2 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl shrink-0 ml-4">
             Estimer →
           </button>
         </div>
@@ -698,7 +698,7 @@ export default function SuiviPage() {
                   <div className="flex gap-2">
                     {[1,2,3,4,5].map(n => (
                       <button key={n} onClick={() => r.set(n)}
-                        className={`flex-1 h-10 rounded-xl border text-sm font-bold transition-all ${r.value >= n ? "text-black" : "border-[var(--t-border-15)] text-[var(--t-text-25)]"}`}
+                        className={`flex-1 h-10 rounded-xl border text-sm font-bold transition-all ${r.value >= n ? "text-on-gold" : "border-[var(--t-border-15)] text-[var(--t-text-25)]"}`}
                         style={r.value >= n ? { backgroundColor: r.color, borderColor: r.color } : undefined}>{n}</button>
                     ))}
                   </div>
@@ -736,7 +736,7 @@ export default function SuiviPage() {
                 <div className="text-center py-2 text-[#7eb8a0] text-sm tracking-wider">Check-in envoyé ✓</div>
               ) : (
                 <button onClick={sendCheckin} disabled={ckSaving}
-                  className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-40">
+                  className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-40">
                   {ckSaving ? "Envoi…" : "Envoyer mon check-in à Samuel →"}
                 </button>
               )}
@@ -787,7 +787,7 @@ export default function SuiviPage() {
         </div>
 
         <button data-loading={reportLoading || undefined} onClick={downloadWeeklyReport} disabled={reportLoading}
-          className="w-full bg-gradient-to-br from-[#f0dfa4] via-[#e2c97e] to-[#b8933f] text-black text-[0.85rem] font-bold tracking-[0.2em] uppercase py-5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] active:scale-[0.98] active:brightness-95 transition-all duration-150 disabled:opacity-40 flex items-center justify-center gap-2">
+          className="w-full bg-gradient-to-br from-[#f0dfa4] via-[#e2c97e] to-[#b8933f] text-on-gold text-[0.85rem] font-bold tracking-[0.2em] uppercase py-5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] active:scale-[0.98] active:brightness-95 transition-all duration-150 disabled:opacity-40 flex items-center justify-center gap-2">
           {reportLoading
             ? <>Préparation…</>
             : "Voir le bilan PDF →"}
@@ -820,7 +820,7 @@ export default function SuiviPage() {
           <button onClick={saveWeight} disabled={weightSaving || !weightInput}
             aria-label={alreadySelected ? "Mettre à jour la pesée" : "Enregistrer la pesée"}
             className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors shrink-0 disabled:opacity-30 ${
-              weightSaved ? "bg-[#7eb8a0] text-black" : "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black hover:brightness-110"
+              weightSaved ? "bg-[#7eb8a0] text-on-gold" : "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold hover:brightness-110"
             }`}>
             {weightSaved ? (
               <Icon icon={Check} size={15} strokeWidth={2.5}/>
@@ -914,7 +914,7 @@ export default function SuiviPage() {
             )}
           </div>
           <button onClick={saveManualBF}
-            className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.15em] uppercase px-5 py-2.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl shrink-0 self-end">
+            className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.15em] uppercase px-5 py-2.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl shrink-0 self-end">
             Enregistrer →
           </button>
         </div>
@@ -1029,7 +1029,7 @@ export default function SuiviPage() {
                   Ré-estimer
                 </button>
                 <button onClick={saveBFEntry} disabled={sharing}
-                  className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-50">
+                  className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-50">
                   {sharing ? "Envoi…" : shareWithCoach ? "Enregistrer & partager →" : "Enregistrer →"}
                 </button>
               </div>
@@ -1051,7 +1051,7 @@ export default function SuiviPage() {
                         Annuler
                       </button>
                       <button onClick={submitReport} disabled={reportSending || !reportComment.trim()}
-                        className="flex-1 bg-[#e07070] text-black text-[0.65rem] font-bold tracking-[0.15em] uppercase py-2.5 hover:bg-[#e58888] transition-colors disabled:opacity-40 rounded-xl">
+                        className="flex-1 bg-[#e07070] text-white text-[0.65rem] font-bold tracking-[0.15em] uppercase py-2.5 hover:bg-[#e58888] transition-colors disabled:opacity-40 rounded-xl">
                         {reportSending ? "Envoi…" : "Envoyer le signalement →"}
                       </button>
                     </div>
@@ -1067,7 +1067,7 @@ export default function SuiviPage() {
             </div>
           ) : (
             <><button data-loading={estimating || undefined} onClick={estimate} disabled={photoCount === 0 || estimating}
-              className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+              className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
               {estimating
                 ? <>Analyse en cours…</>
                 : `Estimer avec l'IA · ${photoCount}/5 photo${photoCount > 1 ? "s" : ""} →`}

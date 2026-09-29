@@ -33,7 +33,7 @@ function InstallGuide() {
     <div className="mb-6">
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center gap-3 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black px-4 py-3 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
+        className="w-full flex items-center gap-3 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold px-4 py-3 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
       >
         <span className="flex-1 text-left text-[0.7rem] font-bold tracking-[0.08em] uppercase">Installer l&apos;app sur mon téléphone</span>
         <span className={`transition-transform ${open ? "rotate-180" : ""}`}>▾</span>
@@ -44,13 +44,13 @@ function InstallGuide() {
           <div className="flex mb-5 border border-white/10 rounded-xl overflow-hidden">
             <button
               onClick={() => setOs("ios")}
-              className={`flex-1 py-2 text-[0.65rem] tracking-[0.15em] uppercase font-bold transition-colors duration-200 ${os === "ios" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-white/40 hover:text-white"}`}
+              className={`flex-1 py-2 text-[0.65rem] tracking-[0.15em] uppercase font-bold transition-colors duration-200 ${os === "ios" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold" : "text-white/40 hover:text-white"}`}
             >
               iPhone
             </button>
             <button
               onClick={() => setOs("android")}
-              className={`flex-1 py-2 text-[0.65rem] tracking-[0.15em] uppercase font-bold transition-colors duration-200 ${os === "android" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-white/40 hover:text-white"}`}
+              className={`flex-1 py-2 text-[0.65rem] tracking-[0.15em] uppercase font-bold transition-colors duration-200 ${os === "android" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold" : "text-white/40 hover:text-white"}`}
             >
               Android
             </button>
@@ -206,13 +206,13 @@ export default function LoginPage() {
           <div className="flex mb-6 border border-white/10 rounded-xl overflow-hidden">
             <button
               onClick={() => { setMode("login"); setError(""); setSuccess(""); }}
-              className={`flex-1 py-3 text-xs tracking-[0.15em] uppercase font-bold transition-colors duration-200 ${mode === "login" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-white/40 hover:text-white"}`}
+              className={`flex-1 py-3 text-xs tracking-[0.15em] uppercase font-bold transition-colors duration-200 ${mode === "login" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold" : "text-white/40 hover:text-white"}`}
             >
               Connexion
             </button>
             <button
               onClick={() => { setMode("register"); setError(""); setSuccess(""); }}
-              className={`flex-1 py-3 text-xs tracking-[0.15em] uppercase font-bold transition-colors duration-200 ${mode === "register" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-white/40 hover:text-white"}`}
+              className={`flex-1 py-3 text-xs tracking-[0.15em] uppercase font-bold transition-colors duration-200 ${mode === "register" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold" : "text-white/40 hover:text-white"}`}
             >
               Créer un compte
             </button>
@@ -275,7 +275,7 @@ export default function LoginPage() {
                 <button type="button" onClick={() => setIsCoachSignup(v => !v)}
                   className="w-full flex items-center gap-3 text-left">
                   <span className={`shrink-0 w-4 h-4 rounded border flex items-center justify-center transition-colors ${isCoachSignup ? "bg-[#c9a84c] border-[#c9a84c]" : "border-white/20"}`}>
-                    {isCoachSignup && <Icon icon={Check} size={10} strokeWidth={3} className="text-black"/>}
+                    {isCoachSignup && <Icon icon={Check} size={10} strokeWidth={3} className="text-white"/>}
                   </span>
                   <span className="text-xs text-white/60">Je suis un coach professionnel</span>
                 </button>
@@ -328,7 +328,7 @@ export default function LoginPage() {
             {mode === "register" && (
               <button type="button" onClick={() => setConsent(v => !v)} className="w-full flex items-start gap-3 text-left">
                 <span className={`shrink-0 mt-0.5 w-4 h-4 rounded border flex items-center justify-center transition-colors ${consent ? "bg-[#c9a84c] border-[#c9a84c]" : "border-white/20"}`}>
-                  {consent && <Icon icon={Check} size={10} strokeWidth={3} className="text-black"/>}
+                  {consent && <Icon icon={Check} size={10} strokeWidth={3} className="text-white"/>}
                 </span>
                 <span className="text-[0.7rem] text-white/50 leading-relaxed">
                   J&apos;accepte les <Link href="/cgv" target="_blank" onClick={e => e.stopPropagation()} className="underline hover:text-[#c9a84c]">conditions générales</Link> et
@@ -350,7 +350,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-xs font-bold tracking-[0.2em] uppercase py-4 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 mt-2 disabled:opacity-50"
+              className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-xs font-bold tracking-[0.2em] uppercase py-4 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 mt-2 disabled:opacity-50"
             >
               {loading ? "..." : mode === "login" ? "Se connecter" : mode === "register" ? "Créer mon compte" : "Envoyer le lien"}
             </button>

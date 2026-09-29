@@ -128,7 +128,7 @@ export function OperateurIaCorrections() {
           return (
             <button key={t.key} onClick={() => setTab(t.key)}
               className={`flex-1 py-3 text-[0.68rem] tracking-[0.15em] uppercase transition-colors flex items-center justify-center gap-1.5 ${
-                tab === t.key ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black font-bold" : "text-[var(--t-text-40)] hover:text-[var(--t-text-70)] hover:bg-[var(--t-glass-bg)]"}`}>
+                tab === t.key ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold font-bold" : "text-[var(--t-text-40)] hover:text-[var(--t-text-70)] hover:bg-[var(--t-glass-bg)]"}`}>
               {t.label}
               {count > 0 && (
                 <span className={`text-[0.55rem] font-bold px-1.5 py-0.5 rounded-full min-w-[1.1rem] text-center ${tab === t.key ? "bg-black/20 text-white" : "bg-[#e07070] text-[var(--t-text)]"}`}>{count}</span>
@@ -149,7 +149,7 @@ export function OperateurIaCorrections() {
             {(["programme", "activite"] as Category[]).map(c => (
               <button key={c} onClick={() => setNoteSubCategory(c)}
                 className={`px-3 py-1.5 rounded-xl text-[0.6rem] tracking-wider uppercase transition-colors ${
-                  noteSubCategory === c ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black font-bold" : "border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-60)]"}`}>
+                  noteSubCategory === c ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold font-bold" : "border border-[var(--t-border)] text-[var(--t-text-40)] hover:text-[var(--t-text-60)]"}`}>
                 {CATEGORY_LABELS[c]}
               </button>
             ))}
@@ -159,7 +159,7 @@ export function OperateurIaCorrections() {
           placeholder="Ex : pour les plats de pâtes maison, compte toujours au moins 15g d'huile d'olive même si le client ne la mentionne pas..."
           value={noteText} onChange={e => setNoteText(e.target.value)}/>
         <button onClick={submitNote} disabled={noteSaving || !noteText.trim()}
-          className="self-end bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.65rem] font-bold tracking-[0.15em] uppercase px-4 py-2 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40 rounded-xl">
+          className="self-end bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.65rem] font-bold tracking-[0.15em] uppercase px-4 py-2 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40 rounded-xl">
           {noteSaving ? "Enregistrement…" : "Enregistrer →"}
         </button>
       </div>
@@ -294,7 +294,7 @@ function SignalementCard({
                 Annuler
               </button>
               <button onClick={() => onSubmitCorrect(originalData, comment)} disabled={correctionSaving || !correctionComment.trim()}
-                className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.55rem] font-bold tracking-wider uppercase py-2 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40 rounded-xl">
+                className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.55rem] font-bold tracking-wider uppercase py-2 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40 rounded-xl">
                 {correctionSaving ? "Envoi…" : "Envoyer à l'IA →"}
               </button>
             </div>

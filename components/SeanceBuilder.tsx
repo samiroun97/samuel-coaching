@@ -207,7 +207,7 @@ export default function SeanceBuilder({ items, onChange, catalogue }: {
                 return (
                   <button key={k} type="button" onClick={() => update(i, { repKind: k })}
                     className={`flex-1 text-[0.62rem] tracking-[0.06em] uppercase py-1.5 rounded-full border transition-colors ${
-                      active ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-35)] hover:border-[#c9a84c]/40"}`}>
+                      active ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold border-transparent" : "border-[var(--t-border)] text-[var(--t-text-35)] hover:border-[#c9a84c]/40"}`}>
                     {REP_KIND_LABELS[k]}
                   </button>
                 );
@@ -244,7 +244,7 @@ export default function SeanceBuilder({ items, onChange, catalogue }: {
                   return (
                     <button key={v || "off"} type="button" onClick={() => setRest(i, v)}
                       className={`text-[0.62rem] tracking-[0.06em] uppercase px-3 py-1.5 rounded-full border transition-colors ${
-                        active ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-35)] hover:border-[#c9a84c]/40"}`}>
+                        active ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold border-transparent" : "border-[var(--t-border)] text-[var(--t-text-35)] hover:border-[#c9a84c]/40"}`}>
                       {REST_LABELS[v]}
                     </button>
                   );

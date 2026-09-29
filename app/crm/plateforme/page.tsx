@@ -149,7 +149,7 @@ export default function OperateurPage() {
       <div className="flex items-center gap-2">
         {u.kind === "solo" && myCoach && (
           <button onClick={() => assign(u.id, myCoach.id)} disabled={busyId === u.id}
-            className="px-3 py-1.5 rounded-lg bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.62rem] font-bold tracking-wider uppercase whitespace-nowrap disabled:opacity-50">
+            className="px-3 py-1.5 rounded-lg bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.62rem] font-bold tracking-wider uppercase whitespace-nowrap disabled:opacity-50">
             {busyId === u.id ? "…" : "Prendre en charge"}
           </button>
         )}
@@ -202,7 +202,7 @@ export default function OperateurPage() {
         ] as const).map(t => (
           <button key={t.key} onClick={() => setSection(t.key)}
             className={`flex-1 whitespace-nowrap px-3 py-2 rounded-lg text-[0.68rem] font-semibold tracking-[0.08em] uppercase transition-colors ${
-              section === t.key ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-[var(--t-text-40)] hover:text-[var(--t-text-70)]"}`}>
+              section === t.key ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold" : "text-[var(--t-text-40)] hover:text-[var(--t-text-70)]"}`}>
             {t.label}
           </button>
         ))}

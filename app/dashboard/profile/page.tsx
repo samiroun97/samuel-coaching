@@ -213,7 +213,7 @@ export default function ProfilePage() {
             </div>
           ) : (
             <span className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full bg-[#c9a84c] border-2 border-[var(--t-surface)] flex items-center justify-center shadow-[0_1px_3px_rgba(0,0,0,0.2)]">
-              <Icon icon={Pencil} size={9} strokeWidth={2.5} className="text-black"/>
+              <Icon icon={Pencil} size={9} strokeWidth={2.5} className="text-on-gold"/>
             </span>
           )}
         </label>
@@ -323,7 +323,7 @@ export default function ProfilePage() {
                   placeholder="Code du coach"
                   className="flex-1 min-w-0 bg-[var(--t-bg)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm tracking-[0.15em] uppercase px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"/>
                 <button onClick={joinCoach} disabled={!joinCode.trim() || joining}
-                  className="shrink-0 px-4 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.65rem] font-bold tracking-[0.15em] uppercase rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed">
+                  className="shrink-0 px-4 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.65rem] font-bold tracking-[0.15em] uppercase rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed">
                   {joining ? "…" : "Rejoindre"}
                 </button>
               </div>
@@ -368,7 +368,7 @@ export default function ProfilePage() {
               <div className="text-center py-2 text-[#7eb8a0] text-xs tracking-wider">Merci, c&apos;est envoyé ✓</div>
             ) : (
               <button onClick={sendFeedback} disabled={!fbMsg.trim() || fbSending}
-                className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                 {fbSending ? "Envoi…" : "Envoyer"}
               </button>
             )}
@@ -399,7 +399,7 @@ export default function ProfilePage() {
                 <div className="flex flex-wrap gap-2">
                   {OBJECTIF_TYPES.map(o => (
                     <button key={o.value} type="button" onClick={() => setObjForm(f => ({ ...f, objectifType: o.value }))}
-                      className={`text-[0.65rem] tracking-wider px-3 py-2 rounded-xl border transition-colors ${objForm.objectifType === o.value ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-[var(--t-border-15)] text-[var(--t-text-40)] hover:border-[var(--t-border)]"}`}>
+                      className={`text-[0.65rem] tracking-wider px-3 py-2 rounded-xl border transition-colors ${objForm.objectifType === o.value ? "bg-[#c9a84c] border-[#c9a84c] text-on-gold" : "border-[var(--t-border-15)] text-[var(--t-text-40)] hover:border-[var(--t-border)]"}`}>
                       {o.label}
                     </button>
                   ))}
@@ -418,7 +418,7 @@ export default function ProfilePage() {
                 <div className="flex flex-wrap gap-2 mb-2">
                   {ECHEANCES.map(e => (
                     <button key={e} type="button" onClick={() => setObjForm(f => ({ ...f, echeance: e, echeanceDate: "" }))}
-                      className={`text-[0.65rem] tracking-wider px-3 py-2 rounded-xl border transition-colors ${objForm.echeance === e ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-[var(--t-border-15)] text-[var(--t-text-40)] hover:border-[var(--t-border)]"}`}>
+                      className={`text-[0.65rem] tracking-wider px-3 py-2 rounded-xl border transition-colors ${objForm.echeance === e ? "bg-[#c9a84c] border-[#c9a84c] text-on-gold" : "border-[var(--t-border-15)] text-[var(--t-text-40)] hover:border-[var(--t-border)]"}`}>
                       {e}
                     </button>
                   ))}
@@ -461,7 +461,7 @@ export default function ProfilePage() {
                 <div className="flex flex-wrap gap-2">
                   {EXPERIENCE_OPTIONS.map(o => (
                     <button key={o} type="button" onClick={() => setObjForm(f => ({ ...f, experience: o }))}
-                      className={`text-[0.65rem] tracking-wider px-3 py-2 rounded-xl border transition-colors ${objForm.experience === o ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-[var(--t-border-15)] text-[var(--t-text-40)] hover:border-[var(--t-border)]"}`}>
+                      className={`text-[0.65rem] tracking-wider px-3 py-2 rounded-xl border transition-colors ${objForm.experience === o ? "bg-[#c9a84c] border-[#c9a84c] text-on-gold" : "border-[var(--t-border-15)] text-[var(--t-text-40)] hover:border-[var(--t-border)]"}`}>
                       {o}
                     </button>
                   ))}
@@ -473,7 +473,7 @@ export default function ProfilePage() {
                 <div className="flex flex-wrap gap-2">
                   {DUREE_OPTIONS.map(o => (
                     <button key={o} type="button" onClick={() => setObjForm(f => ({ ...f, dureeSeance: o }))}
-                      className={`text-[0.65rem] tracking-wider px-3 py-2 rounded-xl border transition-colors ${objForm.dureeSeance === o ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-[var(--t-border-15)] text-[var(--t-text-40)] hover:border-[var(--t-border)]"}`}>
+                      className={`text-[0.65rem] tracking-wider px-3 py-2 rounded-xl border transition-colors ${objForm.dureeSeance === o ? "bg-[#c9a84c] border-[#c9a84c] text-on-gold" : "border-[var(--t-border-15)] text-[var(--t-text-40)] hover:border-[var(--t-border)]"}`}>
                       {o}
                     </button>
                   ))}
@@ -488,7 +488,7 @@ export default function ProfilePage() {
                     return (
                       <button key={l} type="button"
                         onClick={() => setObjForm(f => ({ ...f, lieux: checked ? f.lieux.filter(x => x !== l) : [...f.lieux, l] }))}
-                        className={`flex items-center gap-1.5 text-[0.65rem] tracking-wider px-3 py-2 rounded-xl border transition-colors ${checked ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-[var(--t-border-15)] text-[var(--t-text-40)] hover:border-[var(--t-border)]"}`}>
+                        className={`flex items-center gap-1.5 text-[0.65rem] tracking-wider px-3 py-2 rounded-xl border transition-colors ${checked ? "bg-[#c9a84c] border-[#c9a84c] text-on-gold" : "border-[var(--t-border-15)] text-[var(--t-text-40)] hover:border-[var(--t-border)]"}`}>
                         <span className={`w-3 h-3 rounded-sm border flex items-center justify-center shrink-0 ${checked ? "border-black" : "border-[var(--t-text-25)]"}`}>
                           {checked && <Icon icon={Check} size={8} strokeWidth={3}/>}
                         </span>
@@ -504,7 +504,7 @@ export default function ProfilePage() {
                 <div className="flex flex-wrap gap-2">
                   {["2", "3", "4", "5", "6"].map(n => (
                     <button key={n} type="button" onClick={() => setObjForm(f => ({ ...f, seances: n }))}
-                      className={`w-10 h-10 border rounded-xl text-sm font-bold transition-all ${objForm.seances === n ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-[var(--t-border-15)] text-[var(--t-text-40)] hover:border-[var(--t-border)]"}`}>
+                      className={`w-10 h-10 border rounded-xl text-sm font-bold transition-all ${objForm.seances === n ? "bg-[#c9a84c] border-[#c9a84c] text-on-gold" : "border-[var(--t-border-15)] text-[var(--t-text-40)] hover:border-[var(--t-border)]"}`}>
                       {n}
                     </button>
                   ))}
@@ -530,7 +530,7 @@ export default function ProfilePage() {
                 <div className="flex flex-wrap gap-2">
                   {STRESS_OPTIONS.map(o => (
                     <button key={o} type="button" onClick={() => setObjForm(f => ({ ...f, sommeilStress: o }))}
-                      className={`text-[0.65rem] tracking-wider px-3 py-2 rounded-xl border transition-colors ${objForm.sommeilStress === o ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-[var(--t-border-15)] text-[var(--t-text-40)] hover:border-[var(--t-border)]"}`}>
+                      className={`text-[0.65rem] tracking-wider px-3 py-2 rounded-xl border transition-colors ${objForm.sommeilStress === o ? "bg-[#c9a84c] border-[#c9a84c] text-on-gold" : "border-[var(--t-border-15)] text-[var(--t-text-40)] hover:border-[var(--t-border)]"}`}>
                       {o}
                     </button>
                   ))}
@@ -538,7 +538,7 @@ export default function ProfilePage() {
               </div>
 
               <button onClick={submitObjForm} disabled={objSaving || !objForm.objectifs.trim()}
-                className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.18em] uppercase py-3 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40 rounded-xl">
+                className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.18em] uppercase py-3 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40 rounded-xl">
                 {objSaving ? "Envoi…" : "Envoyer →"}
               </button>
             </div>

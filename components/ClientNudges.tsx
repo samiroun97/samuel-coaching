@@ -97,7 +97,7 @@ export function ClientNudges({ userId }: { userId: string }) {
             <p className="text-[0.9rem] font-semibold text-[var(--t-text)]">Ton check-in de la semaine</p>
             <p className="text-[0.75rem] text-[var(--t-text-50)] mt-0.5">2 minutes pour faire le point avec ton coach : poids, énergie, ressenti.</p>
           </div>
-          <span className="shrink-0 px-3.5 py-2 rounded-xl bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.72rem] font-bold group-hover:shadow-[0_6px_18px_-6px_rgba(201,168,76,0.8)] transition-shadow">Faire →</span>
+          <span className="shrink-0 px-3.5 py-2 rounded-xl bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.72rem] font-bold group-hover:shadow-[0_6px_18px_-6px_rgba(201,168,76,0.8)] transition-shadow">Faire →</span>
         </Link>
       )}
 
@@ -134,7 +134,7 @@ export function ClientNudges({ userId }: { userId: string }) {
           {pushState !== "done" && (
             <div className="flex flex-col sm:flex-row items-end sm:items-center gap-1.5 shrink-0">
               <button onClick={enablePush} disabled={pushState === "busy"}
-                className="px-3.5 py-2 rounded-xl bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.72rem] font-bold disabled:opacity-50">
+                className="px-3.5 py-2 rounded-xl bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.72rem] font-bold disabled:opacity-50">
                 {pushState === "busy" ? "…" : "Activer"}
               </button>
               <button onClick={dismissPush} className="px-2 py-1 text-[0.68rem] text-[var(--t-text-40)] hover:text-[var(--t-text-70)] transition-colors">Plus tard</button>

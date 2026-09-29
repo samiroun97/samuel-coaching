@@ -19,7 +19,7 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
   return (
     <button type="button" onClick={onClick}
       className={`shrink-0 text-[0.6rem] tracking-wider uppercase px-3 py-1.5 rounded-full border capitalize transition-colors ${
-        active ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
+        active ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
       {children}
     </button>
   );
@@ -115,7 +115,7 @@ export function ExercicePicker({ catalogue, onPick, onClose }: {
         <ExerciceDetailView entry={detail} onClose={() => setDetail(null)} className="max-w-lg mx-auto w-full"
           footer={
             <button type="button" onClick={() => handlePick(detail)}
-              className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.15em] uppercase py-3 rounded-2xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 hover:scale-[1.02] active:translate-y-0 active:scale-[0.97] active:brightness-95 transition-all duration-200">
+              className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.15em] uppercase py-3 rounded-2xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 hover:scale-[1.02] active:translate-y-0 active:scale-[0.97] active:brightness-95 transition-all duration-200">
               Ajouter à ma séance
             </button>
           }/>

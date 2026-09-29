@@ -306,7 +306,7 @@ export default function AccueilPage() {
           <button onClick={saveWeight} disabled={weightSaving || !weightInput}
             aria-label={entryForDate ? "Modifier la pesée" : "Enregistrer la pesée"}
             className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors shrink-0 disabled:opacity-30 ${
-              weightSaved ? "bg-[#7eb8a0] text-black" : "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black hover:brightness-110"
+              weightSaved ? "bg-[#7eb8a0] text-on-gold" : "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold hover:brightness-110"
             }`}>
             {weightSaved ? (
               <Icon icon={Check} size={15} strokeWidth={2.5}/>

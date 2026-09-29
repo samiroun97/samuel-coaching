@@ -33,7 +33,7 @@ export default function BusinessPage() {
           {TABS.map(t => (
             <button key={t.key} onClick={() => setTab(t.key)}
               className={`flex-1 whitespace-nowrap px-3 py-2 rounded-lg text-[0.66rem] font-semibold tracking-[0.06em] uppercase transition-colors ${
-                tab === t.key ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-[var(--t-text-40)] hover:text-[var(--t-text-70)]"}`}>
+                tab === t.key ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold" : "text-[var(--t-text-40)] hover:text-[var(--t-text-70)]"}`}>
               {t.label}
             </button>
           ))}

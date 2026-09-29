@@ -165,11 +165,11 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
             {equipements.length > 0 && <FilterDropdown value={equipement ?? ""} onChange={v => setEquipement(v || null)} options={equipements.map(eq => ({ value: eq, label: eq }))}/>}
             <div className="shrink-0 flex border border-[var(--t-border)] rounded-full p-0.5">
               <button type="button" onClick={() => setViewMode("grid")} title="Vue grille"
-                className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${viewMode === "grid" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-[var(--t-text-30)] hover:text-[#c9a84c]"}`}>
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${viewMode === "grid" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold" : "text-[var(--t-text-30)] hover:text-[#c9a84c]"}`}>
                 <Icon icon={LayoutGrid} size={13} strokeWidth={2}/>
               </button>
               <button type="button" onClick={() => setViewMode("silhouette")} title="Vue silhouette"
-                className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${viewMode === "silhouette" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-[var(--t-text-30)] hover:text-[#c9a84c]"}`}>
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${viewMode === "silhouette" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold" : "text-[var(--t-text-30)] hover:text-[#c9a84c]"}`}>
                 <Icon icon={PersonStanding} size={13} strokeWidth={2}/>
               </button>
             </div>
@@ -179,12 +179,12 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
               que caché derrière un tap sur la silhouette. */}
           <div ref={categoryScrollRef} className="pb-3 border-b border-[var(--t-border-soft)] shrink-0 flex gap-1.5 overflow-x-auto px-5 no-scrollbar h-scroll-snap cursor-grab active:cursor-grabbing select-none">
             <button type="button" onClick={() => setCategory(null)}
-              className={`shrink-0 text-[0.6rem] tracking-wider uppercase px-3 py-1.5 rounded-full border transition-colors ${!category ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
+              className={`shrink-0 text-[0.6rem] tracking-wider uppercase px-3 py-1.5 rounded-full border transition-colors ${!category ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
               Tout
             </button>
             {categories.map(c => (
               <button key={c} type="button" onClick={() => setCategory(prev => (prev === c ? null : c))}
-                className={`shrink-0 text-[0.6rem] tracking-wider uppercase px-3 py-1.5 rounded-full border capitalize transition-colors ${category === c ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
+                className={`shrink-0 text-[0.6rem] tracking-wider uppercase px-3 py-1.5 rounded-full border capitalize transition-colors ${category === c ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold border-transparent" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[#c9a84c]/40"}`}>
                 {c}
               </button>
             ))}
@@ -196,7 +196,7 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
         <ExerciceDetailView entry={detailEntry} onClose={() => setDetailEntry(null)}
           footer={
             <button type="button" onClick={() => handlePick(detailEntry)}
-              className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.15em] uppercase py-3 rounded-2xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 hover:scale-[1.02] active:translate-y-0 active:scale-[0.97] active:brightness-95 transition-all duration-200">
+              className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.15em] uppercase py-3 rounded-2xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 hover:scale-[1.02] active:translate-y-0 active:scale-[0.97] active:brightness-95 transition-all duration-200">
               Ajouter à ma séance
             </button>
           }/>
@@ -230,7 +230,7 @@ export function ExerciceLibraryBrowser({ catalogue, onPick, onClose }: {
                 </div>
                 {category && (
                   <button type="button" onClick={() => setCategory(null)}
-                    className="flex items-center gap-1.5 text-[0.6rem] font-bold tracking-[0.15em] uppercase capitalize text-black bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] rounded-full pl-3.5 pr-2.5 py-1.5 shadow-[0_3px_14px_-4px_rgba(201,168,76,0.6)] hover:shadow-[0_4px_18px_-3px_rgba(201,168,76,0.8)] transition-shadow">
+                    className="flex items-center gap-1.5 text-[0.6rem] font-bold tracking-[0.15em] uppercase capitalize text-on-gold bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] rounded-full pl-3.5 pr-2.5 py-1.5 shadow-[0_3px_14px_-4px_rgba(201,168,76,0.6)] hover:shadow-[0_4px_18px_-3px_rgba(201,168,76,0.8)] transition-shadow">
                     {category}
                     <Icon icon={X} size={10} strokeWidth={3}/>
                   </button>

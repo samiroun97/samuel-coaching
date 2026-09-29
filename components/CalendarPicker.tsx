@@ -138,7 +138,7 @@ export function CalendarPicker({
               onClick={() => { onChange(iso); onClose(); }}
               className={`w-9 h-9 text-xs rounded-full transition-colors flex items-center justify-center ${
                 isDisabled ? "text-[var(--t-text-15)] cursor-not-allowed"
-                : isSel ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black font-bold"
+                : isSel ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold font-bold"
                 : isToday ? "text-[#c9a84c] border border-[#c9a84c]/40 hover:bg-[#c9a84c]/10"
                 : "text-[var(--t-text-70)] hover:bg-[var(--t-glass-bg)]"
               }`}>

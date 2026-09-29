@@ -508,7 +508,7 @@ export default function ClientsPage() {
               { key: "journal",    label: `Journal (${journal.length})` },
             ] as const).map(({ key, label }) => (
               <button key={key} onClick={() => setTab(key)}
-                className={`px-3.5 py-2 rounded-xl text-[0.75rem] font-medium transition-all whitespace-nowrap ${tab === key ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black shadow-[0_4px_12px_-6px_rgba(201,168,76,0.7)]" : "text-[var(--t-text-50)] hover:text-[var(--t-text)] hover:bg-[var(--t-glass-bg)]"}`}>
+                className={`px-3.5 py-2 rounded-xl text-[0.75rem] font-medium transition-all whitespace-nowrap ${tab === key ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold shadow-[0_4px_12px_-6px_rgba(201,168,76,0.7)]" : "text-[var(--t-text-50)] hover:text-[var(--t-text)] hover:bg-[var(--t-glass-bg)]"}`}>
                 {label}
               </button>
             ))}
@@ -569,7 +569,7 @@ export default function ClientsPage() {
                       <p className="text-[0.65rem] text-[var(--t-text-40)] mt-0.5">{selected.prenom} n&apos;a encore reçu aucune séance.</p>
                     </div>
                     <Link href={`/crm/programmes?client=${encodeURIComponent(selected.email)}`}
-                      className="shrink-0 text-center px-4 py-2 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.1em] uppercase rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:-translate-y-0.5 transition-all">
+                      className="shrink-0 text-center px-4 py-2 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.6rem] font-bold tracking-[0.1em] uppercase rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:-translate-y-0.5 transition-all">
                       Envoyer un programme
                     </Link>
                   </div>
@@ -840,7 +840,7 @@ export default function ClientsPage() {
                 <div className="border border-[#c9a84c]/20 bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl p-5">
                   <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-3">Nouvelle note</p>
                   <textarea className={`${inp} resize-none mb-3`} rows={4} placeholder="Observations, ajustements, retours séance…" value={noteInput} onChange={e => setNoteInput(e.target.value)}/>
-                  <button onClick={addNote} disabled={noteSaving || !noteInput.trim()} className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.58rem] font-bold tracking-[0.18em] uppercase py-2.5 px-5 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40">
+                  <button onClick={addNote} disabled={noteSaving || !noteInput.trim()} className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.58rem] font-bold tracking-[0.18em] uppercase py-2.5 px-5 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40">
                     {noteSaving ? "Enregistrement…" : "Ajouter →"}
                   </button>
                 </div>
@@ -888,12 +888,12 @@ export default function ClientsPage() {
                     <div className="flex gap-2 mt-1">
                       {[1,2,3,4,5].map(n => (
                         <button key={n} onClick={() => setCkForm(f => ({ ...f, compliance: n }))}
-                          className={`w-9 h-9 rounded-xl border text-sm font-bold transition-all ${ckForm.compliance >= n ? "bg-[#c9a84c] border-[#c9a84c] text-black" : "border-[var(--t-border-15)] text-[var(--t-text-25)]"}`}>{n}</button>
+                          className={`w-9 h-9 rounded-xl border text-sm font-bold transition-all ${ckForm.compliance >= n ? "bg-[#c9a84c] border-[#c9a84c] text-on-gold" : "border-[var(--t-border-15)] text-[var(--t-text-25)]"}`}>{n}</button>
                       ))}
                     </div>
                   </div>
                   <div className="mb-4"><label className={lbl}>Notes</label><textarea className={`${inp} resize-none`} rows={3} placeholder="Énergie, motivation, douleurs, progrès…" value={ckForm.notes} onChange={e => setCkForm(f => ({ ...f, notes: e.target.value }))}/></div>
-                  <button onClick={addCheckin} disabled={ckSaving} className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.58rem] font-bold tracking-[0.18em] uppercase py-2.5 px-5 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40">
+                  <button onClick={addCheckin} disabled={ckSaving} className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.58rem] font-bold tracking-[0.18em] uppercase py-2.5 px-5 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40">
                     {ckSaving ? "Enregistrement…" : "Enregistrer →"}
                   </button>
                 </div>
@@ -954,7 +954,7 @@ export default function ClientsPage() {
                     <div className="flex flex-col gap-3">
                       <div><label className={lbl}>Nom du plan</label><input className={inp} placeholder="Plan prise de masse — Semaine 1" value={planName} onChange={e => setPlanName(e.target.value)}/></div>
                       <div><label className={lbl}>Notes</label><textarea className={`${inp} resize-none`} rows={2} placeholder="Conseils, timing…" value={planNotes} onChange={e => setPlanNotes(e.target.value)}/></div>
-                      <button onClick={createPlan} disabled={planSaving || !planName.trim()} className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.58rem] font-bold tracking-[0.18em] uppercase py-3 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40">Créer le plan →</button>
+                      <button onClick={createPlan} disabled={planSaving || !planName.trim()} className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.58rem] font-bold tracking-[0.18em] uppercase py-3 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40">Créer le plan →</button>
                     </div>
                   ) : (
                     <div className="flex items-center justify-between">
@@ -976,7 +976,7 @@ export default function ClientsPage() {
                         <div key={k}><label className={`text-[0.48rem] tracking-wider uppercase block mb-1 ${c}`}>{l}</label><input type="number" className={inp} value={itemForm[k as keyof typeof itemForm]} onChange={e => setItemForm(f => ({ ...f, [k]: e.target.value }))}/></div>
                       ))}
                     </div>
-                    <button onClick={addItem} disabled={planSaving || !itemForm.name.trim()} className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.58rem] font-bold tracking-[0.18em] uppercase py-2.5 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40">Ajouter →</button>
+                    <button onClick={addItem} disabled={planSaving || !itemForm.name.trim()} className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.58rem] font-bold tracking-[0.18em] uppercase py-2.5 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40">Ajouter →</button>
                   </div>
                 )}
                 {mealItems.length > 0 && (

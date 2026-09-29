@@ -43,7 +43,7 @@ export default function ProcessSection() {
               {/* Timeline */}
               <div className="flex flex-col items-center flex-shrink-0">
                 <div className="w-14 h-14 rounded-full border-2 border-[#c9a84c] flex items-center justify-center bg-[#0a0a0a] z-10 group-hover:bg-[#c9a84c] transition-colors duration-300">
-                  <span style={{ fontFamily: "var(--font-bebas)" }} className="text-lg text-[#c9a84c] group-hover:text-black transition-colors duration-300">{s.num}</span>
+                  <span style={{ fontFamily: "var(--font-bebas)" }} className="text-lg text-[#c9a84c] group-hover:text-white transition-colors duration-300">{s.num}</span>
                 </div>
                 {i < steps.length - 1 && (
                   <div className="w-px bg-[#c9a84c]/25 flex-1" />

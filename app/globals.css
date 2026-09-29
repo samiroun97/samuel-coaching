@@ -429,3 +429,10 @@ button[data-loading]::after {
 @media (prefers-reduced-motion: reduce) {
   button[data-loading]::after { animation: none; }
 }
+
+/* Texte et icônes posés sur l'or de l'app (boutons, onglets actifs, pastilles) : blanc,
+   avec une ombre brune très légère — le blanc seul manque de contraste sur l'or clair. */
+@utility text-on-gold {
+  color: #fff;
+  text-shadow: 0 1px 2px rgb(110 80 15 / 0.45);
+}

@@ -85,7 +85,7 @@ export function PlansPage() {
           <div className="self-start inline-flex rounded-full border border-[var(--t-border-soft)] bg-[var(--t-surface)] p-1 text-[0.72rem] font-semibold">
             {([false, true] as const).map(y => (
               <button key={String(y)} onClick={() => setYearly(y)}
-                className={`px-4 py-1.5 rounded-full transition-colors ${yearly === y ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-[var(--t-text-50)]"}`}>
+                className={`px-4 py-1.5 rounded-full transition-colors ${yearly === y ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold" : "text-[var(--t-text-50)]"}`}>
                 {y ? "Annuel · 2 mois offerts" : "Mensuel"}
               </button>
             ))}
@@ -106,7 +106,7 @@ export function PlansPage() {
               return (
                 <div key={p} className={`relative rounded-2xl border bg-[var(--t-surface)] px-5 py-5 flex flex-col ${premium ? "border-[#c9a84c]/50 shadow-[0_0_26px_-8px_rgba(201,168,76,0.45)]" : "border-[var(--t-border-soft)] shadow-[0_2px_14px_-8px_rgba(0,0,0,0.15)]"}`}>
                   {premium && (
-                    <span className="absolute -top-2.5 left-5 px-2.5 py-0.5 rounded-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.12em] uppercase">IA illimitée</span>
+                    <span className="absolute -top-2.5 left-5 px-2.5 py-0.5 rounded-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.6rem] font-bold tracking-[0.12em] uppercase">IA illimitée</span>
                   )}
                   <p className="text-[0.95rem] font-bold text-[var(--t-text)]">{cfg.label}</p>
                   <p className="mt-2">
@@ -123,7 +123,7 @@ export function PlansPage() {
                     ))}
                   </ul>
                   <button disabled={current || isOwner || !me.paymentsEnabled}
-                    className={`py-2.5 rounded-xl text-[0.72rem] font-bold tracking-[0.1em] uppercase transition-all disabled:cursor-not-allowed ${premium ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black disabled:opacity-60" : "border border-[var(--t-border)] text-[var(--t-text-70)] disabled:opacity-60"}`}>
+                    className={`py-2.5 rounded-xl text-[0.72rem] font-bold tracking-[0.1em] uppercase transition-all disabled:cursor-not-allowed ${premium ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold disabled:opacity-60" : "border border-[var(--t-border)] text-[var(--t-text-70)] disabled:opacity-60"}`}>
                     {isOwner ? "Aperçu" : current ? "Ta formule actuelle" : me.paymentsEnabled ? "Choisir" : "Paiement en ligne bientôt"}
                   </button>
                 </div>

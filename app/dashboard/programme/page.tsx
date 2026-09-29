@@ -460,7 +460,7 @@ export default function ProgrammePage() {
   const adjustedCal   = calResult ? Math.round(calResult.calories_brulees * intensityMult) : 0;
 
   const chip = (active: boolean) =>
-    `px-3.5 py-2 rounded-full text-[0.7rem] tracking-[0.1em] uppercase border transition-all duration-200 ${active ? "border-[#c9a84c] text-black bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] shadow-[0_3px_12px_-4px_rgba(201,168,76,0.6)] -translate-y-px" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[var(--t-text-30)] hover:text-[var(--t-text-60)]"}`;
+    `px-3.5 py-2 rounded-full text-[0.7rem] tracking-[0.1em] uppercase border transition-all duration-200 ${active ? "border-[#c9a84c] text-on-gold bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] shadow-[0_3px_12px_-4px_rgba(201,168,76,0.6)] -translate-y-px" : "border-[var(--t-border)] text-[var(--t-text-40)] hover:border-[var(--t-text-30)] hover:text-[var(--t-text-60)]"}`;
   const inputCls = "w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
 
   const pastDates = [...new Set(
@@ -684,7 +684,7 @@ export default function ProgrammePage() {
                 </div>
                 {hasLoggableSets(parseExercices(s.exercices)) ? (
                   <button onClick={() => setLiveSeance(s)}
-                    className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-base font-bold tracking-[0.08em] uppercase py-4 rounded-xl shadow-[0_6px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_8px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all">
+                    className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-base font-bold tracking-[0.08em] uppercase py-4 rounded-xl shadow-[0_6px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_8px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all">
                     ▶ Démarrer
                   </button>
                 ) : (
@@ -726,7 +726,7 @@ export default function ProgrammePage() {
 
         {!createOpen && (
           <button onClick={() => setCreateOpen(true)}
-            className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-base font-bold tracking-[0.08em] uppercase py-4 rounded-xl shadow-[0_6px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_8px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-all mt-3">
+            className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-base font-bold tracking-[0.08em] uppercase py-4 rounded-xl shadow-[0_6px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_8px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-all mt-3">
             {createValidCount > 0 ? (
               <>
                 <Icon icon={Play} size={18} strokeWidth={2}/>
@@ -773,12 +773,12 @@ export default function ProgrammePage() {
             style={{ left: estimatorTab === "libre" ? "4px" : "50%", width: "calc(50% - 4px)" }}/>
           <button type="button" onClick={() => setEstimatorTab("libre")}
             className={`relative z-10 flex-1 text-[0.62rem] tracking-[0.06em] uppercase py-2 rounded-full transition-colors ${
-              estimatorTab === "libre" ? "text-black font-semibold" : "text-[var(--t-text-35)] hover:text-[var(--t-text-60)]"}`}>
+              estimatorTab === "libre" ? "text-on-gold font-semibold" : "text-[var(--t-text-35)] hover:text-[var(--t-text-60)]"}`}>
             Activité libre
           </button>
           <button type="button" onClick={() => setEstimatorTab("seance")}
             className={`relative z-10 flex-1 text-[0.62rem] tracking-[0.06em] uppercase py-2 rounded-full transition-colors ${
-              estimatorTab === "seance" ? "text-black font-semibold" : "text-[var(--t-text-35)] hover:text-[var(--t-text-60)]"}`}>
+              estimatorTab === "seance" ? "text-on-gold font-semibold" : "text-[var(--t-text-35)] hover:text-[var(--t-text-60)]"}`}>
             Séance loguée
           </button>
         </div>
@@ -825,7 +825,7 @@ export default function ProgrammePage() {
                 </div>
               ) : (
                 <button onClick={addSeanceLogWorkout}
-                  className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
+                  className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
                   Ajouter à ma journée →
                 </button>
               )}
@@ -927,7 +927,7 @@ export default function ProgrammePage() {
                 Ré-estimer
               </button>
               <button onClick={addWorkout}
-                className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
+                className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
                 Ajouter à ma journée →
               </button>
             </div>
@@ -946,7 +946,7 @@ export default function ProgrammePage() {
                     Annuler
                   </button>
                   <button onClick={submitActReport} disabled={actReportSending || !actReportComment.trim()}
-                    className="flex-1 bg-[#e07070] text-black text-[0.65rem] font-bold tracking-[0.15em] uppercase py-2.5 hover:bg-[#e58888] transition-colors disabled:opacity-40 rounded-xl">
+                    className="flex-1 bg-[#e07070] text-white text-[0.65rem] font-bold tracking-[0.15em] uppercase py-2.5 hover:bg-[#e58888] transition-colors disabled:opacity-40 rounded-xl">
                     {actReportSending ? "Envoi…" : "Envoyer le signalement →"}
                   </button>
                 </div>
@@ -1139,7 +1139,7 @@ export default function ProgrammePage() {
                           (même vert que le reste de l'app pour un état "fait") + titre
                           lisible normalement plutôt qu'un ✓ minuscule et un texte raturé. */}
                       {done && (
-                        <span className="shrink-0 w-4 h-4 rounded-full bg-[#7eb8a0] text-black flex items-center justify-center text-[0.55rem] font-bold leading-none">✓</span>
+                        <span className="shrink-0 w-4 h-4 rounded-full bg-[#7eb8a0] text-white flex items-center justify-center text-[0.55rem] font-bold leading-none">✓</span>
                       )}
                       {s.created_by_client
                         ? <span className="text-[0.68rem] tracking-wider uppercase text-[var(--t-text-30)] rounded-full border border-[var(--t-border)] px-1.5 py-0.5 shrink-0">Toi</span>
@@ -1164,7 +1164,7 @@ export default function ProgrammePage() {
                     )}
                     {!done && hasLoggableSets(parseExercices(s.exercices)) && (
                       <button onClick={() => setLiveSeance(s)}
-                        className="w-full py-2.5 rounded-xl text-[0.7rem] font-bold tracking-[0.15em] uppercase transition-all duration-200 mb-2 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black shadow-[0_4px_16px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_20px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0">
+                        className="w-full py-2.5 rounded-xl text-[0.7rem] font-bold tracking-[0.15em] uppercase transition-all duration-200 mb-2 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold shadow-[0_4px_16px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_20px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0">
                         ▶ Démarrer la séance
                       </button>
                     )}
@@ -1196,7 +1196,7 @@ export default function ProgrammePage() {
                             Annuler
                           </button>
                           <button onClick={() => submitSeanceReport(s)} disabled={seanceReportSending || !seanceReportComment.trim()}
-                            className="flex-1 bg-[#e07070] text-black text-[0.6rem] font-bold tracking-[0.1em] uppercase py-2 hover:bg-[#e58888] transition-colors disabled:opacity-40 rounded-xl">
+                            className="flex-1 bg-[#e07070] text-white text-[0.6rem] font-bold tracking-[0.1em] uppercase py-2 hover:bg-[#e58888] transition-colors disabled:opacity-40 rounded-xl">
                             {seanceReportSending ? "Envoi…" : "Envoyer →"}
                           </button>
                         </div>
@@ -1292,7 +1292,7 @@ export default function ProgrammePage() {
                   <p className="text-[0.68rem] text-[var(--t-text-30)] text-center -mt-2">Ajoute au moins un poids ou des reps sur une série pour pouvoir démarrer cette séance plus tard.</p>
                 )}
                 <button onClick={saveCreatedSeance} disabled={createSaving || !createHasSets}
-                  className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-base font-bold tracking-[0.08em] uppercase py-4 rounded-xl shadow-[0_6px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_8px_26px_-4px_rgba(201,168,76,0.8)] transition-all disabled:opacity-40">
+                  className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-base font-bold tracking-[0.08em] uppercase py-4 rounded-xl shadow-[0_6px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_8px_26px_-4px_rgba(201,168,76,0.8)] transition-all disabled:opacity-40">
                   {createSaving ? "Enregistrement…" : "Enregistrer pour plus tard →"}
                 </button>
               </>

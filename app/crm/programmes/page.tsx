@@ -455,7 +455,7 @@ export default function ProgrammesPage() {
           <div className="flex p-1 rounded-xl bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border-soft)]">
             {([["sans", "À programmer", sans.length, "#e09070"], ["avec", "En cours", avec.length, "#7eb8a0"]] as const).map(([k, label, n, color]) => (
               <button key={k} onClick={() => setFilter(k)}
-                className={`flex-1 py-2 rounded-lg text-[0.75rem] font-medium transition-all flex items-center justify-center gap-1.5 ${filter === k ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black shadow-[0_4px_12px_-6px_rgba(201,168,76,0.7)]" : "text-[var(--t-text-50)] hover:text-[var(--t-text-80)]"}`}>
+                className={`flex-1 py-2 rounded-lg text-[0.75rem] font-medium transition-all flex items-center justify-center gap-1.5 ${filter === k ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold shadow-[0_4px_12px_-6px_rgba(201,168,76,0.7)]" : "text-[var(--t-text-50)] hover:text-[var(--t-text-80)]"}`}>
                 {label}
                 <span className="min-w-5 h-5 px-1.5 rounded-full text-[0.65rem] font-bold flex items-center justify-center" style={{ color, backgroundColor: `${color}1f` }}>{n}</span>
               </button>
@@ -551,7 +551,7 @@ export default function ProgrammesPage() {
 
                 <div className="flex flex-wrap items-center gap-2">
                   <button onClick={() => setComposer(true)}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.78rem] font-bold shadow-[0_6px_20px_-8px_rgba(201,168,76,0.7)] hover:-translate-y-0.5 hover:shadow-[0_10px_26px_-8px_rgba(201,168,76,0.8)] transition-all">
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.78rem] font-bold shadow-[0_6px_20px_-8px_rgba(201,168,76,0.7)] hover:-translate-y-0.5 hover:shadow-[0_10px_26px_-8px_rgba(201,168,76,0.8)] transition-all">
                     ✦ Générer avec l&apos;IA
                   </button>
                   <button onClick={() => openCreate(today)} className={toolBtn}>
@@ -646,7 +646,7 @@ export default function ProgrammesPage() {
                     </div>
                   </div>
                   <div className="flex-1 grid sm:grid-cols-3 gap-2.5">
-                    <button onClick={() => setComposer(true)} className="rounded-2xl bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black p-3.5 text-left shadow-[0_6px_20px_-8px_rgba(201,168,76,0.7)] hover:-translate-y-0.5 transition-all">
+                    <button onClick={() => setComposer(true)} className="rounded-2xl bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold p-3.5 text-left shadow-[0_6px_20px_-8px_rgba(201,168,76,0.7)] hover:-translate-y-0.5 transition-all">
                       <p className="text-[0.85rem] font-bold">✦ Générer avec l&apos;IA</p>
                       <p className="text-[0.7rem] opacity-70 mt-0.5">{Math.min(Math.max(selected.seances_par_semaine || 3, 2), 6)} séances adaptées au profil</p>
                     </button>
@@ -667,7 +667,7 @@ export default function ProgrammesPage() {
                 <div className="flex p-1 rounded-xl bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border-soft)]">
                   {(["calendrier", "progression", "liste"] as const).map(v => (
                     <button key={v} onClick={() => setSentView(v)}
-                      className={`px-4 py-1.5 rounded-lg text-[0.78rem] font-medium transition-all ${sentView === v ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black shadow-[0_4px_12px_-6px_rgba(201,168,76,0.7)]" : "text-[var(--t-text-50)] hover:text-[var(--t-text-80)]"}`}>
+                      className={`px-4 py-1.5 rounded-lg text-[0.78rem] font-medium transition-all ${sentView === v ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold shadow-[0_4px_12px_-6px_rgba(201,168,76,0.7)]" : "text-[var(--t-text-50)] hover:text-[var(--t-text-80)]"}`}>
                       {v === "calendrier" ? "Semaine" : v === "progression" ? "Progression" : "Liste"}
                     </button>
                   ))}
@@ -775,7 +775,7 @@ export default function ProgrammesPage() {
                       placeholder="Précisions (optionnel) — ex : reprise après blessure au genou, priorité haut du corps…"
                       value={genDescription} onChange={e => setGenDescription(e.target.value)}/>
                     <button data-loading={generating || undefined} onClick={generate} disabled={generating}
-                      className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.58rem] font-bold tracking-[0.18em] uppercase py-3 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:-translate-y-0.5 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+                      className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.58rem] font-bold tracking-[0.18em] uppercase py-3 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:-translate-y-0.5 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
                       {generating ? <>Génération en cours…</> : `Générer ${Math.min(Math.max(selected.seances_par_semaine || 3, 2), 6)} séances →`}
                     </button>
 {generating && <div className="flex justify-center pt-3"><Loader size={80}/></div>}
@@ -847,7 +847,7 @@ export default function ProgrammesPage() {
                 <p className="text-[0.55rem] text-[var(--t-text-30)] flex-1">Les séances sans date arrivent dans « Sans date » : glisse-les ensuite sur un jour.</p>
                 {sending && <Loader size={48} className="-my-3"/>}
 <button data-loading={sending || undefined} onClick={sendAll} disabled={sending || !drafts.some(d => d.titre.trim())}
-                  className="px-5 py-3 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.58rem] font-bold tracking-[0.15em] uppercase rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] disabled:opacity-40 flex items-center gap-2 shrink-0">
+                  className="px-5 py-3 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.58rem] font-bold tracking-[0.15em] uppercase rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] disabled:opacity-40 flex items-center gap-2 shrink-0">
                   {sending ? <>Envoi…</> : `Envoyer à ${selected.prenom} →`}
                 </button>
               </div>
@@ -882,7 +882,7 @@ export default function ProgrammesPage() {
                 Annuler
               </button>
               <button onClick={submitMeso} disabled={mesoSaving || !mesoForm.nom.trim() || !mesoForm.dateDebut || !mesoForm.dateFin}
-                className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.6rem] font-bold tracking-wider uppercase py-2.5 rounded-xl disabled:opacity-40 transition-all">
+                className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.6rem] font-bold tracking-wider uppercase py-2.5 rounded-xl disabled:opacity-40 transition-all">
                 {mesoSaving ? "…" : "Créer"}
               </button>
             </div>
@@ -932,7 +932,7 @@ export default function ProgrammesPage() {
                   Annuler
                 </button>
                 <button onClick={() => duplicateWeek(dup.monday, dup.rule)} disabled={!n || !!busyWeek}
-                  className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.6rem] font-bold tracking-wider uppercase py-2.5 rounded-xl disabled:opacity-40 transition-all">
+                  className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.6rem] font-bold tracking-wider uppercase py-2.5 rounded-xl disabled:opacity-40 transition-all">
                   Dupliquer
                 </button>
               </div>
@@ -982,7 +982,7 @@ export default function ProgrammesPage() {
                 Annuler
               </button>
               <button onClick={confirmSaveProgramme} disabled={!saveProg.nom.trim() || !saveProgPreview.length || progBusy}
-                className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.6rem] font-bold tracking-wider uppercase py-2.5 rounded-xl disabled:opacity-40 transition-all">
+                className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.6rem] font-bold tracking-wider uppercase py-2.5 rounded-xl disabled:opacity-40 transition-all">
                 {progBusy ? "…" : "Enregistrer"}
               </button>
             </div>
@@ -1049,7 +1049,7 @@ export default function ProgrammesPage() {
                   Annuler
                 </button>
                 <button onClick={confirmAssign} disabled={!p || !assign.clientIds.length || progBusy}
-                  className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.6rem] font-bold tracking-wider uppercase py-2.5 rounded-xl disabled:opacity-40 transition-all">
+                  className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.6rem] font-bold tracking-wider uppercase py-2.5 rounded-xl disabled:opacity-40 transition-all">
                   {progBusy ? "…" : `Envoyer à ${assign.clientIds.length} client${assign.clientIds.length > 1 ? "s" : ""}`}
                 </button>
               </div>
@@ -1111,7 +1111,7 @@ export default function ProgrammesPage() {
               </button>
               {!editing.readOnly && (
                 <button onClick={saveEdit} disabled={!editing.draft.titre.trim() || editSaving}
-                  className="px-5 py-2.5 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.58rem] font-bold tracking-wider uppercase rounded-xl disabled:opacity-40 transition-all">
+                  className="px-5 py-2.5 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.58rem] font-bold tracking-wider uppercase rounded-xl disabled:opacity-40 transition-all">
                   {editSaving ? "…" : editing.id ? "Enregistrer" : `Envoyer à ${selected.prenom}`}
                 </button>
               )}
@@ -1135,7 +1135,7 @@ export default function ProgrammesPage() {
                 Annuler
               </button>
               <button onClick={saveAsTemplate} disabled={!templateDraft.nom.trim() || templateSaving}
-                className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.6rem] font-bold tracking-wider uppercase py-2.5 rounded-xl disabled:opacity-40 transition-all">
+                className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.6rem] font-bold tracking-wider uppercase py-2.5 rounded-xl disabled:opacity-40 transition-all">
                 {templateSaving ? "…" : "Enregistrer"}
               </button>
             </div>

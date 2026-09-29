@@ -121,7 +121,7 @@ export default function CoachPage() {
           {(["ia", "samuel"] as const).map(t => (
             <button key={t} onClick={() => setTab(t)}
               className={`flex-1 py-2.5 text-[0.7rem] tracking-[0.15em] uppercase font-bold transition-colors flex items-center justify-center gap-2 ${
-                tab === t ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "text-[var(--t-text-30)] hover:text-[var(--t-text-60)] hover:bg-[var(--t-glass-bg)]"
+                tab === t ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold" : "text-[var(--t-text-30)] hover:text-[var(--t-text-60)] hover:bg-[var(--t-glass-bg)]"
               }`}>
               {t === "ia" ? (
                 <>
@@ -151,7 +151,7 @@ export default function CoachPage() {
                   </div>
                 )}
                 <div className={`max-w-sm px-4 py-3 rounded-xl text-xs leading-relaxed whitespace-pre-line ${
-                  m.role === "user" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "bg-[var(--t-surface)] border border-[var(--t-border)] text-[var(--t-text-60)]"
+                  m.role === "user" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold" : "bg-[var(--t-surface)] border border-[var(--t-border)] text-[var(--t-text-60)]"
                 }`}>
                   {m.content}
                 </div>
@@ -176,7 +176,7 @@ export default function CoachPage() {
               disabled={aiLoading}
               className="flex-1 bg-[var(--t-surface)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors disabled:opacity-50"/>
             <button onClick={sendAi} disabled={!aiInput.trim() || aiLoading}
-              className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black px-6 py-3 text-[0.7rem] font-bold tracking-[0.15em] uppercase shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed">
+              className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold px-6 py-3 text-[0.7rem] font-bold tracking-[0.15em] uppercase shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed">
               Envoyer
             </button>
           </div>
@@ -209,7 +209,7 @@ export default function CoachPage() {
                   )}
                   <div className="max-w-sm">
                     <div className={`px-4 py-3 rounded-xl text-xs leading-relaxed whitespace-pre-line ${
-                      isMe ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black" : "bg-[var(--t-surface)] border border-[var(--t-border)] text-[var(--t-text-60)]"
+                      isMe ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold" : "bg-[var(--t-surface)] border border-[var(--t-border)] text-[var(--t-text-60)]"
                     }`}>
                       {m.content}
                     </div>
@@ -229,7 +229,7 @@ export default function CoachPage() {
               disabled={dirLoading}
               className="flex-1 bg-[var(--t-surface)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-4 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors disabled:opacity-50"/>
             <button onClick={sendDirect} disabled={!dirInput.trim() || dirLoading}
-              className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black px-6 py-3 text-[0.7rem] font-bold tracking-[0.15em] uppercase shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed">
+              className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold px-6 py-3 text-[0.7rem] font-bold tracking-[0.15em] uppercase shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed">
               Envoyer
             </button>
           </div>

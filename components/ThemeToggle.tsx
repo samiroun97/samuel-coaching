@@ -90,7 +90,7 @@ export default function ThemeToggle() {
       <span
         className={`absolute top-1 left-1 w-7 h-7 rounded-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] shadow-[0_2px_8px_-2px_rgba(0,0,0,0.5)] flex items-center justify-center pointer-events-none ${mounted && dragX == null ? "transition-transform duration-300 ease-out" : ""}`}
         style={{ transform: `translateX(${knobX}px)` }}>
-        <Icon icon={isLight ? Sun : Moon} size={15} className="text-black"/>
+        <Icon icon={isLight ? Sun : Moon} size={15} className="text-on-gold"/>
       </span>
     </button>
   );

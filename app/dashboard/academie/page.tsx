@@ -36,7 +36,7 @@ function PathNode({ lesson, offset, top, state, onClick }: {
   return (
     <div className="absolute" style={{ left: `calc(50% + ${offset}px)`, top, transform: "translateX(-50%)" }}>
       {state === "current" && (
-        <div className="absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap px-3 py-1 rounded-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.6rem] font-bold tracking-[0.12em] uppercase shadow-[0_4px_16px_-4px_rgba(201,168,76,0.7)]">
+        <div className="absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap px-3 py-1 rounded-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.6rem] font-bold tracking-[0.12em] uppercase shadow-[0_4px_16px_-4px_rgba(201,168,76,0.7)]">
           Continuer
         </div>
       )}
@@ -88,7 +88,7 @@ function LessonViewer({ lesson, onClose, onComplete }: {
         <p className="text-[0.75rem] text-[var(--t-text-50)] mb-6">{correctCount}/{total} bonnes réponses ({pct}%)</p>
         <button
           onClick={() => onComplete(correctCount, total)}
-          className="px-8 py-3 rounded-xl bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.72rem] font-bold tracking-[0.2em] uppercase shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:-translate-y-0.5 transition-all duration-200">
+          className="px-8 py-3 rounded-xl bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.72rem] font-bold tracking-[0.2em] uppercase shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:-translate-y-0.5 transition-all duration-200">
           Continuer
         </button>
       </div>
@@ -145,7 +145,7 @@ function LessonViewer({ lesson, onClose, onComplete }: {
       <button
         onClick={() => setStep(s => s + 1)}
         disabled={!inCards && selected === null}
-        className="mt-6 w-full py-3.5 rounded-xl bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.72rem] font-bold tracking-[0.2em] uppercase shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] disabled:opacity-30 disabled:shadow-none disabled:pointer-events-none hover:-translate-y-0.5 transition-all duration-200">
+        className="mt-6 w-full py-3.5 rounded-xl bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.72rem] font-bold tracking-[0.2em] uppercase shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] disabled:opacity-30 disabled:shadow-none disabled:pointer-events-none hover:-translate-y-0.5 transition-all duration-200">
         Continuer
       </button>
     </div>

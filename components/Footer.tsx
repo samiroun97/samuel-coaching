@@ -61,7 +61,7 @@ export default function Footer() {
             <p className="text-white/30 text-xs mb-6">Lausanne, Suisse</p>
             <a
               href="#contact"
-              className="inline-block border border-[#c9a84c]/40 text-[#c9a84c] text-xs tracking-[0.15em] uppercase px-5 py-2.5 hover:bg-[#c9a84c] hover:text-black transition-colors duration-300"
+              className="inline-block border border-[#c9a84c]/40 text-[#c9a84c] text-xs tracking-[0.15em] uppercase px-5 py-2.5 hover:bg-[#c9a84c] hover:text-white transition-colors duration-300"
             >
               Séance gratuite →
             </a>

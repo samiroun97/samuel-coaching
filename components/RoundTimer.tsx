@@ -172,7 +172,7 @@ export function RoundTimer({ onClose }: { onClose: () => void }) {
               className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 resize-none"/>
           </div>
           <button onClick={start}
-            className="w-full flex items-center justify-center gap-2 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-base font-bold tracking-[0.1em] uppercase py-4 rounded-xl shadow-[0_6px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_8px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all">
+            className="w-full flex items-center justify-center gap-2 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-base font-bold tracking-[0.1em] uppercase py-4 rounded-xl shadow-[0_6px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_8px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all">
             <Icon icon={Play} size={18} strokeWidth={2}/> Démarrer
           </button>
         </div>
@@ -206,7 +206,7 @@ export function RoundTimer({ onClose }: { onClose: () => void }) {
               <Icon icon={Repeat} size={18} strokeWidth={2}/>
             </button>
             <button onClick={() => setPaused(p => !p)}
-              className="w-16 h-16 rounded-full flex items-center justify-center text-black transition-all active:scale-90 shadow-[0_6px_20px_-6px_rgba(201,168,76,0.6)]"
+              className="w-16 h-16 rounded-full flex items-center justify-center text-on-gold transition-all active:scale-90 shadow-[0_6px_20px_-6px_rgba(201,168,76,0.6)]"
               style={{ background: `linear-gradient(to bottom, #e2c97e, ${color})` }}>
               <Icon icon={paused ? Play : Pause} size={24} strokeWidth={2}/>
             </button>
@@ -236,7 +236,7 @@ export function RoundTimer({ onClose }: { onClose: () => void }) {
               Refaire
             </button>
             <button onClick={reset}
-              className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.15em] uppercase py-3 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] transition-all">
+              className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.15em] uppercase py-3 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] transition-all">
               Nouveau minuteur
             </button>
           </div>
