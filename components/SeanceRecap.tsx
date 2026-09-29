@@ -12,6 +12,7 @@ import { SeanceBody, type PreviewSeance } from "@/components/SeancePreview";
 import { RichIcon } from "@/components/RichIcon";
 import { Icon } from "@/components/Icon";
 import { Star } from "@/lib/solarIcons";
+import { Loader } from "@/components/Loader";
 
 function fmtSet(poids: number | null, reps: number | null, rir: number | null, repKind: RepKind) {
   const parts: string[] = [];
@@ -64,7 +65,7 @@ export function SeanceRecap({ seance, clientId, clientBodyweight }: {
     return () => { cancelled = true; };
   }, [seance.id, seance.exercices, clientId, clientBodyweight]);
 
-  if (!loaded) return <p className="text-xs text-[var(--t-text-30)] text-center py-6">Chargement…</p>;
+  if (!loaded) return <div className="flex justify-center py-6"><Loader size={56}/></div>;
   if (!analysis) return <SeanceBody s={seance}/>;
 
   const runs = groupExerciceRuns(parseExercices(seance.exercices));

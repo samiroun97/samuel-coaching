@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { loadClientStatuses, statusFor, lastSeenLabel, STATUS_LEVEL_COLOR, type ClientStatus } from "@/lib/clientStatus";
 import { Icon } from "@/components/Icon";
 import { MoreHorizontal, Clock, MessageCircle } from "@/lib/solarIcons";
+import { Loader } from "@/components/Loader";
 
 // Board kanban façon CRM open source (Twenty, Plane, Attio) : une colonne par étape du
 // pipeline, une carte par client, glisser-déposer pour changer d'étape. Sur mobile (pas de
@@ -83,7 +84,7 @@ export function PipelineBoard({ variant = "page" }: { variant?: "page" | "sectio
 
   if (loading) return (
     <div className={`flex items-center justify-center ${variant === "page" ? "h-full min-h-screen" : "py-12"}`}>
-      <div className="w-5 h-5 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>
+      <Loader size={64}/>
     </div>
   );
 

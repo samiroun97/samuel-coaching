@@ -8,6 +8,7 @@ import { isCoachUser } from "@/lib/coach";
 import { apiPost } from "@/lib/apiClient";
 import { Icon } from "@/components/Icon";
 import { ChevronRight, X, Repeat } from "@/lib/solarIcons";
+import { Loader } from "@/components/Loader";
 
 type SectionKey = "profil" | "notifications" | "steps" | "password" | "email";
 
@@ -356,7 +357,7 @@ export default function PreferencesPage() {
           onClick={() => { toggle("steps"); if (openSection !== "steps" && !stepsToken) loadStepsToken(); }}>
           {stepsLoading && !stepsToken ? (
             <div className="flex items-center gap-2 text-xs text-[var(--t-text-30)]">
-              <div className="w-3 h-3 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>Génération du lien…
+              <Loader size={22}/>Génération du lien…
             </div>
           ) : stepsToken ? (
             <div className="flex flex-col gap-4">
@@ -423,7 +424,7 @@ export default function PreferencesPage() {
             <button onClick={savePassword} disabled={pwdSaving}
               className="border border-[#c9a84c]/30 text-[#c9a84c] rounded-xl text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
               {pwdSaving
-                ? <><div className="w-3 h-3 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>Enregistrement…</>
+                ? <><Loader size={22}/>Enregistrement…</>
                 : "Changer le mot de passe"}
             </button>
           </div>
@@ -446,7 +447,7 @@ export default function PreferencesPage() {
             <button onClick={saveEmail} disabled={emailSaving}
               className="border border-[#c9a84c]/30 text-[#c9a84c] rounded-xl text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
               {emailSaving
-                ? <><div className="w-3 h-3 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>Envoi…</>
+                ? <><Loader size={22}/>Envoi…</>
                 : "Changer l'email"}
             </button>
           </div>

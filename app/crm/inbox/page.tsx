@@ -7,6 +7,7 @@ import { getMyCoachId } from "@/lib/coach";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
 import { ChevronLeft, Check } from "@/lib/solarIcons";
+import { Loader } from "@/components/Loader";
 
 type Msg    = { id: string; from_email: string; to_email: string; content: string; created_at: string };
 
@@ -200,7 +201,7 @@ export default function InboxPage() {
     setSending(false);
   };
 
-  if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="w-5 h-5 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/></div>;
+  if (loading) return <div className="flex items-center justify-center min-h-screen"><Loader size={64}/></div>;
 
   return (
     <div className="flex h-[calc(100dvh-50px-env(safe-area-inset-bottom))] md:h-screen overflow-hidden">

@@ -9,6 +9,7 @@ import { isCoachUser, getMyCoachBusinessName, getMyOwnBusinessName } from "@/lib
 import { apiPost } from "@/lib/apiClient";
 import { Icon } from "@/components/Icon";
 import { Home, UtensilsCrossed, Dumbbell, TrendingUp, UserCircle, LogOut } from "@/lib/solarIcons";
+import { Loader } from "@/components/Loader";
 
 // "Séance" pointait autrefois vers /dashboard/programme/creer-ma-seance (page indépendante,
 // jamais retouchée lors de la refonte de l'écran d'entraînement) — un client qui partait de
@@ -158,7 +159,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (!ready) return (
     <div className="min-h-screen bg-[var(--t-bg)] flex items-center justify-center">
-      <div className="w-6 h-6 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin" />
+      <Loader size={64}/>
     </div>
   );
 

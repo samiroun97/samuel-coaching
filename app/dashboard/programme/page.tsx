@@ -27,6 +27,7 @@ import { Sparkline } from "@/components/Sparkline";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
 import { Activity, X, Mic, ChevronDown, Flame, Plus, Trash2, Play } from "@/lib/solarIcons";
+import { Loader } from "@/components/Loader";
 
 type Profile = { prenom: string; poids: number; taille: number; age: number; sexe: string; objectif_type: string | null };
 type LoggedWorkout = {
@@ -1117,7 +1118,7 @@ export default function ProgrammePage() {
             <button onClick={downloadPdf} disabled={exportingPdf}
               className="shrink-0 flex items-center gap-1 text-[#c9a84c] text-[0.6rem] font-bold tracking-[0.12em] uppercase py-2 hover:opacity-75 active:scale-95 transition-all disabled:opacity-40">
               {exportingPdf ? (
-                <div className="w-3 h-3 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>
+                <Loader size={22}/>
               ) : (
                 <RichIcon name="download" size={34} className="-my-3.5 drop-shadow-[0_4px_8px_rgba(201,168,76,0.45)]"/>
               )}

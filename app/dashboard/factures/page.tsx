@@ -7,6 +7,7 @@ import {
 } from "@/lib/business";
 import { downloadInvoicePdf } from "@/components/business/actions";
 import { Empty, Pill, Section, btnGhost } from "@/components/business/ui";
+import { Loader } from "@/components/Loader";
 
 // Côté client : solde de ses packs, prochaines séances et factures de son coach (lecture
 // seule, RLS client_reads_own_*). Téléchargement du PDF avec QR-facture pour payer.
@@ -47,7 +48,7 @@ export default function MesFacturesPage() {
   return (
     <div className="px-4 md:px-8 py-6 md:py-8 max-w-3xl flex flex-col gap-5">
       <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-5xl text-[var(--t-text)] tracking-wide leading-none">SÉANCES & FACTURES</h1>
-      {loading ? <p className="text-sm text-[var(--t-text-40)]">Chargement…</p> : (
+      {loading ? <div className="flex justify-center py-16"><Loader size={64}/></div> : (
         <>
           <Section title="Mes packs">
             {active.length === 0 ? <Empty text="Aucun pack de séances en cours."/> : active.map(({ p, u }) => (

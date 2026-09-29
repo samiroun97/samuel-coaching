@@ -19,6 +19,7 @@ import { RichIcon } from "@/components/RichIcon";
 import { TdeeIcon } from "@/components/CalRefToggle";
 import { Check, X, ChevronLeft, ChevronRight, Plus, Trash2, Clock, Layers, Lock, Play, Pause, Dumbbell, Star } from "@/lib/solarIcons";
 import { RoundTimer } from "@/components/RoundTimer";
+import { Loader } from "@/components/Loader";
 
 type LiveSeance = { id: string; titre: string; exercices: string | null };
 // Paliers d'une série dégressive (drop set) : une chute de charge enchaînée sans repos
@@ -1089,7 +1090,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
 
       <div className="flex-1 overflow-y-auto px-4 pb-28 max-w-lg mx-auto w-full" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         {!loaded ? (
-          <p className="text-xs text-[var(--t-text-30)] text-center py-8">Chargement…</p>
+          <div className="flex justify-center py-8"><Loader size={56}/></div>
         ) : (() => {
           // Bloc Bibliothèque/Nom libre — extrait car nécessaire à deux endroits : après
           // l'exercice affiché quand la séance en a déjà, et seul quand elle est encore vide

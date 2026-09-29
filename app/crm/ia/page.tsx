@@ -2,6 +2,7 @@
 export const dynamic = "force-dynamic";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Loader } from "@/components/Loader";
 
 // Les corrections IA sont désormais transverses à toute la plateforme (tous coachs
 // confondus), donc rattachées au CRM (/operateur) plutôt qu'à un coach en particulier.
@@ -11,7 +12,7 @@ export default function CrmIaRedirect() {
   useEffect(() => { router.replace("/crm/plateforme"); }, [router]);
   return (
     <div className="min-h-screen bg-[var(--t-bg)] flex items-center justify-center">
-      <div className="w-6 h-6 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin" />
+      <Loader size={64}/>
     </div>
   );
 }

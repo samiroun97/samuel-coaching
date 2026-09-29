@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { apiPost } from "@/lib/apiClient";
+import { Loader } from "@/components/Loader";
 
 type Profile = { id: string; email: string; prenom: string; nom: string };
 type Msg = { id: string; from_email: string; to_email: string; content: string; created_at: string };
@@ -114,7 +115,7 @@ export function OperateurIaCorrections() {
     setNoteText("");
   };
 
-  if (loading) return <div className="flex items-center justify-center py-16"><div className="w-5 h-5 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/></div>;
+  if (loading) return <div className="flex items-center justify-center py-16"><Loader size={64}/></div>;
 
   return (
     <div>

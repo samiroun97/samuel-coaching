@@ -11,6 +11,7 @@ import { RichIcon } from "@/components/RichIcon";
 import { ClientNudges } from "@/components/ClientNudges";
 import { Check, Pencil, ChevronRight } from "@/lib/solarIcons";
 import { bmr, expenditure } from "@/lib/energy";
+import { Loader } from "@/components/Loader";
 
 type Profile = {
   prenom: string; nom: string; age: number; poids: number; taille: number; sexe: string;
@@ -242,7 +243,7 @@ export default function AccueilPage() {
 
   if (!profile) return (
     <div className="flex items-center justify-center h-64">
-      <div className="w-5 h-5 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin"/>
+      <Loader size={64}/>
     </div>
   );
 

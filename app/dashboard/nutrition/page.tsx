@@ -15,6 +15,7 @@ import { Icon } from "@/components/Icon";
 import { RichIcon, type RichIconName } from "@/components/RichIcon";
 import { Plus, Shield, ChevronDown, Copy, Star, Trash2, X, Camera, ImageIcon, Mic, Save, ScanBarcode, Lightbulb, MoreHorizontal } from "@/lib/solarIcons";
 import { bmr, expenditure, neatFromSteps } from "@/lib/energy";
+import { Loader } from "@/components/Loader";
 
 // BarcodeDetector (API native) n'existe pas sur Safari/iOS — ZXing décode en JS pur
 // via canvas, donc ça marche identiquement sur iPhone et Android.
@@ -1584,7 +1585,7 @@ export default function NutritionPage() {
                   <div className="relative">
                     <input className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm pl-4 pr-10 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
                       placeholder="Rechercher un aliment par nom…" value={query} onChange={e => { setQuery(e.target.value); setSelected(null); setScanError(""); }}/>
-                    {searching && <div className="absolute right-3 top-1/2 -translate-y-1/2"><div className="w-3 h-3 border border-[#c9a84c] border-t-transparent rounded-full animate-spin"/></div>}
+                    {searching && <div className="absolute right-3 top-1/2 -translate-y-1/2"><Loader size={20}/></div>}
                   </div>
                   {scanError && <p className="text-[0.7rem] text-[#e07070]">{scanError}</p>}
 
