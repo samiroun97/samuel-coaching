@@ -298,7 +298,7 @@ export default function PreferencesPage() {
             <button onClick={save} disabled={saving}
               className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-50 flex items-center justify-center gap-2">
               {saving
-                ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Enregistrement…</>
+                ? <><Loader size={20} className="-my-1"/>Enregistrement…</>
                 : "Enregistrer"}
             </button>
           </div>
@@ -497,7 +497,7 @@ export default function PreferencesPage() {
                 <button onClick={deleteAccount} disabled={deleteConfirm.trim().toUpperCase() !== "SUPPRIMER" || deleting}
                   className="flex-1 bg-[#e07070] text-black rounded-xl text-[0.7rem] font-bold tracking-[0.15em] uppercase py-3 hover:brightness-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                   {deleting
-                    ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Suppression…</>
+                    ? <><Loader size={20} className="-my-1"/>Suppression…</>
                     : "Supprimer"}
                 </button>
               </div>

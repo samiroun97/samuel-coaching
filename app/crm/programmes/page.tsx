@@ -776,7 +776,7 @@ export default function ProgrammesPage() {
                       value={genDescription} onChange={e => setGenDescription(e.target.value)}/>
                     <button onClick={generate} disabled={generating}
                       className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.58rem] font-bold tracking-[0.18em] uppercase py-3 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:-translate-y-0.5 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
-                      {generating ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Génération en cours…</> : `Générer ${Math.min(Math.max(selected.seances_par_semaine || 3, 2), 6)} séances →`}
+                      {generating ? <><Loader size={20} className="-my-1"/>Génération en cours…</> : `Générer ${Math.min(Math.max(selected.seances_par_semaine || 3, 2), 6)} séances →`}
                     </button>
                     <p className="text-[0.55rem] text-[var(--t-text-30)]">Basé sur l&apos;objectif, le niveau, le lieu et les blessures de {selected.prenom}. Tout reste modifiable avant l&apos;envoi.</p>
                   </div>
@@ -846,7 +846,7 @@ export default function ProgrammesPage() {
                 <p className="text-[0.55rem] text-[var(--t-text-30)] flex-1">Les séances sans date arrivent dans « Sans date » : glisse-les ensuite sur un jour.</p>
                 <button onClick={sendAll} disabled={sending || !drafts.some(d => d.titre.trim())}
                   className="px-5 py-3 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black text-[0.58rem] font-bold tracking-[0.15em] uppercase rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] disabled:opacity-40 flex items-center gap-2 shrink-0">
-                  {sending ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"/>Envoi…</> : `Envoyer à ${selected.prenom} →`}
+                  {sending ? <><Loader size={20} className="-my-1"/>Envoi…</> : `Envoyer à ${selected.prenom} →`}
                 </button>
               </div>
             )}

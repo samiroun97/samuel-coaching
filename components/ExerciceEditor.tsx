@@ -10,6 +10,7 @@ import { Select } from "@/components/Select";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
 import { Layers, Repeat, Dumbbell, Clock, ChevronUp, ChevronDown, Camera, X, Copy, ChevronRight, Plus, Eye, Pencil } from "@/lib/solarIcons";
+import { Loader } from "@/components/Loader";
 
 const inp = "w-full bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
 const inpSm = "w-full bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-xs px-2.5 py-2 text-center focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
@@ -64,7 +65,7 @@ function ExerciceThumb({ catalogue, ex, onChange }: { catalogue: CatalogueEntry[
         </button>
         {editable && uploading && (
           <span className="absolute inset-0 rounded-xl bg-black/60 flex items-center justify-center text-white">
-            <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin"/>
+            <Loader size={20} className="-my-1"/>
           </span>
         )}
         {editable && !uploading && (

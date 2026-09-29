@@ -12,6 +12,7 @@ import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
 import { Settings, ChevronRight, Pencil, MessageSquare, AlertCircle, Check, Star, FileText } from "@/lib/solarIcons";
 import { ModeSwitch } from "@/components/ModeSwitch";
+import { Loader } from "@/components/Loader";
 
 type Profile = {
   prenom: string; nom: string; age: number | null; poids: number | null; taille: number | null; sexe: string | null;
@@ -208,7 +209,7 @@ export default function ProfilePage() {
           </div>
           {avatarUploading ? (
             <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center">
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"/>
+              <Loader size={30}/>
             </div>
           ) : (
             <span className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full bg-[#c9a84c] border-2 border-[var(--t-surface)] flex items-center justify-center shadow-[0_1px_3px_rgba(0,0,0,0.2)]">

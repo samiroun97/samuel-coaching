@@ -5,6 +5,7 @@ import { apiPost } from "@/lib/apiClient";
 import { getMyCoachEmail, getMyCoachBusinessName } from "@/lib/coach";
 import { Icon } from "@/components/Icon";
 import { MessageSquare, Bot, User } from "@/lib/solarIcons";
+import { Loader } from "@/components/Loader";
 
 type AiMessage  = { role: "user" | "assistant"; content: string };
 type DirectMsg  = { id: string; from_email: string; to_email: string; content: string; created_at: string };
@@ -162,7 +163,7 @@ export default function CoachPage() {
                   <Icon icon={Bot} size={13} strokeWidth={1.5} className="text-[#c9a84c]"/>
                 </div>
                 <div className="bg-[var(--t-surface)] border border-[var(--t-border)] rounded-xl px-4 py-3 flex items-center gap-1.5">
-                  {[0,1,2].map(j => <div key={j} className="w-1.5 h-1.5 rounded-full bg-[var(--t-text-20)] animate-bounce" style={{ animationDelay: `${j*0.15}s` }}/>)}
+                  <Loader size={28}/>
                 </div>
               </div>
             )}

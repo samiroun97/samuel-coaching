@@ -962,7 +962,7 @@ export default function ProgrammePage() {
           <button onClick={estimate} disabled={!activity.trim() || estimating}
             className="border border-[var(--t-border)] text-[var(--t-text-40)] rounded-xl text-[0.7rem] tracking-[0.15em] uppercase py-3 hover:border-[#e0672f]/40 hover:text-[#e0672f] transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             {estimating
-              ? <><div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"/>Estimation en cours…</>
+              ? <><Loader size={20} className="-my-1"/>Estimation en cours…</>
               : <><TdeeIcon size={14}/>Estimer les calories brûlées</>}
           </button>
         )}

@@ -11,6 +11,7 @@ import { SetInputCell } from "@/components/SetInputCell";
 import { Icon } from "@/components/Icon";
 import type { LucideIcon } from "@/lib/solarIcons";
 import { Plus, X, MoreHorizontal, FileText, Camera, Dumbbell, ChevronUp, ChevronDown, Trash2 } from "@/lib/solarIcons";
+import { Loader } from "@/components/Loader";
 
 // Refonte complète de la construction d'une séance côté client (ex "Créer ma séance"),
 // après plusieurs échecs à faire fonctionner ça en patchant ExerciceEditor (conçu pour le
@@ -151,7 +152,7 @@ export default function SeanceBuilder({ items, onChange, catalogue }: {
                 )}
                 {uploading === i && (
                   <span className="absolute inset-0 bg-black/60 flex items-center justify-center text-white">
-                    <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin"/>
+                    <Loader size={20} className="-my-1"/>
                   </span>
                 )}
               </div>
