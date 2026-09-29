@@ -79,10 +79,19 @@ export async function POST(req: NextRequest) {
       .reduce((sum, s) => sum + (PLANS[s.plan as Plan]?.monthlyChf ?? 0), 0);
     const weekAgo = Date.now() - 7 * 86400000;
 
+    // Répartition par formule : en essai / payants / inactifs (essai fini, résilié, impayé).
+    const planBreakdown = (Object.keys(PLANS) as Plan[]).map(plan => {
+      const rows = subs.filter(s => s.plan === plan);
+      const trialing = rows.filter(s => s.status === "trialing" && isSubActive(s)).length;
+      const paying = rows.filter(s => s.status !== "trialing" && isSubActive(s)).length;
+      return { plan, trialing, paying, inactive: rows.length - trialing - paying, mrr: paying * PLANS[plan].monthlyChf };
+    });
+
     return NextResponse.json({
       coaches: coachRows,
       users: userRows,
       billingReady: !subsRes.error,
+      planBreakdown,
       totals: {
         users: userRows.length,
         newThisWeek: userRows.filter(u => u.createdAt && new Date(u.createdAt).getTime() > weekAgo).length,

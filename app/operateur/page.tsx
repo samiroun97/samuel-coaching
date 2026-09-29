@@ -2,11 +2,13 @@
 export const dynamic = "force-dynamic";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { apiPost } from "@/lib/apiClient";
 import { isPlatformAdmin } from "@/lib/coach";
 import { OperateurIaCorrections } from "@/components/OperateurIaCorrections";
 import { ModeSwitch } from "@/components/ModeSwitch";
+import { PLANS, type Plan } from "@/lib/plans";
 
 type Kind = "operateur" | "coach" | "client" | "solo";
 type SubInfo = { plan: string | null; planLabel: string | null; subStatus: string | null; trialEndsAt: string | null; active: boolean | null };
@@ -23,7 +25,8 @@ type Totals = {
   users: number; newThisWeek: number; unlinked: number; coaches: number; clients: number;
   trialing: number; paying: number; mrr: number; seances: number; messages: number;
 };
-type OperateurData = { coaches: CoachRow[]; users: UserRow[]; totals: Totals; billingReady: boolean };
+type PlanStat = { plan: Plan; trialing: number; paying: number; inactive: number; mrr: number };
+type OperateurData = { coaches: CoachRow[]; users: UserRow[]; totals: Totals; billingReady: boolean; planBreakdown: PlanStat[] };
 
 const KIND_CFG: Record<Kind, { label: string; color: string }> = {
   operateur: { label: "Opérateur",     color: "#c9a84c" },
@@ -220,6 +223,36 @@ export default function OperateurPage() {
             <KPI label="Coachs" value={data.totals.coaches} sub={`${data.totals.clients} clients rattachés`}/>
             <KPI label="Revenu mensuel" value={data.billingReady ? `${data.totals.mrr} CHF` : "—"}
               sub={data.billingReady ? `${data.totals.paying} payant${data.totals.paying > 1 ? "s" : ""} · ${data.totals.trialing} en essai` : "formules pas encore activées"}/>
+          </div>
+
+          <div className={card}>
+            <div className="px-4 py-3 border-b border-[var(--t-border-soft)] flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[0.9rem] font-semibold text-[var(--t-text)]">Formules</p>
+                <p className="text-[0.7rem] text-[var(--t-text-40)]">
+                  {data.billingReady ? "Qui est sur quelle formule, et ce que chacune rapporte par mois." : "Les compteurs s'activeront avec la migration des abonnements."}
+                </p>
+              </div>
+              <Link href="/crm/abonnement" className="text-[0.66rem] text-[#c9a84c] whitespace-nowrap hover:underline">Voir les formules →</Link>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4">
+              {(data.planBreakdown ?? (Object.keys(PLANS) as Plan[]).map(plan => ({ plan, trialing: 0, paying: 0, inactive: 0, mrr: 0 }))).map(s => {
+                const cfg = PLANS[s.plan];
+                return (
+                  <div key={s.plan} className="px-4 py-3 border-b md:border-b-0 md:border-r last:border-r-0 border-[var(--t-border-soft)]">
+                    <p className="text-[0.8rem] font-semibold text-[var(--t-text)]">{cfg.label}</p>
+                    <p className="text-[0.7rem] text-[var(--t-text-40)]">{cfg.monthlyChf} CHF/mois{cfg.maxClients ? ` · ${cfg.maxClients} clients` : ""}</p>
+                    <div className="flex gap-3 mt-2 text-[0.7rem]">
+                      <span><span className="font-bold text-[var(--t-text)]">{data.billingReady ? s.paying : "—"}</span> <span className="text-[var(--t-text-40)]">payants</span></span>
+                      <span><span className="font-bold text-[var(--t-text)]">{data.billingReady ? s.trialing : "—"}</span> <span className="text-[var(--t-text-40)]">en essai</span></span>
+                    </div>
+                    <p className="text-[0.68rem] text-[var(--t-text-40)] mt-1">
+                      {data.billingReady ? `${s.mrr} CHF/mois · ${s.inactive} inactif${s.inactive > 1 ? "s" : ""}` : "—"}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           <div className={card}>

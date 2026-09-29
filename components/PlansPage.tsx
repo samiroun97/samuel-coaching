@@ -29,8 +29,11 @@ export function PlansPage() {
   if (!me) return <p className="text-sm text-[var(--t-text-40)]">Chargement…</p>;
 
   const ent = me.entitlement;
-  const audience: "solo" | "coach" = ent.kind === "coach" || ent.kind === "owner" ? "coach" : "solo";
-  const plans = (Object.keys(PLANS) as Plan[]).filter(p => PLANS[p].audience === audience);
+  const isOwner = ent.kind === "owner";
+  const audience: "solo" | "coach" = ent.kind === "coach" || isOwner ? "coach" : "solo";
+  // L'opérateur ne paie rien mais voit toutes les formules, en aperçu (boutons inactifs).
+  const groups: ("solo" | "coach")[] = isOwner ? ["solo", "coach"] : [audience];
+  const plansOf = (a: "solo" | "coach") => (Object.keys(PLANS) as Plan[]).filter(p => PLANS[p].audience === a);
 
   // ── Statut actuel ──
   let statusTitle = "";
@@ -61,7 +64,7 @@ export function PlansPage() {
     statusText = "Les formules seront bientôt disponibles.";
   }
 
-  const showPlans = ent.kind === "solo" || ent.kind === "coach";
+  const showPlans = ent.kind === "solo" || ent.kind === "coach" || isOwner;
 
   return (
     <div className="flex flex-col gap-6 max-w-3xl">
@@ -87,8 +90,15 @@ export function PlansPage() {
             ))}
           </div>
 
+          {groups.map(g => (
+          <div key={g} className="flex flex-col gap-3">
+          {isOwner && (
+            <p className="text-[0.66rem] font-semibold uppercase tracking-[0.1em] text-[var(--t-text-50)]">
+              {g === "solo" ? "Formules Solo · pour utiliser l'app sans coach" : "Formules Coach · pour gérer ses clients"}
+            </p>
+          )}
           <div className="grid sm:grid-cols-2 gap-4">
-            {plans.map(p => {
+            {plansOf(g).map(p => {
               const cfg = PLANS[p];
               const current = ent.plan === p && ent.tier !== "none" && ent.status !== "trialing";
               const premium = cfg.tier === "premium";
@@ -111,14 +121,16 @@ export function PlansPage() {
                       </li>
                     ))}
                   </ul>
-                  <button disabled={current || !me.paymentsEnabled}
+                  <button disabled={current || isOwner || !me.paymentsEnabled}
                     className={`py-2.5 rounded-xl text-[0.72rem] font-bold tracking-[0.1em] uppercase transition-all disabled:cursor-not-allowed ${premium ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-black disabled:opacity-60" : "border border-[var(--t-border)] text-[var(--t-text-70)] disabled:opacity-60"}`}>
-                    {current ? "Ta formule actuelle" : me.paymentsEnabled ? "Choisir" : "Paiement en ligne bientôt"}
+                    {isOwner ? "Aperçu" : current ? "Ta formule actuelle" : me.paymentsEnabled ? "Choisir" : "Paiement en ligne bientôt"}
                   </button>
                 </div>
               );
             })}
           </div>
+          </div>
+          ))}
 
           <p className="text-[0.7rem] text-[var(--t-text-40)] leading-relaxed">
             Prix en CHF. Résiliable à tout moment, effet à la fin de la période payée. « IA illimitée » s&apos;entend
