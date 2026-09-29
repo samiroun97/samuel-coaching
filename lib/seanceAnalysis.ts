@@ -23,15 +23,16 @@ export type SeanceAnalysis = {
 export function analyzeSeance(
   exercices: ExerciceItem[], logs: SeanceLogRow[], clientBodyweight: number | null, prCountByNom: Record<string, boolean>
 ): SeanceAnalysis {
-  // Le volume live (SeanceLive) additionne aussi les paliers dégressifs, mais ceux-ci sont
-  // volontairement éphémères (jamais persistés dans seance_logs) — le volume rétroactif ici
-  // est donc une légère sous-estimation pour une séance avec dégressifs, limite déjà connue
-  // et acceptée ailleurs dans l'app plutôt qu'un vrai manque introduit ici.
-  const volume = logs.reduce((s, l) => {
+  // Même calcul que le volume live (SeanceLive) : séries de travail uniquement (échauffements
+  // exclus) + paliers dégressifs, persistés dans seance_logs.drops depuis le 19.09.2026.
+  const workLogs = logs.filter(l => !l.warmup);
+  const n = (v: string | number | null | undefined) => { const x = parseFloat(String(v ?? "").replace(",", ".")); return Number.isFinite(x) ? x : 0; };
+  const volume = workLogs.reduce((s, l) => {
     const ex = exercices[l.exercice_index];
     if (!ex || ex.repKind !== "reps") return s;
     const load = effectiveLoad(ex, l.poids_reel, clientBodyweight);
-    return s + (load ?? 0) * (l.reps_reel ?? 0);
+    const drops = (l.drops ?? []).reduce((d, st) => d + (effectiveLoad(ex, n(st.poids), clientBodyweight) ?? 0) * n(st.reps), 0);
+    return s + (load ?? 0) * (l.reps_reel ?? 0) + drops;
   }, 0);
 
   // Un exercice ajouté en direct (Bibliothèque/Nom libre) reste en mode "simple" avec
@@ -41,7 +42,7 @@ export function analyzeSeance(
   const totalPlanned = exercices.reduce((s, ex) => s + targetSetsFor(ex).length, 0);
   const totalLogged = logs.length;
 
-  const rirValues = logs.map(l => l.rir_reel).filter((r): r is number => r != null);
+  const rirValues = workLogs.map(l => l.rir_reel).filter((r): r is number => r != null);
   const avgRir = rirValues.length ? rirValues.reduce((a, b) => a + b, 0) / rirValues.length : null;
 
   const timestamps = logs.map(l => new Date(l.logged_at).getTime()).filter(t => !Number.isNaN(t));
@@ -59,14 +60,14 @@ export function analyzeSeance(
   // logged_at identique sur toutes les lignes après une suppression d'exercice — cf.
   // removeExercice dans SeanceLive) plutôt que 0 kcal.
   const bodyweightForCalc = clientBodyweight ?? 75;
-  const loadsForCal = logs.map(l => { const ex = exercices[l.exercice_index]; return ex ? effectiveLoad(ex, l.poids_reel, clientBodyweight) ?? 0 : null; }).filter((v): v is number => v != null);
+  const loadsForCal = workLogs.map(l => { const ex = exercices[l.exercice_index]; return ex ? effectiveLoad(ex, l.poids_reel, clientBodyweight) ?? 0 : null; }).filter((v): v is number => v != null);
   const avgLoadForCal = loadsForCal.length ? loadsForCal.reduce((a, b) => a + b, 0) / loadsForCal.length : 0;
   const avgRirForCal = avgRir ?? 2.5;
   const MAX_MIN_PER_SET = 4;
   const cappedDurationMin = durationMin != null ? Math.min(durationMin, totalLogged * MAX_MIN_PER_SET) : null;
   const calories = cappedDurationMin != null
     ? estimateSetKcal(avgLoadForCal, cappedDurationMin * 60, avgRirForCal, bodyweightForCalc)
-    : logs.reduce((sum, l) => {
+    : workLogs.reduce((sum, l) => {
         const ex = exercices[l.exercice_index];
         if (!ex) return sum;
         const load = effectiveLoad(ex, l.poids_reel, clientBodyweight) ?? 0;
