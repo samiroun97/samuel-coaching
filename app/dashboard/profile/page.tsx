@@ -10,7 +10,7 @@ import { OBJECTIF_TYPES, OBJECTIF_TYPE_LABEL, type ObjectifType } from "@/lib/ob
 import { uploadAvatar } from "@/lib/avatarUpload";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
-import { Settings, ChevronRight, Pencil, MessageSquare, AlertCircle, Check, Star } from "@/lib/solarIcons";
+import { Settings, ChevronRight, Pencil, MessageSquare, AlertCircle, Check, Star, FileText } from "@/lib/solarIcons";
 import { ModeSwitch } from "@/components/ModeSwitch";
 
 type Profile = {
@@ -265,6 +265,17 @@ export default function ProfilePage() {
               {unread && <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#e07070] ring-2 ring-[var(--t-surface)]"/>}
             </span>
             <p className="text-sm text-[var(--t-text-70)]">Messages</p>
+          </div>
+          <Icon icon={ChevronRight} size={14} strokeWidth={1.5} className="text-[var(--t-text-25)] shrink-0"/>
+        </Link>
+      )}
+
+      {!isCoach && (
+        <Link href="/dashboard/factures"
+          className="flex items-center justify-between border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl px-5 py-4 hover:bg-[var(--t-glass-bg)] transition-colors mb-4">
+          <div className="flex items-center gap-3">
+            <Icon icon={FileText} size={18} strokeWidth={1.5} className="text-[var(--t-text-40)]"/>
+            <p className="text-sm text-[var(--t-text-70)]">Séances & factures</p>
           </div>
           <Icon icon={ChevronRight} size={14} strokeWidth={1.5} className="text-[var(--t-text-25)] shrink-0"/>
         </Link>
