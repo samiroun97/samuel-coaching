@@ -5,7 +5,8 @@ import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getMyCoachId } from "@/lib/coach";
 import { Icon } from "@/components/Icon";
-import { ChevronLeft, Check, MessageSquare } from "@/lib/solarIcons";
+import { RichIcon } from "@/components/RichIcon";
+import { ChevronLeft, Check } from "@/lib/solarIcons";
 
 type Msg    = { id: string; from_email: string; to_email: string; content: string; created_at: string };
 
@@ -207,11 +208,23 @@ export default function InboxPage() {
       {/* ── Left: conversation list (plein écran sur mobile quand aucune conv ouverte) ── */}
       <div className={`${activeConv ? "hidden md:flex" : "flex"} w-full md:w-72 shrink-0 border-r border-[var(--t-border-soft)] flex-col bg-[var(--t-bg)]`}>
         <div className="px-4 md:px-5 pt-5 md:pt-6 pb-4 border-b border-[var(--t-border-soft)]">
-          <p className="text-[0.65rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-1">Plateforme coaching</p>
-          <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-[var(--t-text)] tracking-wide">INBOX</h1>
-          <p className="text-[var(--t-text-30)] text-xs mt-1">
-            {convs.filter(c => c.unread).length} non répondu{convs.filter(c => c.unread).length !== 1 ? "s" : ""}
-          </p>
+          {/* Même en-tête illustré que la page Clients (icône messages fournie par le client). */}
+          <div className="flex items-center gap-3">
+            <div className="relative w-[80px] h-[80px] flex items-center justify-center shrink-0">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-xl pointer-events-none"
+                style={{ width: 68, height: 68, backgroundColor: "#fff6dc", opacity: 0.85 }}/>
+              <div className="relative animate-levitate-soft">
+                <RichIcon name="messages" size={80} className="drop-shadow-[0_10px_14px_rgba(0,0,0,0.14)]"/>
+              </div>
+            </div>
+            <div>
+              <p className="text-[0.5rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-1">Plateforme coaching</p>
+              <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-[var(--t-text)] tracking-wide leading-none">INBOX</h1>
+              <p className="text-[var(--t-text-30)] text-xs mt-1">
+                {convs.filter(c => c.unread).length} non répondu{convs.filter(c => c.unread).length !== 1 ? "s" : ""}
+              </p>
+            </div>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto py-2 px-2">
@@ -494,7 +507,7 @@ export default function InboxPage() {
         </div>
       ) : (
         <div className="flex-1 hidden md:flex flex-col items-center justify-center gap-3">
-          <Icon icon={MessageSquare} size={36} strokeWidth={1} className="text-[var(--t-border)]"/>
+          <RichIcon name="messages" size={96} className="opacity-90 drop-shadow-[0_10px_14px_rgba(0,0,0,0.12)]"/>
           <p className="text-[var(--t-text-15)] text-sm">Sélectionne une conversation</p>
         </div>
       )}
