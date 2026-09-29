@@ -1191,7 +1191,6 @@ export default function NutritionPage() {
             )}
             <button onClick={() => { setAddMealType(type); setShowAdd(true); }}
               className="w-full bg-transparent text-[var(--t-text-35)] text-[0.65rem] font-medium tracking-[0.18em] uppercase py-3 border-t border-[var(--t-border-soft)] hover:bg-[var(--t-glass-bg)] hover:text-[var(--t-text-60)] active:bg-[var(--t-glass-bg)] transition-colors duration-200 flex items-center justify-center gap-2">
-              <Icon icon={Plus} size={11} strokeWidth={2}/>
               Ajouter
             </button>
           </div>
@@ -1273,10 +1272,10 @@ export default function NutritionPage() {
             placeholder="Allergies, intolérances, régime (ex: sans lactose, sans gluten, pas de porc, végétarien…)"
             className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-[0.7rem] px-3.5 py-2.5 mb-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"/>
           <button data-loading={ideaLoading || undefined} onClick={generateIdeas} disabled={ideaLoading || !canGenerateIdeas}
-            className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.72rem] font-bold tracking-[0.18em] uppercase py-3.5 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40 disabled:hover:translate-y-0 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.72rem] font-bold tracking-[0.18em] uppercase py-2.5 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40 disabled:hover:translate-y-0 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             {ideaLoading
               ? <>Génération…</>
-              : <><Icon icon={Plus} size={12} strokeWidth={2}/>Générer une idée repas</>}
+              : "Générer une idée repas"}
           </button>
 {ideaLoading && <div className="flex justify-center pt-3"><Loader size={120}/></div>}
         </div>
@@ -1468,8 +1467,8 @@ export default function NutritionPage() {
 
                   {!aiResult && (
                     <><button data-loading={analyzing || undefined} onClick={runAnalysis} disabled={analyzing || (!photoPreview && !description.trim())}
-                      className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                      {analyzing ? <>Analyse en cours…</> : "Estimer son repas →"}
+                      className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                      {analyzing ? <>Analyse en cours…</> : "Estimer son repas"}
                     </button>
 {analyzing && <div className="flex justify-center pt-3"><Loader size={120}/></div>}</>
                   )}
@@ -1519,8 +1518,8 @@ export default function NutritionPage() {
                           <Icon icon={Save} size={11} strokeWidth={2}/>
                           {savedMeals.some(s => s.name === aiResult.name) ? "Déjà sauvegardé" : "Sauvegarder"}
                         </button>
-                        <button onClick={addFood} className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
-                          Ajouter au journal →
+                        <button onClick={addFood} className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
+                          Ajouter au journal
                         </button>
                       </div>
 
@@ -1542,14 +1541,14 @@ export default function NutritionPage() {
                               </button>
                               <button onClick={submitReport} disabled={reportSending || !reportComment.trim()}
                                 className="flex-1 bg-[#e07070] text-white text-[0.65rem] font-bold tracking-[0.15em] uppercase py-2.5 hover:bg-[#e58888] transition-colors disabled:opacity-40 rounded-xl">
-                                {reportSending ? "Envoi…" : "Envoyer le signalement →"}
+                                {reportSending ? "Envoi…" : "Envoyer le signalement"}
                               </button>
                             </div>
                           </div>
                         ) : (
                           <button onClick={() => setShowReportForm(true)}
                             className="text-[0.6rem] tracking-wider uppercase text-[var(--t-text-20)] hover:text-[#e07070]/70 transition-colors text-center py-1">
-                            Cette estimation te semble fausse ? Signale-la à Samuel →
+                            Cette estimation te semble fausse ? Signale-la à Samuel
                           </button>
                         )
                       )}
@@ -1563,7 +1562,7 @@ export default function NutritionPage() {
               {modalMode === "search" && (
                 <div className="flex flex-col gap-4">
                   <button onClick={openScanner}
-                    className="flex items-center justify-center gap-2.5 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.72rem] font-bold tracking-[0.15em] uppercase py-3.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
+                    className="flex items-center justify-center gap-2.5 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.72rem] font-bold tracking-[0.15em] uppercase py-2.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
                     <Icon icon={ScanBarcode} size={16} strokeWidth={1.5}/>
                     Scanner un code-barres
                   </button>
@@ -1653,8 +1652,8 @@ export default function NutritionPage() {
                           className="flex-1 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-xl text-[0.7rem] tracking-[0.15em] uppercase py-2.5 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
                           {savedMeals.some(s => s.name === selected.product_name) ? "Déjà sauvegardé" : "Sauvegarder"}
                         </button>
-                        <button onClick={addFood} className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
-                          Ajouter au journal →
+                        <button onClick={addFood} className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
+                          Ajouter au journal
                         </button>
                       </div>
                     </div>
@@ -1723,8 +1722,8 @@ export default function NutritionPage() {
                         );
                       })()}
                       <button onClick={createProduct} disabled={!newProd.name.trim() || !(parseFloat(newProd.base.replace(",", ".")) > 0)}
-                        className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.58rem] font-bold tracking-[0.18em] uppercase py-2.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed">
-                        Enregistrer le produit →
+                        className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.58rem] font-bold tracking-[0.18em] uppercase py-2 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed">
+                        Enregistrer le produit
                       </button>
                     </div>
                   )}
@@ -1781,8 +1780,8 @@ export default function NutritionPage() {
                   )}
 
                   {selectedSaved && (
-                    <button onClick={addFood} className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
-                      Ajouter &quot;{selectedSaved.name}&quot; ({savedQty || 0} {selectedSaved.unit ?? "g"}) au journal →
+                    <button onClick={addFood} className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
+                      Ajouter &quot;{selectedSaved.name}&quot; ({savedQty || 0} {selectedSaved.unit ?? "g"}) au journal
                     </button>
                   )}
                 </div>
@@ -1835,7 +1834,7 @@ export default function NutritionPage() {
               </div>
             </div>
             <button onClick={() => { setGoals(goalDraft); setGoalsSet(true); setShowGoals(false); }}
-              className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
+              className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
               Enregistrer
             </button>
           </div>

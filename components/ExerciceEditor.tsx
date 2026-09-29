@@ -533,13 +533,11 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
       {catalogue.length > 0 && (
         <button type="button" onClick={() => setShowLibraryBrowser(true)}
           className="flex-1 flex items-center justify-center gap-1.5 border border-dashed border-[var(--t-border-15)] text-[var(--t-text-30)] text-[0.62rem] font-bold tracking-[0.08em] uppercase py-3 rounded-xl hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors">
-          <Icon icon={Plus} size={12} strokeWidth={2.5}/>
           Bibliothèque
         </button>
       )}
       <button type="button" onClick={add}
         className="flex-1 flex items-center justify-center gap-1.5 border border-dashed border-[var(--t-border-15)] text-[var(--t-text-30)] text-[0.62rem] font-bold tracking-[0.08em] uppercase py-3 rounded-xl hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors">
-        <Icon icon={Plus} size={12} strokeWidth={2.5}/>
         Exercice libre
       </button>
     </div>

@@ -382,14 +382,14 @@ export default function InboxPage() {
                                     </button>
                                     <button onClick={() => submitCorrection(m.id, bff.estimated_bf, bff.comment)} disabled={correctionSaving || !correctionComment.trim()}
                                       className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.55rem] font-bold tracking-wider uppercase py-2 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40 rounded-xl">
-                                      {correctionSaving ? "Envoi…" : "Envoyer à l'IA →"}
+                                      {correctionSaving ? "Envoi…" : "Envoyer à l'IA"}
                                     </button>
                                   </div>
                                 </div>
                               ) : (
                                 <button onClick={() => setCorrectingId(m.id)}
                                   className="text-[0.55rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[#c9a84c] transition-colors text-left border-t border-[var(--t-border-soft)] pt-3">
-                                  Corriger cette estimation →
+                                  Corriger cette estimation
                                 </button>
                               )}
                             </div>
@@ -463,7 +463,7 @@ export default function InboxPage() {
                         );
                       }
                       return (
-                        <div className={`px-4 py-3 text-xs leading-relaxed whitespace-pre-line ${isMe ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold rounded-xl" : "bg-[var(--t-surface)] border border-[var(--t-text-8)] text-[var(--t-text-60)] rounded-xl"}`}>
+                        <div className={`px-4 py-2 text-xs leading-relaxed whitespace-pre-line ${isMe ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold rounded-xl" : "bg-[var(--t-surface)] border border-[var(--t-text-8)] text-[var(--t-text-60)] rounded-xl"}`}>
                           {m.content}
                         </div>
                       );
@@ -500,7 +500,7 @@ export default function InboxPage() {
                 placeholder={`Répondre à ${activeConv.name}…`} disabled={sending}
                 className="flex-1 min-w-0 bg-[var(--t-surface)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 md:px-4 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors disabled:opacity-50"/>
               <button onClick={send} disabled={!input.trim() || sending}
-                className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold px-4 md:px-6 py-3 text-[0.58rem] font-bold tracking-[0.15em] uppercase rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed">
+                className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold px-4 md:px-6 py-2 text-[0.58rem] font-bold tracking-[0.15em] uppercase rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed">
                 Envoyer
               </button>
             </div>

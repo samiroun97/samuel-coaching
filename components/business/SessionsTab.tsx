@@ -63,8 +63,8 @@ export function SessionsTab({ data, reload }: Props) {
   return (
     <div className="flex flex-col gap-5">
       <div className="flex gap-2 flex-wrap">
-        <button onClick={() => setShowNew(true)} className={btnGold} disabled={!data.clients.length}>+ Séance</button>
-        <button onClick={() => setShowPack(true)} className={btnGhost} disabled={!data.clients.length}>+ Vendre un pack</button>
+        <button onClick={() => setShowNew(true)} className={btnGold} disabled={!data.clients.length}>Séance</button>
+        <button onClick={() => setShowPack(true)} className={btnGhost} disabled={!data.clients.length}>Vendre un pack</button>
       </div>
       {err && <p className="text-xs text-[#e07070]">{err}</p>}
 

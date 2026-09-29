@@ -551,11 +551,11 @@ export default function ProgrammesPage() {
 
                 <div className="flex flex-wrap items-center gap-2">
                   <button onClick={() => setComposer(true)}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.78rem] font-bold shadow-[0_6px_20px_-8px_rgba(201,168,76,0.7)] hover:-translate-y-0.5 hover:shadow-[0_10px_26px_-8px_rgba(201,168,76,0.8)] transition-all">
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.78rem] font-bold shadow-[0_6px_20px_-8px_rgba(201,168,76,0.7)] hover:-translate-y-0.5 hover:shadow-[0_10px_26px_-8px_rgba(201,168,76,0.8)] transition-all">
                     ✦ Générer avec l&apos;IA
                   </button>
                   <button onClick={() => openCreate(today)} className={toolBtn}>
-                    <Icon icon={Plus} size={14} strokeWidth={2.2}/> Nouvelle séance
+                    Nouvelle séance
                   </button>
                   <div className="relative">
                     <button onClick={() => setMenuOpen(o => !o)} className={toolBtn} aria-label="Plus d'actions">
@@ -606,7 +606,7 @@ export default function ProgrammesPage() {
                 <button onClick={() => setComposer(true)}
                   className="flex items-center justify-between rounded-xl border border-[#c9a84c]/40 bg-[#c9a84c]/[0.08] px-4 py-3 text-left hover:bg-[#c9a84c]/12 transition-colors">
                   <span className="text-sm text-[var(--t-text-80)]"><b>{drafts.length} séance{drafts.length > 1 ? "s" : ""}</b> en brouillon, pas encore envoyée{drafts.length > 1 ? "s" : ""}</span>
-                  <span className="text-[0.78rem] font-semibold text-[#c9a84c]">Reprendre →</span>
+                  <span className="text-[0.78rem] font-semibold text-[#c9a84c]">Reprendre</span>
                 </button>
               )}
 
@@ -628,7 +628,7 @@ export default function ProgrammesPage() {
                   prog && activeMeso ? <>S{prog.weekNum}<span className="text-[var(--t-text-40)] font-medium"> / {prog.totalWeeks}</span></> : "Aucun",
                   prog && activeMeso ? (
                     <span className="flex items-center gap-1.5 mt-1"><span className="w-16 h-1.5 rounded-full bg-[var(--t-track)] overflow-hidden inline-block"><span className="block h-full rounded-full bg-[#c9a84c]" style={{ width: `${prog.pct}%` }}/></span><span className="truncate">{activeMeso.nom}</span></span>
-                  ) : "Démarrer un mésocycle →",
+                  ) : "Démarrer un mésocycle",
                   activeMeso ? undefined : () => setShowMesoForm(true))}
               </div>
 
@@ -775,8 +775,8 @@ export default function ProgrammesPage() {
                       placeholder="Précisions (optionnel) — ex : reprise après blessure au genou, priorité haut du corps…"
                       value={genDescription} onChange={e => setGenDescription(e.target.value)}/>
                     <button data-loading={generating || undefined} onClick={generate} disabled={generating}
-                      className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.58rem] font-bold tracking-[0.18em] uppercase py-3 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:-translate-y-0.5 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
-                      {generating ? <>Génération en cours…</> : `Générer ${Math.min(Math.max(selected.seances_par_semaine || 3, 2), 6)} séances →`}
+                      className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.58rem] font-bold tracking-[0.18em] uppercase py-2 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:-translate-y-0.5 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+                      {generating ? <>Génération en cours…</> : `Générer ${Math.min(Math.max(selected.seances_par_semaine || 3, 2), 6)} séances`}
                     </button>
 {generating && <div className="flex justify-center pt-3"><Loader size={80}/></div>}
                     <p className="text-[0.55rem] text-[var(--t-text-30)]">Basé sur l&apos;objectif, le niveau, le lieu et les blessures de {selected.prenom}. Tout reste modifiable avant l&apos;envoi.</p>
@@ -835,7 +835,7 @@ export default function ProgrammesPage() {
                     </div>
                   ))}
                   <button onClick={() => setDrafts(prev => [...prev, emptySeance()])} className={`${toolBtn} justify-center py-2.5`}>
-                    <Icon icon={Plus} size={11} strokeWidth={2.2}/> Ajouter une séance
+                    Ajouter une séance
                   </button>
                 </>
               )}
@@ -847,8 +847,8 @@ export default function ProgrammesPage() {
                 <p className="text-[0.55rem] text-[var(--t-text-30)] flex-1">Les séances sans date arrivent dans « Sans date » : glisse-les ensuite sur un jour.</p>
                 {sending && <Loader size={48} className="-my-3"/>}
 <button data-loading={sending || undefined} onClick={sendAll} disabled={sending || !drafts.some(d => d.titre.trim())}
-                  className="px-5 py-3 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.58rem] font-bold tracking-[0.15em] uppercase rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] disabled:opacity-40 flex items-center gap-2 shrink-0">
-                  {sending ? <>Envoi…</> : `Envoyer à ${selected.prenom} →`}
+                  className="px-5 py-2 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.58rem] font-bold tracking-[0.15em] uppercase rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] disabled:opacity-40 flex items-center gap-2 shrink-0">
+                  {sending ? <>Envoi…</> : `Envoyer à ${selected.prenom}`}
                 </button>
               </div>
             )}
@@ -882,7 +882,7 @@ export default function ProgrammesPage() {
                 Annuler
               </button>
               <button onClick={submitMeso} disabled={mesoSaving || !mesoForm.nom.trim() || !mesoForm.dateDebut || !mesoForm.dateFin}
-                className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.6rem] font-bold tracking-wider uppercase py-2.5 rounded-xl disabled:opacity-40 transition-all">
+                className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.6rem] font-bold tracking-wider uppercase py-2 rounded-xl disabled:opacity-40 transition-all">
                 {mesoSaving ? "…" : "Créer"}
               </button>
             </div>
@@ -932,7 +932,7 @@ export default function ProgrammesPage() {
                   Annuler
                 </button>
                 <button onClick={() => duplicateWeek(dup.monday, dup.rule)} disabled={!n || !!busyWeek}
-                  className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.6rem] font-bold tracking-wider uppercase py-2.5 rounded-xl disabled:opacity-40 transition-all">
+                  className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.6rem] font-bold tracking-wider uppercase py-2 rounded-xl disabled:opacity-40 transition-all">
                   Dupliquer
                 </button>
               </div>
@@ -982,7 +982,7 @@ export default function ProgrammesPage() {
                 Annuler
               </button>
               <button onClick={confirmSaveProgramme} disabled={!saveProg.nom.trim() || !saveProgPreview.length || progBusy}
-                className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.6rem] font-bold tracking-wider uppercase py-2.5 rounded-xl disabled:opacity-40 transition-all">
+                className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.6rem] font-bold tracking-wider uppercase py-2 rounded-xl disabled:opacity-40 transition-all">
                 {progBusy ? "…" : "Enregistrer"}
               </button>
             </div>
@@ -1049,7 +1049,7 @@ export default function ProgrammesPage() {
                   Annuler
                 </button>
                 <button onClick={confirmAssign} disabled={!p || !assign.clientIds.length || progBusy}
-                  className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.6rem] font-bold tracking-wider uppercase py-2.5 rounded-xl disabled:opacity-40 transition-all">
+                  className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.6rem] font-bold tracking-wider uppercase py-2 rounded-xl disabled:opacity-40 transition-all">
                   {progBusy ? "…" : `Envoyer à ${assign.clientIds.length} client${assign.clientIds.length > 1 ? "s" : ""}`}
                 </button>
               </div>
@@ -1111,7 +1111,7 @@ export default function ProgrammesPage() {
               </button>
               {!editing.readOnly && (
                 <button onClick={saveEdit} disabled={!editing.draft.titre.trim() || editSaving}
-                  className="px-5 py-2.5 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.58rem] font-bold tracking-wider uppercase rounded-xl disabled:opacity-40 transition-all">
+                  className="px-5 py-2 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.58rem] font-bold tracking-wider uppercase rounded-xl disabled:opacity-40 transition-all">
                   {editSaving ? "…" : editing.id ? "Enregistrer" : `Envoyer à ${selected.prenom}`}
                 </button>
               )}
@@ -1135,7 +1135,7 @@ export default function ProgrammesPage() {
                 Annuler
               </button>
               <button onClick={saveAsTemplate} disabled={!templateDraft.nom.trim() || templateSaving}
-                className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.6rem] font-bold tracking-wider uppercase py-2.5 rounded-xl disabled:opacity-40 transition-all">
+                className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.6rem] font-bold tracking-wider uppercase py-2 rounded-xl disabled:opacity-40 transition-all">
                 {templateSaving ? "…" : "Enregistrer"}
               </button>
             </div>

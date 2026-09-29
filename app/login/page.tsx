@@ -33,7 +33,7 @@ function InstallGuide() {
     <div className="mb-6">
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center gap-3 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold px-4 py-3 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
+        className="w-full flex items-center gap-3 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold px-4 py-2 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
       >
         <span className="flex-1 text-left text-[0.7rem] font-bold tracking-[0.08em] uppercase">Installer l&apos;app sur mon téléphone</span>
         <span className={`transition-transform ${open ? "rotate-180" : ""}`}>▾</span>
@@ -206,13 +206,13 @@ export default function LoginPage() {
           <div className="flex mb-6 border border-white/10 rounded-xl overflow-hidden">
             <button
               onClick={() => { setMode("login"); setError(""); setSuccess(""); }}
-              className={`flex-1 py-3 text-xs tracking-[0.15em] uppercase font-bold transition-colors duration-200 ${mode === "login" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold" : "text-white/40 hover:text-white"}`}
+              className={`flex-1 py-2 text-xs tracking-[0.15em] uppercase font-bold transition-colors duration-200 ${mode === "login" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold" : "text-white/40 hover:text-white"}`}
             >
               Connexion
             </button>
             <button
               onClick={() => { setMode("register"); setError(""); setSuccess(""); }}
-              className={`flex-1 py-3 text-xs tracking-[0.15em] uppercase font-bold transition-colors duration-200 ${mode === "register" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold" : "text-white/40 hover:text-white"}`}
+              className={`flex-1 py-2 text-xs tracking-[0.15em] uppercase font-bold transition-colors duration-200 ${mode === "register" ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold" : "text-white/40 hover:text-white"}`}
             >
               Créer un compte
             </button>
@@ -350,7 +350,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-xs font-bold tracking-[0.2em] uppercase py-4 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 mt-2 disabled:opacity-50"
+              className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-xs font-bold tracking-[0.2em] uppercase py-2.5 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 mt-2 disabled:opacity-50"
             >
               {loading ? "..." : mode === "login" ? "Se connecter" : mode === "register" ? "Créer mon compte" : "Envoyer le lien"}
             </button>
@@ -360,7 +360,7 @@ export default function LoginPage() {
         <p className="text-center text-white/30 text-xs mt-6">
           Pas encore client ?{" "}
           <Link href="/#contact" className="text-[#c9a84c] hover:underline">
-            Séance gratuite →
+            Séance gratuite
           </Link>
         </p>
       </div>

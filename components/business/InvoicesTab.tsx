@@ -42,7 +42,7 @@ export function InvoicesTab({ data, reload, onOpenSettings }: Props) {
         </div>
       )}
       <div className="flex gap-2 flex-wrap items-center justify-between">
-        <button onClick={() => setShowNew(true)} className={btnGold} disabled={!data.clients.length}>+ Facture</button>
+        <button onClick={() => setShowNew(true)} className={btnGold} disabled={!data.clients.length}>Facture</button>
         <div className="flex rounded-xl border border-[var(--t-border-soft)] bg-[var(--t-surface)] p-1">
           {([["all", "Toutes"], ["emise", "À payer"], ["payee", "Payées"]] as const).map(([k, l]) => (
             <button key={k} onClick={() => setFilter(k)}
@@ -155,14 +155,14 @@ function NewInvoiceModal({ data, onClose, onSaved }: { data: BusinessData; onClo
               ))}
             </div>
             <div className="flex gap-2 flex-wrap mt-2">
-              <button onClick={() => setItems(prev => [...prev, { label: "", qty: 1, unit_price: 0 }])} className={btnGhost}>+ Ligne</button>
+              <button onClick={() => setItems(prev => [...prev, { label: "", qty: 1, unit_price: 0 }])} className={btnGhost}>Ligne</button>
               {data.offers.filter(o => o.active).length > 0 && (
                 <select className={`${btnGhost} bg-transparent`} value="" onChange={e => addOffer(e.target.value)}>
-                  <option value="">+ Depuis une offre…</option>
+                  <option value="">Depuis une offre…</option>
                   {data.offers.filter(o => o.active).map(o => <option key={o.id} value={o.id}>{o.name} — {chf(Number(o.price_chf))}</option>)}
                 </select>
               )}
-              {unitSessions.length > 0 && <button onClick={addUnitSessions} className={btnGhost}>+ {unitSessions.length} séance{unitSessions.length > 1 ? "s" : ""} à l&apos;unité</button>}
+              {unitSessions.length > 0 && <button onClick={addUnitSessions} className={btnGhost}>{unitSessions.length} séance{unitSessions.length > 1 ? "s" : ""} à l&apos;unité</button>}
             </div>
             <p className="text-right text-sm font-bold text-[var(--t-text)] mt-3">Total : {chf(invoiceTotal(items))}</p>
           </div>

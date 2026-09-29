@@ -209,7 +209,7 @@ function SetRow({ target, idx, log, prev, isExtra, canRemove, bodyweight, repKin
             ))}
             <button onClick={onAddWarmupStep}
               className="self-start flex items-center gap-1.5 text-[0.6rem] tracking-wide uppercase text-[#e0834a]/80 hover:text-[#e0834a] transition-colors py-1">
-              <Icon icon={Plus} size={11} strokeWidth={2.5}/> Palier échauffement
+              Palier échauffement
             </button>
           </div>
         )}
@@ -242,7 +242,7 @@ function SetRow({ target, idx, log, prev, isExtra, canRemove, bodyweight, repKin
         )}
         <button onClick={onAddDrop}
           className="self-start flex items-center gap-1.5 text-[0.6rem] tracking-wide uppercase text-[#8aa0e0]/80 hover:text-[#8aa0e0] transition-colors py-1">
-          <Icon icon={Plus} size={11} strokeWidth={2.5}/> Palier dégressif
+          Palier dégressif
         </button>
       </div>
     </div>
@@ -362,7 +362,7 @@ function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle,
           </div>
           <button onClick={() => onAddSet(exIdx)}
             className="w-full flex items-center justify-center gap-2 border-2 border-dashed border-[var(--t-border)] rounded-xl text-xs tracking-wider uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors py-3 font-bold">
-            <Icon icon={Plus} size={14} strokeWidth={2.5}/> Ajouter une série
+            Ajouter une série
           </button>
         </>
       ) : ex.texteLibre ? (
@@ -978,7 +978,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
           )}
 
           <button onClick={onFinish}
-            className="w-full py-3 rounded-xl text-xs font-bold tracking-[0.15em] uppercase bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold shadow-[0_4px_16px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_20px_-4px_rgba(201,168,76,0.8)] transition-all mt-2">
+            className="w-full py-2 rounded-xl text-xs font-bold tracking-[0.15em] uppercase bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold shadow-[0_4px_16px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_20px_-4px_rgba(201,168,76,0.8)] transition-all mt-2">
             Fermer
           </button>
         </div>
@@ -1008,7 +1008,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
         </div>
         <p style={{ fontFamily: "var(--font-bebas)" }} className="text-xl tracking-wider text-[var(--t-text)] truncate flex-1 text-center">{seance.titre}</p>
         <button onClick={finish} disabled={finishing}
-          className="shrink-0 rounded-full text-xs font-bold tracking-[0.12em] uppercase px-5 py-3 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold shadow-[0_3px_12px_-4px_rgba(201,168,76,0.6)] transition-all disabled:opacity-50">
+          className="shrink-0 rounded-full text-xs font-bold tracking-[0.12em] uppercase px-5 py-2 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold shadow-[0_3px_12px_-4px_rgba(201,168,76,0.6)] transition-all disabled:opacity-50">
           {finishing ? "…" : "Terminer"}
         </button>
       </div>
@@ -1164,7 +1164,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
                   className={`w-full py-4 rounded-2xl text-sm font-bold tracking-[0.1em] uppercase transition-all duration-200 flex items-center justify-center gap-2 ${
                     complete ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold shadow-[0_4px_16px_-6px_rgba(201,168,76,0.6)] hover:-translate-y-0.5"
                              : "border border-[var(--t-border)] text-[var(--t-text-30)] hover:text-[var(--t-text-60)] hover:border-[var(--t-text-20)]"}`}>
-                  Exercice suivant <span aria-hidden>→</span>
+                  Exercice suivant
                 </button>
               ) : complete ? (
                 <p className="text-center text-[0.68rem] text-[#7eb8a0] tracking-wide py-1">Dernier exercice terminé — tu peux finir la séance ✓</p>

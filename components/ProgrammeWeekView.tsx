@@ -101,7 +101,7 @@ export function ProgrammeWeekView({ seances, meso, weeklyTarget, onCreate, onOpe
                   {ex.mode !== "libre" && <span className="text-[var(--t-text-40)] shrink-0 tabular-nums max-w-[60%] truncate">{summarizeExercice(ex)}</span>}
                 </li>
               ))}
-              {exs.length > 3 && <li className="text-[0.65rem] text-[var(--t-text-40)] pt-0.5">+ {exs.length - 3} exercice{exs.length - 3 > 1 ? "s" : ""}</li>}
+              {exs.length > 3 && <li className="text-[0.65rem] text-[var(--t-text-40)] pt-0.5">{exs.length - 3} exercice{exs.length - 3 > 1 ? "s" : ""}</li>}
             </ul>
           )}
         </div>

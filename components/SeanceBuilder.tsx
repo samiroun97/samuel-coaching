@@ -263,7 +263,7 @@ export default function SeanceBuilder({ items, onChange, catalogue }: {
 
       <button type="button" onClick={() => setPickerOpen(true)}
         className="flex items-center justify-center gap-2 border border-dashed border-[var(--t-border-15)] text-[var(--t-text-30)] text-sm font-bold tracking-[0.06em] uppercase py-4 rounded-2xl hover:border-[#c9a84c]/40 hover:text-[#c9a84c] transition-colors">
-        <Icon icon={Plus} size={16} strokeWidth={2.5}/> Ajouter un exercice
+        Ajouter un exercice
       </button>
 
       {pickerOpen && <ExercicePicker catalogue={catalogue} onPick={addExercise} onClose={() => setPickerOpen(false)}/>}

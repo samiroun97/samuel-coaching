@@ -52,7 +52,7 @@ export default function BilanPage() {
         <button onClick={() => window.print()}
           className="flex items-center gap-1.5 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.15em] uppercase pl-3 pr-5 py-2 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
           <RichIcon name="download" size={30} className="-my-2 drop-shadow-[0_3px_6px_rgba(0,0,0,0.3)]"/>
-          Enregistrer en PDF →
+          Enregistrer en PDF
         </button>
       </div>
       <p className="print:hidden text-[0.62rem] text-[var(--t-text-25)] leading-relaxed px-4 sm:px-8 mt-2 max-w-md">

@@ -579,7 +579,7 @@ export default function ClientsPage() {
                 <div className="border border-[var(--t-text-7)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl p-4">
                   <div className="flex items-center justify-between mb-3">
                     <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c]">Résumé</p>
-                    <button onClick={() => setTab("profil")} className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">Profil complet →</button>
+                    <button onClick={() => setTab("profil")} className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">Profil complet</button>
                   </div>
                   <div className="grid sm:grid-cols-2 gap-x-6 gap-y-3">
                     <div className="sm:col-span-2">
@@ -609,7 +609,7 @@ export default function ClientsPage() {
                     <div className="flex items-center justify-between mb-2">
                       <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c]">Dernière note</p>
                       <button onClick={() => setTab("notes")} className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">
-                        {notes.length ? `Toutes (${notes.length}) →` : "Ajouter →"}
+                        {notes.length ? `Toutes (${notes.length})` : "Ajouter"}
                       </button>
                     </div>
                     {notes[0] ? (
@@ -622,7 +622,7 @@ export default function ClientsPage() {
                   <div className="border border-[var(--t-text-7)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl p-4 flex flex-col">
                     <div className="flex items-center justify-between mb-2">
                       <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c]">Dernier message</p>
-                      <Link href={`/crm/inbox?client=${encodeURIComponent(selected.email)}`} className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">Inbox →</Link>
+                      <Link href={`/crm/inbox?client=${encodeURIComponent(selected.email)}`} className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">Inbox</Link>
                     </div>
                     {lastMsg ? (
                       <>
@@ -650,7 +650,7 @@ export default function ClientsPage() {
                     <div className="border border-[var(--t-text-7)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl p-4">
                       <div className="flex items-center justify-between mb-3">
                         <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c]">Programme en cours</p>
-                        <Link href={`/crm/programmes?client=${encodeURIComponent(selected.email)}`} className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">Gérer →</Link>
+                        <Link href={`/crm/programmes?client=${encodeURIComponent(selected.email)}`} className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">Gérer</Link>
                       </div>
                       <div className="grid sm:grid-cols-3 gap-4">
                         <div>
@@ -710,7 +710,7 @@ export default function ClientsPage() {
                     <div className="border border-[var(--t-text-7)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl p-4">
                       <div className="flex items-center justify-between mb-3">
                         <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c]">Nutrition · 7 jours</p>
-                        <button onClick={() => setTab("journal")} className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">{days.length}/7 jours loggés · Journal →</button>
+                        <button onClick={() => setTab("journal")} className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">{days.length}/7 jours loggés · Journal</button>
                       </div>
                       <div className="grid sm:grid-cols-2 gap-4">
                         {rows.map(r => {
@@ -825,7 +825,7 @@ export default function ClientsPage() {
                     ) : (
                       <button disabled={statusSaving} onClick={() => updateField({ objectif_pending: true })}
                         className="shrink-0 text-[0.48rem] tracking-wider uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] transition-colors whitespace-nowrap border border-[var(--t-border)] hover:border-[#c9a84c]/40 rounded-xl px-2 py-1">
-                        Demander précision →
+                        Demander précision
                       </button>
                     )}
                   </div>
@@ -840,8 +840,8 @@ export default function ClientsPage() {
                 <div className="border border-[#c9a84c]/20 bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl p-5">
                   <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-3">Nouvelle note</p>
                   <textarea className={`${inp} resize-none mb-3`} rows={4} placeholder="Observations, ajustements, retours séance…" value={noteInput} onChange={e => setNoteInput(e.target.value)}/>
-                  <button onClick={addNote} disabled={noteSaving || !noteInput.trim()} className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.58rem] font-bold tracking-[0.18em] uppercase py-2.5 px-5 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40">
-                    {noteSaving ? "Enregistrement…" : "Ajouter →"}
+                  <button onClick={addNote} disabled={noteSaving || !noteInput.trim()} className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.58rem] font-bold tracking-[0.18em] uppercase py-2 px-5 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40">
+                    {noteSaving ? "Enregistrement…" : "Ajouter"}
                   </button>
                 </div>
                 {notes.length === 0 ? <p className="text-[var(--t-text-20)] text-xs text-center py-4">Aucune note</p>
@@ -893,8 +893,8 @@ export default function ClientsPage() {
                     </div>
                   </div>
                   <div className="mb-4"><label className={lbl}>Notes</label><textarea className={`${inp} resize-none`} rows={3} placeholder="Énergie, motivation, douleurs, progrès…" value={ckForm.notes} onChange={e => setCkForm(f => ({ ...f, notes: e.target.value }))}/></div>
-                  <button onClick={addCheckin} disabled={ckSaving} className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.58rem] font-bold tracking-[0.18em] uppercase py-2.5 px-5 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40">
-                    {ckSaving ? "Enregistrement…" : "Enregistrer →"}
+                  <button onClick={addCheckin} disabled={ckSaving} className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.58rem] font-bold tracking-[0.18em] uppercase py-2 px-5 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40">
+                    {ckSaving ? "Enregistrement…" : "Enregistrer"}
                   </button>
                 </div>
                 {checkins.length === 0 ? <p className="text-[var(--t-text-20)] text-xs text-center py-4">Aucun check-in</p>
@@ -954,7 +954,7 @@ export default function ClientsPage() {
                     <div className="flex flex-col gap-3">
                       <div><label className={lbl}>Nom du plan</label><input className={inp} placeholder="Plan prise de masse — Semaine 1" value={planName} onChange={e => setPlanName(e.target.value)}/></div>
                       <div><label className={lbl}>Notes</label><textarea className={`${inp} resize-none`} rows={2} placeholder="Conseils, timing…" value={planNotes} onChange={e => setPlanNotes(e.target.value)}/></div>
-                      <button onClick={createPlan} disabled={planSaving || !planName.trim()} className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.58rem] font-bold tracking-[0.18em] uppercase py-3 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40">Créer le plan →</button>
+                      <button onClick={createPlan} disabled={planSaving || !planName.trim()} className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.58rem] font-bold tracking-[0.18em] uppercase py-2 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40">Créer le plan</button>
                     </div>
                   ) : (
                     <div className="flex items-center justify-between">
@@ -976,7 +976,7 @@ export default function ClientsPage() {
                         <div key={k}><label className={`text-[0.48rem] tracking-wider uppercase block mb-1 ${c}`}>{l}</label><input type="number" className={inp} value={itemForm[k as keyof typeof itemForm]} onChange={e => setItemForm(f => ({ ...f, [k]: e.target.value }))}/></div>
                       ))}
                     </div>
-                    <button onClick={addItem} disabled={planSaving || !itemForm.name.trim()} className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.58rem] font-bold tracking-[0.18em] uppercase py-2.5 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40">Ajouter →</button>
+                    <button onClick={addItem} disabled={planSaving || !itemForm.name.trim()} className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.58rem] font-bold tracking-[0.18em] uppercase py-2 rounded-xl shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40">Ajouter</button>
                   </div>
                 )}
                 {mealItems.length > 0 && (

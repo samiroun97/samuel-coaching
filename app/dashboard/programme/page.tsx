@@ -684,7 +684,7 @@ export default function ProgrammePage() {
                 </div>
                 {hasLoggableSets(parseExercices(s.exercices)) ? (
                   <button onClick={() => setLiveSeance(s)}
-                    className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-base font-bold tracking-[0.08em] uppercase py-4 rounded-xl shadow-[0_6px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_8px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all">
+                    className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-base font-bold tracking-[0.08em] uppercase py-2.5 rounded-xl shadow-[0_6px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_8px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all">
                     ▶ Démarrer
                   </button>
                 ) : (
@@ -726,7 +726,7 @@ export default function ProgrammePage() {
 
         {!createOpen && (
           <button onClick={() => setCreateOpen(true)}
-            className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-base font-bold tracking-[0.08em] uppercase py-4 rounded-xl shadow-[0_6px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_8px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-all mt-3">
+            className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-base font-bold tracking-[0.08em] uppercase py-2.5 rounded-xl shadow-[0_6px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_8px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-all mt-3">
             {createValidCount > 0 ? (
               <>
                 <Icon icon={Play} size={18} strokeWidth={2}/>
@@ -734,7 +734,6 @@ export default function ProgrammePage() {
               </>
             ) : (
               <>
-                <Icon icon={Plus} size={20} strokeWidth={2.5}/>
                 Créer ma séance
               </>
             )}
@@ -825,8 +824,8 @@ export default function ProgrammePage() {
                 </div>
               ) : (
                 <button onClick={addSeanceLogWorkout}
-                  className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
-                  Ajouter à ma journée →
+                  className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
+                  Ajouter à ma journée
                 </button>
               )}
             </div>
@@ -927,8 +926,8 @@ export default function ProgrammePage() {
                 Ré-estimer
               </button>
               <button onClick={addWorkout}
-                className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
-                Ajouter à ma journée →
+                className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl">
+                Ajouter à ma journée
               </button>
             </div>
 
@@ -947,14 +946,14 @@ export default function ProgrammePage() {
                   </button>
                   <button onClick={submitActReport} disabled={actReportSending || !actReportComment.trim()}
                     className="flex-1 bg-[#e07070] text-white text-[0.65rem] font-bold tracking-[0.15em] uppercase py-2.5 hover:bg-[#e58888] transition-colors disabled:opacity-40 rounded-xl">
-                    {actReportSending ? "Envoi…" : "Envoyer le signalement →"}
+                    {actReportSending ? "Envoi…" : "Envoyer le signalement"}
                   </button>
                 </div>
               </div>
             ) : (
               <button onClick={() => setShowActReportForm(true)}
                 className="text-[0.6rem] tracking-wider uppercase text-[var(--t-text-20)] hover:text-[#e07070]/70 transition-colors text-center py-1">
-                Cette estimation te semble fausse ? Signale-la à Samuel →
+                Cette estimation te semble fausse ? Signale-la à Samuel
               </button>
             )}
           </div>
@@ -1164,7 +1163,7 @@ export default function ProgrammePage() {
                     )}
                     {!done && hasLoggableSets(parseExercices(s.exercices)) && (
                       <button onClick={() => setLiveSeance(s)}
-                        className="w-full py-2.5 rounded-xl text-[0.7rem] font-bold tracking-[0.15em] uppercase transition-all duration-200 mb-2 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold shadow-[0_4px_16px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_20px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0">
+                        className="w-full py-2 rounded-xl text-[0.7rem] font-bold tracking-[0.15em] uppercase transition-all duration-200 mb-2 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold shadow-[0_4px_16px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_20px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0">
                         ▶ Démarrer la séance
                       </button>
                     )}
@@ -1197,14 +1196,14 @@ export default function ProgrammePage() {
                           </button>
                           <button onClick={() => submitSeanceReport(s)} disabled={seanceReportSending || !seanceReportComment.trim()}
                             className="flex-1 bg-[#e07070] text-white text-[0.6rem] font-bold tracking-[0.1em] uppercase py-2 hover:bg-[#e58888] transition-colors disabled:opacity-40 rounded-xl">
-                            {seanceReportSending ? "Envoi…" : "Envoyer →"}
+                            {seanceReportSending ? "Envoi…" : "Envoyer"}
                           </button>
                         </div>
                       </div>
                     ) : (
                       <button onClick={() => setReportingSeanceId(s.id)}
                         className="text-[0.55rem] tracking-wider uppercase text-[var(--t-text-20)] hover:text-[#e07070]/70 transition-colors text-center py-1 mt-2 w-full">
-                        Un souci avec cette séance ? Signale-la à Samuel →
+                        Un souci avec cette séance ? Signale-la à Samuel
                       </button>
                     )}
 
@@ -1275,7 +1274,7 @@ export default function ProgrammePage() {
             <button onClick={startFreeformInline} disabled={!userId || startingFreeform}
               className="text-left border-2 border-[#c9a84c]/30 bg-[#c9a84c]/[0.04] rounded-xl p-4 hover:bg-[#c9a84c]/10 active:scale-[0.99] transition-all disabled:opacity-50">
               <p className="text-base text-[var(--t-text-70)] font-bold mb-1">
-                {startingFreeform ? "Démarrage…" : "Démarrer en direct →"}
+                {startingFreeform ? "Démarrage…" : "Démarrer en direct"}
               </p>
               <p className="text-[0.68rem] text-[var(--t-text-30)] leading-relaxed">Le chrono démarre tout de suite, ajoute tes exercices et logue séries/reps/poids au fur et à mesure.</p>
             </button>
@@ -1292,8 +1291,8 @@ export default function ProgrammePage() {
                   <p className="text-[0.68rem] text-[var(--t-text-30)] text-center -mt-2">Ajoute au moins un poids ou des reps sur une série pour pouvoir démarrer cette séance plus tard.</p>
                 )}
                 <button onClick={saveCreatedSeance} disabled={createSaving || !createHasSets}
-                  className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-base font-bold tracking-[0.08em] uppercase py-4 rounded-xl shadow-[0_6px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_8px_26px_-4px_rgba(201,168,76,0.8)] transition-all disabled:opacity-40">
-                  {createSaving ? "Enregistrement…" : "Enregistrer pour plus tard →"}
+                  className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-base font-bold tracking-[0.08em] uppercase py-2.5 rounded-xl shadow-[0_6px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_8px_26px_-4px_rgba(201,168,76,0.8)] transition-all disabled:opacity-40">
+                  {createSaving ? "Enregistrement…" : "Enregistrer pour plus tard"}
                 </button>
               </>
             )}

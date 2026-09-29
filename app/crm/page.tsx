@@ -273,7 +273,7 @@ export default function CRMDashboard() {
               </div>
               <p className="text-[0.65rem] tracking-[0.22em] uppercase text-[#c9a84c]">Derniers check-ins</p>
             </div>
-            <Link href="/crm/clients" className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">Voir tout →</Link>
+            <Link href="/crm/clients" className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">Voir tout</Link>
           </div>
           {recentCks.length === 0 ? (
             <p className="text-[var(--t-text-20)] text-xs">Aucun check-in</p>
@@ -317,7 +317,7 @@ export default function CRMDashboard() {
               </div>
               <p className="text-[0.65rem] tracking-[0.22em] uppercase text-[#c9a84c]">Messages en attente</p>
             </div>
-            <Link href="/crm/inbox" className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">Inbox →</Link>
+            <Link href="/crm/inbox" className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">Inbox</Link>
           </div>
           {recentMsgs.length === 0 ? (
             <p className="text-[var(--t-text-20)] text-xs">Tout est répondu ✓</p>

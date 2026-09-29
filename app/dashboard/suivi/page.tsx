@@ -659,7 +659,7 @@ export default function SuiviPage() {
           </div>
           <button onClick={() => { setShowUpload(true); setShowManual(false); }}
             className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.68rem] font-bold tracking-[0.15em] uppercase px-4 py-2 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl shrink-0 ml-4">
-            Estimer →
+            Estimer
           </button>
         </div>
       )}
@@ -736,8 +736,8 @@ export default function SuiviPage() {
                 <div className="text-center py-2 text-[#7eb8a0] text-sm tracking-wider">Check-in envoyé ✓</div>
               ) : (
                 <button onClick={sendCheckin} disabled={ckSaving}
-                  className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-40">
-                  {ckSaving ? "Envoi…" : "Envoyer mon check-in à Samuel →"}
+                  className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-40">
+                  {ckSaving ? "Envoi…" : "Envoyer mon check-in à Samuel"}
                 </button>
               )}
             </div>
@@ -787,10 +787,10 @@ export default function SuiviPage() {
         </div>
 
         <button data-loading={reportLoading || undefined} onClick={downloadWeeklyReport} disabled={reportLoading}
-          className="w-full bg-gradient-to-br from-[#f0dfa4] via-[#e2c97e] to-[#b8933f] text-on-gold text-[0.85rem] font-bold tracking-[0.2em] uppercase py-5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] active:scale-[0.98] active:brightness-95 transition-all duration-150 disabled:opacity-40 flex items-center justify-center gap-2">
+          className="w-full bg-gradient-to-br from-[#f0dfa4] via-[#e2c97e] to-[#b8933f] text-on-gold text-[0.85rem] font-bold tracking-[0.2em] uppercase py-3 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] active:scale-[0.98] active:brightness-95 transition-all duration-150 disabled:opacity-40 flex items-center justify-center gap-2">
           {reportLoading
             ? <>Préparation…</>
-            : "Voir le bilan PDF →"}
+            : "Voir le bilan PDF"}
         </button>
 {reportLoading && <div className="flex justify-center pt-3"><Loader size={80}/></div>}
       </div>
@@ -914,8 +914,8 @@ export default function SuiviPage() {
             )}
           </div>
           <button onClick={saveManualBF}
-            className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.15em] uppercase px-5 py-2.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl shrink-0 self-end">
-            Enregistrer →
+            className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.15em] uppercase px-5 py-2 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl shrink-0 self-end">
+            Enregistrer
           </button>
         </div>
       )}
@@ -1029,8 +1029,8 @@ export default function SuiviPage() {
                   Ré-estimer
                 </button>
                 <button onClick={saveBFEntry} disabled={sharing}
-                  className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-50">
-                  {sharing ? "Envoi…" : shareWithCoach ? "Enregistrer & partager →" : "Enregistrer →"}
+                  className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-50">
+                  {sharing ? "Envoi…" : shareWithCoach ? "Enregistrer & partager" : "Enregistrer"}
                 </button>
               </div>
 
@@ -1052,14 +1052,14 @@ export default function SuiviPage() {
                       </button>
                       <button onClick={submitReport} disabled={reportSending || !reportComment.trim()}
                         className="flex-1 bg-[#e07070] text-white text-[0.65rem] font-bold tracking-[0.15em] uppercase py-2.5 hover:bg-[#e58888] transition-colors disabled:opacity-40 rounded-xl">
-                        {reportSending ? "Envoi…" : "Envoyer le signalement →"}
+                        {reportSending ? "Envoi…" : "Envoyer le signalement"}
                       </button>
                     </div>
                   </div>
                 ) : (
                   <button onClick={() => setShowReportForm(true)}
                     className="text-[0.6rem] tracking-wider uppercase text-[var(--t-text-20)] hover:text-[#e07070]/70 transition-colors text-center py-1">
-                    Cette estimation te semble fausse ? Signale-la à Samuel →
+                    Cette estimation te semble fausse ? Signale-la à Samuel
                   </button>
                 )
               )}
@@ -1067,10 +1067,10 @@ export default function SuiviPage() {
             </div>
           ) : (
             <><button data-loading={estimating || undefined} onClick={estimate} disabled={photoCount === 0 || estimating}
-              className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+              className="w-full bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
               {estimating
                 ? <>Analyse en cours…</>
-                : `Estimer avec l'IA · ${photoCount}/5 photo${photoCount > 1 ? "s" : ""} →`}
+                : `Estimer avec l'IA · ${photoCount}/5 photo${photoCount > 1 ? "s" : ""}`}
             </button>
 {estimating && <div className="flex justify-center pt-3"><Loader size={80}/></div>}</>
           )}

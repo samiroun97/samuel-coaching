@@ -160,7 +160,7 @@ export function OperateurIaCorrections() {
           value={noteText} onChange={e => setNoteText(e.target.value)}/>
         <button onClick={submitNote} disabled={noteSaving || !noteText.trim()}
           className="self-end bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.65rem] font-bold tracking-[0.15em] uppercase px-4 py-2 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40 rounded-xl">
-          {noteSaving ? "Enregistrement…" : "Enregistrer →"}
+          {noteSaving ? "Enregistrement…" : "Enregistrer"}
         </button>
       </div>
 
@@ -295,14 +295,14 @@ function SignalementCard({
               </button>
               <button onClick={() => onSubmitCorrect(originalData, comment)} disabled={correctionSaving || !correctionComment.trim()}
                 className="flex-1 bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.55rem] font-bold tracking-wider uppercase py-2 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-40 rounded-xl">
-                {correctionSaving ? "Envoi…" : "Envoyer à l'IA →"}
+                {correctionSaving ? "Envoi…" : "Envoyer à l'IA"}
               </button>
             </div>
           </div>
         ) : (
           <button onClick={onStartCorrect}
             className="text-[0.55rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[#c9a84c] transition-colors text-left border-t border-[var(--t-border-soft)] pt-3">
-            Corriger cette estimation →
+            Corriger cette estimation
           </button>
         )}
       </div>

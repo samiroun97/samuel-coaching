@@ -75,7 +75,7 @@ export function DashboardTab({ data, goTo }: Props) {
           <button key={i} onClick={a.action} className="w-full text-left px-4 py-3 flex items-center gap-3 border-b border-[var(--t-border-soft)] last:border-0 hover:bg-[var(--t-glass-bg)]">
             <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: a.color }}/>
             <span className="text-[0.8rem] text-[var(--t-text-70)] flex-1">{a.text}</span>
-            <span className="text-[0.7rem] text-[#c9a84c]">→</span>
+
           </button>
         ))}
       </Section>

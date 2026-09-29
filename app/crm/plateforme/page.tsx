@@ -230,7 +230,7 @@ export default function OperateurPage() {
                   {data.billingReady ? "Qui est sur quelle formule, et ce que chacune rapporte par mois." : "Les compteurs s'activeront avec la migration des abonnements."}
                 </p>
               </div>
-              <Link href="/crm/abonnement" className="text-[0.66rem] text-[#c9a84c] whitespace-nowrap hover:underline">Voir les formules →</Link>
+              <Link href="/crm/abonnement" className="text-[0.66rem] text-[#c9a84c] whitespace-nowrap hover:underline">Voir les formules</Link>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4">
               {(data.planBreakdown ?? (Object.keys(PLANS) as Plan[]).map(plan => ({ plan, trialing: 0, paying: 0, inactive: 0, mrr: 0 }))).map(s => {
@@ -259,7 +259,7 @@ export default function OperateurPage() {
                 <p className="text-[0.7rem] text-[var(--t-text-40)]">Arrivés sans code d&apos;invitation : invisibles dans ton CRM coach tant qu&apos;ils ne sont pas pris en charge.</p>
               </div>
               {unlinked.length > 0 && (
-                <button onClick={() => { setFilter("solo"); setSection("utilisateurs"); }} className="text-[0.66rem] text-[#c9a84c] whitespace-nowrap hover:underline">Tout voir →</button>
+                <button onClick={() => { setFilter("solo"); setSection("utilisateurs"); }} className="text-[0.66rem] text-[#c9a84c] whitespace-nowrap hover:underline">Tout voir</button>
               )}
             </div>
             {unlinked.length === 0

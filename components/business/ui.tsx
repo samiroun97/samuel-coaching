@@ -8,7 +8,7 @@ import { X } from "@/lib/solarIcons";
 export const card = "rounded-2xl border border-[var(--t-border-soft)] bg-[var(--t-surface)] shadow-[0_2px_14px_-8px_rgba(0,0,0,0.15)]";
 export const inp = "w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/50";
 export const lbl = "text-[0.62rem] font-semibold tracking-[0.1em] uppercase text-[var(--t-text-50)] block mb-1.5";
-export const btnGold = "px-4 py-2.5 rounded-xl bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.08em] uppercase shadow-[0_4px_16px_-6px_rgba(201,168,76,0.6)] hover:-translate-y-0.5 transition-all disabled:opacity-40 disabled:hover:translate-y-0";
+export const btnGold = "px-4 py-2 rounded-xl bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.08em] uppercase shadow-[0_4px_16px_-6px_rgba(201,168,76,0.6)] hover:-translate-y-0.5 transition-all disabled:opacity-40 disabled:hover:translate-y-0";
 export const btnGhost = "px-3.5 py-2 rounded-xl border border-[var(--t-border)] text-[var(--t-text-60)] text-[0.68rem] font-semibold hover:border-[#c9a84c]/40 hover:text-[var(--t-text)] transition-colors disabled:opacity-40";
 
 export function Pill({ label, color }: { label: string; color: string }) {

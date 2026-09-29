@@ -108,7 +108,7 @@ export function PipelineBoard({ variant = "page" }: { variant?: "page" | "sectio
             <p className="text-[0.65rem] tracking-[0.22em] uppercase text-[#c9a84c]">Pipeline</p>
             <p className="text-[0.6rem] text-[var(--t-text-25)] mt-0.5">{total} client{total > 1 ? "s" : ""}</p>
           </div>
-          <Link href="/crm/pipeline" className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">Vue complète →</Link>
+          <Link href="/crm/pipeline" className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">Vue complète</Link>
         </div>
       )}
 

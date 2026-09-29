@@ -123,7 +123,7 @@ export function PlansPage() {
                     ))}
                   </ul>
                   <button disabled={current || isOwner || !me.paymentsEnabled}
-                    className={`py-2.5 rounded-xl text-[0.72rem] font-bold tracking-[0.1em] uppercase transition-all disabled:cursor-not-allowed ${premium ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold disabled:opacity-60" : "border border-[var(--t-border)] text-[var(--t-text-70)] disabled:opacity-60"}`}>
+                    className={`py-2 rounded-xl text-[0.72rem] font-bold tracking-[0.1em] uppercase transition-all disabled:cursor-not-allowed ${premium ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold disabled:opacity-60" : "border border-[var(--t-border)] text-[var(--t-text-70)] disabled:opacity-60"}`}>
                     {isOwner ? "Aperçu" : current ? "Ta formule actuelle" : me.paymentsEnabled ? "Choisir" : "Paiement en ligne bientôt"}
                   </button>
                 </div>

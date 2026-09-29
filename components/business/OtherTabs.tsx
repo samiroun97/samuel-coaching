@@ -16,7 +16,7 @@ export function OffersTab({ data, reload }: Props) {
 
   return (
     <div className="flex flex-col gap-5">
-      <div><button onClick={() => setEditing("new")} className={btnGold}>+ Offre</button></div>
+      <div><button onClick={() => setEditing("new")} className={btnGold}>Offre</button></div>
       <Section title="Mes offres">
         {data.offers.length === 0 ? <Empty text="Aucune offre. Crée par exemple « Séance à l'unité », « Pack 10 séances », « Suivi mensuel »."/> :
           data.offers.map(o => (
@@ -98,7 +98,7 @@ export function PaymentsTab({ data, reload }: Props) {
   };
   return (
     <div className="flex flex-col gap-5">
-      <div><button onClick={() => setAdding(true)} className={btnGold} disabled={!data.clients.length}>+ Paiement</button></div>
+      <div><button onClick={() => setAdding(true)} className={btnGold} disabled={!data.clients.length}>Paiement</button></div>
       <Section title="Paiements encaissés">
         {data.payments.length === 0 ? <Empty text="Aucun paiement enregistré."/> : data.payments.map(p => {
           const inv = p.invoice_id ? data.invoices.find(i => i.id === p.invoice_id) : null;

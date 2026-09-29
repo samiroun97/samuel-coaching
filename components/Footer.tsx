@@ -63,7 +63,7 @@ export default function Footer() {
               href="#contact"
               className="inline-block border border-[#c9a84c]/40 text-[#c9a84c] text-xs tracking-[0.15em] uppercase px-5 py-2.5 hover:bg-[#c9a84c] hover:text-white transition-colors duration-300"
             >
-              Séance gratuite →
+              Séance gratuite
             </a>
           </div>
         </div>
