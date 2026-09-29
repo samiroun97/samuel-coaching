@@ -26,7 +26,7 @@ import { loadPersonalRecords, type PRCard } from "@/lib/personalRecords";
 import { Sparkline } from "@/components/Sparkline";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
-import { Activity, X, Mic, ChevronDown, Flame, Plus, Trash2, Play } from "@/lib/solarIcons";
+import { Activity, X, Mic, ChevronDown, Plus, Trash2, Play } from "@/lib/solarIcons";
 import { Loader } from "@/components/Loader";
 
 type Profile = { prenom: string; poids: number; taille: number; age: number; sexe: string; objectif_type: string | null };
@@ -641,8 +641,9 @@ export default function ProgrammePage() {
       <div className="border border-[#c9a84c]/10 bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-2xl p-5 mb-6">
         <div className="flex items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-2.5">
-            <Icon icon={Flame} fill="currentColor" stroke="none"
-              className={`w-8 h-8 shrink-0 ${currentStreak > 0 ? "text-[#e8a13c]" : "text-[var(--t-text-15)]"}`}/>
+            {/* Flamme 3D fournie (burn.svg) : en couleur si série en cours, estompée sinon. */}
+            <RichIcon name="burn" size={40}
+              className={`-my-1 ${currentStreak > 0 ? "drop-shadow-[0_4px_8px_rgba(232,161,60,0.35)]" : "grayscale opacity-30"}`}/>
             <div>
               <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl text-[var(--t-text)] tracking-wide leading-none">{currentStreak}</p>
               <p className="text-[0.58rem] tracking-[0.15em] uppercase text-[var(--t-text-30)] mt-0.5">
@@ -653,8 +654,7 @@ export default function ProgrammePage() {
           <div className="flex items-end gap-1.5 shrink-0">
             {weekDaysInfo.map(d => (
               <div key={d.iso} className="flex flex-col items-center gap-1">
-                <Icon icon={Flame} fill="currentColor" stroke="none"
-                  className={`w-3.5 h-3.5 ${d.trained ? "text-[#e8a13c]" : "text-[var(--t-text-15)]"}`}/>
+                <RichIcon name="burn" size={18} className={d.trained ? "" : "grayscale opacity-25"}/>
                 <span className={`text-[0.5rem] uppercase ${d.isToday ? "text-[#c9a84c]" : "text-[var(--t-text-20)]"}`}>{d.label}</span>
               </div>
             ))}
