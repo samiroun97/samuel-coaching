@@ -469,7 +469,7 @@ export default function ProgrammePage() {
   // Lundi de la semaine en cours — base du strip de flammes et du calcul de série.
   const weekStartISO = (() => {
     const d = new Date(); const day = (d.getDay() + 6) % 7; d.setDate(d.getDate() - day);
-    return d.toISOString().slice(0, 10);
+    return d.toLocaleDateString("sv-SE"); // date locale, pas UTC
   })();
 
   // Jours "entraînés" (toutes dates confondues) : séance coach/libre complétée OU
@@ -477,7 +477,8 @@ export default function ProgrammePage() {
   // pour que la flamme et le calendrier racontent toujours la même histoire.
   const trainedDaysSet = new Set([
     ...workouts.map(w => w.date.slice(0, 10)),
-    ...coachSeances.filter(s => s.completed_at).map(s => s.completed_at!.slice(0, 10)),
+    // completed_at est en UTC : jour LOCAL, sinon une séance finie après minuit comptait la veille.
+    ...coachSeances.filter(s => s.completed_at).map(s => new Date(s.completed_at!).toLocaleDateString("sv-SE")),
   ]);
 
   // Série en cours façon Duolingo : jours consécutifs entraînés en remontant depuis
@@ -488,7 +489,7 @@ export default function ProgrammePage() {
     const cursor = new Date(`${todayStr()}T12:00:00`);
     if (!trainedDaysSet.has(todayStr())) cursor.setDate(cursor.getDate() - 1);
     for (;;) {
-      const iso = cursor.toISOString().slice(0, 10);
+      const iso = cursor.toLocaleDateString("sv-SE");
       if (!trainedDaysSet.has(iso)) break;
       streak++;
       cursor.setDate(cursor.getDate() - 1);
@@ -499,7 +500,7 @@ export default function ProgrammePage() {
   const WEEK_LABELS = ["L", "M", "M", "J", "V", "S", "D"];
   const weekDaysInfo = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(`${weekStartISO}T12:00:00`); d.setDate(d.getDate() + i);
-    const iso = d.toISOString().slice(0, 10);
+    const iso = d.toLocaleDateString("sv-SE");
     return { iso, label: WEEK_LABELS[i], trained: trainedDaysSet.has(iso), isToday: iso === todayStr() };
   });
 

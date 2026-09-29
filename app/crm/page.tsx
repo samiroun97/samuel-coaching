@@ -44,8 +44,8 @@ export default function CRMDashboard() {
           }).catch(() => {});
         }
       }
-      const todayISO = new Date().toISOString().split("T")[0];
-      const in7ISO   = new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0];
+      const todayISO = new Date().toLocaleDateString("sv-SE"); // dates locales, pas UTC
+      const in7ISO   = new Date(Date.now() + 7 * 86400000).toLocaleDateString("sv-SE");
       const [{ data: c }, { data: m }, { data: ck }, { data: s }, { data: mesos }] = await Promise.all([
         supabase.from("profiles").select("id,email,prenom,nom,status,subscription_end,pipeline_stage,updated_at").order("updated_at", { ascending: false }),
         supabase.from("messages").select("from_email,to_email,content,created_at").order("created_at", { ascending: true }),

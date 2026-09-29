@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { loadCatalogue, findCatalogueEntry } from "@/lib/exercicesCatalogue";
+import { toISO } from "@/lib/planning";
 
 const mondayOf = (d: Date) => { const n = new Date(d); const day = (n.getDay() + 6) % 7; n.setDate(n.getDate() - day); n.setHours(0, 0, 0, 0); return n; };
 
@@ -18,17 +19,19 @@ export async function loadMuscleVolume(clientId: string, weeks = MUSCLE_VOLUME_W
 
   const [{ data: logs }, catalogue] = await Promise.all([
     supabase.from("seance_logs")
-      .select("exercice_nom,poids_reel,reps_reel,logged_at")
+      .select("exercice_nom,poids_reel,reps_reel,logged_at,warmup")
       .eq("client_id", clientId).gte("logged_at", since.toISOString()),
     loadCatalogue(),
   ]);
 
   const byMuscle: Record<string, number[]> = {};
   for (const row of logs ?? []) {
-    if (!row.poids_reel || !row.reps_reel) continue;
+    // Échauffements exclus du volume (comme Hevy) : ils gonfleraient la charge de travail réelle.
+    if (row.warmup || !row.poids_reel || !row.reps_reel) continue;
     const muscle = findCatalogueEntry(catalogue, row.exercice_nom)?.muscle_cible;
     if (!muscle) continue;
-    const dayDiff = Math.floor((new Date(String(row.logged_at).slice(0, 10)).getTime() - since.getTime()) / 86400000);
+    // Jour LOCAL de la série (logged_at en UTC), comparé à midi pour neutraliser l'heure d'été.
+    const dayDiff = Math.round((new Date(toISO(new Date(row.logged_at)) + "T12:00:00").getTime() - since.getTime() - 12 * 3600000) / 86400000);
     const weekIdx = Math.floor(dayDiff / 7);
     if (weekIdx < 0 || weekIdx >= weeks) continue;
     if (!byMuscle[muscle]) byMuscle[muscle] = Array(weeks).fill(0);

@@ -152,7 +152,7 @@ const resizeImage = (dataUrl: string, maxW = 512, maxH = 768): Promise<string> =
     img.src = dataUrl;
   });
 
-const today = () => new Date().toISOString().split("T")[0];
+const today = () => new Date().toLocaleDateString("sv-SE"); // date locale, pas UTC
 
 
 export default function SuiviPage() {
@@ -201,7 +201,7 @@ export default function SuiviPage() {
   const [reportError,   setReportError]   = useState("");
   const [reportWeekMonday, setReportWeekMonday] = useState(() => {
     const d = new Date(); const day = (d.getDay() + 6) % 7;
-    d.setDate(d.getDate() - day); return d.toISOString().split("T")[0];
+    d.setDate(d.getDate() - day); return d.toLocaleDateString("sv-SE");
   });
 
   useEffect(() => {
@@ -317,13 +317,13 @@ export default function SuiviPage() {
     try {
       const dates: string[] = [];
       const d = new Date(reportWeekMonday + "T12:00:00");
-      for (let i = 0; i < 7; i++) { dates.push(d.toISOString().split("T")[0]); d.setDate(d.getDate() + 1); }
+      for (let i = 0; i < 7; i++) { dates.push(d.toLocaleDateString("sv-SE")); d.setDate(d.getDate() + 1); }
       const weekEnd = dates[6];
 
       // Semaine en cours non terminée : les jours à venir ne doivent ni compter comme
       // repos, ni fausser les moyennes (steps, NEAT/EAT, sessions). Pour une semaine déjà
       // passée, todayStr est après weekEnd donc tous les jours restent comptés normalement.
-      const todayStr = new Date().toISOString().split("T")[0];
+      const todayStr = new Date().toLocaleDateString("sv-SE");
       const effectiveDates = dates.filter(dt => dt <= todayStr);
       const dayCount = effectiveDates.length || 1;
 

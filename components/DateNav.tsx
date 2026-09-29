@@ -6,12 +6,12 @@ import { ChevronLeft, ChevronRight, Calendar } from "@/lib/solarIcons";
 import type { DayStatus } from "@/lib/consistency";
 
 export function DateNav({ date, onChange, statuses }: { date: string; onChange: (d: string) => void; statuses?: Record<string, DayStatus> }) {
-  const todayD = new Date().toISOString().split("T")[0];
+  const todayD = new Date().toLocaleDateString("sv-SE"); // date locale, pas UTC
   const isToday = date === todayD;
   const [open, setOpen] = useState(false);
   const move = (delta: number) => {
     const d = new Date(date + "T12:00:00"); d.setDate(d.getDate() + delta);
-    onChange(d.toISOString().split("T")[0]);
+    onChange(d.toLocaleDateString("sv-SE"));
   };
   const label = isToday ? "Aujourd'hui" : new Date(date + "T12:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
   return (

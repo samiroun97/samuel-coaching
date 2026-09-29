@@ -11,7 +11,7 @@ export type Mesocycle = {
   created_at: string;
 };
 
-const todayStr = () => new Date().toISOString().slice(0, 10);
+const todayStr = () => new Date().toLocaleDateString("sv-SE"); // date locale, pas UTC
 
 // Le mésocycle "actif" est celui dont la plage de dates couvre aujourd'hui — un client n'en a
 // jamais qu'un seul à la fois en pratique (le coach clôt/décale l'ancien avant d'en ouvrir un

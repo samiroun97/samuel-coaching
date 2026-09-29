@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import type { ObjectifType } from "@/lib/objectifTypes";
+import { toISO } from "@/lib/planning";
 
 // Statut d'une journée pour le calendrier de régularité (coach ET client, même logique) :
 // - empty     : rien loggé côté nutrition ce jour-là
@@ -88,7 +89,8 @@ async function loadTrainedDays(clientId: string, since: Date): Promise<Set<strin
       .maybeSingle(),
   ]);
   const days = new Set<string>();
-  for (const r of seances ?? []) if (r.completed_at) days.add(String(r.completed_at).slice(0, 10));
+  // Jour LOCAL : completed_at est en UTC, une séance finie à 0h30 (heure suisse) tombait sinon la veille.
+  for (const r of seances ?? []) if (r.completed_at) days.add(toISO(new Date(r.completed_at)));
   if (state?.value) {
     try {
       const logs = JSON.parse(state.value) as { date?: string }[];
@@ -109,7 +111,7 @@ async function loadTrainedDays(clientId: string, since: Date): Promise<Set<strin
 export async function loadDayStatuses(clientId: string, objectifType: string | null | undefined, days = 370): Promise<Record<string, DayStatus>> {
   const since = new Date();
   since.setDate(since.getDate() - (days - 1));
-  const sinceISO = since.toISOString().split("T")[0];
+  const sinceISO = toISO(since);
 
   const [{ data: summaries }, trainedDays] = await Promise.all([
     supabase.from("daily_summaries")

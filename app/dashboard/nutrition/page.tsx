@@ -505,7 +505,7 @@ export default function NutritionPage() {
     const hist: DayHistory[] = [];
     for (let i = 6; i >= 1; i--) {
       const d = new Date(); d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split("T")[0];
+      const dateStr = d.toLocaleDateString("sv-SE"); // date locale, pas UTC
       const stored = localStorage.getItem(`nutrition_${dateStr}`);
       const cal = stored ? (JSON.parse(stored) as Food[]).reduce((s, x) => s + x.calories, 0) : 0;
       hist.push({ date: dateStr, label: DAY_LABELS[d.getDay()], calories: cal });

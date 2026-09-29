@@ -59,7 +59,7 @@ type LastMsg  = { from_email: string; content: string; created_at: string };
 type MealPlan = { id: string; name: string; notes: string | null; is_active: boolean };
 type MealItem = { id: string; plan_id: string; meal_type: string; name: string; calories: number; proteines: number; glucides: number; lipides: number };
 
-const todayStr = () => new Date().toISOString().split("T")[0];
+const todayStr = () => new Date().toLocaleDateString("sv-SE"); // date locale, pas UTC
 
 // Colonnes de la liste en mode tableau (aucun client ouvert) : en-tête et lignes partagent la grille.
 const ROW_COLS = "grid-cols-[minmax(0,1fr)_110px_90px_60px]";

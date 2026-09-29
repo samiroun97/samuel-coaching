@@ -33,9 +33,11 @@ export function estimate1RM(poids: number | null, reps: number | null): number |
   return poids / (1.0261 * Math.exp(-0.0262 * reps));
 }
 
-export function best1RM(logs: Pick<SeanceLogRow, "poids_reel" | "reps_reel">[]): number | null {
+// Séries d'échauffement ignorées : ce ne sont pas des séries de travail (cf. SeanceLive).
+export function best1RM(logs: (Pick<SeanceLogRow, "poids_reel" | "reps_reel"> & { warmup?: boolean | null })[]): number | null {
   let best: number | null = null;
   for (const l of logs) {
+    if (l.warmup) continue;
     const est = estimate1RM(l.poids_reel, l.reps_reel);
     if (est != null && (best == null || est > best)) best = est;
   }
@@ -121,7 +123,7 @@ export async function completeSeance(seanceId: string): Promise<void> {
 // re-log de la même série pendant la séance ne doit pas se comparer à lui-même).
 export async function loadBest1RM(clientId: string, exerciceNom: string, excludeSeanceId: string): Promise<number | null> {
   const { data } = await supabase.from("seance_logs")
-    .select("poids_reel,reps_reel")
+    .select("poids_reel,reps_reel,warmup")
     .eq("client_id", clientId).eq("exercice_nom", exerciceNom).neq("seance_id", excludeSeanceId);
   return best1RM((data ?? []) as SeanceLogRow[]);
 }
@@ -134,10 +136,10 @@ export type ExerciceHistory = { best1RM: number | null; lastPerformance: LastPer
 // "précédent" façon Hevy pendant le live, en une seule requête par exercice.
 export async function loadExerciceHistory(clientId: string, exerciceNom: string, excludeSeanceId: string): Promise<ExerciceHistory> {
   const { data } = await supabase.from("seance_logs")
-    .select("seance_id,set_index,poids_reel,reps_reel,logged_at")
+    .select("seance_id,set_index,poids_reel,reps_reel,logged_at,warmup")
     .eq("client_id", clientId).eq("exercice_nom", exerciceNom).neq("seance_id", excludeSeanceId)
     .order("logged_at", { ascending: false });
-  const rows = (data ?? []) as (Pick<SeanceLogRow, "seance_id" | "set_index" | "poids_reel" | "reps_reel"> & { logged_at: string })[];
+  const rows = (data ?? []) as (Pick<SeanceLogRow, "seance_id" | "set_index" | "poids_reel" | "reps_reel" | "warmup"> & { logged_at: string })[];
   const lastPerformance: LastPerformance = {};
   if (rows.length) {
     const lastSeanceId = rows[0].seance_id;

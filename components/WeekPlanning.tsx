@@ -19,7 +19,7 @@ const DEFAULT_COLOR = "#9a9a9a";
 const DAY_LABELS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
 const mondayOf = (d: Date) => { const n = new Date(d); const day = (n.getDay() + 6) % 7; n.setDate(n.getDate() - day); n.setHours(0, 0, 0, 0); return n; };
-const toISO = (d: Date) => d.toISOString().split("T")[0];
+const toISO = (d: Date) => d.toLocaleDateString("sv-SE"); // date locale (toISOString décalait d'un jour)
 
 // Vue semaine (façon Wingfit) : les séances planifiées de la semaine en cours, une colonne
 // par jour, blocs colorés par type_seance — complément visuel à la liste, qui reste la vue

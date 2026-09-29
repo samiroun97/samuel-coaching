@@ -24,13 +24,16 @@ export async function loadExerciceSessionOutcomes(
   clientId: string, exerciceNom: string, limitSessions = 5
 ): Promise<SessionOutcome[]> {
   const { data: logRows } = await supabase.from("seance_logs")
-    .select("seance_id,set_index,exercice_index,poids_reel,reps_reel,logged_at")
+    .select("seance_id,set_index,exercice_index,poids_reel,reps_reel,logged_at,warmup")
     .eq("client_id", clientId).eq("exercice_nom", exerciceNom)
     .order("logged_at", { ascending: false });
-  if (!logRows?.length) return [];
+  // Séries d'échauffement exclues : elles sont volontairement sous la cible de reps/charge et
+  // se liraient sinon comme des échecs (plus de hausse suggérée, voire deload à tort).
+  const working = (logRows ?? []).filter(r => !r.warmup);
+  if (!working.length) return [];
 
   const orderedSeanceIds: string[] = [];
-  for (const r of logRows) if (!orderedSeanceIds.includes(r.seance_id)) orderedSeanceIds.push(r.seance_id);
+  for (const r of working) if (!orderedSeanceIds.includes(r.seance_id)) orderedSeanceIds.push(r.seance_id);
   const seanceIds = orderedSeanceIds.slice(0, limitSessions);
 
   const { data: seances } = await supabase.from("programme_seances")
@@ -38,19 +41,19 @@ export async function loadExerciceSessionOutcomes(
   const seanceById = new Map((seances ?? []).map(s => [s.id, s]));
 
   return seanceIds.map(sid => {
-    const rows = logRows.filter(r => r.seance_id === sid);
+    const rows = working.filter(r => r.seance_id === sid);
     const topWeight = rows.reduce<number | null>((max, r) => r.poids_reel != null && (max == null || r.poids_reel > max) ? r.poids_reel : max, null);
     const seance = seanceById.get(sid);
     const exercice = seance ? parseExercices(seance.exercices).find(e => e.nom === exerciceNom) : undefined;
 
-    let allHit = true;
-    if (exercice) {
-      const targets = targetSetsFor(exercice);
-      allHit = rows.every(r => evaluateSet(targets[r.set_index]?.reps ?? "", { reps_reel: r.reps_reel }) === "hit");
-    }
+    // Séance supprimée ou réécrite sans cet exercice : cible inconnue → séance ignorée (avant,
+    // elle comptait comme réussie par défaut et poussait à augmenter la charge à tort).
+    if (!exercice) return null;
+    const targets = targetSetsFor(exercice);
+    const allHit = rows.every(r => evaluateSet(targets[r.set_index]?.reps ?? "", { reps_reel: r.reps_reel }) === "hit");
 
     return { seanceId: sid, date: seance?.date_prevue ?? null, allHit, topWeight };
-  });
+  }).filter((o): o is SessionOutcome => o !== null);
 }
 
 export type ProgressionSuggestion = {

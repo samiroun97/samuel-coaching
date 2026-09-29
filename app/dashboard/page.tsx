@@ -23,7 +23,7 @@ type Goals = { calories: number; proteines: number; glucides: number; lipides: n
 type Food  = { calories: number; proteines: number; glucides: number; lipides: number; fibres?: number };
 type Log   = { date: string; calories_burned: number };
 
-const today = () => new Date().toISOString().split("T")[0];
+const today = () => new Date().toLocaleDateString("sv-SE"); // date locale, pas UTC
 
 function bmr(p: Profile, bodyFatPct: number | null): number {
   if (bodyFatPct !== null) {

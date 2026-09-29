@@ -1,7 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 
-export const todayStr = () => new Date().toISOString().split("T")[0];
+// Date LOCALE (heure de l'appareil) : toISOString() donnait la date UTC, donc « hier »
+// entre minuit et 1-2 h en Suisse — un repas loggé à 0h30 partait sur la veille.
+export const todayStr = () => new Date().toLocaleDateString("sv-SE");
 
 // Persiste la date sélectionnée (partagée entre Accueil, Nutrition, Programme, Suivi),
 // mais uniquement pour la journée en cours. Sans ça, rouvrir l'app un autre jour calendaire
