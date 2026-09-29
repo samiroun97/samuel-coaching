@@ -16,6 +16,7 @@ import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
 import { ChevronDown, ChevronLeft, ChevronRight, Check, Pencil, Plus, X } from "@/lib/solarIcons";
 import { mondayISOOf, todayISO } from "@/lib/planning";
+import { bmr, expenditure, neatFromSteps } from "@/lib/energy";
 
 type Profile      = { prenom?: string; sexe?: string; poids?: number; taille?: number; age?: number; objectifs?: string; objectif_type?: string; seances_par_semaine?: number; experience?: string; niveau_activite?: string };
 // Mensurations du check-in hebdo (colonnes de weekly_checkins, en cm).
@@ -368,19 +369,13 @@ export default function SuiviPage() {
       const stepsGoal = parseInt(localStorage.getItem("steps_goal") ?? "10000") || 10000;
 
       const poidsRef = profile?.poids ?? weightHist[0]?.weight ?? 70;
-      const avgNeatPerDay = Math.round((totalSteps / dayCount) * 0.04 * (poidsRef / 70));
+      const avgNeatPerDay = neatFromSteps(totalSteps / dayCount, poidsRef);
       const avgEatPerDay  = Math.round(totalEat / dayCount);
 
-      const bmrVal = (() => {
-        if (!profile?.poids || !profile?.taille || !profile?.age) return 1800;
-        if (lastBF) {
-          const lbm = profile.poids * (1 - lastBF.body_fat / 100);
-          return Math.round(370 + 21.6 * lbm);
-        }
-        const base = 10 * profile.poids + 6.25 * profile.taille - 5 * profile.age;
-        return Math.round(profile.sexe === "Femme" ? base - 161 : base + 5);
-      })();
-      const avgTdee = bmrVal + avgNeatPerDay + avgEatPerDay;
+      const bmrVal = profile?.poids && profile?.taille && profile?.age
+        ? bmr({ poids: profile.poids, taille: profile.taille, age: profile.age, sexe: profile.sexe ?? "" }, lastBF?.body_fat ?? null)
+        : 1800;
+      const avgTdee = expenditure(bmrVal, avgNeatPerDay, avgEatPerDay).tdee;
       const balancePerDay = avgCalories - avgTdee;
       const balanceStatus: "deficit" | "surplus" | "maintenance" =
         Math.abs(balancePerDay) <= 100 ? "maintenance" : balancePerDay > 0 ? "surplus" : "deficit";
@@ -389,9 +384,9 @@ export default function SuiviPage() {
       // que la moyenne (poids/profil stables sur la semaine), NEAT/EAT propres à chaque jour.
       const dailyBreakdown = effectiveDates.map((dt, i) => {
         const steps = parseInt(localStorage.getItem(`steps_${dt}`) ?? "0") || 0;
-        const neat  = Math.round(steps * 0.04 * (poidsRef / 70));
+        const neat  = neatFromSteps(steps, poidsRef);
         const eat   = logs.filter(l => (l.date || "").split("T")[0] === dt).reduce((s, l) => s + (l.calories_burned ?? 0), 0);
-        const tdee  = bmrVal + neat + eat;
+        const tdee  = expenditure(bmrVal, neat, eat).tdee;
         const calories = Math.round(dayTotals[i].calories);
         return { date: dt, calories, tdee, balance: calories - tdee };
       });

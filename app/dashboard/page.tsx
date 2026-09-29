@@ -10,6 +10,7 @@ import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
 import { ClientNudges } from "@/components/ClientNudges";
 import { Check, Pencil, ChevronRight } from "@/lib/solarIcons";
+import { bmr, expenditure } from "@/lib/energy";
 
 type Profile = {
   prenom: string; nom: string; age: number; poids: number; taille: number; sexe: string;
@@ -25,16 +26,6 @@ type Log   = { date: string; calories_burned: number };
 
 const today = () => new Date().toLocaleDateString("sv-SE"); // date locale, pas UTC
 
-function bmr(p: Profile, bodyFatPct: number | null): number {
-  if (bodyFatPct !== null) {
-    // Katch-McArdle : basé sur la masse maigre (LBM)
-    const lbm = p.poids * (1 - bodyFatPct / 100);
-    return Math.round(370 + 21.6 * lbm);
-  }
-  // Mifflin-St Jeor : estimation sans composition corporelle
-  const base = 10 * p.poids + 6.25 * p.taille - 5 * p.age;
-  return Math.round(p.sexe === "Femme" ? base - 161 : base + 5);
-}
 
 // kcal restantes à gauche, cercle "consommées" au centre, dépense (TDEE) à droite —
 // une seule ligne, sans surcharge de couleurs.
@@ -256,7 +247,7 @@ export default function AccueilPage() {
   );
 
   const bmrVal     = bmr(profile, bodyFat);
-  const tdee       = bmrVal + neat + eat;
+  const { tdee, tef } = expenditure(bmrVal, neat, eat);
   const refCal     = calView === "objectif" ? goals.calories : tdee;
   const balance    = consumed.calories - refCal;
   const surplus    = balance > 0;
@@ -361,6 +352,7 @@ export default function AccueilPage() {
               { label: "BMR",  val: bmrVal },
               { label: "NEAT", val: neat },
               { label: "EAT",  val: eat },
+              { label: "TEF",  val: tef },
             ].map((row, i) => (
               <div key={row.label} className={`flex-1 text-center ${i > 0 ? "border-l border-[var(--t-border-soft)]" : ""}`}>
                 <p style={{ fontFamily: "var(--font-bebas)" }} className="text-xl text-[var(--t-text-80)] tracking-wide">{row.val.toLocaleString("fr-FR")}</p>

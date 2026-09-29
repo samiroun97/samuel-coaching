@@ -14,6 +14,7 @@ import { BarcodeFormat, DecodeHintType } from "@zxing/library";
 import { Icon } from "@/components/Icon";
 import { RichIcon, type RichIconName } from "@/components/RichIcon";
 import { Plus, Shield, ChevronDown, Copy, Star, Trash2, X, Camera, ImageIcon, Mic, Save, ScanBarcode, Lightbulb, MoreHorizontal } from "@/lib/solarIcons";
+import { bmr, expenditure, neatFromSteps } from "@/lib/energy";
 
 // BarcodeDetector (API native) n'existe pas sur Safari/iOS — ZXing décode en JS pur
 // via canvas, donc ça marche identiquement sur iPhone et Android.
@@ -85,15 +86,6 @@ const PHOTO_PENDING_KEY = "nutrition_photo_pending";
 
 type MiniProfile = { poids: number; taille: number; age: number; sexe: string };
 
-// Même calcul que l'accueil : Katch-McArdle si body fat connu, sinon Mifflin-St Jeor
-function bmr(p: MiniProfile, bodyFatPct: number | null): number {
-  if (bodyFatPct !== null) {
-    const lbm = p.poids * (1 - bodyFatPct / 100);
-    return Math.round(370 + 21.6 * lbm);
-  }
-  const base = 10 * p.poids + 6.25 * p.taille - 5 * p.age;
-  return Math.round(p.sexe === "Femme" ? base - 161 : base + 5);
-}
 
 const CAL: Record<MacroKey, number> = { proteines: 4, glucides: 4, lipides: 9 };
 const defaultGoals: Goals = { calories: 2200, proteines: 150, glucides: 220, lipides: 70, fibres: 27 };
@@ -530,7 +522,7 @@ export default function NutritionPage() {
     const compute = () => {
       try {
         const steps = parseInt(localStorage.getItem(`steps_${selectedDate}`) ?? "0") || 0;
-        const neat  = Math.round(steps * 0.04 * ((miniProfile?.poids ?? 70) / 70));
+        const neat  = neatFromSteps(steps, miniProfile?.poids ?? 70);
         const logs: { date: string; calories_burned: number }[] = JSON.parse(localStorage.getItem("programme_logs") ?? "[]");
         const eat   = logs.filter(l => l.date.startsWith(selectedDate)).reduce((s, l) => s + l.calories_burned, 0);
         setTdeeParts({ neat, eat });
@@ -573,7 +565,7 @@ export default function NutritionPage() {
 
   // Référence calorique : objectif fixe ou TDEE du jour (métabolisme + activité + sport)
   const bmrVal    = miniProfile ? bmr(miniProfile, bodyFat) : 0;
-  const tdee      = bmrVal > 0 ? bmrVal + tdeeParts.neat + tdeeParts.eat : 0;
+  const { tdee, tef } = bmrVal > 0 ? expenditure(bmrVal, tdeeParts.neat, tdeeParts.eat) : { tdee: 0, tef: 0 };
   const useTdee   = calRef === "tdee" && tdee > 0;
   const calTarget = useTdee ? tdee : goals.calories;
 
@@ -1152,6 +1144,7 @@ export default function NutritionPage() {
             { label: "BMR",  val: bmrVal },
             { label: "NEAT", val: tdeeParts.neat },
             { label: "EAT",  val: tdeeParts.eat },
+            { label: "TEF",  val: tef },
           ].map((row, i) => (
             <div key={row.label} className={`flex-1 text-center ${i > 0 ? "border-l border-[var(--t-border-soft)]" : ""}`}>
               <p style={{ fontFamily: "var(--font-bebas)" }} className="text-xl text-[var(--t-text-80)] tracking-wide">{row.val.toLocaleString("fr-FR")}</p>
