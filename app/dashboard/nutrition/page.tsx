@@ -1469,7 +1469,7 @@ export default function NutritionPage() {
                   {!aiResult && (
                     <><button data-loading={analyzing || undefined} onClick={runAnalysis} disabled={analyzing || (!photoPreview && !description.trim())}
                       className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.2em] uppercase py-3.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                      {analyzing ? <>Analyse en cours…</> : "Estimer les macros avec l'IA →"}
+                      {analyzing ? <>Analyse en cours…</> : "Estimer son repas →"}
                     </button>
 {analyzing && <div className="flex justify-center pt-3"><Loader size={120}/></div>}</>
                   )}
