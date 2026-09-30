@@ -513,9 +513,11 @@ export default function ProgrammesPage() {
 
         const kpi = (icon: Parameters<typeof RichIcon>[0]["name"], label: string, value: React.ReactNode, sub: React.ReactNode, onClick?: () => void) => (
           <button onClick={onClick} disabled={!onClick}
-            className="group/kpi text-left rounded-2xl border border-[var(--t-border-soft)] bg-[var(--t-surface)] px-3 md:px-4 py-2.5 md:py-2 flex items-center gap-3 shadow-[0_2px_14px_-8px_rgba(0,0,0,0.15),0_0_22px_-6px_rgba(201,168,76,0.22)] enabled:hover:border-[#c9a84c]/40 enabled:hover:-translate-y-0.5 transition-all">
+            className="group/kpi text-left rounded-2xl border border-[var(--t-border-soft)] bg-[var(--t-surface)] px-2.5 md:px-4 py-2.5 md:py-2 flex items-center gap-2 md:gap-3 shadow-[0_2px_14px_-8px_rgba(0,0,0,0.15),0_0_22px_-6px_rgba(201,168,76,0.22)] enabled:hover:border-[#c9a84c]/40 enabled:hover:-translate-y-0.5 transition-all">
             {/* Hauteur fixée à 52px : l'icône de 66px déborde dans le padding de la carte
                 plutôt que de l'agrandir. */}
+            {/* Téléphone : petite icône (34px) pour garder des cartes compactes. */}
+            <RichIcon name={icon} size={34} className="md:hidden drop-shadow-[0_3px_5px_rgba(0,0,0,0.14)]"/>
             <div className="relative w-[66px] h-[52px] hidden md:flex items-center justify-center shrink-0">
               <div className="absolute inset-2 rounded-full blur-lg bg-[#c9a84c] opacity-15"/>
               <RichIcon name={icon} size={66} className="relative drop-shadow-[0_6px_10px_rgba(0,0,0,0.14)]"/>
