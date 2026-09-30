@@ -516,8 +516,8 @@ export default function ProgrammesPage() {
             className="group/kpi text-left rounded-2xl border border-[var(--t-border-soft)] bg-[var(--t-surface)] px-2.5 md:px-4 py-2.5 md:py-2 flex items-center gap-2 md:gap-3 shadow-[0_2px_14px_-8px_rgba(0,0,0,0.15),0_0_22px_-6px_rgba(201,168,76,0.22)] enabled:hover:border-[#c9a84c]/40 enabled:hover:-translate-y-0.5 transition-all">
             {/* Hauteur fixée à 52px : l'icône de 66px déborde dans le padding de la carte
                 plutôt que de l'agrandir. */}
-            {/* Téléphone : petite icône (34px) pour garder des cartes compactes. */}
-            <RichIcon name={icon} size={34} className="md:hidden drop-shadow-[0_3px_5px_rgba(0,0,0,0.14)]"/>
+            {/* Téléphone : icône discrète (22px) pour garder des cartes compactes. */}
+            <RichIcon name={icon} size={22} className="md:hidden self-start mt-0.5"/>
             <div className="relative w-[66px] h-[52px] hidden md:flex items-center justify-center shrink-0">
               <div className="absolute inset-2 rounded-full blur-lg bg-[#c9a84c] opacity-15"/>
               <RichIcon name={icon} size={66} className="relative drop-shadow-[0_6px_10px_rgba(0,0,0,0.14)]"/>
@@ -646,7 +646,8 @@ export default function ProgrammesPage() {
               {empty && (
                 <div className="rounded-3xl border border-[#c9a84c]/25 bg-gradient-to-br from-[var(--t-surface-gold)] to-[var(--t-surface)] p-5 md:p-6 flex flex-col md:flex-row md:items-center gap-5 shadow-[0_10px_40px_-20px_rgba(201,168,76,0.5)]">
                   <div className="flex items-center gap-4 md:w-72 shrink-0">
-                    <div className="relative w-16 h-16 flex items-center justify-center shrink-0">
+                    <RichIcon name="clipboardCheck" size={40} className="md:hidden"/>
+                    <div className="relative w-16 h-16 hidden md:flex items-center justify-center shrink-0">
                       <div className="absolute inset-2 rounded-full blur-lg bg-[#c9a84c] opacity-25"/>
                       <RichIcon name="clipboardCheck" size={64} className="relative animate-levitate drop-shadow-[0_8px_12px_rgba(0,0,0,0.15)]"/>
                     </div>
