@@ -2,7 +2,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { ACADEMY_UNITS, type AcademyLesson } from "@/lib/academyContent";
 import { Icon } from "@/components/Icon";
-import { Lock, Check, Play, X } from "@/lib/solarIcons";
+import { Check, Play, X } from "@/lib/solarIcons";
+import { RichIcon } from "@/components/RichIcon";
 
 type LessonProgress = { completed: boolean; score: number; total: number };
 type ProgressMap = Record<string, LessonProgress>;
@@ -20,7 +21,7 @@ function loadProgress(): ProgressMap {
 }
 
 function LockIcon() {
-  return <Icon icon={Lock} size={22} strokeWidth={1.8}/>;
+  return <RichIcon name="uiLock" size={30}/>;
 }
 function CheckIcon() {
   return <Icon icon={Check} size={26} strokeWidth={2.5} className="text-[#0a0a0a]"/>;

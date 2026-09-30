@@ -1,6 +1,6 @@
 import { type Mesocycle, mesocycleProgress } from "@/lib/mesocycles";
-import { Icon } from "@/components/Icon";
-import { Trash2 } from "@/lib/solarIcons";
+
+import { RichIcon } from "@/components/RichIcon";
 
 // Carte d'info du mésocycle actif — même rendu côté coach (CRM) et côté client (Activité),
 // pour qu'ils voient toujours la même chose : nom, objectif, et où on en est dans le bloc.
@@ -17,7 +17,7 @@ export function MesocycleCard({ meso, onDelete }: { meso: Mesocycle; onDelete?: 
         {onDelete && (
           <button onClick={onDelete} title="Supprimer ce mésocycle"
             className="shrink-0 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
-            <Icon icon={Trash2} size={13} strokeWidth={1.8}/>
+            <RichIcon name="uiTrash" size={24}/>
           </button>
         )}
       </div>

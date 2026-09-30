@@ -14,7 +14,7 @@ import { syncSteps } from "@/lib/steps";
 import { type WeightEntry, loadWeightHistory, upsertWeightEntry, deleteWeightEntry } from "@/lib/weightHistory";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
-import { ChevronDown, ChevronLeft, ChevronRight, Check, Pencil, Plus, X } from "@/lib/solarIcons";
+import { ChevronDown, ChevronLeft, ChevronRight, Check, Plus, X } from "@/lib/solarIcons";
 import { mondayISOOf, todayISO } from "@/lib/planning";
 import { bmr, expenditure, neatFromSteps } from "@/lib/energy";
 import { Loader } from "@/components/Loader";
@@ -825,7 +825,7 @@ export default function SuiviPage() {
             {weightSaved ? (
               <Icon icon={Check} size={15} strokeWidth={2.5}/>
             ) : alreadySelected ? (
-              <Icon icon={Pencil} size={14} strokeWidth={2}/>
+              <RichIcon name="uiEdit" size={26}/>
             ) : (
               <Icon icon={Check} size={15} strokeWidth={2.5}/>
             )}

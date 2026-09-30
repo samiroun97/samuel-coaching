@@ -9,7 +9,7 @@ import { syncSteps } from "@/lib/steps";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
 import { ClientNudges } from "@/components/ClientNudges";
-import { Check, Pencil, ChevronRight } from "@/lib/solarIcons";
+import { Check, ChevronRight } from "@/lib/solarIcons";
 import { bmr, expenditure } from "@/lib/energy";
 import { Loader } from "@/components/Loader";
 
@@ -311,7 +311,7 @@ export default function AccueilPage() {
             {weightSaved ? (
               <Icon icon={Check} size={15} strokeWidth={2.5}/>
             ) : entryForDate ? (
-              <Icon icon={Pencil} size={14} strokeWidth={2}/>
+              <RichIcon name="uiEdit" size={26}/>
             ) : (
               <Icon icon={Check} size={15} strokeWidth={2.5}/>
             )}

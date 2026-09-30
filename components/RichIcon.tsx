@@ -52,6 +52,18 @@ const RICH_ICON_SRC = {
   uiShare: "/icons-rich/ui/share.webp",
   uiMail: "/icons-rich/ui/mail.webp",
   uiDocument: "/icons-rich/ui/document.webp",
+  // Créées sur le même modèle (pas d'équivalent téléchargé) : vraie tuile IconScout
+  // reconstituée et recolorée or, symbole Lucide épais en blanc avec reflet et ombre portée.
+  uiTrash: "/icons-rich/ui/trash.webp",
+  uiEdit: "/icons-rich/ui/edit.webp",
+  uiSettings: "/icons-rich/ui/settings.webp",
+  uiUser: "/icons-rich/ui/user.webp",
+  uiCamera: "/icons-rich/ui/camera.webp",
+  uiLock: "/icons-rich/ui/lock.webp",
+  uiMic: "/icons-rich/ui/mic.webp",
+  uiImage: "/icons-rich/ui/image.webp",
+  uiCopy: "/icons-rich/ui/copy.webp",
+  uiStar: "/icons-rich/ui/star.webp",
 } as const;
 
 export type RichIconName = keyof typeof RICH_ICON_SRC;
