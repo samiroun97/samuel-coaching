@@ -9,7 +9,7 @@ import { isCoachUser, isCoachActive, isPlatformAdmin, getMyOwnBusinessName } fro
 import ThemeToggle from "@/components/ThemeToggle";
 import { ModeSwitch } from "@/components/ModeSwitch";
 import { Icon } from "@/components/Icon";
-import { LayoutGrid, Users, Layers, Share2, MessageSquare, FileText, LogOut, Eye, Star, BarChart3 } from "@/lib/solarIcons";
+import { LayoutGrid, Users, Layers, Share2, MessageSquare, FileText, LogOut, Eye, Star, BarChart3, MoreHorizontal } from "@/lib/solarIcons";
 import { Loader } from "@/components/Loader";
 
 export default function CRMLayout({ children }: { children: React.ReactNode }) {
@@ -22,6 +22,7 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
   const [businessName, setBusinessName] = useState("");
   const [suspended, setSuspended] = useState(false);
   const [isAdmin,   setIsAdmin]   = useState(false);
+  const [moreOpen,  setMoreOpen]  = useState(false);
 
   useEffect(() => {
     const onSyncStatus = (e: Event) => setSyncIssue(!(e as CustomEvent<{ ok: boolean }>).detail.ok);
@@ -92,6 +93,9 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
     { href: "/crm/business",   label: "Business",   icon: BarChart3,     badge: 0 },
     { href: "/crm/abonnement", label: "Abonnement", icon: Star,          badge: 0 },
   ];
+  // Téléphone : seuls ces onglets restent dans la barre du bas, le reste passe dans « Plus ».
+  const MOBILE_MAIN = ["/crm", "/crm/clients", "/crm/programmes", "/crm/inbox"];
+  const moreActive = !MOBILE_MAIN.some(h => pathname === h || (h !== "/crm" && pathname.startsWith(h)));
 
   if (!ready) return (
     <div className="min-h-screen bg-[var(--t-bg2)] flex items-center justify-center">
@@ -163,40 +167,69 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
         </div>
       )}
 
-      <main className="ml-0 md:ml-56 flex-1 min-w-0 min-h-screen pb-16 md:pb-0">{children}</main>
+      <main className="ml-0 md:ml-56 flex-1 min-w-0 min-h-screen pb-[calc(env(safe-area-inset-bottom)+64px)] md:pb-0">{children}</main>
 
-      {/* Bottom nav — mobile only */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[var(--t-bg)] border-t border-[var(--t-border-soft)] flex z-10 pb-[env(safe-area-inset-bottom)]">
-        {/* Barre mobile limitée : Abonnement (via Mon espace perso › Compte) et Pipeline (intégré
-            au Dashboard) laissent la place à Business. */}
-        {nav.filter(n => n.href !== "/crm/abonnement" && n.href !== "/crm/pipeline").map(({ href, label, icon, badge }) => {
+      {/* Barre du bas — téléphone : 4 raccourcis + « Plus » (le reste dans une feuille) */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[var(--t-bg)] border-t border-[var(--t-border-soft)] flex z-20 pb-[env(safe-area-inset-bottom)]">
+        {nav.filter(n => MOBILE_MAIN.includes(n.href)).map(({ href, label, icon, badge }) => {
           const active = pathname === href || (href !== "/crm" && pathname.startsWith(href));
           return (
             <Link key={href} href={href}
-              className={`flex-1 flex flex-col items-center gap-1 py-2.5 text-[0.45rem] tracking-[0.08em] uppercase transition-all ${
-                active ? "text-[#c9a84c]" : "text-[var(--t-text-25)]"
+              className={`flex-1 min-h-[56px] flex flex-col items-center justify-center gap-1 text-[0.68rem] font-medium transition-all ${
+                active ? "text-[#c9a84c]" : "text-[var(--t-text-40)]"
               }`}>
               <div className="relative">
-                <Icon icon={icon} size={15}/>
-                {badge > 0 && <span className="absolute -top-1 -right-2 bg-[#e07070] text-white text-[0.4rem] font-bold px-1 py-px rounded-full min-w-[0.9rem] text-center">{badge}</span>}
+                <Icon icon={icon} size={20}/>
+                {badge > 0 && <span className="absolute -top-1.5 -right-2.5 bg-[#e07070] text-white text-[0.6rem] font-bold px-1 rounded-full min-w-[1rem] text-center leading-4">{badge}</span>}
               </div>
-              {label}
+              {href === "/crm" ? "Accueil" : label}
             </Link>
           );
         })}
-        <Link href="/dashboard?preview=1"
-          className="flex-1 flex flex-col items-center gap-1 py-2.5 text-[0.45rem] tracking-[0.08em] uppercase text-[var(--t-text-25)] transition-all">
-          <Icon icon={Eye} size={15}/>
-          Aperçu
-        </Link>
-        {isAdmin && (
-          <Link href="/crm/plateforme"
-            className="flex-1 flex flex-col items-center gap-1 py-2.5 text-[0.45rem] tracking-[0.08em] uppercase text-[#c9a84c] transition-all">
-            <Icon icon={Share2} size={15}/>
-            Plateforme
-          </Link>
-        )}
+        <button onClick={() => setMoreOpen(o => !o)}
+          className={`flex-1 min-h-[56px] flex flex-col items-center justify-center gap-1 text-[0.68rem] font-medium transition-all ${
+            moreOpen || moreActive ? "text-[#c9a84c]" : "text-[var(--t-text-40)]"
+          }`}>
+          <Icon icon={MoreHorizontal} size={20}/>
+          Plus
+        </button>
       </nav>
+
+      {moreOpen && (
+        <div className="md:hidden fixed inset-0 z-10" onClick={() => setMoreOpen(false)}>
+          <div className="absolute inset-0 bg-black/40"/>
+          <div onClick={e => e.stopPropagation()}
+            className="absolute left-0 right-0 bottom-0 rounded-t-3xl bg-[var(--t-bg)] border-t border-[var(--t-border-soft)] px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+72px)]">
+            <div className="w-10 h-1 rounded-full bg-[var(--t-border)] mx-auto mb-3"/>
+            <p style={{ fontFamily: "var(--font-bebas)" }} className="text-lg tracking-[0.15em] text-[#c9a84c] px-2 mb-1 truncate">{businessName.toUpperCase()}</p>
+            <div className="flex flex-col">
+              {[
+                ...nav.filter(n => !MOBILE_MAIN.includes(n.href)),
+                { href: "/dashboard?preview=1", label: "Aperçu client", icon: Eye, badge: 0 },
+                ...(isAdmin ? [{ href: "/crm/plateforme", label: "Vue plateforme", icon: Share2, badge: 0 }] : []),
+              ].map(({ href, label, icon }) => {
+                const active = pathname.startsWith(href);
+                return (
+                  <Link key={href} href={href} onClick={() => setMoreOpen(false)}
+                    className={`flex items-center gap-3 px-3 min-h-[48px] rounded-xl text-[0.95rem] transition-colors ${
+                      active ? "text-[#c9a84c] bg-[#c9a84c]/8" : "text-[var(--t-text-70)] active:bg-[var(--t-glass-bg)]"
+                    }`}>
+                    <Icon icon={icon} size={19}/>{label}
+                  </Link>
+                );
+              })}
+            </div>
+            <div className="mt-3 pt-3 border-t border-[var(--t-border-soft)] flex items-center justify-between gap-3 px-2">
+              <ModeSwitch mode="coach"/>
+              <ThemeToggle/>
+            </div>
+            <button onClick={async () => { await supabase.auth.signOut(); router.push("/login"); }}
+              className="mt-2 w-full flex items-center gap-3 px-3 min-h-[48px] rounded-xl text-[0.95rem] text-[var(--t-text-40)]">
+              <Icon icon={LogOut} size={19}/>Déconnexion
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

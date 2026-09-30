@@ -20,6 +20,7 @@ type Unlinked = { id: string; prenom: string; nom: string; email: string; kind: 
 export default function CRMDashboard() {
   const [clients,  setClients]  = useState<Client[]>([]);
   const [msgs,     setMsgs]     = useState<Msg[]>([]);
+  const [allAlerts, setAllAlerts] = useState(false);
   const [checkins, setCheckins] = useState<Ck[]>([]);
   const [seanceCounts, setSeanceCounts] = useState<Map<string, number>>(new Map());
   const [mesosEnding, setMesosEnding]   = useState<MesoEnding[]>([]);
@@ -178,7 +179,7 @@ export default function CRMDashboard() {
   );
 
   return (
-    <div className="p-4 md:p-8 max-w-6xl">
+    <div className="p-4 md:p-8 max-w-6xl flex flex-col">
       {/* Header */}
       <div className="mb-6 md:mb-8">
         <p className="text-[0.65rem] tracking-[0.35em] text-[#c9a84c] uppercase mb-1">Plateforme coaching</p>
@@ -189,14 +190,14 @@ export default function CRMDashboard() {
       </div>
 
       {/* Pipeline — répartition seule, le board détaillé est sur /crm/pipeline */}
-      <div className="mb-8">
+      <div className="mb-8 order-2 md:order-none">
         <PipelineBoard variant="section"/>
       </div>
 
       {/* ══ Aujourd'hui — ce qui attend une action, trié par urgence réelle ══ */}
-      <div className="border border-[var(--t-text-7)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-2xl p-4 md:p-5 mb-8">
+      <div className="border border-[var(--t-text-7)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-2xl p-4 md:p-5 mb-6 md:mb-8">
         <div className="flex items-center gap-3 mb-4">
-          <div className="relative w-[72px] h-[72px] flex items-center justify-center shrink-0">
+          <div className="relative w-[72px] h-[72px] hidden md:flex items-center justify-center shrink-0">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-lg pointer-events-none"
               style={{ width: 50, height: 50, backgroundColor: "#c9a84c", opacity: 0.16 }}/>
             {/* Lévitation sur le wrapper, inclinaison sur l'icône : les deux utilisent `transform`. */}
@@ -209,7 +210,7 @@ export default function CRMDashboard() {
             <p className="text-sm font-bold text-[var(--t-text)]">
               {alerts.length === 0 ? "Rien ne presse aujourd'hui" : `Client${alerts.length > 1 ? "s" : ""} qui attend${alerts.length > 1 ? "ent" : ""} une action`}
             </p>
-            <p className="text-[0.6rem] tracking-[0.1em] uppercase text-[var(--t-text-25)] mt-0.5">Trié par urgence</p>
+            <p className="text-[0.66rem] md:text-[0.6rem] tracking-[0.1em] uppercase text-[var(--t-text-40)] md:text-[var(--t-text-25)] mt-0.5">Trié par urgence</p>
           </div>
         </div>
         {alerts.length === 0 ? (
@@ -219,19 +220,25 @@ export default function CRMDashboard() {
           </div>
         ) : (
           <div className="flex flex-col gap-2">
-            {alerts.slice(0, 8).map((a, i) => (
+            {/* Téléphone : 5 premiers + « Voir tout » ; ordinateur : 8 premiers. */}
+            {alerts.slice(0, allAlerts ? alerts.length : 8).map((a, i) => (
               <Link key={i} href={a.href}
-                className="flex items-center gap-3 rounded-xl border px-3 md:px-4 py-3 hover:bg-[var(--t-glass-bg)] transition-colors"
+                className={`${i >= 5 && !allAlerts ? "hidden md:flex" : "flex"} items-center gap-3 rounded-xl border px-3 md:px-4 py-3 hover:bg-[var(--t-glass-bg)] transition-colors`}
                 style={{ borderColor: `${a.color}25`, backgroundColor: `${a.color}07` }}>
                 <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: `${a.color}18`, color: a.color }}>
                   <Icon icon={ALERT_ICON[a.type]} size={16} strokeWidth={2}/>
                 </div>
                 <p className="text-xs md:text-sm text-[var(--t-text-70)] truncate flex-1">{a.label}</p>
-                <span className="text-[0.55rem] md:text-[0.6rem] tracking-wider text-[var(--t-text-30)] shrink-0 font-medium">{a.sub}</span>
+                <span className="text-[0.66rem] md:text-[0.6rem] tracking-wider text-[var(--t-text-40)] md:text-[var(--t-text-30)] shrink-0 font-medium">{a.sub}</span>
               </Link>
             ))}
-            {alerts.length > 8 && (
-              <p className="text-[0.6rem] tracking-wider text-[var(--t-text-20)] text-center pt-1">+ {alerts.length - 8} autre{alerts.length - 8 > 1 ? "s" : ""}</p>
+            {alerts.length > 8 && !allAlerts && (
+              <p className="hidden md:block text-[0.6rem] tracking-wider text-[var(--t-text-20)] text-center pt-1">+ {alerts.length - 8} autre{alerts.length - 8 > 1 ? "s" : ""}</p>
+            )}
+            {alerts.length > 5 && !allAlerts && (
+              <button onClick={() => setAllAlerts(true)} className="md:hidden min-h-[44px] text-[0.78rem] font-medium text-[#c9a84c]">
+                Voir tout ({alerts.length})
+              </button>
             )}
           </div>
         )}
@@ -239,7 +246,7 @@ export default function CRMDashboard() {
 
       {/* Inviter un client — utilitaire occasionnel, pas une action urgente du jour */}
       {inviteCode && (
-        <div className="border border-[var(--t-border-soft)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl p-4 md:p-5 mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="order-3 md:order-none border border-[var(--t-border-soft)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl p-4 md:p-5 mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <p className="text-[0.6rem] tracking-[0.22em] uppercase text-[var(--t-text-30)] mb-1">Inviter un client</p>
             <p className="text-xs text-[var(--t-text-40)]">Code coach : <span style={{ fontFamily: "var(--font-bebas)" }} className="text-[var(--t-text)] tracking-[0.2em] text-sm">{inviteCode}</span></p>
@@ -258,7 +265,7 @@ export default function CRMDashboard() {
       )}
 
       {/* Two columns */}
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="order-3 md:order-none grid md:grid-cols-2 gap-6">
 
         {/* Recent check-ins */}
         <div className="border border-[var(--t-text-7)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl p-4 md:p-5">

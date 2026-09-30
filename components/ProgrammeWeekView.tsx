@@ -148,8 +148,8 @@ export function ProgrammeWeekView({ seances, meso, weeklyTarget, onCreate, onOpe
           </div>
         </div>
 
-        {/* 7 jours : grille sur desktop, défilement horizontal au doigt sur mobile */}
-        <div className="flex md:grid md:grid-cols-7 gap-2.5 overflow-x-auto md:overflow-visible snap-x snap-mandatory -mx-1 px-1 pb-1">
+        {/* 7 jours : grille sur desktop, liste verticale (un jour par ligne) sur téléphone */}
+        <div className="flex flex-col md:grid md:grid-cols-7 gap-2 md:gap-2.5 md:pb-1">
           {days.map(iso => {
             const list = byDay.get(iso) ?? [];
             const isToday = iso === today;
@@ -157,16 +157,16 @@ export function ProgrammeWeekView({ seances, meso, weeklyTarget, onCreate, onOpe
             const d = new Date(iso + "T12:00:00");
             return (
               <div key={iso} {...dropProps(iso)}
-                className={`snap-start shrink-0 w-[46vw] sm:w-[30vw] md:w-auto min-w-0 rounded-2xl border flex flex-col transition-colors ${isOver ? "border-[#c9a84c] bg-[#c9a84c]/10" : isToday ? "border-[#c9a84c]/50 bg-[#c9a84c]/[0.05]" : "border-[var(--t-border-soft)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)]"}`}>
-                <div className="flex items-baseline justify-between px-2.5 pt-2 pb-1.5">
+                className={`min-w-0 rounded-2xl border flex flex-row md:flex-col transition-colors ${isOver ? "border-[#c9a84c] bg-[#c9a84c]/10" : isToday ? "border-[#c9a84c]/50 bg-[#c9a84c]/[0.05]" : "border-[var(--t-border-soft)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)]"}`}>
+                <div className="w-12 md:w-auto shrink-0 flex flex-col md:flex-row items-center md:items-baseline justify-center md:justify-between gap-1.5 md:gap-0 py-2 md:py-0 md:px-2.5 md:pt-2 md:pb-1.5">
                   <span className={`text-[0.72rem] font-semibold uppercase tracking-wide ${isToday ? "text-[#c9a84c]" : "text-[var(--t-text-50)]"}`}>{DAY_SHORT[(d.getDay() + 6) % 7]}</span>
                   <span className={`text-[0.8rem] font-semibold tabular-nums ${isToday ? "w-6 h-6 -my-1 rounded-full bg-[#c9a84c] text-on-gold flex items-center justify-center text-[0.72rem]" : iso < today ? "text-[var(--t-text-30)]" : "text-[var(--t-text-70)]"}`}>{d.getDate()}</span>
                 </div>
-                <div className="flex-1 flex flex-col gap-2 px-1.5 pb-1.5 min-h-[170px]">
+                <div className="flex-1 min-w-0 flex flex-col gap-2 p-1.5 md:pt-0 md:min-h-[170px]">
                   {list.map(card)}
                   <button onClick={() => onCreate(iso)}
-                    className={`group/add rounded-xl border border-dashed flex items-center justify-center gap-1 text-[0.7rem] transition-colors ${list.length ? "py-1.5 border-transparent text-transparent hover:border-[var(--t-border)] hover:text-[var(--t-text-40)]" : "flex-1 border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[#c9a84c]/60 hover:text-[#c9a84c] hover:bg-[#c9a84c]/[0.04]"}`}>
-                    <Icon icon={Plus} size={12} strokeWidth={2.2}/>{list.length ? "Ajouter" : ""}
+                    className={`group/add rounded-xl border border-dashed flex items-center justify-center gap-1 text-[0.7rem] transition-colors ${list.length ? "py-1.5 border-transparent text-[var(--t-text-30)] md:text-transparent hover:border-[var(--t-border)] hover:text-[var(--t-text-40)]" : "flex-1 min-h-[40px] border-[var(--t-border)] text-[var(--t-text-30)] hover:border-[#c9a84c]/60 hover:text-[#c9a84c] hover:bg-[#c9a84c]/[0.04]"}`}>
+                    <Icon icon={Plus} size={12} strokeWidth={2.2}/>{list.length ? "Ajouter" : <span className="md:hidden">Ajouter</span>}
                   </button>
                 </div>
               </div>
@@ -190,7 +190,7 @@ export function ProgrammeWeekView({ seances, meso, weeklyTarget, onCreate, onOpe
           const st = weekStats(monday);
           return (
             <div key={monday} className="flex items-center gap-3 rounded-2xl border border-[var(--t-border-soft)] bg-[var(--t-surface)]/70 px-3 py-2.5 hover:border-[var(--t-border)] transition-colors">
-              <button onClick={() => setFocus(monday)} className="w-28 shrink-0 text-left group/wk">
+              <button onClick={() => setFocus(monday)} className="w-20 md:w-28 shrink-0 text-left group/wk">
                 <p className="text-[0.8rem] font-semibold text-[var(--t-text-80)] group-hover/wk:text-[#c9a84c] transition-colors">{n ? `Semaine ${n}` : fmtShort(monday)}</p>
                 <p className="text-[0.68rem] text-[var(--t-text-40)]">{fmtShort(monday)} – {fmtShort(addDays(monday, 6))}</p>
               </button>

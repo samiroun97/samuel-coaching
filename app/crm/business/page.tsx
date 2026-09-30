@@ -29,7 +29,7 @@ export default function BusinessPage() {
           <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl md:text-5xl text-[var(--t-text)] tracking-wide leading-none">BUSINESS</h1>
         </div>
 
-        <div className="flex rounded-xl border border-[var(--t-border-soft)] bg-[var(--t-surface)] p-1 overflow-x-auto">
+        <div className="flex rounded-xl border border-[var(--t-border-soft)] bg-[var(--t-surface)] p-1 overflow-x-auto no-scrollbar">
           {TABS.map(t => (
             <button key={t.key} onClick={() => setTab(t.key)}
               className={`flex-1 whitespace-nowrap px-3 py-2 rounded-lg text-[0.66rem] font-semibold tracking-[0.06em] uppercase transition-colors ${

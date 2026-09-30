@@ -193,7 +193,7 @@ export default function OperateurPage() {
         <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl md:text-5xl text-[var(--t-text)] tracking-wide leading-none">PLATEFORME</h1>
       </div>
 
-      <div className="flex rounded-xl border border-[var(--t-border-soft)] bg-[var(--t-surface)] p-1 mb-6 overflow-x-auto">
+      <div className="flex rounded-xl border border-[var(--t-border-soft)] bg-[var(--t-surface)] p-1 mb-6 overflow-x-auto no-scrollbar">
         {([
           { key: "apercu", label: "Vue d'ensemble" },
           { key: "utilisateurs", label: `Utilisateurs${data ? ` (${data.totals.users})` : ""}` },
@@ -281,7 +281,7 @@ export default function OperateurPage() {
           <div className="flex flex-col sm:flex-row gap-3">
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher un nom, un e-mail, un coach…"
               className="flex-1 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl text-sm text-[var(--t-text)] px-3.5 py-2.5 focus:outline-none focus:border-[#c9a84c]/40"/>
-            <div className="flex rounded-xl border border-[var(--t-border-soft)] bg-[var(--t-surface)] p-1 overflow-x-auto">
+            <div className="flex rounded-xl border border-[var(--t-border-soft)] bg-[var(--t-surface)] p-1 overflow-x-auto no-scrollbar">
               {(["all", "solo", "client", "coach"] as const).map(f => (
                 <button key={f} onClick={() => setFilter(f)}
                   className={`px-3 py-1.5 rounded-lg text-[0.66rem] font-semibold whitespace-nowrap transition-colors ${filter === f ? "bg-[#c9a84c]/15 text-[#a8893a]" : "text-[var(--t-text-40)]"}`}>

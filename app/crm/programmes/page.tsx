@@ -96,6 +96,8 @@ export default function ProgrammesPage() {
   const [activeMeso,   setActiveMeso]   = useState<Mesocycle | null>(null);
   const [showMesoForm, setShowMesoForm] = useState(false);
   const [mesoForm, setMesoForm] = useState({ nom: "", objectif: "", dateDebut: "", dateFin: "" });
+  // Téléphone : objectif du client replié sur 2 lignes, « Voir plus » pour le déplier.
+  const [objOpen, setObjOpen] = useState(false);
   const [mesoSaving,   setMesoSaving]   = useState(false);
   const [myCoachId,    setMyCoachId]    = useState<string | null>(null);
   const [catalogue,    setCatalogue]    = useState<CatalogueEntry[]>([]);
@@ -510,15 +512,15 @@ export default function ProgrammesPage() {
 
         const kpi = (icon: Parameters<typeof RichIcon>[0]["name"], label: string, value: React.ReactNode, sub: React.ReactNode, onClick?: () => void) => (
           <button onClick={onClick} disabled={!onClick}
-            className="group/kpi text-left rounded-2xl border border-[var(--t-border-soft)] bg-[var(--t-surface)] px-4 py-2 flex items-center gap-3 shadow-[0_2px_14px_-8px_rgba(0,0,0,0.15),0_0_22px_-6px_rgba(201,168,76,0.22)] enabled:hover:border-[#c9a84c]/40 enabled:hover:-translate-y-0.5 transition-all">
+            className="group/kpi text-left rounded-2xl border border-[var(--t-border-soft)] bg-[var(--t-surface)] px-3 md:px-4 py-2.5 md:py-2 flex items-center gap-3 shadow-[0_2px_14px_-8px_rgba(0,0,0,0.15),0_0_22px_-6px_rgba(201,168,76,0.22)] enabled:hover:border-[#c9a84c]/40 enabled:hover:-translate-y-0.5 transition-all">
             {/* Hauteur fixée à 52px : l'icône de 66px déborde dans le padding de la carte
                 plutôt que de l'agrandir. */}
-            <div className="relative w-[66px] h-[52px] flex items-center justify-center shrink-0">
+            <div className="relative w-[66px] h-[52px] hidden md:flex items-center justify-center shrink-0">
               <div className="absolute inset-2 rounded-full blur-lg bg-[#c9a84c] opacity-15"/>
               <RichIcon name={icon} size={66} className="relative drop-shadow-[0_6px_10px_rgba(0,0,0,0.14)]"/>
             </div>
             <div className="min-w-0">
-              <p className="text-[0.66rem] font-semibold uppercase tracking-[0.1em] text-[var(--t-text-50)]">{label}</p>
+              <p className="text-[0.62rem] md:text-[0.66rem] font-semibold uppercase tracking-[0.08em] md:tracking-[0.1em] text-[var(--t-text-50)] truncate">{label}</p>
               <div className="text-[1.05rem] font-bold text-[var(--t-text)] leading-tight mt-0.5 truncate">{value}</div>
               <div className="text-[0.7rem] text-[var(--t-text-50)] truncate">{sub}</div>
             </div>
@@ -538,10 +540,15 @@ export default function ProgrammesPage() {
                   </button>
                   <Avatar c={selected} size={60} color={stage.color}/>
                   <div className="min-w-0 flex-1">
-                    <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-[2.6rem] text-[var(--t-text)] tracking-wide leading-none">{selected.prenom} {selected.nom}</h2>
-                    <p className="text-[0.85rem] text-[var(--t-text-60)] mt-1.5 leading-relaxed">
+                    <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-[2rem] md:text-[2.6rem] text-[var(--t-text)] tracking-wide leading-none truncate">{selected.prenom} {selected.nom}</h2>
+                    <p className={`text-[0.85rem] text-[var(--t-text-60)] mt-1.5 leading-relaxed ${objOpen ? "" : "line-clamp-2 md:line-clamp-none"}`}>
                       <span className="text-[var(--t-text-80)] font-medium">{selected.objectifs || "Objectif non renseigné"}</span>
                     </p>
+                    {(selected.objectifs?.length ?? 0) > 70 && (
+                      <button onClick={() => setObjOpen(o => !o)} className="md:hidden text-[0.72rem] font-medium text-[#c9a84c] mt-0.5">
+                        {objOpen ? "Voir moins" : "Voir plus"}
+                      </button>
+                    )}
                     <p className="text-[0.75rem] text-[var(--t-text-50)] mt-1 flex flex-wrap gap-x-3 gap-y-1">
                       {[selected.experience, selected.seances_par_semaine ? `${selected.seances_par_semaine} séances / sem.` : null, selected.duree_seance, selected.lieu_entrainement].filter(Boolean).map(t => <span key={t!}>{t}</span>)}
                       {hasBlessure(selected.blessures) && <span className="text-[#e09070] font-medium">⚠ {selected.blessures}</span>}
@@ -611,7 +618,7 @@ export default function ProgrammesPage() {
               )}
 
               {/* Résumé */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3">
                 {kpi("targetGoal", "Assiduité · 4 sem.",
                   <span style={{ color: assColor }}>{assiduite === null ? "—" : `${assiduite} %`}</span>,
                   assiduite === null ? "Pas encore de séance passée" : `${past.filter(s => s.completed_at).length} faite${past.filter(s => s.completed_at).length > 1 ? "s" : ""} sur ${past.length}`)}
@@ -667,7 +674,7 @@ export default function ProgrammesPage() {
                 <div className="flex p-1 rounded-xl bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border-soft)]">
                   {(["calendrier", "progression", "liste"] as const).map(v => (
                     <button key={v} onClick={() => setSentView(v)}
-                      className={`px-4 py-1.5 rounded-lg text-[0.78rem] font-medium transition-all ${sentView === v ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold shadow-[0_4px_12px_-6px_rgba(201,168,76,0.7)]" : "text-[var(--t-text-50)] hover:text-[var(--t-text-80)]"}`}>
+                      className={`px-3 md:px-4 py-1.5 rounded-lg text-[0.78rem] font-medium transition-all ${sentView === v ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold shadow-[0_4px_12px_-6px_rgba(201,168,76,0.7)]" : "text-[var(--t-text-50)] hover:text-[var(--t-text-80)]"}`}>
                       {v === "calendrier" ? "Semaine" : v === "progression" ? "Progression" : "Liste"}
                     </button>
                   ))}

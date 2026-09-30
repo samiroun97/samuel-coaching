@@ -108,7 +108,7 @@ export function PipelineBoard({ variant = "page" }: { variant?: "page" | "sectio
             <p className="text-[0.65rem] tracking-[0.22em] uppercase text-[#c9a84c]">Pipeline</p>
             <p className="text-[0.6rem] text-[var(--t-text-25)] mt-0.5">{total} client{total > 1 ? "s" : ""}</p>
           </div>
-          <Link href="/crm/pipeline" className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors">Vue complète</Link>
+          <Link href="/crm/pipeline" className="text-[0.68rem] md:text-[0.45rem] tracking-wider uppercase text-[#c9a84c] md:text-[var(--t-text-20)] hover:text-[var(--t-text-50)] transition-colors py-2 md:py-0">Vue complète</Link>
         </div>
       )}
 
@@ -122,19 +122,19 @@ export function PipelineBoard({ variant = "page" }: { variant?: "page" | "sectio
               style={{ width: `${(n / total) * 100}%`, background: `linear-gradient(180deg, ${s.color}, ${s.color}bb)` }}/>;
           })}
         </div>
-        <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mt-4">
+        <div className="flex flex-wrap gap-x-4 gap-y-2 md:grid md:grid-cols-6 md:gap-3 mt-3 md:mt-4">
           {STAGES.map(s => {
             const n = byStage.get(s.key)!.length;
             const pct = total ? Math.round((n / total) * 100) : 0;
             return (
-              <div key={s.key} className="flex flex-col gap-0.5">
+              <div key={s.key} className="flex flex-row md:flex-col items-center md:items-stretch gap-1.5 md:gap-0.5">
                 <div className="flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }}/>
-                  <span className="text-[0.55rem] tracking-[0.15em] uppercase text-[var(--t-text-40)]">{s.label}</span>
+                  <span className="text-[0.72rem] md:text-[0.55rem] md:tracking-[0.15em] md:uppercase text-[var(--t-text-60)] md:text-[var(--t-text-40)]">{s.label}</span>
                 </div>
                 <div className="flex items-baseline gap-1.5">
-                  <span style={{ fontFamily: "var(--font-bebas)", color: n ? s.color : "var(--t-text-20)" }} className="text-2xl tracking-wide leading-none">{n}</span>
-                  <span className="text-[0.6rem] text-[var(--t-text-25)]">{pct}%</span>
+                  <span style={{ fontFamily: "var(--font-bebas)", color: n ? s.color : "var(--t-text-20)" }} className="text-lg md:text-2xl tracking-wide leading-none">{n}</span>
+                  <span className="hidden md:inline text-[0.6rem] text-[var(--t-text-25)]">{pct}%</span>
                 </div>
               </div>
             );
