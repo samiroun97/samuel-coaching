@@ -1375,8 +1375,11 @@ export default function NutritionPage() {
 
       {/* ══ ADD FOOD MODAL ══ */}
       {showAdd && (
-        <div className="fixed inset-0 bg-black/75 z-50 flex items-center justify-center px-4" onClick={resetModal}>
-          <div className="bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl border border-[var(--t-border)] w-full max-w-lg h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        // Pas de fermeture au clic sur le fond : sur ordinateur, un clic à côté (ou une
+        // sélection de texte relâchée hors de la fenêtre) effaçait toute la saisie en cours.
+        // Fermeture uniquement par la croix, ou automatiquement après l'ajout.
+        <div className="fixed inset-0 bg-black/75 z-50 flex items-center justify-center px-4">
+          <div className="bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl border border-[var(--t-border)] w-full max-w-lg h-[85vh] overflow-y-auto">
 
             <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[var(--t-border-soft)]">
               <h3 style={{ fontFamily:"var(--font-bebas)" }} className="text-xl tracking-wider text-[var(--t-text)]">Ajouter un repas</h3>
