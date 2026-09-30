@@ -121,7 +121,9 @@ export function ProgrammeCalendar({ seances, meso, weeklyTarget, onCreate, onOpe
 
         {weeks.map(monday => {
           const days = Array.from({ length: 7 }, (_, i) => addDays(monday, i));
-          const firstOfMonth = days.find(d => d.endsWith("-01"));
+          // Titre de mois au-dessus de la première semaine qui commence dans ce mois ; le 1er du mois
+          // en milieu de semaine est marqué directement dans sa case (« 1 nov. »).
+          const newMonth = Number(monday.slice(8)) <= 7;
           const n = mesoWeekNum(meso, monday) ?? mesoWeekNum(meso, addDays(monday, 6));
           const list = days.flatMap(d => byDay.get(d) ?? []).filter(s => !s.created_by_client);
           const done = list.filter(s => s.completed_at).length;
@@ -129,9 +131,9 @@ export function ProgrammeCalendar({ seances, meso, weeklyTarget, onCreate, onOpe
           const isCurrent = monday === currentMonday;
           return (
             <div key={monday} ref={isCurrent ? todayRow : undefined}>
-              {(firstOfMonth || monday === first) && (
+              {(newMonth || monday === first) && (
                 <p className="px-3 md:px-4 pt-4 pb-2 text-[0.8rem] md:text-[0.85rem] font-semibold capitalize text-[var(--t-text-80)]">
-                  {MONTH(firstOfMonth ?? monday)}
+                  {MONTH(monday)}
                 </p>
               )}
               <div className="grid grid-cols-[28px_repeat(7,minmax(0,1fr))] md:grid-cols-[52px_repeat(7,minmax(0,1fr))] border-t border-[var(--t-border-soft)]">
@@ -156,7 +158,7 @@ export function ProgrammeCalendar({ seances, meso, weeklyTarget, onCreate, onOpe
                       <div className="flex items-center justify-between">
                         <span className={`text-[0.7rem] md:text-[0.75rem] tabular-nums font-semibold ${
                           isToday ? "w-5 h-5 md:w-6 md:h-6 rounded-full bg-[#c9a84c] text-on-gold flex items-center justify-center" : past ? "text-[var(--t-text-30)]" : "text-[var(--t-text-70)]"}`}>
-                          {d.getDate()}
+                          {d.getDate() === 1 && !isToday ? d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" }) : d.getDate()}
                         </span>
                         <span className="hidden md:group-hover/day:flex text-[var(--t-text-40)]"
                           onClick={e => { e.stopPropagation(); onCreate(iso); }} title="Ajouter une séance">
