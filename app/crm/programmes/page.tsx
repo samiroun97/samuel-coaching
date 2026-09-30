@@ -11,6 +11,7 @@ import { SeanceLoggedSummary } from "@/components/SeanceLoggedSummary";
 import { Select } from "@/components/Select";
 import { SeanceForm, type SeanceDraft, emptySeance, draftFromSeance } from "@/components/SeanceForm";
 import { ProgrammeWeekView } from "@/components/ProgrammeWeekView";
+import { ProgrammeCalendar } from "@/components/ProgrammeCalendar";
 import { mesoWeekNum, addDays, mondayISOOf } from "@/lib/planning";
 import { RichIcon } from "@/components/RichIcon";
 import { type ProgressionRule, NO_PROGRESSION, applyProgression } from "@/lib/surchargeProgressive";
@@ -92,7 +93,7 @@ export default function ProgrammesPage() {
   const [showTemplates, setShowTemplates] = useState(false);
   const [sentSeances,  setSentSeances]  = useState<SentSeance[]>([]);
   const [openSentId,   setOpenSentId]   = useState<string | null>(null);
-  const [sentView,     setSentView]     = useState<"calendrier" | "progression" | "liste">("calendrier");
+  const [sentView,     setSentView]     = useState<"global" | "calendrier" | "progression" | "liste">("global");
   const [activeMeso,   setActiveMeso]   = useState<Mesocycle | null>(null);
   const [showMesoForm, setShowMesoForm] = useState(false);
   const [mesoForm, setMesoForm] = useState({ nom: "", objectif: "", dateDebut: "", dateFin: "" });
@@ -669,18 +670,23 @@ export default function ProgrammesPage() {
                 </div>
               )}
 
-              {/* Planning : Semaine (principal) · Progression · Liste */}
+              {/* Planning : Calendrier continu (principal) · Semaine détaillée · Progression · Liste */}
               <div className="flex items-center justify-between gap-3">
-                <div className="flex p-1 rounded-xl bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border-soft)]">
-                  {(["calendrier", "progression", "liste"] as const).map(v => (
+                <div className="flex p-1 rounded-xl bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border-soft)] overflow-x-auto no-scrollbar">
+                  {(["global", "calendrier", "progression", "liste"] as const).map(v => (
                     <button key={v} onClick={() => setSentView(v)}
-                      className={`px-3 md:px-4 py-1.5 rounded-lg text-[0.78rem] font-medium transition-all ${sentView === v ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold shadow-[0_4px_12px_-6px_rgba(201,168,76,0.7)]" : "text-[var(--t-text-50)] hover:text-[var(--t-text-80)]"}`}>
-                      {v === "calendrier" ? "Semaine" : v === "progression" ? "Progression" : "Liste"}
+                      className={`px-2.5 md:px-4 py-1.5 rounded-lg text-[0.75rem] md:text-[0.78rem] font-medium whitespace-nowrap transition-all ${sentView === v ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold shadow-[0_4px_12px_-6px_rgba(201,168,76,0.7)]" : "text-[var(--t-text-50)] hover:text-[var(--t-text-80)]"}`}>
+                      {v === "global" ? "Calendrier" : v === "calendrier" ? "Semaine" : v === "progression" ? "Progression" : "Liste"}
                     </button>
                   ))}
                 </div>
                 <span className="text-[0.75rem] text-[var(--t-text-50)] hidden sm:block">{sentSeances.length} séance{sentSeances.length > 1 ? "s" : ""} au total · {sentSeances.filter(s => s.completed_at).length} faite{sentSeances.filter(s => s.completed_at).length > 1 ? "s" : ""}</span>
               </div>
+
+              {sentView === "global" && (
+                <ProgrammeCalendar seances={sentSeances} meso={activeMeso} weeklyTarget={selected.seances_par_semaine || 0}
+                  onCreate={openCreate} onOpen={openEdit} onMove={moveSeance}/>
+              )}
 
               {sentView === "calendrier" && (
                 <ProgrammeWeekView seances={sentSeances} meso={activeMeso} weeklyTarget={selected.seances_par_semaine || 0}
