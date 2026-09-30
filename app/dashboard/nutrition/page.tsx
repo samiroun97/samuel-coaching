@@ -1277,7 +1277,7 @@ export default function NutritionPage() {
               ? <>Génération…</>
               : "Générer une idée repas"}
           </button>
-{ideaLoading && <div className="flex justify-center pt-3"><Loader size={120}/></div>}
+{ideaLoading && <div className="flex justify-center pt-3"><Loader variant="ai" size={120}/></div>}
         </div>
 
         <div className="flex gap-1.5 px-5 pt-3 pb-1">
@@ -1418,7 +1418,7 @@ export default function NutritionPage() {
                     </button>
                   </div>
                   {/* Animation sous les boutons (dedans, trop petite pour être vue). */}
-                  {photoProcessing && <div className="flex justify-center"><Loader size={120}/></div>}
+                  {photoProcessing && <div className="flex justify-center"><Loader variant="ai" size={120}/></div>}
                   <input ref={photoRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={selectPhoto}/>
                   <input ref={galleryRef} type="file" accept="image/*" className="hidden" onChange={selectPhoto}/>
 
@@ -1473,7 +1473,7 @@ export default function NutritionPage() {
                       className="bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold text-[0.7rem] font-bold tracking-[0.2em] uppercase py-2.5 shadow-[0_4px_20px_-6px_rgba(201,168,76,0.6)] hover:shadow-[0_6px_26px_-4px_rgba(201,168,76,0.8)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                       {analyzing ? <>Analyse en cours…</> : "Estimer son repas"}
                     </button>
-{analyzing && <div className="flex justify-center pt-3"><Loader size={120}/></div>}</>
+{analyzing && <div className="flex justify-center pt-3"><Loader variant="ai" size={120}/></div>}</>
                   )}
 
                   {aiError && <p className="text-xs text-[#e07070] rounded-xl border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2">{aiError}</p>}
@@ -1587,7 +1587,7 @@ export default function NutritionPage() {
                   <div className="relative">
                     <input className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm pl-4 pr-10 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
                       placeholder="Rechercher un aliment par nom…" value={query} onChange={e => { setQuery(e.target.value); setSelected(null); setScanError(""); }}/>
-                    {searching && <div className="absolute right-3 top-1/2 -translate-y-1/2"><Loader size={34} className="-my-3"/></div>}
+                    {searching && <div className="absolute right-3 top-1/2 -translate-y-1/2"><Loader variant="ai" size={34} className="-my-3"/></div>}
                   </div>
                   {scanError && <p className="text-[0.7rem] text-[#e07070]">{scanError}</p>}
 
