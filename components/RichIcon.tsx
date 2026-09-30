@@ -64,6 +64,21 @@ const RICH_ICON_SRC = {
   uiImage: "/icons-rich/ui/image.webp",
   uiCopy: "/icons-rich/ui/copy.webp",
   uiStar: "/icons-rich/ui/star.webp",
+  // Navigation (menus espace client et CRM), même fabrication : actif en couleur, sinon
+  // estompé (grayscale + opacité, cf. app/dashboard/layout.tsx et app/crm/layout.tsx).
+  navHome: "/icons-rich/ui/nav-home.webp",
+  navNutrition: "/icons-rich/ui/nav-nutrition.webp",
+  navActivity: "/icons-rich/ui/nav-activity.webp",
+  navProgress: "/icons-rich/ui/nav-progress.webp",
+  navAccount: "/icons-rich/ui/nav-account.webp",
+  navDashboard: "/icons-rich/ui/nav-dashboard.webp",
+  navClients: "/icons-rich/ui/nav-clients.webp",
+  navPipeline: "/icons-rich/ui/nav-pipeline.webp",
+  navProgrammes: "/icons-rich/ui/nav-programmes.webp",
+  navInbox: "/icons-rich/ui/nav-inbox.webp",
+  navBusiness: "/icons-rich/ui/nav-business.webp",
+  navPlatform: "/icons-rich/ui/nav-platform.webp",
+  navPreview: "/icons-rich/ui/nav-preview.webp",
 } as const;
 
 export type RichIconName = keyof typeof RICH_ICON_SRC;
