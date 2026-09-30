@@ -10,7 +10,7 @@ import { Select } from "@/components/Select";
 import { ClientStatusDot } from "@/components/ClientStatusDot";
 import { loadClientStatuses, statusFor, lastSeenLabel, STATUS_LEVEL_COLOR, type ClientStatus } from "@/lib/clientStatus";
 import { Icon } from "@/components/Icon";
-import { X, ChevronLeft, MessageSquare, Trash2, ExternalLink } from "@/lib/solarIcons";
+import { X, ChevronLeft, MessageSquare, Trash2, ExternalLink, MoreHorizontal } from "@/lib/solarIcons";
 import { ConsistencyStrip } from "@/components/ConsistencyStrip";
 import { loadDayStatuses, type DayStatus } from "@/lib/consistency";
 import { MuscleVolumeChart } from "@/components/MuscleVolumeChart";
@@ -99,7 +99,9 @@ export default function ClientsPage() {
     if (stage) setFilterStage(stage);
   }, [searchParams]);
   const [selected, setSelected] = useState<Client | null>(null);
-  const [tab,      setTab]      = useState<"apercu"|"profil"|"notes"|"checkin"|"repas"|"journal">("apercu");
+  const [tab,      setTab]      = useState<"apercu"|"profil"|"notes"|"checkin"|"repas"|"journal"|"suivi">("apercu");
+  // Menu « ⋯ » de la fiche sur téléphone (Inbox, Supprimer), à la place des boutons de l'en-tête.
+  const [showActions, setShowActions] = useState(false);
   const [loading,  setLoading]  = useState(true);
   const [pendingSignups, setPendingSignups] = useState<PendingSignup[]>([]);
   const [statuses, setStatuses] = useState<Map<string, ClientStatus>>(new Map());
@@ -424,23 +426,46 @@ export default function ClientsPage() {
 
       {/* ── Right: detail ── */}
       {selected && (
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-y-auto md:overflow-hidden">
 
-          {/* Header */}
-          <div className="px-4 md:px-8 pt-5 md:pt-6 pb-4 border-b border-[var(--t-border-soft)] shrink-0">
+          {/* Header — compact sur téléphone (défile avec la fiche), complet sur ordinateur */}
+          <div className="px-4 md:px-8 pt-4 md:pt-6 pb-3 md:pb-4 border-b border-[var(--t-border-soft)] shrink-0">
             <div className="flex items-start justify-between mb-3 gap-2">
               <div className="flex items-start gap-2 min-w-0">
                 <button onClick={() => setSelected(null)} aria-label="Retour à la liste des clients" className="md:hidden text-[var(--t-text-40)] hover:text-[var(--t-text-70)] transition-colors mt-1.5 shrink-0">
                   <Icon icon={ChevronLeft} size={18}/>
                 </button>
-                <ClientAvatar c={selected} color={(STAGE_CFG[(selected.pipeline_stage ?? "actif") as StageKey] ?? STAGE_CFG.actif).color} size={56}/>
+                <ClientAvatar c={selected} color={(STAGE_CFG[(selected.pipeline_stage ?? "actif") as StageKey] ?? STAGE_CFG.actif).color} size={48}/>
                 <div className="min-w-0">
-                <p className="text-[0.45rem] tracking-[0.2em] text-[var(--t-text-25)] uppercase truncate">{selected.email}</p>
-                <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl md:text-4xl text-[var(--t-text)] tracking-wide leading-none mt-0.5">{selected.prenom} {selected.nom}</h2>
-                <p className="text-[var(--t-text-30)] text-xs mt-1">{selected.age} ans · {selected.sexe} · {selected.poids} kg · {selected.taille} cm{bodyFat !== null && ` · Body fat ${bodyFat}%`} · <span className="text-[var(--t-text-50)]">{lastSeenLabel(selected.last_seen_at, nowTs).label}</span></p>
+                <p className="hidden md:block text-[0.45rem] tracking-[0.2em] text-[var(--t-text-25)] uppercase truncate">{selected.email}</p>
+                <h2 style={{ fontFamily: "var(--font-bebas)" }} className="text-[1.7rem] md:text-4xl text-[var(--t-text)] tracking-wide leading-none mt-0.5 truncate">{selected.prenom} {selected.nom}</h2>
+                <p className="md:hidden text-[var(--t-text-40)] text-[0.72rem] mt-1 truncate">{selected.age} ans · {selected.poids} kg · <span className="text-[var(--t-text-60)]">{lastSeenLabel(selected.last_seen_at, nowTs).label}</span></p>
+                <p className="hidden md:block text-[var(--t-text-30)] text-xs mt-1">{selected.age} ans · {selected.sexe} · {selected.poids} kg · {selected.taille} cm{bodyFat !== null && ` · Body fat ${bodyFat}%`} · <span className="text-[var(--t-text-50)]">{lastSeenLabel(selected.last_seen_at, nowTs).label}</span></p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 shrink-0">
+              {/* Téléphone : actions dans un menu « ⋯ » (les boutons écrasaient le nom). */}
+              <div className="md:hidden relative shrink-0">
+                <button onClick={() => setShowActions(o => !o)} aria-label="Actions"
+                  className="w-10 h-10 -mr-1 rounded-full flex items-center justify-center text-[var(--t-text-50)] hover:bg-[var(--t-glass-bg)]">
+                  <Icon icon={MoreHorizontal} size={20}/>
+                </button>
+                {showActions && (
+                  <>
+                    <div className="fixed inset-0 z-30" onClick={() => setShowActions(false)}/>
+                    <div className="absolute right-0 top-full mt-1 z-40 w-52 rounded-2xl border border-[var(--t-border-soft)] bg-[var(--t-surface)] shadow-[0_12px_32px_-12px_rgba(0,0,0,0.35)] overflow-hidden">
+                      <Link href={`/crm/inbox?client=${encodeURIComponent(selected.email)}`} onClick={() => setShowActions(false)}
+                        className="flex items-center gap-2.5 px-4 py-3 text-sm text-[var(--t-text-70)] hover:bg-[var(--t-glass-bg)]">
+                        <Icon icon={MessageSquare} size={16}/>Ouvrir la conversation
+                      </Link>
+                      <button onClick={() => { setShowActions(false); deleteClient(); }} disabled={deleting}
+                        className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-[#e07070] hover:bg-[#e07070]/5 border-t border-[var(--t-border-soft)] disabled:opacity-40">
+                        <Icon icon={Trash2} size={16}/>{deleting ? "Suppression…" : "Supprimer le client"}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+              <div className="hidden md:flex items-center gap-3 shrink-0">
                 <Link href={`/crm/inbox?client=${encodeURIComponent(selected.email)}`}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[var(--t-border)] text-[var(--t-text-30)] hover:text-[var(--t-text-70)] hover:border-[var(--t-text-25)] transition-all text-[0.45rem] tracking-[0.15em] uppercase">
                   <Icon icon={MessageSquare} size={11}/>
@@ -462,26 +487,26 @@ export default function ClientsPage() {
                 chacune dans un menu nommé plutôt qu'un menu + 4 pastilles qui répétaient "Actif". */}
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
               <div className="flex items-center gap-1.5">
-                <span className="text-[0.42rem] text-[var(--t-text-25)] uppercase tracking-wider">Étape</span>
+                <span className="text-[0.6rem] md:text-[0.42rem] text-[var(--t-text-40)] md:text-[var(--t-text-25)] uppercase tracking-wider">Étape</span>
                 <Select disabled={statusSaving} value={selected.pipeline_stage ?? "actif"}
                   onChange={v => updateField({ pipeline_stage: v })}
                   options={Object.entries(STAGE_CFG).map(([k, v]) => ({ value: k, label: v.label }))}
-                  triggerClassName="bg-transparent border rounded-xl text-[0.5rem] tracking-wider uppercase px-2 py-1.5"
+                  triggerClassName="bg-transparent border rounded-xl text-[0.68rem] md:text-[0.5rem] tracking-wider uppercase px-2.5 py-1.5"
                   triggerStyle={{ color: (STAGE_CFG[(selected.pipeline_stage ?? "actif") as StageKey] ?? STAGE_CFG.actif).color, borderColor: `${(STAGE_CFG[(selected.pipeline_stage ?? "actif") as StageKey] ?? STAGE_CFG.actif).color}50` }}/>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="text-[0.42rem] text-[var(--t-text-25)] uppercase tracking-wider">Statut</span>
+                <span className="text-[0.6rem] md:text-[0.42rem] text-[var(--t-text-40)] md:text-[var(--t-text-25)] uppercase tracking-wider">Statut</span>
                 <Select disabled={statusSaving} value={selected.status ?? "actif"}
                   onChange={v => updateField({ status: v })}
                   options={(Object.keys(STATUS_CFG) as StatusKey[]).map(k => ({ value: k, label: STATUS_CFG[k].label }))}
-                  triggerClassName="bg-transparent border rounded-xl text-[0.5rem] tracking-wider uppercase px-2 py-1.5"
+                  triggerClassName="bg-transparent border rounded-xl text-[0.68rem] md:text-[0.5rem] tracking-wider uppercase px-2.5 py-1.5"
                   triggerStyle={{ color: STATUS_CFG[(selected.status ?? "actif") as StatusKey].color, borderColor: `${STATUS_CFG[(selected.status ?? "actif") as StatusKey].color}50` }}/>
               </div>
               {/* Fin abonnement */}
               <div className="relative flex items-center gap-1.5">
-                <span className="text-[0.42rem] text-[var(--t-text-25)] uppercase tracking-wider">Fin abo.</span>
+                <span className="text-[0.6rem] md:text-[0.42rem] text-[var(--t-text-40)] md:text-[var(--t-text-25)] uppercase tracking-wider">Fin abo.</span>
                 <button type="button" onClick={() => setShowSubEndPicker(o => !o)}
-                  className="bg-transparent border border-[var(--t-border)] text-[var(--t-text-40)] rounded-xl text-[0.48rem] px-2 py-1 hover:border-[#c9a84c]/40 transition-colors">
+                  className="bg-transparent border border-[var(--t-border)] text-[var(--t-text-50)] md:text-[var(--t-text-40)] rounded-xl text-[0.68rem] md:text-[0.48rem] px-2.5 md:px-2 py-1.5 md:py-1 hover:border-[#c9a84c]/40 transition-colors">
                   {selected.subscription_end
                     ? new Date(selected.subscription_end + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })
                     : "—"}
@@ -497,7 +522,31 @@ export default function ClientsPage() {
           </div>
 
           {/* Tabs — barre blanche segmentée qui se détache du fond crème (même style que Programmes) */}
-          <div className="px-4 md:px-8 pt-3 pb-3 border-b border-[var(--t-border-soft)] shrink-0 overflow-x-auto">
+          {/* Téléphone : 5 onglets courts qui tiennent sur la largeur (Suivi = check-ins + journal,
+              le profil détaillé s'ouvre depuis l'Aperçu). */}
+          <div className="md:hidden px-4 pt-3 pb-3 border-b border-[var(--t-border-soft)] shrink-0">
+            <div className="flex items-center gap-1 p-1 rounded-2xl bg-[var(--t-surface)] border border-[var(--t-border-soft)] shadow-[0_2px_12px_-6px_rgba(0,0,0,0.12)]">
+              {([
+                { key: "apercu", label: "Aperçu" },
+                { key: "suivi",  label: "Suivi" },
+                { key: "notes",  label: notes.length ? `Notes ${notes.length}` : "Notes" },
+                { key: "repas",  label: "Repas" },
+              ] as const).map(({ key, label }) => {
+                const on = tab === key || (key === "suivi" && (tab === "checkin" || tab === "journal")) || (key === "apercu" && tab === "profil");
+                return (
+                  <button key={key} onClick={() => setTab(key)}
+                    className={`flex-1 py-2 rounded-xl text-[0.72rem] font-medium transition-all whitespace-nowrap ${on ? "bg-gradient-to-b from-[#e2c97e] to-[#c9a84c] text-on-gold shadow-[0_4px_12px_-6px_rgba(201,168,76,0.7)]" : "text-[var(--t-text-50)]"}`}>
+                    {label}
+                  </button>
+                );
+              })}
+              <Link href={`/crm/programmes?client=${encodeURIComponent(selected.email)}`}
+                className="flex-1 py-2 rounded-xl text-[0.72rem] font-medium text-[var(--t-text-50)] text-center whitespace-nowrap">
+                Programme
+              </Link>
+            </div>
+          </div>
+          <div className="hidden md:block px-8 pt-3 pb-3 border-b border-[var(--t-border-soft)] shrink-0 overflow-x-auto">
           <div className="inline-flex items-center gap-1 p-1 rounded-2xl bg-[var(--t-surface)] border border-[var(--t-border-soft)] shadow-[0_2px_12px_-6px_rgba(0,0,0,0.12)]">
             {([
               { key: "apercu",     label: "Vue d'ensemble" },
@@ -523,7 +572,7 @@ export default function ClientsPage() {
           </div>
 
           {/* Tab content */}
-          <div className="flex-1 overflow-y-auto px-4 md:px-8 py-5 md:py-6">
+          <div className="md:flex-1 md:overflow-y-auto px-4 md:px-8 py-5 md:py-6">
 
             {/* VUE D'ENSEMBLE — régularité, records, volume, mésocycle, poids : tout ce qui
                 était éclaté entre cette page et /crm/programmes, réuni en un seul écran. */}
@@ -579,7 +628,7 @@ export default function ClientsPage() {
                 <div className="border border-[var(--t-text-7)] bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl p-4">
                   <div className="flex items-center justify-between mb-3">
                     <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[#c9a84c]">Résumé</p>
-                    <button onClick={() => setTab("profil")} className="text-[0.45rem] tracking-wider uppercase text-[var(--t-text-25)] hover:text-[var(--t-text-50)] transition-colors">Profil complet</button>
+                    <button onClick={() => setTab("profil")} className="text-[0.62rem] md:text-[0.45rem] tracking-wider uppercase text-[#c9a84c] md:text-[var(--t-text-25)] py-1.5 md:py-0 hover:text-[var(--t-text-50)] transition-colors">Profil complet</button>
                   </div>
                   <div className="grid sm:grid-cols-2 gap-x-6 gap-y-3">
                     <div className="sm:col-span-2">
@@ -863,7 +912,7 @@ export default function ClientsPage() {
             )}
 
             {/* CHECK-INS */}
-            {tab === "checkin" && (
+            {(tab === "checkin" || tab === "suivi") && (
               <div className="max-w-2xl flex flex-col gap-4">
                 <div className="border border-[#c9a84c]/20 bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] rounded-xl p-5">
                   <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#c9a84c] mb-4">Check-in hebdomadaire</p>
@@ -1002,7 +1051,7 @@ export default function ClientsPage() {
             )}
 
             {/* JOURNAL ALIMENTAIRE (lecture seule — ce que le client a loggé) */}
-            {tab === "journal" && (
+            {(tab === "journal" || tab === "suivi") && (
               <div className="max-w-2xl flex flex-col gap-3">
                 {journal.length === 0 ? (
                   <p className="text-[var(--t-text-20)] text-xs text-center py-8">Aucun repas loggé par ce client</p>
