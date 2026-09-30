@@ -38,6 +38,13 @@ const RICH_ICON_SRC = {
   // Badge autonome (même principe que monogram) — icône de téléchargement fournie par le
   // client pour tous les boutons de téléchargement de l'app (ex. export PDF programme).
   download: "/icons-rich/download.webp",
+  // Menu de l'espace client uniquement (le reste de l'interface garde des icônes fines) :
+  // boutons ronds dorés en relief, symbole blanc — actif en couleur, sinon estompé.
+  navHome: "/icons-rich/nav/home.webp",
+  navNutrition: "/icons-rich/nav/nutrition.webp",
+  navActivity: "/icons-rich/nav/activity.webp",
+  navProgress: "/icons-rich/nav/progress.webp",
+  navAccount: "/icons-rich/nav/account.webp",
 } as const;
 
 export type RichIconName = keyof typeof RICH_ICON_SRC;

@@ -8,19 +8,20 @@ import { startStateSync, SYNC_STATUS_EVENT } from "@/lib/syncStorage";
 import { isCoachUser, getMyCoachBusinessName, getMyOwnBusinessName } from "@/lib/coach";
 import { apiPost } from "@/lib/apiClient";
 import { Icon } from "@/components/Icon";
-import { Home, UtensilsCrossed, Dumbbell, TrendingUp, UserCircle, LogOut } from "@/lib/solarIcons";
+import { LogOut } from "@/lib/solarIcons";
 import { Loader } from "@/components/Loader";
+import { RichIcon, type RichIconName } from "@/components/RichIcon";
 
 // "Séance" pointait autrefois vers /dashboard/programme/creer-ma-seance (page indépendante,
 // jamais retouchée lors de la refonte de l'écran d'entraînement) — un client qui partait de
 // ce lien n'a donc jamais vu la refonte, alors que tout le monde passant par "Activité" la
 // voyait. Les deux couvrent maintenant exactement la même page : un seul lien suffit.
-const navItems = [
-  { label: "Accueil",   href: "/dashboard",            icon: Home },
-  { label: "Nutrition", href: "/dashboard/nutrition",  icon: UtensilsCrossed },
-  { label: "Activité",  href: "/dashboard/programme",  icon: Dumbbell },
-  { label: "Suivi",     href: "/dashboard/suivi",      icon: TrendingUp },
-  { label: "Compte",    href: "/dashboard/profile",    icon: UserCircle },
+const navItems: { label: string; href: string; rich: RichIconName }[] = [
+  { label: "Accueil",   href: "/dashboard",            rich: "navHome" },
+  { label: "Nutrition", href: "/dashboard/nutrition",  rich: "navNutrition" },
+  { label: "Activité",  href: "/dashboard/programme",  rich: "navActivity" },
+  { label: "Suivi",     href: "/dashboard/suivi",      rich: "navProgress" },
+  { label: "Compte",    href: "/dashboard/profile",    rich: "navAccount" },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -176,7 +177,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
 
         <nav className="flex-1 px-2 py-4 flex flex-col gap-0.5">
-          {navItems.map(({ label, href, icon }) => {
+          {navItems.map(({ label, href, rich }) => {
             const active = pathname === href;
             const showBadge = href === "/dashboard/coach" && unread;
             const dest = isPreview ? `${href}?preview=1` : href;
@@ -187,7 +188,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     ? "text-[#c9a84c] bg-[#c9a84c]/5 border-[#c9a84c]"
                     : "text-[var(--t-text-30)] hover:text-[var(--t-text-60)] hover:bg-[var(--t-glass-bg)] border-transparent"
                 }`}>
-                <Icon icon={icon} size={17}/>
+                {/* Icône 3D dorée : en couleur sur la page active, estompée ailleurs. */}
+                <RichIcon name={rich} size={26} className={`-my-1 transition-all ${active ? "" : "grayscale opacity-45"}`}/>
                 {label}
                 {showBadge && <span className="ml-auto w-2 h-2 rounded-full bg-[#e07070] shrink-0"/>}
               </Link>
@@ -220,7 +222,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Bottom nav — mobile only, flottante style verre */}
       <nav className="md:hidden print:hidden fixed left-3 right-3 z-10 flex rounded-[1.25rem] bg-[var(--t-glass-bg)] backdrop-blur-xl border border-[var(--t-glass-border)] shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
         style={{ bottom: "calc(0.9rem + env(safe-area-inset-bottom))" }}>
-        {navItems.map(({ label, href, icon }) => {
+        {navItems.map(({ label, href, rich }) => {
           const active = pathname === href;
           const showBadge = href === "/dashboard/coach" && unread;
           const dest = isPreview ? `${href}?preview=1` : href;
@@ -230,8 +232,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {active && (
                 <span className="absolute inset-x-1 top-1 bottom-1 rounded-xl bg-gradient-to-b from-[#c9a84c]/25 to-[#c9a84c]/[0.05] border border-[#c9a84c]/30 shadow-[0_0_16px_-2px_rgba(201,168,76,0.5)]"/>
               )}
-              <div className={`relative transition-all duration-300 ${active ? "text-[#c9a84c] scale-110" : "text-[var(--t-text-30)]"}`}>
-                <Icon icon={icon} size={active ? 21 : 18}/>
+              <div className={`relative transition-all duration-300 ${active ? "scale-110" : ""}`}>
+                <RichIcon name={rich} size={28} className={`transition-all ${active ? "" : "grayscale opacity-45"}`}/>
                 {showBadge && <span className="absolute -top-0.5 -right-1.5 w-2 h-2 rounded-full bg-[#e07070] ring-2 ring-[var(--t-bg)]"/>}
               </div>
               <span className={`relative w-full text-center truncate px-0.5 text-[0.4rem] tracking-[0.02em] uppercase transition-all duration-300 ${
