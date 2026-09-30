@@ -13,7 +13,7 @@ import type { IScannerControls } from "@zxing/browser";
 import { BarcodeFormat, DecodeHintType } from "@zxing/library";
 import { Icon } from "@/components/Icon";
 import { RichIcon, type RichIconName } from "@/components/RichIcon";
-import { Shield, ChevronDown, X, Save, ScanBarcode, Lightbulb, MoreHorizontal } from "@/lib/solarIcons";
+import { Plus, Shield, ChevronDown, Copy, Star, Trash2, X, Camera, ImageIcon, Mic, Save, ScanBarcode, Lightbulb, MoreHorizontal } from "@/lib/solarIcons";
 import { bmr, expenditure, neatFromSteps } from "@/lib/energy";
 import { Loader } from "@/components/Loader";
 
@@ -972,7 +972,7 @@ export default function NutritionPage() {
             <button onClick={() => setFoods(fs => [...fs, { ...f, id: Date.now().toString() }])}
               title="Reprendre cet aliment aujourd'hui"
               className="text-[var(--t-text-35)] hover:text-[#c9a84c] transition-colors opacity-70 group-hover:opacity-100">
-              <RichIcon name="uiCopy" size={24}/>
+              <Icon icon={Copy} size={13} strokeWidth={2}/>
             </button>
             <button
               onClick={() => {
@@ -982,7 +982,7 @@ export default function NutritionPage() {
               }}
               title={isFav ? "Retirer des favoris" : "Ajouter aux favoris"}
               className={`transition-colors ${isFav ? "text-[#c9a84c] opacity-100" : "text-[var(--t-text-35)] hover:text-[#c9a84c] opacity-70 group-hover:opacity-100"}`}>
-              <RichIcon name="uiStar" size={24} className={isFav ? "" : "grayscale opacity-40"}/>
+              <Icon icon={Star} size={16} strokeWidth={1.5} fill={isFav ? "currentColor" : "none"}/>
             </button>
             <button
               onClick={() => {
@@ -994,7 +994,7 @@ export default function NutritionPage() {
               }}
               title="Supprimer"
               className="text-[#e07070]/60 hover:text-[#e07070] transition-colors opacity-70 group-hover:opacity-100">
-              <RichIcon name="uiTrash" size={24}/>
+              <Icon icon={Trash2} size={15} strokeWidth={1.8}/>
             </button>
           </div>
         </div>
@@ -1405,12 +1405,12 @@ export default function NutritionPage() {
                   <div className="grid grid-cols-2 gap-2">
                     <button onClick={() => photoRef.current?.click()} disabled={analyzing || photoProcessing}
                       className="flex items-center justify-center gap-2 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-xl text-[0.7rem] tracking-[0.1em] uppercase px-3 py-2.5 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors disabled:opacity-40">
-                      <RichIcon name="uiCamera" size={24} className="-my-1"/>
+                      <Icon icon={Camera} size={14} strokeWidth={1.5} className="shrink-0"/>
                       {photoProcessing ? "Traitement…" : photoPreview ? "Reprendre une photo" : "Prendre une photo"}
                     </button>
                     <button onClick={() => galleryRef.current?.click()} disabled={analyzing || photoProcessing}
                       className="flex items-center justify-center gap-2 border border-[var(--t-border)] text-[var(--t-text-40)] rounded-xl text-[0.7rem] tracking-[0.1em] uppercase px-3 py-2.5 hover:border-[var(--t-text-20)] hover:text-[var(--t-text-60)] transition-colors disabled:opacity-40">
-                      <RichIcon name="uiImage" size={24} className="-my-1"/>
+                      <Icon icon={ImageIcon} size={14} strokeWidth={1.5} className="shrink-0"/>
                       {photoProcessing ? "Traitement…" : photoPreview ? "Changer la photo" : "Choisir une photo"}
                     </button>
                   </div>
@@ -1439,7 +1439,7 @@ export default function NutritionPage() {
                         value={description} onChange={e => { setDescription(e.target.value); setAiResult(null); }}/>
                       <button onClick={listening ? stopVoice : startVoice}
                         className={`absolute right-3 top-3 p-1.5 rounded-full border transition-colors ${listening?"border-[#e07070] text-[#e07070] animate-pulse":"border-[var(--t-border)] text-[var(--t-text-30)] hover:text-[var(--t-text-60)] hover:border-[var(--t-text-20)]"}`}>
-                        <RichIcon name="uiMic" size={26} className="-m-1"/>
+                        <Icon icon={Mic} size={14} strokeWidth={1.5}/>
                       </button>
                     </div>
                     <p className="text-[0.65rem] text-[var(--t-text-20)] mt-1">Tu peux aussi dicter en cliquant sur le micro</p>
@@ -1582,8 +1582,7 @@ export default function NutritionPage() {
                   </div>
 
                   <div className="relative">
-                    <RichIcon name="uiSearch" size={24} className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none"/>
-                    <input className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm pl-11 pr-10 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
+                    <input className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm pl-4 pr-10 py-3 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
                       placeholder="Rechercher un aliment par nom…" value={query} onChange={e => { setQuery(e.target.value); setSelected(null); setScanError(""); }}/>
                     {searching && <div className="absolute right-3 top-1/2 -translate-y-1/2"><Loader size={34} className="-my-3"/></div>}
                   </div>

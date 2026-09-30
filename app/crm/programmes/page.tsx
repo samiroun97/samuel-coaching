@@ -25,7 +25,7 @@ import Link from "next/link";
 import { hasBlessure } from "@/lib/blessures";
 import { type Mesocycle, loadActiveMesocycle, createMesocycle, deleteMesocycle, mesocycleProgress } from "@/lib/mesocycles";
 import { Icon } from "@/components/Icon";
-import { ChevronLeft, ChevronDown, Trash2, X } from "@/lib/solarIcons";
+import { ChevronLeft, ChevronDown, Trash2, X, Copy, Plus } from "@/lib/solarIcons";
 import { Loader } from "@/components/Loader";
 
 const STAGE_CFG: Record<string, { label: string; color: string }> = {
@@ -716,7 +716,7 @@ export default function ProgrammesPage() {
                                 </button>
                                 <button onClick={() => deleteSeance(s.id)} disabled={deletingId === s.id} title="Supprimer cette séance" aria-label="Supprimer cette séance"
                                   className="shrink-0 mr-3 text-[var(--t-text-25)] hover:text-[#e07070] transition-colors disabled:opacity-30">
-                                  <RichIcon name="uiTrash" size={26}/>
+                                  <Icon icon={Trash2} size={14} strokeWidth={1.8}/>
                                 </button>
                               </div>
                               {open && (
@@ -824,7 +824,7 @@ export default function ProgrammesPage() {
                             Modèle
                           </button>
                           <button onClick={() => duplicateDraft(i)} title="Dupliquer cette séance" aria-label="Dupliquer cette séance" className="text-[var(--t-text-30)] hover:text-[#c9a84c] transition-colors">
-                            <RichIcon name="uiCopy" size={22}/>
+                            <Icon icon={Copy} size={12} strokeWidth={2}/>
                           </button>
                           <button onClick={() => setDrafts(prev => prev.filter((_, j) => j !== i))} aria-label={`Supprimer la séance ${i + 1}`} className="text-[var(--t-text-20)] hover:text-[#e07070] transition-colors">
                             <Icon icon={X} size={12} strokeWidth={2}/>
@@ -1009,7 +1009,7 @@ export default function ProgrammesPage() {
                         <p className="text-[0.55rem] text-[var(--t-text-30)] truncate">{x.nb_semaines} sem. · {x.seances.length} séances{x.objectif ? ` · ${x.objectif}` : ""}</p>
                       </button>
                       <button onClick={() => removeProgramme(x.id)} aria-label={`Supprimer le programme ${x.nom}`} className="shrink-0 text-[var(--t-text-15)] hover:text-[#e07070] transition-colors">
-                        <RichIcon name="uiTrash" size={22}/>
+                        <Icon icon={Trash2} size={12}/>
                       </button>
                     </div>
                   ))}

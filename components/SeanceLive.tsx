@@ -17,7 +17,7 @@ import { SetInputCell } from "@/components/SetInputCell";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
 import { TdeeIcon } from "@/components/CalRefToggle";
-import { Check, X, ChevronLeft, ChevronRight, Clock, Layers, Lock, Play, Pause, Dumbbell, Star } from "@/lib/solarIcons";
+import { Check, X, ChevronLeft, ChevronRight, Plus, Trash2, Clock, Layers, Lock, Play, Pause, Dumbbell, Star } from "@/lib/solarIcons";
 import { RoundTimer } from "@/components/RoundTimer";
 import { Loader } from "@/components/Loader";
 
@@ -144,7 +144,7 @@ function SetRow({ target, idx, log, prev, isExtra, canRemove, bodyweight, repKin
       {canRemove && (
         <div className="absolute inset-y-0 right-0 overflow-hidden rounded-2xl" style={{ width: Math.max(0, -dragX) }}>
           <div className="absolute inset-y-0 right-0 w-20 bg-[#e07070] flex flex-col items-center justify-center gap-0.5 text-white">
-            <RichIcon name="uiTrash" size={28}/>
+            <Icon icon={Trash2} size={17} strokeWidth={2}/>
             <span className="text-[0.55rem] tracking-wide uppercase">Suppr.</span>
           </div>
         </div>
@@ -174,7 +174,7 @@ function SetRow({ target, idx, log, prev, isExtra, canRemove, bodyweight, repKin
             {canRemove && (
               <button onClick={onRemove} title="Supprimer cette série" aria-label="Supprimer cette série"
                 className="text-[var(--t-text-20)] hover:text-[#e07070] transition-colors p-2 -m-1">
-                <RichIcon name="uiTrash" size={24}/>
+                <Icon icon={Trash2} size={14} strokeWidth={2}/>
               </button>
             )}
             <button onClick={onToggleWarmup} title="Série d'échauffement — exclue du volume et des records"
@@ -304,7 +304,7 @@ function ExerciceLiveBlock({ ex, exIdx, logs, history, prBadge, extra, onToggle,
               séries sont déjà loguées dessus. */}
           <button onClick={() => onRemoveExercice(exIdx)} aria-label={`Supprimer ${ex.nom}`} title="Supprimer cet exercice"
             className="text-[var(--t-text-20)] hover:text-[#e07070] transition-colors p-2 -m-2">
-            <RichIcon name="uiTrash" size={26}/>
+            <Icon icon={Trash2} size={16} strokeWidth={1.8}/>
           </button>
         </div>
       </div>
@@ -999,7 +999,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
           </button>
           <button onClick={cancelSeance} disabled={deleting} title="Annuler et supprimer cet entraînement"
             className="text-[var(--t-text-20)] hover:text-[#e07070] transition-colors w-11 h-11 flex items-center justify-center disabled:opacity-40">
-            <RichIcon name="uiTrash" size={30}/>
+            <Icon icon={Trash2} size={18} strokeWidth={2}/>
           </button>
           <button onClick={() => setShowTimer(true)} title="Minuteur par rounds"
             className="text-[var(--t-text-20)] hover:text-[#c9a84c] transition-colors w-11 h-11 flex items-center justify-center">

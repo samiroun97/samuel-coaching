@@ -9,7 +9,6 @@ import { isPlatformAdmin } from "@/lib/coach";
 import { OperateurIaCorrections } from "@/components/OperateurIaCorrections";
 import { PLANS, type Plan } from "@/lib/plans";
 import { Loader } from "@/components/Loader";
-import { RichIcon } from "@/components/RichIcon";
 
 type Kind = "operateur" | "coach" | "client" | "solo";
 type SubInfo = { plan: string | null; planLabel: string | null; subStatus: string | null; trialEndsAt: string | null; active: boolean | null };
@@ -280,11 +279,8 @@ export default function OperateurPage() {
       {section === "utilisateurs" && data && (
         <div className="flex flex-col gap-4">
           <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <RichIcon name="uiSearch" size={24} className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none"/>
-              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher un nom, un e-mail, un coach…"
-                className="w-full bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl text-sm text-[var(--t-text)] pl-11 pr-3.5 py-2.5 focus:outline-none focus:border-[#c9a84c]/40"/>
-            </div>
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher un nom, un e-mail, un coach…"
+              className="flex-1 bg-[var(--t-surface)] border border-[var(--t-border-soft)] rounded-xl text-sm text-[var(--t-text)] px-3.5 py-2.5 focus:outline-none focus:border-[#c9a84c]/40"/>
             <div className="flex rounded-xl border border-[var(--t-border-soft)] bg-[var(--t-surface)] p-1 overflow-x-auto">
               {(["all", "solo", "client", "coach"] as const).map(f => (
                 <button key={f} onClick={() => setFilter(f)}

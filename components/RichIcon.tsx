@@ -38,47 +38,6 @@ const RICH_ICON_SRC = {
   // Badge autonome (même principe que monogram) — icône de téléchargement fournie par le
   // client pour tous les boutons de téléchargement de l'app (ex. export PDF programme).
   download: "/icons-rich/download.webp",
-  // Icônes d'interface 3D (packs IconScout « Dark Gold Basic UI » — Hariz Design — et voisins
-  // du même auteur), recolorées aux couleurs de l'app : tuile or, symbole blanc (même langage
-  // que les boutons dorés à texte blanc et la bulle de chargement). Réservées aux boutons-icônes
-  // et champs (loupe, calendrier…) ; les petites flèches/croix restent des icônes fines.
-  uiAdd: "/icons-rich/ui/add.webp",
-  uiCheck: "/icons-rich/ui/check.webp",
-  uiBell: "/icons-rich/ui/bell.webp",
-  uiDownload: "/icons-rich/ui/download.webp",
-  uiGraph: "/icons-rich/ui/graph.webp",
-  uiCalendar: "/icons-rich/ui/calendar.webp",
-  uiSearch: "/icons-rich/ui/search.webp",
-  uiShare: "/icons-rich/ui/share.webp",
-  uiMail: "/icons-rich/ui/mail.webp",
-  uiDocument: "/icons-rich/ui/document.webp",
-  // Créées sur le même modèle (pas d'équivalent téléchargé) : vraie tuile IconScout
-  // reconstituée et recolorée or, symbole Lucide épais en blanc avec reflet et ombre portée.
-  uiTrash: "/icons-rich/ui/trash.webp",
-  uiEdit: "/icons-rich/ui/edit.webp",
-  uiSettings: "/icons-rich/ui/settings.webp",
-  uiUser: "/icons-rich/ui/user.webp",
-  uiCamera: "/icons-rich/ui/camera.webp",
-  uiLock: "/icons-rich/ui/lock.webp",
-  uiMic: "/icons-rich/ui/mic.webp",
-  uiImage: "/icons-rich/ui/image.webp",
-  uiCopy: "/icons-rich/ui/copy.webp",
-  uiStar: "/icons-rich/ui/star.webp",
-  // Navigation (menus espace client et CRM), même fabrication : actif en couleur, sinon
-  // estompé (grayscale + opacité, cf. app/dashboard/layout.tsx et app/crm/layout.tsx).
-  navHome: "/icons-rich/ui/nav-home.webp",
-  navNutrition: "/icons-rich/ui/nav-nutrition.webp",
-  navActivity: "/icons-rich/ui/nav-activity.webp",
-  navProgress: "/icons-rich/ui/nav-progress.webp",
-  navAccount: "/icons-rich/ui/nav-account.webp",
-  navDashboard: "/icons-rich/ui/nav-dashboard.webp",
-  navClients: "/icons-rich/ui/nav-clients.webp",
-  navPipeline: "/icons-rich/ui/nav-pipeline.webp",
-  navProgrammes: "/icons-rich/ui/nav-programmes.webp",
-  navInbox: "/icons-rich/ui/nav-inbox.webp",
-  navBusiness: "/icons-rich/ui/nav-business.webp",
-  navPlatform: "/icons-rich/ui/nav-platform.webp",
-  navPreview: "/icons-rich/ui/nav-preview.webp",
 } as const;
 
 export type RichIconName = keyof typeof RICH_ICON_SRC;

@@ -9,11 +9,9 @@ import { uploadCustomExerciceImage } from "@/lib/customExerciceImage";
 import { ExercicePicker } from "@/components/ExercicePicker";
 import { SetInputCell } from "@/components/SetInputCell";
 import { Icon } from "@/components/Icon";
-import { X, MoreHorizontal, FileText, Camera, Dumbbell, ChevronUp, ChevronDown } from "@/lib/solarIcons";
 import type { LucideIcon } from "@/lib/solarIcons";
-
+import { Plus, X, MoreHorizontal, FileText, Camera, Dumbbell, ChevronUp, ChevronDown, Trash2 } from "@/lib/solarIcons";
 import { Loader } from "@/components/Loader";
-import { RichIcon } from "@/components/RichIcon";
 
 // Refonte complète de la construction d'une séance côté client (ex "Créer ma séance"),
 // après plusieurs échecs à faire fonctionner ça en patchant ExerciceEditor (conçu pour le
@@ -177,7 +175,7 @@ export default function SeanceBuilder({ items, onChange, catalogue }: {
                   le même problème sur les séries extra. */}
               <button type="button" onClick={() => remove(i)} aria-label={`Supprimer ${ex.nom || "cet exercice"}`} title="Supprimer l'exercice"
                 className="shrink-0 w-9 h-9 flex items-center justify-center rounded-full text-[var(--t-text-20)] hover:text-[#e07070] hover:bg-[#e07070]/10 transition-colors">
-                <RichIcon name="uiTrash" size={26}/>
+                <Icon icon={Trash2} size={16} strokeWidth={1.8}/>
               </button>
               <div className="relative shrink-0">
                 <button type="button" onClick={() => setMenuFor(v => (v === i ? null : i))}

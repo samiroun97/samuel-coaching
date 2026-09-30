@@ -26,7 +26,7 @@ import { loadPersonalRecords, type PRCard } from "@/lib/personalRecords";
 import { Sparkline } from "@/components/Sparkline";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
-import { Activity, X, ChevronDown, Play } from "@/lib/solarIcons";
+import { Activity, X, Mic, ChevronDown, Plus, Trash2, Play } from "@/lib/solarIcons";
 import { Loader } from "@/components/Loader";
 
 type Profile = { prenom: string; poids: number; taille: number; age: number; sexe: string; objectif_type: string | null };
@@ -679,7 +679,7 @@ export default function ProgrammePage() {
                   </div>
                   <button onClick={() => deleteSeance(s)} disabled={deletingSeanceId === s.id} title="Supprimer cette séance"
                     className="shrink-0 rounded-full text-[var(--t-text-20)] hover:bg-[#e07070]/10 hover:text-[#e07070] active:scale-90 transition-all duration-150 w-9 h-9 -mr-1.5 -mt-1 flex items-center justify-center disabled:opacity-40 disabled:active:scale-100">
-                    <RichIcon name="uiTrash" size={26}/>
+                    <Icon icon={Trash2} size={16} strokeWidth={2}/>
                   </button>
                 </div>
                 {hasLoggableSets(parseExercices(s.exercices)) ? (
@@ -891,7 +891,7 @@ export default function ProgrammePage() {
             />
             <button onClick={listening ? stopVoice : startVoice}
               className={`absolute right-3 top-3 p-1.5 rounded-full border transition-colors ${listening ? "border-[#e07070] text-[#e07070] animate-pulse" : "border-[var(--t-border)] text-[var(--t-text-30)] hover:text-[var(--t-text-60)] hover:border-[var(--t-text-20)]"}`}>
-              <RichIcon name="uiMic" size={26} className="-m-1"/>
+              <Icon icon={Mic} size={14} strokeWidth={1.5}/>
             </button>
           </div>
         </div>

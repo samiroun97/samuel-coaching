@@ -10,7 +10,7 @@ import { OBJECTIF_TYPES, OBJECTIF_TYPE_LABEL, type ObjectifType } from "@/lib/ob
 import { uploadAvatar } from "@/lib/avatarUpload";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
-import { ChevronRight, Pencil, MessageSquare, AlertCircle, Check, FileText } from "@/lib/solarIcons";
+import { Settings, ChevronRight, Pencil, MessageSquare, AlertCircle, Check, Star, FileText } from "@/lib/solarIcons";
 import { ModeSwitch } from "@/components/ModeSwitch";
 import { Loader } from "@/components/Loader";
 
@@ -37,7 +37,7 @@ const EXPERIENCE_OPTIONS = ["Débutant", "Intermédiaire", "Avancé"];
 const DUREE_OPTIONS = ["30 min", "45 min", "1h", "1h30+"];
 
 function GearIcon() {
-  return <RichIcon name="uiSettings" size={28}/>;
+  return <Icon icon={Settings} size={20} strokeWidth={1.5}/>;
 }
 
 export default function ProfilePage() {
@@ -285,7 +285,7 @@ export default function ProfilePage() {
       <Link href="/dashboard/abonnement"
         className="flex items-center justify-between border border-[var(--t-border)] bg-[var(--t-surface)] rounded-xl px-5 py-4 hover:bg-[var(--t-glass-bg)] transition-colors mb-4">
         <div className="flex items-center gap-3">
-          <RichIcon name="uiStar" size={26}/>
+          <Icon icon={Star} size={18} strokeWidth={1.5} className="text-[#c9a84c]"/>
           <p className="text-sm text-[var(--t-text-70)]">Abonnement</p>
         </div>
         <Icon icon={ChevronRight} size={14} strokeWidth={1.5} className="text-[var(--t-text-25)] shrink-0"/>

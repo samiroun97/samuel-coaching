@@ -9,7 +9,7 @@ import { NumberStepper } from "@/components/NumberStepper";
 import { Select } from "@/components/Select";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
-import { Layers, Repeat, Dumbbell, Clock, ChevronUp, ChevronDown, Camera, X, ChevronRight, Eye, Pencil } from "@/lib/solarIcons";
+import { Layers, Repeat, Dumbbell, Clock, ChevronUp, ChevronDown, Camera, X, Copy, ChevronRight, Plus, Eye, Pencil } from "@/lib/solarIcons";
 import { Loader } from "@/components/Loader";
 
 const inp = "w-full bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
@@ -375,7 +375,7 @@ export default function ExerciceEditor({ items, onChange, library = [], catalogu
                 <input className={inpXs} placeholder="3-1-2-0" value={s.tempo} onChange={e => updateSet(i, si, { tempo: e.target.value })} />
                 <div className="col-span-2 sm:col-span-1 flex items-center justify-end sm:justify-center gap-3 sm:gap-1">
                   <button type="button" onClick={() => duplicateSet(i, si)} title="Dupliquer cette série" className="p-1.5 -m-1.5 text-[var(--t-text-20)] hover:text-[#c9a84c] transition-colors">
-                    <RichIcon name="uiCopy" size={22}/>
+                    <Icon icon={Copy} size={13} strokeWidth={2}/>
                   </button>
                   <button type="button" onClick={() => removeSet(i, si)} title="Supprimer cette série" className="p-1.5 -m-1.5 text-[var(--t-text-20)] hover:text-[#e07070] transition-colors">
                     <Icon icon={X} size={13} strokeWidth={2}/>

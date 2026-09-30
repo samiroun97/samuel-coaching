@@ -2,9 +2,8 @@
 import { useState } from "react";
 import { CalendarPicker } from "./CalendarPicker";
 import { Icon } from "@/components/Icon";
-import { ChevronLeft, ChevronRight } from "@/lib/solarIcons";
+import { ChevronLeft, ChevronRight, Calendar } from "@/lib/solarIcons";
 import type { DayStatus } from "@/lib/consistency";
-import { RichIcon } from "@/components/RichIcon";
 
 export function DateNav({ date, onChange, statuses }: { date: string; onChange: (d: string) => void; statuses?: Record<string, DayStatus> }) {
   const todayD = new Date().toLocaleDateString("sv-SE"); // date locale, pas UTC
@@ -24,7 +23,7 @@ export function DateNav({ date, onChange, statuses }: { date: string; onChange: 
       <div className="flex-1 relative flex items-center justify-center">
         <button type="button" onClick={() => setOpen(o => !o)}
           className="flex items-center gap-2 px-4 py-2 rounded-full border border-[var(--t-border)] bg-[var(--t-surface)] shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:border-[#c9a84c]/40 hover:bg-[#c9a84c]/5 active:scale-[0.98] transition-all duration-150 group">
-          <RichIcon name="uiCalendar" size={26} className="-my-1.5 -ml-1"/>
+          <Icon icon={Calendar} size={17} strokeWidth={1.5} className="text-[var(--t-text-40)] group-hover:text-[#c9a84c] transition-colors shrink-0"/>
           <p className="text-[0.7rem] tracking-[0.15em] uppercase text-[var(--t-text-60)] group-hover:text-[var(--t-text-80)] transition-colors capitalize select-none">{label}</p>
         </button>
         {open && (

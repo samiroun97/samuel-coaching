@@ -9,9 +9,8 @@ import { isCoachUser, isCoachActive, isPlatformAdmin, getMyOwnBusinessName } fro
 import ThemeToggle from "@/components/ThemeToggle";
 import { ModeSwitch } from "@/components/ModeSwitch";
 import { Icon } from "@/components/Icon";
-import { LogOut } from "@/lib/solarIcons";
+import { LayoutGrid, Users, Layers, Share2, MessageSquare, FileText, LogOut, Eye, Star, BarChart3 } from "@/lib/solarIcons";
 import { Loader } from "@/components/Loader";
-import { RichIcon, type RichIconName } from "@/components/RichIcon";
 
 export default function CRMLayout({ children }: { children: React.ReactNode }) {
   const router   = useRouter();
@@ -84,15 +83,14 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
 
   const unread = unreadSet.size;
 
-  // Icônes 3D dorées (même famille que l'espace client) : couleur si actif, estompées sinon.
-  const nav: { href: string; label: string; rich: RichIconName; badge: number }[] = [
-    { href: "/crm",            label: "Dashboard",  rich: "navDashboard",  badge: 0 },
-    { href: "/crm/clients",    label: "Clients",    rich: "navClients",    badge: 0 },
-    { href: "/crm/pipeline",   label: "Pipeline",   rich: "navPipeline",   badge: 0 },
-    { href: "/crm/programmes", label: "Programmes", rich: "navProgrammes", badge: 0 },
-    { href: "/crm/inbox",      label: "Inbox",      rich: "navInbox",      badge: unread },
-    { href: "/crm/business",   label: "Business",   rich: "navBusiness",   badge: 0 },
-    { href: "/crm/abonnement", label: "Abonnement", rich: "uiStar",        badge: 0 },
+  const nav = [
+    { href: "/crm",            label: "Dashboard",  icon: LayoutGrid,    badge: 0 },
+    { href: "/crm/clients",    label: "Clients",    icon: Users,         badge: 0 },
+    { href: "/crm/pipeline",   label: "Pipeline",   icon: Layers,        badge: 0 },
+    { href: "/crm/programmes", label: "Programmes", icon: FileText,      badge: 0 },
+    { href: "/crm/inbox",      label: "Inbox",      icon: MessageSquare, badge: unread },
+    { href: "/crm/business",   label: "Business",   icon: BarChart3,     badge: 0 },
+    { href: "/crm/abonnement", label: "Abonnement", icon: Star,          badge: 0 },
   ];
 
   if (!ready) return (
@@ -123,14 +121,14 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         <nav className="flex-1 px-2 py-4 flex flex-col gap-0.5">
-          {nav.map(({ href, label, rich, badge }) => {
+          {nav.map(({ href, label, icon, badge }) => {
             const active = pathname === href || (href !== "/crm" && pathname.startsWith(href));
             return (
               <Link key={href} href={href}
                 className={`flex items-center justify-between px-3 py-2.5 text-[0.6rem] tracking-[0.1em] uppercase transition-all border-l-2 ${
                   active ? "text-[#c9a84c] bg-[#c9a84c]/5 border-[#c9a84c]" : "text-[var(--t-text-30)] hover:text-[var(--t-text-60)] hover:bg-[var(--t-glass-bg)] border-transparent"
                 }`}>
-                <div className="flex items-center gap-2.5"><RichIcon name={rich} size={24} className={`-my-1 transition-all ${active ? "" : "grayscale opacity-45"}`}/>{label}</div>
+                <div className="flex items-center gap-2.5"><Icon icon={icon} size={15}/>{label}</div>
                 {badge > 0 && <span className="bg-[#e07070] text-white text-[0.4rem] font-bold px-1.5 py-0.5 rounded-full min-w-[1.1rem] text-center">{badge}</span>}
               </Link>
             );
@@ -142,7 +140,7 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
             <Link href="/crm/plateforme"
               className={`flex items-center gap-2.5 px-3 py-2.5 text-[0.6rem] tracking-[0.1em] uppercase text-[#c9a84c] hover:text-[var(--t-text-70)] border-l-2 hover:border-[#c9a84c] transition-all ${
                 pathname.startsWith("/crm/plateforme") ? "bg-[#c9a84c]/5 border-[#c9a84c]" : "border-transparent"}`}>
-              <RichIcon name="navPlatform" size={24} className={`-my-1 transition-all ${pathname.startsWith("/crm/plateforme") ? "" : "grayscale opacity-60"}`}/>Vue plateforme
+              <Icon icon={Share2} size={15}/>Vue plateforme
             </Link>
           )}
           <ModeSwitch mode="coach" className="mx-2 self-start"/>
@@ -171,7 +169,7 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[var(--t-bg)] border-t border-[var(--t-border-soft)] flex z-10 pb-[env(safe-area-inset-bottom)]">
         {/* Barre mobile limitée : Abonnement (via Mon espace perso › Compte) et Pipeline (intégré
             au Dashboard) laissent la place à Business. */}
-        {nav.filter(n => n.href !== "/crm/abonnement" && n.href !== "/crm/pipeline").map(({ href, label, rich, badge }) => {
+        {nav.filter(n => n.href !== "/crm/abonnement" && n.href !== "/crm/pipeline").map(({ href, label, icon, badge }) => {
           const active = pathname === href || (href !== "/crm" && pathname.startsWith(href));
           return (
             <Link key={href} href={href}
@@ -179,7 +177,7 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
                 active ? "text-[#c9a84c]" : "text-[var(--t-text-25)]"
               }`}>
               <div className="relative">
-                <RichIcon name={rich} size={26} className={`transition-all ${active ? "" : "grayscale opacity-45"}`}/>
+                <Icon icon={icon} size={15}/>
                 {badge > 0 && <span className="absolute -top-1 -right-2 bg-[#e07070] text-white text-[0.4rem] font-bold px-1 py-px rounded-full min-w-[0.9rem] text-center">{badge}</span>}
               </div>
               {label}
@@ -188,13 +186,13 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
         })}
         <Link href="/dashboard?preview=1"
           className="flex-1 flex flex-col items-center gap-1 py-2.5 text-[0.45rem] tracking-[0.08em] uppercase text-[var(--t-text-25)] transition-all">
-          <RichIcon name="navPreview" size={26} className="grayscale opacity-45"/>
+          <Icon icon={Eye} size={15}/>
           Aperçu
         </Link>
         {isAdmin && (
           <Link href="/crm/plateforme"
             className="flex-1 flex flex-col items-center gap-1 py-2.5 text-[0.45rem] tracking-[0.08em] uppercase text-[#c9a84c] transition-all">
-            <RichIcon name="navPlatform" size={26} className={pathname.startsWith("/crm/plateforme") ? "" : "grayscale opacity-60"}/>
+            <Icon icon={Share2} size={15}/>
             Plateforme
           </Link>
         )}
