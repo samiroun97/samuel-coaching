@@ -31,7 +31,7 @@ const RICH_ICON_SRC = {
   // Fournies par le client — cartes de résumé de CRM > Programmes.
   bloc: "/icons-rich/bloc.webp",               // "Bloc en cours" (montre, haltères, gourde, pommes)
   nextSession: "/icons-rich/prochaine-seance.webp", // "Prochaine séance" (medecine balls 5/10 kg)
-  // Monogramme de marque — badge autonome (fond sombre déjà intégré au fichier, pas un
+  // Badge de marque BURN-B (kettlebell flamme or dans un rond noir, ex-monogramme « S ») — badge autonome (fond sombre intégré, pas un
   // simple trait transparent), à réserver aux moments hero (voir public/icons/logo-source.svg
   // pour l'original, jamais utilisé nulle part avant cette passe).
   monogram: "/icons-rich/monogram.webp",
