@@ -113,10 +113,10 @@ export function SessionsTab({ data, reload }: Props) {
   );
 }
 
-function NewSessionModal({ data, onClose, onSaved }: { data: BusinessData; onClose: () => void; onSaved: () => Promise<void> }) {
+export function NewSessionModal({ data, onClose, onSaved, initialDate, initialTime }: { data: BusinessData; onClose: () => void; onSaved: () => Promise<void>; initialDate?: string; initialTime?: string }) {
   const [clientId, setClientId] = useState("");
-  const [date, setDate] = useState(todayISO());
-  const [time, setTime] = useState("18:00");
+  const [date, setDate] = useState(initialDate ?? todayISO());
+  const [time, setTime] = useState(initialTime ?? "18:00");
   const [duration, setDuration] = useState("60");
   const [packId, setPackId] = useState("");
   const [price, setPrice] = useState("");

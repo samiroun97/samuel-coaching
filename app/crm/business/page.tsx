@@ -4,13 +4,14 @@ import { useState } from "react";
 import { useBusinessData } from "@/components/business/useBusinessData";
 import { DashboardTab } from "@/components/business/DashboardTab";
 import { SessionsTab } from "@/components/business/SessionsTab";
+import { AgendaTab } from "@/components/business/AgendaTab";
 import { InvoicesTab } from "@/components/business/InvoicesTab";
 import { OffersTab, PaymentsTab, SettingsTab } from "@/components/business/OtherTabs";
 import { SplashScreen } from "@/components/Loader";
 
-type Tab = "apercu" | "seances" | "factures" | "paiements" | "offres" | "reglages";
+type Tab = "apercu" | "agenda" | "seances" | "factures" | "paiements" | "offres" | "reglages";
 const TABS: { key: Tab; label: string }[] = [
-  { key: "apercu", label: "Aperçu" }, { key: "seances", label: "Séances & packs" }, { key: "factures", label: "Factures" },
+  { key: "apercu", label: "Aperçu" }, { key: "agenda", label: "Agenda" }, { key: "seances", label: "Séances & packs" }, { key: "factures", label: "Factures" },
   { key: "paiements", label: "Paiements" }, { key: "offres", label: "Offres" }, { key: "reglages", label: "Réglages" },
 ];
 
@@ -23,7 +24,7 @@ export default function BusinessPage() {
 
   return (
     <div className="flex-1 overflow-y-auto">
-      <div className="px-4 md:px-8 py-5 md:py-7 max-w-5xl flex flex-col gap-5">
+      <div className={`px-4 md:px-8 py-5 md:py-7 ${tab === "agenda" ? "max-w-7xl" : "max-w-5xl"} flex flex-col gap-5`}>
         <div>
           <p className="text-[0.5rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-1">Plateforme coaching</p>
           <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl md:text-5xl text-[var(--t-text)] tracking-wide leading-none">BUSINESS</h1>
@@ -43,6 +44,7 @@ export default function BusinessPage() {
         {!data && !error && <div className="flex justify-center py-16"><SplashScreen/></div>}
 
         {data && tab === "apercu" && <DashboardTab data={data} goTo={setTab}/>}
+        {data && tab === "agenda" && <AgendaTab data={data} reload={reload}/>}
         {data && tab === "seances" && <SessionsTab data={data} reload={reload}/>}
         {data && tab === "factures" && <InvoicesTab data={data} reload={reload} onOpenSettings={() => setTab("reglages")}/>}
         {data && tab === "paiements" && <PaymentsTab data={data} reload={reload}/>}
