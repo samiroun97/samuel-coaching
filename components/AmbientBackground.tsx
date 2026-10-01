@@ -1,6 +1,6 @@
-// Fond animé de l'app (espace client et CRM), dans l'esprit du splash mais bien plus discret :
-// deux halos dorés qui dérivent lentement, quelques braises qui montent et deux traits de
-// vitesse très pâles. Uniquement du CSS (transform/opacity), aucun JS ni écouteur. Posé en
+// Fond animé de l'app (espace client et CRM), dans l'esprit du splash en plus léger : deux halos
+// dorés qui dérivent lentement, des braises qui montent et quelques traits de vitesse pâles.
+// Uniquement du CSS (transform/opacity), aucun JS ni écouteur. Posé en
 // `fixed -z-10` dans un layout `isolate` : derrière tout le contenu, sans créer de contexte
 // d'empilement qui ferait passer les modales sous la barre latérale.
 const EMBERS = Array.from({ length: 22 }, (_, i) => {
