@@ -151,8 +151,8 @@ export function SplashScreen() {
         </h1>
 
         {/* Battement de cœur sur toute la largeur */}
-        <svg viewBox="0 0 1200 120" preserveAspectRatio="none" className="w-[min(520px,78vw)] h-[56px] md:h-[72px] mt-2 md:mt-4 overflow-visible"
-          style={{ maskImage: "linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent)", WebkitMaskImage: "linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent)" }} aria-hidden="true">
+        <svg viewBox="0 0 1200 120" preserveAspectRatio="none" className="h-[56px] md:h-[72px] mt-2 md:mt-4 overflow-visible shrink-0"
+          style={{ width: "min(520px, 78vw)", maskImage: "linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent)", WebkitMaskImage: "linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent)" }} aria-hidden="true">
           <path d="M0 60 H430 L455 60 L470 38 L488 60 L510 60 L530 8 L555 112 L578 60 L610 60 L628 46 L646 60 H1200"
             fill="none" stroke="var(--sp-ecg-base)" strokeWidth="2" vectorEffect="non-scaling-stroke"/>
           <path d="M0 60 H430 L455 60 L470 38 L488 60 L510 60 L530 8 L555 112 L578 60 L610 60 L628 46 L646 60 H1200"
