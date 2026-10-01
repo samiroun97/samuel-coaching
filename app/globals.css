@@ -538,19 +538,22 @@ button[data-loading]::after {
 @keyframes ambientDriftC { 0%, 100% { transform: translate(-10vw, 0) scale(0.9); } 50% { transform: translate(12vw, -8vh) scale(1.1); } }
 @keyframes ambientEmber {
   0% { transform: translate(0, 0) scale(1); opacity: 0; }
-  10% { opacity: var(--o, 0.7); }
-  75% { opacity: calc(var(--o, 0.7) * 0.8); }
-  100% { transform: translate(var(--dx, 0), -105vh) scale(0.4); opacity: 0; }
+  8% { opacity: var(--o, 0.7); }
+  25% { transform: translate(calc(var(--dx, 0px) * 0.45), -26vh) scale(0.95); }
+  50% { transform: translate(calc(var(--dx, 0px) * -0.25), -52vh) scale(0.8); opacity: var(--o, 0.7); }
+  75% { transform: translate(calc(var(--dx, 0px) * 0.7), -78vh) scale(0.6); }
+  100% { transform: translate(var(--dx, 0px), -105vh) scale(0.35); opacity: 0; }
 }
+@keyframes ambientTwinkle { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.8); } }
 @keyframes ambientStreak { from { transform: translateX(-50vw); } to { transform: translateX(160vw); } }
 @keyframes ambientHeat { 0%, 100% { opacity: 0.75; transform: scaleY(0.95); } 50% { opacity: 1; transform: scaleY(1.04); } }
 .ambient-blob { position: absolute; border-radius: 9999px; filter: blur(30px); will-change: transform; }
-.ambient-blob-a { width: 60vmax; height: 60vmax; top: -18vmax; left: -18vmax; background: radial-gradient(circle, var(--amb-blob), transparent 68%); animation: ambientDriftA 30s ease-in-out infinite; }
-.ambient-blob-b { width: 60vmax; height: 60vmax; bottom: -22vmax; right: -18vmax; background: radial-gradient(circle, var(--amb-blob2), transparent 68%); animation: ambientDriftB 36s ease-in-out infinite; }
-.ambient-blob-c { width: 45vmax; height: 45vmax; top: 30%; left: 35%; background: radial-gradient(circle, var(--amb-blob3), transparent 68%); animation: ambientDriftC 26s ease-in-out infinite; }
-.ambient-heat { position: absolute; inset: auto 0 0 0; height: 55vh; transform-origin: bottom; background: var(--amb-heat); animation: ambientHeat 4s ease-in-out infinite; }
-.ambient-ember { position: absolute; bottom: -10px; border-radius: 9999px; background: var(--amb-ember); box-shadow: var(--amb-ember-glow); animation: ambientEmber 16s linear infinite; }
-.ambient-streak { position: absolute; left: 0; height: 2px; width: 40vw; background: linear-gradient(90deg, transparent, var(--amb-streak), transparent); animation: ambientStreak 12s linear infinite; }
+.ambient-blob-a { width: 60vmax; height: 60vmax; top: -18vmax; left: -18vmax; background: radial-gradient(circle, var(--amb-blob), transparent 68%); animation: ambientDriftA 16s ease-in-out infinite; }
+.ambient-blob-b { width: 60vmax; height: 60vmax; bottom: -22vmax; right: -18vmax; background: radial-gradient(circle, var(--amb-blob2), transparent 68%); animation: ambientDriftB 19s ease-in-out infinite; }
+.ambient-blob-c { width: 45vmax; height: 45vmax; top: 30%; left: 35%; background: radial-gradient(circle, var(--amb-blob3), transparent 68%); animation: ambientDriftC 13s ease-in-out infinite; }
+.ambient-heat { position: absolute; inset: auto 0 0 0; height: 55vh; transform-origin: bottom; background: var(--amb-heat); animation: ambientHeat 2.2s ease-in-out infinite; }
+.ambient-ember { position: absolute; bottom: -10px; border-radius: 9999px; background: var(--amb-ember); box-shadow: var(--amb-ember-glow); animation: ambientEmber 10s linear infinite, ambientTwinkle 1.3s ease-in-out infinite; }
+.ambient-streak { position: absolute; left: 0; height: 2px; width: 40vw; background: linear-gradient(90deg, transparent, var(--amb-streak), transparent); animation: ambientStreak 7s linear infinite; }
 @media (prefers-reduced-motion: reduce) {
   .ambient-blob, .ambient-heat, .ambient-streak { animation: none; }
   .ambient-ember { display: none; }
