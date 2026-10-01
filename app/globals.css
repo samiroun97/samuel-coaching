@@ -459,7 +459,7 @@ button[data-loading]::after {
 @keyframes splashRise { from { transform: translateY(105%); } to { transform: none; } }
 @keyframes splashZoom { from { transform: scale(1.08); filter: blur(6px); opacity: 0; } to { transform: none; filter: none; opacity: 1; } }
 @keyframes splashGold { 0% { background-position: 120% 0; } 100% { background-position: -120% 0; } }
-@keyframes splashEcg { 0% { stroke-dashoffset: 100; } 55% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -100; } }
+@keyframes splashEcg { from { stroke-dashoffset: 24; } to { stroke-dashoffset: -100; } }
 @keyframes splashStreak { from { transform: translateX(-60vw); } to { transform: translateX(170vw); } }
 .splash-rise { animation: splashRise 0.75s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 .splash-zoom { animation: splashZoom 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
@@ -469,7 +469,7 @@ button[data-loading]::after {
   background-size: 250% 100%; animation: splashGold 2.4s linear infinite;
 }
 .splash-rise.splash-gold { animation: splashRise 0.75s cubic-bezier(0.2, 0.8, 0.2, 1) both, splashGold 2.4s linear infinite; }
-.splash-ecg { stroke-dasharray: 22 100; animation: splashEcg 1.8s cubic-bezier(0.5, 0, 0.5, 1) infinite; filter: drop-shadow(0 0 6px rgba(240, 217, 143, 0.9)); }
+.splash-ecg { stroke-dasharray: 22 300; animation: splashEcg 1.8s cubic-bezier(0.45, 0, 0.55, 1) infinite; filter: drop-shadow(0 0 6px rgba(240, 217, 143, 0.9)); }
 .splash-streak { background: linear-gradient(90deg, transparent, #c9a84c, transparent); animation: splashStreak 2s linear infinite; }
 @media (prefers-reduced-motion: reduce) {
   .splash-rise, .splash-zoom, .splash-streak { animation: none; }
