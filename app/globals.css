@@ -516,18 +516,18 @@ button[data-loading]::after {
 
 /* Fond animé de l app (components/AmbientBackground.tsx) — clair et sombre. */
 .ambient {
-  --amb-blob: rgb(201 168 76 / 0.40);
-  --amb-blob2: rgb(230 130 40 / 0.30);
-  --amb-blob3: rgb(201 168 76 / 0.16);
+  --amb-blob: rgb(201 168 76 / 0.32);
+  --amb-blob2: rgb(230 130 40 / 0.24);
+  --amb-blob3: rgb(201 168 76 / 0.13);
   --amb-heat: radial-gradient(ellipse 85% 100% at 50% 100%, rgb(232 130 40 / 0.32), rgb(201 168 76 / 0.10) 45%, transparent 75%);
   --amb-ember: radial-gradient(circle, #fff6d6 0%, #f3b84c 40%, rgb(240 160 60 / 0) 72%);
   --amb-ember-glow: 0 0 10px 2px rgb(240 170 60 / 0.55);
   --amb-streak: rgb(201 168 76 / 0.45);
 }
 :root[data-theme="light"] .ambient {
-  --amb-blob: rgb(212 170 70 / 0.45);
-  --amb-blob2: rgb(235 140 50 / 0.30);
-  --amb-blob3: rgb(201 168 76 / 0.18);
+  --amb-blob: rgb(212 170 70 / 0.36);
+  --amb-blob2: rgb(235 140 50 / 0.24);
+  --amb-blob3: rgb(201 168 76 / 0.14);
   --amb-heat: radial-gradient(ellipse 85% 100% at 50% 100%, rgb(230 130 40 / 0.26), rgb(201 168 76 / 0.10) 45%, transparent 75%);
   --amb-ember: radial-gradient(circle, #ffd27a 0%, #d9822a 45%, rgb(217 130 42 / 0) 72%);
   --amb-ember-glow: 0 0 8px 1px rgb(217 130 42 / 0.45);
