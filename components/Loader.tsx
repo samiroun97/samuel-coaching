@@ -73,6 +73,12 @@ function AiLoader({ size, className }: { size: number; className: string }) {
 // repartir de 0.
 const SPLASH_LINES = ["Échauffement", "Chargement des haltères", "Mise en place de la séance", "Dernière répétition"];
 let splashStart = 0;
+// Braises qui montent en fond : positions/tempos fixes (pseudo-aléatoires par index) pour
+// un rendu identique serveur/client.
+const EMBERS = Array.from({ length: 22 }, (_, i) => {
+  const r = (n: number) => ((Math.sin(i * 12.9898 + n * 78.233) * 43758.5453) % 1 + 1) % 1;
+  return { left: 3 + r(1) * 94, size: 2 + r(2) * 4, dur: 5 + r(3) * 6, delay: -r(4) * 10, dx: (r(5) - 0.5) * 120, o: 0.35 + r(6) * 0.5 };
+});
 let splashLastSeen = 0;
 
 export function SplashScreen() {
@@ -113,6 +119,15 @@ export function SplashScreen() {
       {/* Lueur + vignette */}
       <div className="absolute inset-0 pointer-events-none"
         style={{ background: "radial-gradient(ellipse at 50% 45%, var(--sp-glow), transparent 60%), radial-gradient(ellipse at 50% 50%, transparent 55%, var(--sp-vignette))" }}/>
+      {/* Chaleur qui vacille depuis le bas + braises qui montent */}
+      <div className="splash-heat absolute inset-x-0 bottom-0 h-[55vh] pointer-events-none"/>
+      <div className="absolute inset-0 pointer-events-none">
+        {EMBERS.map((e, i) => (
+          <span key={i} className="splash-ember absolute bottom-[-12px] rounded-full"
+            style={{ left: `${e.left}%`, width: e.size, height: e.size, animationDuration: `${e.dur}s`, animationDelay: `${e.delay}s`,
+              ["--dx" as string]: `${e.dx}px`, ["--o" as string]: e.o } as React.CSSProperties}/>
+        ))}
+      </div>
       {/* Traits de vitesse */}
       <div className="absolute inset-[-20%] -rotate-12 pointer-events-none">
         {[12, 24, 37, 51, 63, 76, 88].map((top, i) => (

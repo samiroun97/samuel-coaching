@@ -462,6 +462,8 @@ button[data-loading]::after {
   --sp-ecg: #f0d98f; --sp-ecg-base: rgb(201 168 76 / 0.15); --sp-ecg-shadow: rgb(240 217 143 / 0.9);
   --sp-gold: linear-gradient(110deg, #b08a36 0%, #d4b35a 35%, #fff4cc 50%, #d4b35a 65%, #b08a36 100%);
   --sp-streak: #c9a84c;
+  --sp-ember: radial-gradient(circle, #fff1c2 0%, #f0b64a 45%, transparent 72%);
+  --sp-heat: radial-gradient(ellipse 70% 100% at 50% 100%, rgb(232 140 40 / 0.22), rgb(201 168 76 / 0.08) 45%, transparent 75%);
 }
 :root[data-theme="light"] .splash {
   --sp-bg: #f5efe4; --sp-text: #141414; --sp-sub: rgb(20 20 20 / 0.5);
@@ -469,8 +471,19 @@ button[data-loading]::after {
   --sp-ecg: #b8943c; --sp-ecg-base: rgb(176 138 54 / 0.2); --sp-ecg-shadow: rgb(201 168 76 / 0.45);
   --sp-gold: linear-gradient(110deg, #8a6a22 0%, #b08a36 35%, #e8cc7a 50%, #b08a36 65%, #8a6a22 100%);
   --sp-streak: #b8943c;
+  --sp-ember: radial-gradient(circle, #f6c25a 0%, #d0862a 50%, transparent 72%);
+  --sp-heat: radial-gradient(ellipse 70% 100% at 50% 100%, rgb(224 130 40 / 0.18), rgb(201 168 76 / 0.08) 45%, transparent 75%);
 }
 .splash-mark-for-light { display: none; }
+@keyframes splashEmber {
+  0% { transform: translate(0, 0) scale(1); opacity: 0; }
+  12% { opacity: var(--o, 0.6); }
+  70% { opacity: calc(var(--o, 0.6) * 0.7); }
+  100% { transform: translate(var(--dx, 0), -100vh) scale(0.3); opacity: 0; }
+}
+@keyframes splashHeat { 0%, 100% { opacity: 0.75; transform: scaleY(0.94); } 30% { opacity: 1; transform: scaleY(1.03); } 60% { opacity: 0.85; transform: scaleY(0.98); } }
+.splash-ember { background: var(--sp-ember); animation: splashEmber 8s linear infinite; }
+.splash-heat { background: var(--sp-heat); transform-origin: bottom; animation: splashHeat 2.6s ease-in-out infinite; }
 :root[data-theme="light"] .splash-mark-for-dark { display: none; }
 :root[data-theme="light"] .splash-mark-for-light { display: block; }
 @keyframes splashRise { from { transform: translateY(105%); } to { transform: none; } }
@@ -495,7 +508,8 @@ button[data-loading]::after {
 .splash-mark-in { animation: splashMarkIn 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both, splashFlame 1.6s ease-in-out 0.9s infinite; }
 .splash-glow { animation: splashGlow 1.6s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) {
-  .splash-flame, .splash-mark-in, .splash-glow { animation: none; }
+  .splash-flame, .splash-mark-in, .splash-glow, .splash-heat { animation: none; }
+  .splash-ember { display: none; }
   .splash-rise, .splash-zoom, .splash-streak { animation: none; }
   .splash-gold, .splash-rise.splash-gold { animation: none; }
 }
