@@ -13,6 +13,7 @@ export function AmbientBackground() {
     <div aria-hidden="true" className="ambient fixed inset-0 -z-10 overflow-hidden pointer-events-none print:hidden">
       <div className="ambient-blob ambient-blob-a"/>
       <div className="ambient-blob ambient-blob-b"/>
+      <div className="ambient-blob ambient-blob-c"/>
       <div className="ambient-heat"/>
       {EMBERS.map((e, i) => (
         <span key={i} className="ambient-ember"

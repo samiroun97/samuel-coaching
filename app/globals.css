@@ -514,36 +514,43 @@ button[data-loading]::after {
   .splash-gold, .splash-rise.splash-gold { animation: none; }
 }
 
-/* Fond animé de l'app (components/AmbientBackground.tsx) — très discret, clair et sombre. */
+/* Fond animé de l app (components/AmbientBackground.tsx) — clair et sombre. */
 .ambient {
-  --amb-blob: rgb(201 168 76 / 0.22);
-  --amb-blob2: rgb(224 140 50 / 0.16);
-  --amb-heat: radial-gradient(ellipse 80% 100% at 50% 100%, rgb(232 140 40 / 0.18), rgb(201 168 76 / 0.05) 50%, transparent 75%);
-  --amb-ember: radial-gradient(circle, #fff1c2 0%, #f0b64a 45%, transparent 72%);
-  --amb-streak: rgb(201 168 76 / 0.28);
+  --amb-blob: rgb(201 168 76 / 0.40);
+  --amb-blob2: rgb(230 130 40 / 0.30);
+  --amb-blob3: rgb(201 168 76 / 0.16);
+  --amb-heat: radial-gradient(ellipse 85% 100% at 50% 100%, rgb(232 130 40 / 0.32), rgb(201 168 76 / 0.10) 45%, transparent 75%);
+  --amb-ember: radial-gradient(circle, #fff6d6 0%, #f3b84c 40%, rgb(240 160 60 / 0) 72%);
+  --amb-ember-glow: 0 0 10px 2px rgb(240 170 60 / 0.55);
+  --amb-streak: rgb(201 168 76 / 0.45);
 }
 :root[data-theme="light"] .ambient {
-  --amb-blob: rgb(201 168 76 / 0.26);
-  --amb-blob2: rgb(224 140 50 / 0.16);
-  --amb-heat: radial-gradient(ellipse 80% 100% at 50% 100%, rgb(224 130 40 / 0.15), rgb(201 168 76 / 0.05) 50%, transparent 75%);
-  --amb-ember: radial-gradient(circle, #f6c25a 0%, #d0862a 50%, transparent 72%);
-  --amb-streak: rgb(176 138 54 / 0.3);
+  --amb-blob: rgb(212 170 70 / 0.45);
+  --amb-blob2: rgb(235 140 50 / 0.30);
+  --amb-blob3: rgb(201 168 76 / 0.18);
+  --amb-heat: radial-gradient(ellipse 85% 100% at 50% 100%, rgb(230 130 40 / 0.26), rgb(201 168 76 / 0.10) 45%, transparent 75%);
+  --amb-ember: radial-gradient(circle, #ffd27a 0%, #d9822a 45%, rgb(217 130 42 / 0) 72%);
+  --amb-ember-glow: 0 0 8px 1px rgb(217 130 42 / 0.45);
+  --amb-streak: rgb(176 138 54 / 0.5);
 }
-@keyframes ambientDriftA { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(18vw, 14vh) scale(1.15); } }
-@keyframes ambientDriftB { 0%, 100% { transform: translate(0, 0) scale(1.1); } 50% { transform: translate(-16vw, -12vh) scale(0.95); } }
+@keyframes ambientDriftA { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(22vw, 16vh) scale(1.18); } }
+@keyframes ambientDriftB { 0%, 100% { transform: translate(0, 0) scale(1.1); } 50% { transform: translate(-20vw, -14vh) scale(0.92); } }
+@keyframes ambientDriftC { 0%, 100% { transform: translate(-10vw, 0) scale(0.9); } 50% { transform: translate(12vw, -8vh) scale(1.1); } }
 @keyframes ambientEmber {
   0% { transform: translate(0, 0) scale(1); opacity: 0; }
-  15% { opacity: var(--o, 0.4); }
+  10% { opacity: var(--o, 0.7); }
+  75% { opacity: calc(var(--o, 0.7) * 0.8); }
   100% { transform: translate(var(--dx, 0), -105vh) scale(0.4); opacity: 0; }
 }
 @keyframes ambientStreak { from { transform: translateX(-50vw); } to { transform: translateX(160vw); } }
-@keyframes ambientHeat { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
-.ambient-blob { position: absolute; width: 60vmax; height: 60vmax; border-radius: 9999px; filter: blur(40px); will-change: transform; }
-.ambient-blob-a { top: -25vmax; left: -20vmax; background: radial-gradient(circle, var(--amb-blob), transparent 65%); animation: ambientDriftA 38s ease-in-out infinite; }
-.ambient-blob-b { bottom: -30vmax; right: -25vmax; background: radial-gradient(circle, var(--amb-blob2), transparent 65%); animation: ambientDriftB 46s ease-in-out infinite; }
-.ambient-heat { position: absolute; inset: auto 0 0 0; height: 50vh; background: var(--amb-heat); animation: ambientHeat 5s ease-in-out infinite; }
-.ambient-ember { position: absolute; bottom: -10px; border-radius: 9999px; background: var(--amb-ember); animation: ambientEmber 20s linear infinite; }
-.ambient-streak { position: absolute; left: 0; height: 1.5px; width: 40vw; background: linear-gradient(90deg, transparent, var(--amb-streak), transparent); animation: ambientStreak 13s linear infinite; }
+@keyframes ambientHeat { 0%, 100% { opacity: 0.75; transform: scaleY(0.95); } 50% { opacity: 1; transform: scaleY(1.04); } }
+.ambient-blob { position: absolute; border-radius: 9999px; filter: blur(30px); will-change: transform; }
+.ambient-blob-a { width: 60vmax; height: 60vmax; top: -18vmax; left: -18vmax; background: radial-gradient(circle, var(--amb-blob), transparent 68%); animation: ambientDriftA 30s ease-in-out infinite; }
+.ambient-blob-b { width: 60vmax; height: 60vmax; bottom: -22vmax; right: -18vmax; background: radial-gradient(circle, var(--amb-blob2), transparent 68%); animation: ambientDriftB 36s ease-in-out infinite; }
+.ambient-blob-c { width: 45vmax; height: 45vmax; top: 30%; left: 35%; background: radial-gradient(circle, var(--amb-blob3), transparent 68%); animation: ambientDriftC 26s ease-in-out infinite; }
+.ambient-heat { position: absolute; inset: auto 0 0 0; height: 55vh; transform-origin: bottom; background: var(--amb-heat); animation: ambientHeat 4s ease-in-out infinite; }
+.ambient-ember { position: absolute; bottom: -10px; border-radius: 9999px; background: var(--amb-ember); box-shadow: var(--amb-ember-glow); animation: ambientEmber 16s linear infinite; }
+.ambient-streak { position: absolute; left: 0; height: 2px; width: 40vw; background: linear-gradient(90deg, transparent, var(--amb-streak), transparent); animation: ambientStreak 12s linear infinite; }
 @media (prefers-reduced-motion: reduce) {
   .ambient-blob, .ambient-heat, .ambient-streak { animation: none; }
   .ambient-ember { display: none; }
