@@ -10,6 +10,7 @@ import { apiPost } from "@/lib/apiClient";
 import { Icon } from "@/components/Icon";
 import { LogOut } from "@/lib/solarIcons";
 import { SplashScreen } from "@/components/Loader";
+import { AmbientBackground } from "@/components/AmbientBackground";
 import { RichIcon, type RichIconName } from "@/components/RichIcon";
 
 // "Séance" pointait autrefois vers /dashboard/programme/creer-ma-seance (page indépendante,
@@ -167,7 +168,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (isOnboarding) return <>{children}</>;
 
   return (
-    <div className="min-h-screen bg-[var(--t-bg)] flex w-full overflow-x-hidden">
+    <div className="min-h-screen bg-[var(--t-bg)] flex w-full overflow-x-hidden isolate">
+      <AmbientBackground/>
       <aside className="w-52 border-r border-[var(--t-border-soft)] hidden md:flex flex-col fixed h-full z-10 bg-[var(--t-bg)] print:hidden">
         <div className="px-5 py-5 border-b border-[var(--t-border-soft)]">
           <Link href="/" style={{ fontFamily: "var(--font-bebas)" }}

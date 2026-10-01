@@ -513,3 +513,38 @@ button[data-loading]::after {
   .splash-rise, .splash-zoom, .splash-streak { animation: none; }
   .splash-gold, .splash-rise.splash-gold { animation: none; }
 }
+
+/* Fond animé de l'app (components/AmbientBackground.tsx) — très discret, clair et sombre. */
+.ambient {
+  --amb-blob: rgb(201 168 76 / 0.10);
+  --amb-blob2: rgb(224 140 50 / 0.07);
+  --amb-heat: radial-gradient(ellipse 80% 100% at 50% 100%, rgb(232 140 40 / 0.08), transparent 70%);
+  --amb-ember: radial-gradient(circle, #fff1c2 0%, #f0b64a 45%, transparent 72%);
+  --amb-streak: rgb(201 168 76 / 0.10);
+}
+:root[data-theme="light"] .ambient {
+  --amb-blob: rgb(201 168 76 / 0.14);
+  --amb-blob2: rgb(224 140 50 / 0.08);
+  --amb-heat: radial-gradient(ellipse 80% 100% at 50% 100%, rgb(224 130 40 / 0.07), transparent 70%);
+  --amb-ember: radial-gradient(circle, #f6c25a 0%, #d0862a 50%, transparent 72%);
+  --amb-streak: rgb(176 138 54 / 0.12);
+}
+@keyframes ambientDriftA { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(18vw, 14vh) scale(1.15); } }
+@keyframes ambientDriftB { 0%, 100% { transform: translate(0, 0) scale(1.1); } 50% { transform: translate(-16vw, -12vh) scale(0.95); } }
+@keyframes ambientEmber {
+  0% { transform: translate(0, 0) scale(1); opacity: 0; }
+  15% { opacity: var(--o, 0.4); }
+  100% { transform: translate(var(--dx, 0), -105vh) scale(0.4); opacity: 0; }
+}
+@keyframes ambientStreak { from { transform: translateX(-50vw); } to { transform: translateX(160vw); } }
+@keyframes ambientHeat { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
+.ambient-blob { position: absolute; width: 60vmax; height: 60vmax; border-radius: 9999px; filter: blur(60px); will-change: transform; }
+.ambient-blob-a { top: -25vmax; left: -20vmax; background: radial-gradient(circle, var(--amb-blob), transparent 65%); animation: ambientDriftA 38s ease-in-out infinite; }
+.ambient-blob-b { bottom: -30vmax; right: -25vmax; background: radial-gradient(circle, var(--amb-blob2), transparent 65%); animation: ambientDriftB 46s ease-in-out infinite; }
+.ambient-heat { position: absolute; inset: auto 0 0 0; height: 40vh; background: var(--amb-heat); animation: ambientHeat 5s ease-in-out infinite; }
+.ambient-ember { position: absolute; bottom: -10px; border-radius: 9999px; background: var(--amb-ember); animation: ambientEmber 20s linear infinite; }
+.ambient-streak { position: absolute; left: 0; height: 1px; width: 35vw; background: linear-gradient(90deg, transparent, var(--amb-streak), transparent); animation: ambientStreak 13s linear infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .ambient-blob, .ambient-heat, .ambient-streak { animation: none; }
+  .ambient-ember { display: none; }
+}

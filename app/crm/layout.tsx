@@ -11,6 +11,7 @@ import { ModeSwitch } from "@/components/ModeSwitch";
 import { Icon } from "@/components/Icon";
 import { LayoutGrid, Users, Layers, Share2, MessageSquare, FileText, LogOut, Eye, Star, BarChart3, MoreHorizontal } from "@/lib/solarIcons";
 import { SplashScreen } from "@/components/Loader";
+import { AmbientBackground } from "@/components/AmbientBackground";
 
 export default function CRMLayout({ children }: { children: React.ReactNode }) {
   const router   = useRouter();
@@ -117,7 +118,8 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <div className="min-h-screen bg-[var(--t-bg2)] flex w-full overflow-x-hidden">
+    <div className="min-h-screen bg-[var(--t-bg2)] flex w-full overflow-x-hidden isolate">
+      <AmbientBackground/>
       <aside className="w-56 bg-[var(--t-bg)] border-r border-[var(--t-border-soft)] hidden md:flex flex-col fixed h-full z-10">
         <div className="px-5 pt-6 pb-5 border-b border-[var(--t-border-soft)]">
           <p style={{ fontFamily: "var(--font-bebas)" }} className="text-[0.85rem] tracking-[0.22em] text-[#c9a84c] leading-none truncate">{businessName.toUpperCase()}</p>
