@@ -48,8 +48,8 @@ export const metadata: Metadata = {
     images: ["/photos/samuel.jpg"],
   },
   icons: {
-    icon: "/icons/icon-192.png",
-    apple: "/icons/apple-icon.png",
+    icon: "/icons/burnb-192.png",
+    apple: "/icons/burnb-apple.png",
   },
   verification: {
     google: "tFcDfuzDlLSCWH2mL_QRsAv4Txr1rBHDZuEMaAllWLc",

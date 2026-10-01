@@ -95,7 +95,7 @@ export default function AppSection() {
                     </div>
                   </div>
 
-                  <img src="/icons/icon-512.png" alt="Samuel Coaching" className="w-24 h-24 rounded-[1.5rem] mt-8 shadow-lg" />
+                  <img src="/icons/burnb-512.png" alt="Samuel Coaching" className="w-24 h-24 rounded-[1.5rem] mt-8 shadow-lg" />
 
                   <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-8 opacity-40">
                     <div className="w-1.5 h-1.5 rounded-full bg-white" />

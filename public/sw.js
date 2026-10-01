@@ -8,8 +8,8 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     self.registration.showNotification(data.title, {
       body: data.body,
-      icon: "/icons/icon-192.png",
-      badge: "/icons/icon-192.png",
+      icon: "/icons/burnb-192.png",
+      badge: "/icons/burnb-192.png",
       data: { url: data.url || "/dashboard/nutrition" },
     })
   );
