@@ -249,7 +249,7 @@ export default function AccueilPage() {
   );
 
   const bmrVal     = bmr(profile, bodyFat);
-  const { tdee, tef } = expenditure(bmrVal, neat, eat);
+  const { tdee, tef, tefEstimated } = expenditure(bmrVal, neat, eat, consumed);
   const refCal     = calView === "objectif" ? goals.calories : tdee;
   const balance    = consumed.calories - refCal;
   const surplus    = balance > 0;
@@ -354,7 +354,7 @@ export default function AccueilPage() {
               { label: "BMR",  val: bmrVal },
               { label: "NEAT", val: neat },
               { label: "EAT",  val: eat },
-              { label: "TEF",  val: tef },
+              { label: tefEstimated ? "TEF ≈" : "TEF",  val: tef },
             ].map((row, i) => (
               <div key={row.label} className={`flex-1 text-center ${i > 0 ? "border-l border-[var(--t-border-soft)]" : ""}`}>
                 <p style={{ fontFamily: "var(--font-bebas)" }} className="text-xl text-[var(--t-text-80)] tracking-wide">{row.val.toLocaleString("fr-FR")}</p>

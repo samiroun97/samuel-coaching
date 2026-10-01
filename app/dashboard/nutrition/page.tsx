@@ -567,7 +567,9 @@ export default function NutritionPage() {
 
   // Référence calorique : objectif fixe ou TDEE du jour (métabolisme + activité + sport)
   const bmrVal    = miniProfile ? bmr(miniProfile, bodyFat) : 0;
-  const { tdee, tef } = bmrVal > 0 ? expenditure(bmrVal, tdeeParts.neat, tdeeParts.eat) : { tdee: 0, tef: 0 };
+  // TEF sur les macros du jour affiché (foods = journal du jour sélectionné).
+  const dayMacros = foods.reduce((a, f) => ({ proteines: a.proteines + f.proteines, glucides: a.glucides + f.glucides, lipides: a.lipides + f.lipides }), { proteines: 0, glucides: 0, lipides: 0 });
+  const { tdee, tef, tefEstimated } = bmrVal > 0 ? expenditure(bmrVal, tdeeParts.neat, tdeeParts.eat, dayMacros) : { tdee: 0, tef: 0, tefEstimated: true };
   const useTdee   = calRef === "tdee" && tdee > 0;
   const calTarget = useTdee ? tdee : goals.calories;
 
@@ -1146,7 +1148,7 @@ export default function NutritionPage() {
             { label: "BMR",  val: bmrVal },
             { label: "NEAT", val: tdeeParts.neat },
             { label: "EAT",  val: tdeeParts.eat },
-            { label: "TEF",  val: tef },
+            { label: tefEstimated ? "TEF ≈" : "TEF",  val: tef },
           ].map((row, i) => (
             <div key={row.label} className={`flex-1 text-center ${i > 0 ? "border-l border-[var(--t-border-soft)]" : ""}`}>
               <p style={{ fontFamily: "var(--font-bebas)" }} className="text-xl text-[var(--t-text-80)] tracking-wide">{row.val.toLocaleString("fr-FR")}</p>

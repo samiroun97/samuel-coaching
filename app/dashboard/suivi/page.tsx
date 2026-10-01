@@ -377,7 +377,7 @@ export default function SuiviPage() {
       const bmrVal = profile?.poids && profile?.taille && profile?.age
         ? bmr({ poids: profile.poids, taille: profile.taille, age: profile.age, sexe: profile.sexe ?? "" }, lastBF?.body_fat ?? null)
         : 1800;
-      const avgTdee = expenditure(bmrVal, avgNeatPerDay, avgEatPerDay).tdee;
+      const avgTdee = expenditure(bmrVal, avgNeatPerDay, avgEatPerDay, { proteines: avgProteines, glucides: avgGlucides, lipides: avgLipides }).tdee;
       const balancePerDay = avgCalories - avgTdee;
       const balanceStatus: "deficit" | "surplus" | "maintenance" =
         Math.abs(balancePerDay) <= 100 ? "maintenance" : balancePerDay > 0 ? "surplus" : "deficit";
@@ -388,7 +388,7 @@ export default function SuiviPage() {
         const steps = parseInt(localStorage.getItem(`steps_${dt}`) ?? "0") || 0;
         const neat  = neatFromSteps(steps, poidsRef);
         const eat   = logs.filter(l => (l.date || "").split("T")[0] === dt).reduce((s, l) => s + (l.calories_burned ?? 0), 0);
-        const tdee  = expenditure(bmrVal, neat, eat).tdee;
+        const tdee  = expenditure(bmrVal, neat, eat, dayTotals[i]).tdee;
         const calories = Math.round(dayTotals[i].calories);
         return { date: dt, calories, tdee, balance: calories - tdee };
       });
