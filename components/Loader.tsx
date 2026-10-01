@@ -64,32 +64,85 @@ function AiLoader({ size, className }: { size: number; className: string }) {
   return <div ref={ref} role="status" aria-label="Chargement" className={`shrink-0 ${className}`} style={{ width: size, height: size }}/>;
 }
 
-// Écran de chargement plein écran (chargement d'une page, vérification de la session…) :
-// couvre toute la page, médaillon haltère en grand, nom de la marque, barre de progression
-// et une petite phrase de coach qui change. Fond plein : deux écrans qui s'enchaînent
-// (layout puis page) se fondent en un seul.
-const SPLASH_LINES = ["Échauffement en cours…", "On charge les haltères…", "Prépare-toi, on y va…", "Encore une répétition…", "Mise en place de ta séance…"];
+// Écran de chargement plein écran (chargement d'une page, vérification de la session…).
+// Volontairement « cinéma » et toujours sur fond noir, quel que soit le thème : nom en très
+// grand qui monte lettre par lettre avec un reflet doré qui passe, ligne de battement de cœur
+// tracée sur toute la largeur, traits de vitesse en fond et compteur en %.
+// Plusieurs écrans s'enchaînent souvent (session puis page) : l'heure de départ est gardée au
+// niveau du module pour que l'intro ne rejoue pas et que le compteur continue au lieu de
+// repartir de 0.
+const SPLASH_LINES = ["Échauffement", "Chargement des haltères", "Mise en place de la séance", "Dernière répétition"];
+let splashStart = 0;
+let splashLastSeen = 0;
 
 export function SplashScreen() {
+  const [intro, setIntro] = useState(true);
+  const [pct, setPct] = useState(0);
   const [line, setLine] = useState(0);
+
   useEffect(() => {
-    const t = setInterval(() => setLine(l => (l + 1) % SPLASH_LINES.length), 1800);
-    return () => clearInterval(t);
+    const now = Date.now();
+    const continuing = now - splashLastSeen < 1500;
+    if (!continuing) splashStart = now;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- dépend d'un état module (enchaînement d'écrans)
+    setIntro(!continuing);
+    const tick = () => {
+      splashLastSeen = Date.now();
+      const t = (Date.now() - splashStart) / 1000;
+      setPct(Math.min(99, Math.round(100 * (1 - Math.exp(-t / 1.4)))));
+      setLine(Math.floor(t / 1.6) % SPLASH_LINES.length);
+    };
+    tick();
+    const id = setInterval(tick, 60);
+    return () => { clearInterval(id); splashLastSeen = Date.now(); };
   }, []);
+
+  const word = (text: string, offset: number, gold: boolean) => (
+    <span className="flex justify-center">
+      {text.split("").map((ch, i) => (
+        <span key={i} className="inline-block overflow-hidden pb-[0.04em]">
+          <span className={`inline-block ${intro ? "splash-rise" : ""} ${gold ? "splash-gold" : "text-white"}`}
+            style={intro ? { animationDelay: `${(offset + i) * 55}ms` } : undefined}>{ch}</span>
+        </span>
+      ))}
+    </span>
+  );
+
   return (
-    <div role="status" aria-label="Chargement"
-      className="fixed inset-0 z-[100] flex flex-col items-center justify-center gap-7 bg-[var(--t-bg)] overflow-hidden">
+    <div role="status" aria-label="Chargement" className="fixed inset-0 z-[100] bg-[#060606] overflow-hidden flex flex-col items-center justify-center select-none">
+      {/* Lueur + vignette */}
       <div className="absolute inset-0 pointer-events-none"
-        style={{ background: "radial-gradient(circle at 50% 42%, rgba(201,168,76,0.18), transparent 55%)" }}/>
-      <SportLoader size={150} className="relative"/>
-      <div className="relative flex flex-col items-center gap-3">
-        <p style={{ fontFamily: "var(--font-bebas)" }} className="text-[2.4rem] leading-none tracking-[0.18em] text-[var(--t-text)] pl-[0.18em]">
-          SAMUEL <span className="text-[#c9a84c]">COACHING</span>
-        </p>
-        <div className="w-44 h-1 rounded-full bg-[var(--t-track)] overflow-hidden">
-          <div className="splash-bar h-full w-1/3 rounded-full bg-gradient-to-r from-[#e2c97e] to-[#c9a84c]"/>
+        style={{ background: "radial-gradient(ellipse at 50% 45%, rgba(201,168,76,0.22), transparent 60%), radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0,0,0,0.85))" }}/>
+      {/* Traits de vitesse */}
+      <div className="absolute inset-[-20%] -rotate-12 pointer-events-none">
+        {[12, 24, 37, 51, 63, 76, 88].map((top, i) => (
+          <span key={top} className="splash-streak absolute left-0 h-px"
+            style={{ top: `${top}%`, width: `${28 + (i % 3) * 14}vw`, animationDelay: `${i * 0.37}s`, animationDuration: `${1.5 + (i % 4) * 0.35}s`, opacity: 0.18 + (i % 3) * 0.12 }}/>
+        ))}
+      </div>
+
+      <div className={`relative w-full flex flex-col items-center ${intro ? "splash-zoom" : ""}`}>
+        <h1 style={{ fontFamily: "var(--font-bebas)", fontSize: "clamp(4.2rem, 17vw, 12rem)" }}
+          className="leading-[0.86] tracking-[0.06em] text-center">
+          {word("SAMUEL", 0, false)}
+          {word("COACHING", 6, true)}
+        </h1>
+
+        {/* Battement de cœur sur toute la largeur */}
+        <svg viewBox="0 0 1200 120" preserveAspectRatio="none" className="w-full h-[70px] md:h-[90px] mt-4 md:mt-6 overflow-visible" aria-hidden="true">
+          <path d="M0 60 H430 L455 60 L470 38 L488 60 L510 60 L530 8 L555 112 L578 60 L610 60 L628 46 L646 60 H1200"
+            fill="none" stroke="#c9a84c" strokeOpacity="0.15" strokeWidth="2" vectorEffect="non-scaling-stroke"/>
+          <path d="M0 60 H430 L455 60 L470 38 L488 60 L510 60 L530 8 L555 112 L578 60 L610 60 L628 46 L646 60 H1200"
+            pathLength={100} fill="none" stroke="#f0d98f" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
+            vectorEffect="non-scaling-stroke" className="splash-ecg"/>
+        </svg>
+
+        <div className="mt-6 md:mt-8 flex flex-col items-center gap-2">
+          <span style={{ fontFamily: "var(--font-bebas)" }} className="text-[2.6rem] md:text-[3.2rem] leading-none tabular-nums text-white">
+            {pct}<span className="text-[#c9a84c]">%</span>
+          </span>
+          <span className="text-[0.68rem] md:text-[0.72rem] tracking-[0.35em] uppercase text-white/55">{SPLASH_LINES[line]}</span>
         </div>
-        <p key={line} className="splash-line text-[0.8rem] text-[var(--t-text-50)] h-5">{SPLASH_LINES[line]}</p>
       </div>
     </div>
   );
