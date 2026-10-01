@@ -13,6 +13,7 @@ import type { IScannerControls } from "@zxing/browser";
 import { BarcodeFormat, DecodeHintType } from "@zxing/library";
 import { Icon } from "@/components/Icon";
 import { RichIcon, type RichIconName } from "@/components/RichIcon";
+import { BrandBadge } from "@/components/BrandBadge";
 import { Plus, Shield, ChevronDown, Copy, Star, Trash2, X, Camera, ImageIcon, Mic, Save, ScanBarcode, Lightbulb, MoreHorizontal } from "@/lib/solarIcons";
 import { bmr, expenditure, neatFromSteps } from "@/lib/energy";
 import { Loader } from "@/components/Loader";
@@ -1108,7 +1109,7 @@ export default function NutritionPage() {
 
       {/* Header — même ancrage de marque que la rubrique Activité (monogramme + eyebrow). */}
       <div className="mb-6 flex items-center gap-3.5">
-        <RichIcon name="monogram" size={52} className="shrink-0 rounded-full drop-shadow-[0_6px_16px_rgba(201,168,76,0.25)]"/>
+        <BrandBadge size={68} className="drop-shadow-[0_6px_16px_rgba(201,168,76,0.25)]"/>
         <div>
           <p className="text-[0.7rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-1">Rubrique</p>
           <h1 style={{ fontFamily:"var(--font-bebas)" }} className="text-4xl sm:text-5xl text-[var(--t-text)] tracking-wide leading-none">NUTRITION</h1>

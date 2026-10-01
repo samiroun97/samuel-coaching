@@ -16,6 +16,7 @@ import { numOr } from "@/components/NumberStepper";
 import { SetInputCell } from "@/components/SetInputCell";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
+import { BrandBadge } from "@/components/BrandBadge";
 import { TdeeIcon } from "@/components/CalRefToggle";
 import { Check, X, ChevronLeft, ChevronRight, Plus, Trash2, Clock, Layers, Lock, Play, Pause, Dumbbell, Star } from "@/lib/solarIcons";
 import { RoundTimer } from "@/components/RoundTimer";
@@ -902,7 +903,7 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
               endroit pour l'ancrer. Le badge vert (succès) reste lisible, juste posé dessus
               plutôt que porté seul par un simple cercle translucide. */}
           <div className="relative w-20 h-20 shrink-0">
-            <RichIcon name="monogram" size={80} className="rounded-full drop-shadow-[0_8px_20px_rgba(201,168,76,0.35)]"/>
+            <BrandBadge size={104} className="drop-shadow-[0_8px_20px_rgba(201,168,76,0.35)]"/>
             <span className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-[#7eb8a0] border-2 border-[var(--t-bg)] flex items-center justify-center">
               <Icon icon={Check} size={13} className="text-white"/>
             </span>

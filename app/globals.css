@@ -558,3 +558,8 @@ button[data-loading]::after {
   .ambient-blob, .ambient-heat, .ambient-streak { animation: none; }
   .ambient-ember { display: none; }
 }
+
+/* Badge de marque (components/BrandBadge.tsx) : rond noir en sombre, rond blanc en clair. */
+.brand-badge-light { display: none; }
+:root[data-theme="light"] .brand-badge-dark { display: none; }
+:root[data-theme="light"] .brand-badge-light { display: block; }

@@ -26,6 +26,7 @@ import { loadPersonalRecords, type PRCard } from "@/lib/personalRecords";
 import { Sparkline } from "@/components/Sparkline";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
+import { BrandBadge } from "@/components/BrandBadge";
 import { Activity, X, Mic, ChevronDown, Plus, Trash2, Play } from "@/lib/solarIcons";
 import { Loader } from "@/components/Loader";
 
@@ -582,7 +583,7 @@ export default function ProgrammePage() {
           recrée le nom en texte brut ; ici c'est le premier repère visuel qu'on voit en
           entrant sur l'onglet, un vrai ancrage d'identité plutôt qu'un titre seul. */}
       <div className="mb-6 flex items-center gap-3.5">
-        <RichIcon name="monogram" size={52} className="shrink-0 rounded-full drop-shadow-[0_6px_16px_rgba(201,168,76,0.25)]"/>
+        <BrandBadge size={68} className="drop-shadow-[0_6px_16px_rgba(201,168,76,0.25)]"/>
         <div>
           <p className="text-[0.7rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-1">Rubrique</p>
           <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl sm:text-5xl text-[var(--t-text)] tracking-wide leading-none">ACTIVITÉ</h1>
