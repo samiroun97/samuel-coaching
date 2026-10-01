@@ -3,9 +3,9 @@
 // vitesse très pâles. Uniquement du CSS (transform/opacity), aucun JS ni écouteur. Posé en
 // `fixed -z-10` dans un layout `isolate` : derrière tout le contenu, sans créer de contexte
 // d'empilement qui ferait passer les modales sous la barre latérale.
-const EMBERS = Array.from({ length: 12 }, (_, i) => {
+const EMBERS = Array.from({ length: 22 }, (_, i) => {
   const r = (n: number) => ((Math.sin(i * 12.9898 + n * 78.233) * 43758.5453) % 1 + 1) % 1;
-  return { left: 4 + r(1) * 92, size: 2 + r(2) * 3, dur: 14 + r(3) * 12, delay: -r(4) * 26, dx: (r(5) - 0.5) * 140, o: 0.25 + r(6) * 0.35 };
+  return { left: 4 + r(1) * 92, size: 2.5 + r(2) * 4, dur: 11 + r(3) * 10, delay: -r(4) * 21, dx: (r(5) - 0.5) * 160, o: 0.5 + r(6) * 0.45 };
 });
 
 export function AmbientBackground() {
@@ -22,6 +22,8 @@ export function AmbientBackground() {
       <div className="absolute inset-[-20%] -rotate-12">
         <span className="ambient-streak" style={{ top: "30%", animationDelay: "-3s" }}/>
         <span className="ambient-streak" style={{ top: "68%", animationDelay: "-11s", animationDuration: "17s" }}/>
+        <span className="ambient-streak" style={{ top: "48%", animationDelay: "-6s", animationDuration: "15s" }}/>
+        <span className="ambient-streak" style={{ top: "84%", animationDelay: "-1s", animationDuration: "11s" }}/>
       </div>
     </div>
   );
