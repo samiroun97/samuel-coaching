@@ -122,7 +122,7 @@ export function SplashScreen() {
       </div>
 
       <div className={`relative w-full flex flex-col items-center ${intro ? "splash-zoom" : ""}`}>
-        <h1 style={{ fontFamily: "var(--font-bebas)", fontSize: "clamp(4.2rem, 17vw, 12rem)" }}
+        <h1 style={{ fontFamily: "var(--font-bebas)", fontSize: "clamp(3.6rem, min(17vw, 19vh), 12rem)" }}
           className="leading-[0.86] tracking-[0.06em] text-center">
           {word("SAMUEL", 0, false)}
           {word("COACHING", 6, true)}
