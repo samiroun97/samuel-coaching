@@ -65,7 +65,7 @@ function AiLoader({ size, className }: { size: number; className: string }) {
 }
 
 // Écran de chargement plein écran (chargement d'une page, vérification de la session…).
-// Volontairement « cinéma » et toujours sur fond noir, quel que soit le thème : le kettlebell
+// Volontairement « cinéma », en version sombre (noir) ou claire (crème) selon le thème : le kettlebell
 // BURN-B s'allume (zoom + flamme qui vacille), le nom monte lettre par lettre avec un reflet
 // doré, ligne de battement de cœur sur toute la largeur, traits de vitesse et compteur en %.
 // Plusieurs écrans s'enchaînent souvent (session puis page) : l'heure de départ est gardée au
@@ -101,7 +101,7 @@ export function SplashScreen() {
     <span className="inline-flex">
       {text.split("").map((ch, i) => (
         <span key={i} className="inline-block overflow-hidden pb-[0.04em]">
-          <span className={`inline-block ${intro ? "splash-rise" : ""} ${gold ? "splash-gold" : "text-white"}`}
+          <span className={`inline-block ${intro ? "splash-rise" : ""} ${gold ? "splash-gold" : "text-[var(--sp-text)]"}`}
             style={intro ? { animationDelay: `${(offset + i) * 55}ms` } : undefined}>{ch}</span>
         </span>
       ))}
@@ -109,10 +109,10 @@ export function SplashScreen() {
   );
 
   return (
-    <div role="status" aria-label="Chargement" className="fixed inset-0 z-[100] bg-[#060606] overflow-hidden flex flex-col items-center justify-center select-none">
+    <div role="status" aria-label="Chargement" className="splash fixed inset-0 z-[100] bg-[var(--sp-bg)] overflow-hidden flex flex-col items-center justify-center select-none">
       {/* Lueur + vignette */}
       <div className="absolute inset-0 pointer-events-none"
-        style={{ background: "radial-gradient(ellipse at 50% 45%, rgba(201,168,76,0.22), transparent 60%), radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0,0,0,0.85))" }}/>
+        style={{ background: "radial-gradient(ellipse at 50% 45%, var(--sp-glow), transparent 60%), radial-gradient(ellipse at 50% 50%, transparent 55%, var(--sp-vignette))" }}/>
       {/* Traits de vitesse */}
       <div className="absolute inset-[-20%] -rotate-12 pointer-events-none">
         {[12, 24, 37, 51, 63, 76, 88].map((top, i) => (
@@ -125,7 +125,9 @@ export function SplashScreen() {
         <div className="relative" style={{ height: "clamp(130px, 24vh, 220px)" }}>
           <div className="absolute inset-[-25%] rounded-full blur-3xl bg-[#c9a84c] splash-glow"/>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/burnb-mark.webp" alt="" className={`relative h-full w-auto splash-flame ${intro ? "splash-mark-in" : ""}`}/>
+          <img src="/brand/burnb-mark.webp" alt="" className={`splash-mark-for-dark relative h-full w-auto splash-flame ${intro ? "splash-mark-in" : ""}`}/>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/burnb-mark-dark.webp" alt="" className={`splash-mark-for-light relative h-full w-auto splash-flame ${intro ? "splash-mark-in" : ""}`}/>
         </div>
         <h1 style={{ fontFamily: "var(--font-bebas)", fontSize: "clamp(3.8rem, min(16vw, 15vh), 9rem)" }}
           className="mt-3 md:mt-5 leading-none tracking-[0.08em] text-center flex justify-center">
@@ -136,17 +138,17 @@ export function SplashScreen() {
         {/* Battement de cœur sur toute la largeur */}
         <svg viewBox="0 0 1200 120" preserveAspectRatio="none" className="w-full h-[56px] md:h-[80px] mt-2 md:mt-4 overflow-visible" aria-hidden="true">
           <path d="M0 60 H430 L455 60 L470 38 L488 60 L510 60 L530 8 L555 112 L578 60 L610 60 L628 46 L646 60 H1200"
-            fill="none" stroke="#c9a84c" strokeOpacity="0.15" strokeWidth="2" vectorEffect="non-scaling-stroke"/>
+            fill="none" stroke="var(--sp-ecg-base)" strokeWidth="2" vectorEffect="non-scaling-stroke"/>
           <path d="M0 60 H430 L455 60 L470 38 L488 60 L510 60 L530 8 L555 112 L578 60 L610 60 L628 46 L646 60 H1200"
-            pathLength={100} fill="none" stroke="#f0d98f" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
+            pathLength={100} fill="none" stroke="var(--sp-ecg)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
             vectorEffect="non-scaling-stroke" className="splash-ecg"/>
         </svg>
 
         <div className="mt-4 md:mt-6 flex flex-col items-center gap-2">
-          <span style={{ fontFamily: "var(--font-bebas)" }} className="text-[2.6rem] md:text-[3.2rem] leading-none tabular-nums text-white">
+          <span style={{ fontFamily: "var(--font-bebas)" }} className="text-[2.6rem] md:text-[3.2rem] leading-none tabular-nums text-[var(--sp-text)]">
             {pct}<span className="text-[#c9a84c]">%</span>
           </span>
-          <span className="text-[0.68rem] md:text-[0.72rem] tracking-[0.35em] uppercase text-white/55">{SPLASH_LINES[line]}</span>
+          <span className="text-[0.68rem] md:text-[0.72rem] tracking-[0.35em] uppercase text-[var(--sp-sub)]">{SPLASH_LINES[line]}</span>
         </div>
       </div>
     </div>

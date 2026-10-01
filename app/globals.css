@@ -456,6 +456,23 @@ button[data-loading]::after {
 }
 
 /* Écran de chargement plein écran (SplashScreen, components/Loader.tsx) */
+.splash {
+  --sp-bg: #060606; --sp-text: #ffffff; --sp-sub: rgb(255 255 255 / 0.55);
+  --sp-glow: rgb(201 168 76 / 0.22); --sp-vignette: rgb(0 0 0 / 0.85);
+  --sp-ecg: #f0d98f; --sp-ecg-base: rgb(201 168 76 / 0.15); --sp-ecg-shadow: rgb(240 217 143 / 0.9);
+  --sp-gold: linear-gradient(110deg, #b08a36 0%, #d4b35a 35%, #fff4cc 50%, #d4b35a 65%, #b08a36 100%);
+  --sp-streak: #c9a84c;
+}
+:root[data-theme="light"] .splash {
+  --sp-bg: #f5efe4; --sp-text: #141414; --sp-sub: rgb(20 20 20 / 0.5);
+  --sp-glow: rgb(201 168 76 / 0.3); --sp-vignette: rgb(176 138 54 / 0.16);
+  --sp-ecg: #b8943c; --sp-ecg-base: rgb(176 138 54 / 0.2); --sp-ecg-shadow: rgb(201 168 76 / 0.45);
+  --sp-gold: linear-gradient(110deg, #8a6a22 0%, #b08a36 35%, #e8cc7a 50%, #b08a36 65%, #8a6a22 100%);
+  --sp-streak: #b8943c;
+}
+.splash-mark-for-light { display: none; }
+:root[data-theme="light"] .splash-mark-for-dark { display: none; }
+:root[data-theme="light"] .splash-mark-for-light { display: block; }
 @keyframes splashRise { from { transform: translateY(105%); } to { transform: none; } }
 @keyframes splashZoom { from { transform: scale(1.08); filter: blur(6px); opacity: 0; } to { transform: none; filter: none; opacity: 1; } }
 @keyframes splashGold { 0% { background-position: 120% 0; } 100% { background-position: -120% 0; } }
@@ -465,12 +482,12 @@ button[data-loading]::after {
 .splash-zoom { animation: splashZoom 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 .splash-gold {
   color: transparent; background-clip: text; -webkit-background-clip: text;
-  background-image: linear-gradient(110deg, #b08a36 0%, #d4b35a 35%, #fff4cc 50%, #d4b35a 65%, #b08a36 100%);
+  background-image: var(--sp-gold, linear-gradient(110deg, #b08a36 0%, #d4b35a 35%, #fff4cc 50%, #d4b35a 65%, #b08a36 100%));
   background-size: 250% 100%; animation: splashGold 2.4s linear infinite;
 }
 .splash-rise.splash-gold { animation: splashRise 0.75s cubic-bezier(0.2, 0.8, 0.2, 1) both, splashGold 2.4s linear infinite; }
-.splash-ecg { stroke-dasharray: 22 300; animation: splashEcg 1.8s cubic-bezier(0.45, 0, 0.55, 1) infinite; filter: drop-shadow(0 0 6px rgba(240, 217, 143, 0.9)); }
-.splash-streak { background: linear-gradient(90deg, transparent, #c9a84c, transparent); animation: splashStreak 2s linear infinite; }
+.splash-ecg { stroke-dasharray: 22 300; animation: splashEcg 1.8s cubic-bezier(0.45, 0, 0.55, 1) infinite; filter: drop-shadow(0 0 6px var(--sp-ecg-shadow)); }
+.splash-streak { background: linear-gradient(90deg, transparent, var(--sp-streak), transparent); animation: splashStreak 2s linear infinite; }
 @keyframes splashMarkIn { from { transform: scale(0.6) translateY(12px); opacity: 0; filter: blur(10px) brightness(2); } to { transform: none; opacity: 1; filter: none; } }
 @keyframes splashFlame { 0%, 100% { filter: brightness(1) drop-shadow(0 0 10px rgba(201,168,76,0.35)); } 50% { filter: brightness(1.18) drop-shadow(0 0 26px rgba(240,217,143,0.6)); } }
 @keyframes splashGlow { 0%, 100% { opacity: 0.16; transform: scale(0.92); } 50% { opacity: 0.3; transform: scale(1.04); } }
