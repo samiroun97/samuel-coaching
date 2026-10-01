@@ -471,7 +471,14 @@ button[data-loading]::after {
 .splash-rise.splash-gold { animation: splashRise 0.75s cubic-bezier(0.2, 0.8, 0.2, 1) both, splashGold 2.4s linear infinite; }
 .splash-ecg { stroke-dasharray: 22 300; animation: splashEcg 1.8s cubic-bezier(0.45, 0, 0.55, 1) infinite; filter: drop-shadow(0 0 6px rgba(240, 217, 143, 0.9)); }
 .splash-streak { background: linear-gradient(90deg, transparent, #c9a84c, transparent); animation: splashStreak 2s linear infinite; }
+@keyframes splashMarkIn { from { transform: scale(0.6) translateY(12px); opacity: 0; filter: blur(10px) brightness(2); } to { transform: none; opacity: 1; filter: none; } }
+@keyframes splashFlame { 0%, 100% { filter: brightness(1) drop-shadow(0 0 10px rgba(201,168,76,0.35)); } 50% { filter: brightness(1.18) drop-shadow(0 0 26px rgba(240,217,143,0.6)); } }
+@keyframes splashGlow { 0%, 100% { opacity: 0.16; transform: scale(0.92); } 50% { opacity: 0.3; transform: scale(1.04); } }
+.splash-flame { animation: splashFlame 1.6s ease-in-out infinite; }
+.splash-mark-in { animation: splashMarkIn 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both, splashFlame 1.6s ease-in-out 0.9s infinite; }
+.splash-glow { animation: splashGlow 1.6s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) {
+  .splash-flame, .splash-mark-in, .splash-glow { animation: none; }
   .splash-rise, .splash-zoom, .splash-streak { animation: none; }
   .splash-gold, .splash-rise.splash-gold { animation: none; }
 }

@@ -65,9 +65,9 @@ function AiLoader({ size, className }: { size: number; className: string }) {
 }
 
 // Écran de chargement plein écran (chargement d'une page, vérification de la session…).
-// Volontairement « cinéma » et toujours sur fond noir, quel que soit le thème : nom en très
-// grand qui monte lettre par lettre avec un reflet doré qui passe, ligne de battement de cœur
-// tracée sur toute la largeur, traits de vitesse en fond et compteur en %.
+// Volontairement « cinéma » et toujours sur fond noir, quel que soit le thème : le kettlebell
+// BURN-B s'allume (zoom + flamme qui vacille), le nom monte lettre par lettre avec un reflet
+// doré, ligne de battement de cœur sur toute la largeur, traits de vitesse et compteur en %.
 // Plusieurs écrans s'enchaînent souvent (session puis page) : l'heure de départ est gardée au
 // niveau du module pour que l'intro ne rejoue pas et que le compteur continue au lieu de
 // repartir de 0.
@@ -98,7 +98,7 @@ export function SplashScreen() {
   }, []);
 
   const word = (text: string, offset: number, gold: boolean) => (
-    <span className="flex justify-center">
+    <span className="inline-flex">
       {text.split("").map((ch, i) => (
         <span key={i} className="inline-block overflow-hidden pb-[0.04em]">
           <span className={`inline-block ${intro ? "splash-rise" : ""} ${gold ? "splash-gold" : "text-white"}`}
@@ -122,14 +122,19 @@ export function SplashScreen() {
       </div>
 
       <div className={`relative w-full flex flex-col items-center ${intro ? "splash-zoom" : ""}`}>
-        <h1 style={{ fontFamily: "var(--font-bebas)", fontSize: "clamp(3.6rem, min(17vw, 19vh), 12rem)" }}
-          className="leading-[0.86] tracking-[0.06em] text-center">
-          {word("SAMUEL", 0, false)}
-          {word("COACHING", 6, true)}
+        <div className="relative" style={{ height: "clamp(130px, 24vh, 220px)" }}>
+          <div className="absolute inset-[-25%] rounded-full blur-3xl bg-[#c9a84c] splash-glow"/>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/burnb-mark.webp" alt="" className={`relative h-full w-auto splash-flame ${intro ? "splash-mark-in" : ""}`}/>
+        </div>
+        <h1 style={{ fontFamily: "var(--font-bebas)", fontSize: "clamp(3.8rem, min(16vw, 15vh), 9rem)" }}
+          className="mt-3 md:mt-5 leading-none tracking-[0.08em] text-center flex justify-center">
+          {word("BURN-", 4, true)}
+          {word("B", 9, false)}
         </h1>
 
         {/* Battement de cœur sur toute la largeur */}
-        <svg viewBox="0 0 1200 120" preserveAspectRatio="none" className="w-full h-[70px] md:h-[90px] mt-4 md:mt-6 overflow-visible" aria-hidden="true">
+        <svg viewBox="0 0 1200 120" preserveAspectRatio="none" className="w-full h-[56px] md:h-[80px] mt-2 md:mt-4 overflow-visible" aria-hidden="true">
           <path d="M0 60 H430 L455 60 L470 38 L488 60 L510 60 L530 8 L555 112 L578 60 L610 60 L628 46 L646 60 H1200"
             fill="none" stroke="#c9a84c" strokeOpacity="0.15" strokeWidth="2" vectorEffect="non-scaling-stroke"/>
           <path d="M0 60 H430 L455 60 L470 38 L488 60 L510 60 L530 8 L555 112 L578 60 L610 60 L628 46 L646 60 H1200"
@@ -137,7 +142,7 @@ export function SplashScreen() {
             vectorEffect="non-scaling-stroke" className="splash-ecg"/>
         </svg>
 
-        <div className="mt-6 md:mt-8 flex flex-col items-center gap-2">
+        <div className="mt-4 md:mt-6 flex flex-col items-center gap-2">
           <span style={{ fontFamily: "var(--font-bebas)" }} className="text-[2.6rem] md:text-[3.2rem] leading-none tabular-nums text-white">
             {pct}<span className="text-[#c9a84c]">%</span>
           </span>

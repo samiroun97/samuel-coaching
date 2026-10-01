@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Samuel Coaching",
-    short_name: "S.COACHING",
-    description: "Ton espace client Samuel Coaching — nutrition, programme, suivi.",
+    name: "BURN-B",
+    short_name: "BURN-B",
+    description: "BURN-B par Samuel Coaching — entraînement, nutrition, suivi.",
     start_url: "/dashboard",
     display: "standalone",
     background_color: "#0a0a0a",
