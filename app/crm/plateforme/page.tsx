@@ -8,7 +8,7 @@ import { apiPost } from "@/lib/apiClient";
 import { isPlatformAdmin } from "@/lib/coach";
 import { OperateurIaCorrections } from "@/components/OperateurIaCorrections";
 import { PLANS, type Plan } from "@/lib/plans";
-import { Loader } from "@/components/Loader";
+import { SplashScreen } from "@/components/Loader";
 
 type Kind = "operateur" | "coach" | "client" | "solo";
 type SubInfo = { plan: string | null; planLabel: string | null; subStatus: string | null; trialEndsAt: string | null; active: boolean | null };
@@ -134,7 +134,7 @@ export default function OperateurPage() {
 
   if (checking || !allowed) return (
     <div className="flex-1 flex items-center justify-center py-24">
-      <Loader size={96}/>
+      <SplashScreen/>
     </div>
   );
 

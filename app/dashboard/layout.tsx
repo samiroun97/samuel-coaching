@@ -9,7 +9,7 @@ import { isCoachUser, getMyCoachBusinessName, getMyOwnBusinessName } from "@/lib
 import { apiPost } from "@/lib/apiClient";
 import { Icon } from "@/components/Icon";
 import { LogOut } from "@/lib/solarIcons";
-import { Loader } from "@/components/Loader";
+import { SplashScreen } from "@/components/Loader";
 import { RichIcon, type RichIconName } from "@/components/RichIcon";
 
 // "Séance" pointait autrefois vers /dashboard/programme/creer-ma-seance (page indépendante,
@@ -160,7 +160,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (!ready) return (
     <div className="min-h-screen bg-[var(--t-bg)] flex items-center justify-center">
-      <Loader size={96}/>
+      <SplashScreen/>
     </div>
   );
 

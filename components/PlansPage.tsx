@@ -5,7 +5,7 @@ import { apiPost } from "@/lib/apiClient";
 import { PLANS, type Entitlement, type Plan } from "@/lib/plans";
 import { Icon } from "@/components/Icon";
 import { Check } from "@/lib/solarIcons";
-import { Loader } from "@/components/Loader";
+import { SplashScreen } from "@/components/Loader";
 
 // Page Abonnement (espace client et CRM) : formule actuelle, essai en cours, et les deux
 // niveaux Base/Premium de l'usage concerné (Solo ou Coach). Le paiement en ligne (Stripe)
@@ -27,7 +27,7 @@ export function PlansPage() {
   }, []);
 
   if (error) return <p className="text-sm text-[#e07070]">{error}</p>;
-  if (!me) return <div className="flex justify-center py-16"><Loader size={96}/></div>;
+  if (!me) return <div className="flex justify-center py-16"><SplashScreen/></div>;
 
   const ent = me.entitlement;
   const isOwner = ent.kind === "owner";

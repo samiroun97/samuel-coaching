@@ -27,7 +27,7 @@ import { hasBlessure } from "@/lib/blessures";
 import { type Mesocycle, loadActiveMesocycle, createMesocycle, deleteMesocycle, mesocycleProgress } from "@/lib/mesocycles";
 import { Icon } from "@/components/Icon";
 import { ChevronLeft, ChevronDown, Trash2, X, Copy, Plus } from "@/lib/solarIcons";
-import { Loader } from "@/components/Loader";
+import { Loader, SplashScreen } from "@/components/Loader";
 
 const STAGE_CFG: Record<string, { label: string; color: string }> = {
   prospect:   { label: "Prospect",   color: "#888" },
@@ -431,7 +431,7 @@ export default function ProgrammesPage() {
   const inp = "w-full bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border)] rounded-xl text-[var(--t-text)] placeholder-[var(--t-text-20)] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a84c]/40 transition-colors";
   const lbl = "text-[0.55rem] tracking-[0.2em] uppercase text-[#c9a84c] block mb-1.5";
 
-  if (loading) return <div className="flex items-center justify-center min-h-screen"><Loader size={96}/></div>;
+  if (loading) return <div className="flex items-center justify-center min-h-screen"><SplashScreen/></div>;
 
   const initials = (c: Pick<Client, "prenom" | "nom">) => `${c.prenom?.[0] ?? ""}${c.nom?.[0] ?? ""}`.toUpperCase() || "?";
   const Avatar = ({ c, size, color }: { c: Client; size: number; color: string }) => c.avatar_url ? (

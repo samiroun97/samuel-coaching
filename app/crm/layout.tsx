@@ -10,7 +10,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { ModeSwitch } from "@/components/ModeSwitch";
 import { Icon } from "@/components/Icon";
 import { LayoutGrid, Users, Layers, Share2, MessageSquare, FileText, LogOut, Eye, Star, BarChart3, MoreHorizontal } from "@/lib/solarIcons";
-import { Loader } from "@/components/Loader";
+import { SplashScreen } from "@/components/Loader";
 
 export default function CRMLayout({ children }: { children: React.ReactNode }) {
   const router   = useRouter();
@@ -99,7 +99,7 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
 
   if (!ready) return (
     <div className="min-h-screen bg-[var(--t-bg2)] flex items-center justify-center">
-      <Loader size={96}/>
+      <SplashScreen/>
     </div>
   );
 

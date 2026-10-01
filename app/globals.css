@@ -454,3 +454,9 @@ button[data-loading]::after {
   .loader-sport-lift, .loader-sport-halo { animation: none; }
   .loader-sport-arc { animation-duration: 2.4s; }
 }
+
+/* Écran de chargement plein écran (SplashScreen) */
+@keyframes splashBar { 0% { transform: translateX(-110%); } 100% { transform: translateX(330%); } }
+@keyframes splashLine { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.splash-bar { animation: splashBar 1.3s cubic-bezier(0.65, 0, 0.35, 1) infinite; }
+.splash-line { animation: splashLine 0.4s ease-out; }

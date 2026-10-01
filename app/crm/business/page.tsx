@@ -6,7 +6,7 @@ import { DashboardTab } from "@/components/business/DashboardTab";
 import { SessionsTab } from "@/components/business/SessionsTab";
 import { InvoicesTab } from "@/components/business/InvoicesTab";
 import { OffersTab, PaymentsTab, SettingsTab } from "@/components/business/OtherTabs";
-import { Loader } from "@/components/Loader";
+import { SplashScreen } from "@/components/Loader";
 
 type Tab = "apercu" | "seances" | "factures" | "paiements" | "offres" | "reglages";
 const TABS: { key: Tab; label: string }[] = [
@@ -40,7 +40,7 @@ export default function BusinessPage() {
         </div>
 
         {error && <p className="text-xs text-[#e07070] rounded-xl border border-[#e07070]/20 bg-[#e07070]/5 px-3 py-2">{error}</p>}
-        {!data && !error && <div className="flex justify-center py-16"><Loader size={96}/></div>}
+        {!data && !error && <div className="flex justify-center py-16"><SplashScreen/></div>}
 
         {data && tab === "apercu" && <DashboardTab data={data} goTo={setTab}/>}
         {data && tab === "seances" && <SessionsTab data={data} reload={reload}/>}

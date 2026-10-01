@@ -9,7 +9,7 @@ import { PipelineBoard } from "@/components/PipelineBoard";
 import { MessageCircle, Clock, AlertCircle, FileText, TrendingUp, CheckCircle2, User } from "@/lib/solarIcons";
 import { apiPost } from "@/lib/apiClient";
 import { isPlatformAdmin } from "@/lib/coach";
-import { Loader } from "@/components/Loader";
+import { SplashScreen } from "@/components/Loader";
 
 type Client = { id: string; email: string; prenom: string; nom: string; status: string | null; subscription_end: string | null; pipeline_stage: string | null; updated_at: string };
 type Msg    = { from_email: string; to_email: string; content: string; created_at: string };
@@ -174,7 +174,7 @@ export default function CRMDashboard() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-full min-h-screen">
-      <Loader size={96}/>
+      <SplashScreen/>
     </div>
   );
 

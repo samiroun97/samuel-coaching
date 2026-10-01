@@ -11,7 +11,7 @@ import { RichIcon } from "@/components/RichIcon";
 import { ClientNudges } from "@/components/ClientNudges";
 import { Check, Pencil, ChevronRight } from "@/lib/solarIcons";
 import { bmr, expenditure } from "@/lib/energy";
-import { Loader } from "@/components/Loader";
+import { SplashScreen } from "@/components/Loader";
 
 type Profile = {
   prenom: string; nom: string; age: number; poids: number; taille: number; sexe: string;
@@ -243,7 +243,7 @@ export default function AccueilPage() {
 
   if (!profile) return (
     <div className="flex items-center justify-center h-64">
-      <Loader size={96}/>
+      <SplashScreen/>
     </div>
   );
 

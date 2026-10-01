@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useId, useRef } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import animationData from "@/lib/lottie/loader.json";
 
 // Indicateurs de chargement de l'app.
@@ -62,4 +62,35 @@ function AiLoader({ size, className }: { size: number; className: string }) {
   }, []);
 
   return <div ref={ref} role="status" aria-label="Chargement" className={`shrink-0 ${className}`} style={{ width: size, height: size }}/>;
+}
+
+// Écran de chargement plein écran (chargement d'une page, vérification de la session…) :
+// couvre toute la page, médaillon haltère en grand, nom de la marque, barre de progression
+// et une petite phrase de coach qui change. Fond plein : deux écrans qui s'enchaînent
+// (layout puis page) se fondent en un seul.
+const SPLASH_LINES = ["Échauffement en cours…", "On charge les haltères…", "Prépare-toi, on y va…", "Encore une répétition…", "Mise en place de ta séance…"];
+
+export function SplashScreen() {
+  const [line, setLine] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setLine(l => (l + 1) % SPLASH_LINES.length), 1800);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <div role="status" aria-label="Chargement"
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center gap-7 bg-[var(--t-bg)] overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none"
+        style={{ background: "radial-gradient(circle at 50% 42%, rgba(201,168,76,0.18), transparent 55%)" }}/>
+      <SportLoader size={150} className="relative"/>
+      <div className="relative flex flex-col items-center gap-3">
+        <p style={{ fontFamily: "var(--font-bebas)" }} className="text-[2.4rem] leading-none tracking-[0.18em] text-[var(--t-text)] pl-[0.18em]">
+          SAMUEL <span className="text-[#c9a84c]">COACHING</span>
+        </p>
+        <div className="w-44 h-1 rounded-full bg-[var(--t-track)] overflow-hidden">
+          <div className="splash-bar h-full w-1/3 rounded-full bg-gradient-to-r from-[#e2c97e] to-[#c9a84c]"/>
+        </div>
+        <p key={line} className="splash-line text-[0.8rem] text-[var(--t-text-50)] h-5">{SPLASH_LINES[line]}</p>
+      </div>
+    </div>
+  );
 }
