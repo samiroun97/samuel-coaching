@@ -390,6 +390,8 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
   const [addingExercice, setAddingExercice] = useState(false);
   const [newExerciceNom, setNewExerciceNom] = useState("");
   const [showLibrary, setShowLibrary] = useState(false);
+  // Un seul bouton « Ajouter un exercice » ; les choix Bibliothèque / Nom libre n’apparaissent qu’au clic.
+  const [addMenuOpen, setAddMenuOpen] = useState(false);
   const [showTimer, setShowTimer] = useState(false);
   const [catalogue, setCatalogue] = useState<CatalogueEntry[]>([]);
   useEffect(() => { loadCatalogue().then(setCatalogue).catch(() => {}); }, []);
@@ -1113,15 +1115,24 @@ export function SeanceLive({ seance, clientId, clientBodyweight = null, onFinish
                   <Icon icon={X} size={16} strokeWidth={2}/>
                 </button>
               </div>
+            ) : !addMenuOpen ? (
+              <button onClick={() => setAddMenuOpen(true)}
+                className="w-full flex items-center justify-center border border-dashed border-[var(--t-border)] rounded-xl text-[0.7rem] tracking-wider uppercase text-[var(--t-text-40)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors py-3 font-medium">
+                Ajouter un exercice
+              </button>
             ) : (
               <div className="flex items-center gap-2">
-                <button onClick={() => setShowLibrary(true)}
+                <button onClick={() => { setAddMenuOpen(false); setShowLibrary(true); }}
                   className="flex-1 flex items-center justify-center gap-2 border border-[var(--t-border)] rounded-xl text-[0.7rem] tracking-wider uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors py-2.5 font-medium">
                   <RichIcon name="library" size={48} className="drop-shadow-[0_4px_8px_rgba(201,168,76,0.35)]"/> Bibliothèque
                 </button>
-                <button onClick={() => setAddingExercice(true)}
+                <button onClick={() => { setAddMenuOpen(false); setAddingExercice(true); }}
                   className="flex-1 flex items-center justify-center gap-2 border border-[var(--t-border)] rounded-xl text-[0.7rem] tracking-wider uppercase text-[var(--t-text-30)] hover:text-[#c9a84c] hover:border-[#c9a84c]/40 transition-colors py-2.5 font-medium">
                   <RichIcon name="notebookPen" size={48} className="drop-shadow-[0_4px_8px_rgba(0,0,0,0.22)]"/> Nom libre
+                </button>
+                <button onClick={() => setAddMenuOpen(false)} aria-label="Annuler"
+                  className="shrink-0 w-11 h-11 rounded-xl border border-[var(--t-border)] text-[var(--t-text-30)] hover:text-[var(--t-text-60)] flex items-center justify-center transition-colors">
+                  <Icon icon={X} size={16} strokeWidth={2}/>
                 </button>
               </div>
             )
