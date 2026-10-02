@@ -212,8 +212,8 @@ export default function InboxPage() {
           {/* Même en-tête illustré que la page Clients (icône messages fournie par le client). */}
           <div className="flex items-center gap-3">
             <div className="relative w-[80px] h-[80px] flex items-center justify-center shrink-0">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-xl pointer-events-none"
-                style={{ width: 68, height: 68, backgroundColor: "#fff6dc", opacity: 0.85 }}/>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-xl pointer-events-none icon-halo"
+                style={{ width: 99, height: 99 }}/>
               <div className="relative animate-levitate-soft">
                 <RichIcon name="messages" size={80} className="drop-shadow-[0_10px_14px_rgba(0,0,0,0.14)]"/>
               </div>

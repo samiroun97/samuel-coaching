@@ -563,3 +563,11 @@ button[data-loading]::after {
 .brand-badge-light { display: none; }
 :root[data-theme="light"] .brand-badge-dark { display: none; }
 :root[data-theme="light"] .brand-badge-light { display: block; }
+
+/* Halo lumineux doré derrière les icônes d'en-tête (Clients, Business, Inbox, Abonnement). */
+@keyframes iconHalo { 0%, 100% { opacity: 0.85; scale: 0.95; } 50% { opacity: 1; scale: 1.05; } }
+.icon-halo {
+  background: radial-gradient(circle, rgb(255 214 102 / 0.8) 0%, rgb(236 184 60 / 0.42) 42%, rgb(201 168 76 / 0) 72%);
+  animation: iconHalo 4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) { .icon-halo { animation: none; } }

@@ -304,8 +304,8 @@ export default function ClientsPage() {
         <div className="px-4 md:px-5 pt-5 md:pt-6 pb-4 border-b border-[var(--t-border-soft)]">
           <div className="flex items-center gap-3 mb-3">
             <div className="relative w-[100px] h-[100px] flex items-center justify-center shrink-0">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-xl pointer-events-none"
-                style={{ width: 84, height: 84, backgroundColor: "#fff6dc", opacity: 0.85 }}/>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-xl pointer-events-none icon-halo"
+                style={{ width: 122, height: 122 }}/>
               <div className="relative animate-levitate-soft">
                 <RichIcon name="clients" size={100} className="drop-shadow-[0_10px_14px_rgba(0,0,0,0.14)]"/>
               </div>
