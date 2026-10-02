@@ -28,8 +28,8 @@ const RICH_ICON_SRC = {
   checkin: "/icons-rich/checkin.webp",
   // Équipe médaillée sous 3 étoiles, fournie par le client — en-tête de la page Clients du CRM.
   clients: "/icons-rich/clients.webp",
-  // Tableau de présentation 3D fourni par le client, recoloré par « gradient map » sur le rendu d'origine (noir laqué/ivoire/or) — en-tête Business.
-  business: "/icons-rich/business-v2.webp",
+  // Tableau de présentation 3D (graphiques or) fourni par le client — en-tête Business.
+  business: "/icons-rich/business-v3.webp",
   // Fournies par le client — cartes de résumé de CRM > Programmes.
   bloc: "/icons-rich/bloc.webp",               // "Bloc en cours" (montre, haltères, gourde, pommes)
   nextSession: "/icons-rich/prochaine-seance.webp", // "Prochaine séance" (medecine balls 5/10 kg)
