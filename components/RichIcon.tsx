@@ -22,8 +22,8 @@ const RICH_ICON_SRC = {
   chrono: "/icons-rich/chrono.webp",
   // Sablier fourni par le client — en-tête "clients qui attendent une action" du dashboard coach.
   hourglass: "/icons-rich/sablier.webp",
-  // Bulles de discussion fournies par le client — carte "Messages en attente" du dashboard coach.
-  messages: "/icons-rich/message.webp",
+  // Bulles de discussion fournies par le client, recolorées avec l'or et le noir relevés sur l'icône Clients — Inbox et « Messages en attente ».
+  messages: "/icons-rich/message-v2.webp",
   // Calendrier coché fourni par le client — carte "Derniers check-ins" du dashboard coach.
   checkin: "/icons-rich/checkin.webp",
   // Équipe médaillée sous 3 étoiles, fournie par le client — en-tête de la page Clients du CRM.
