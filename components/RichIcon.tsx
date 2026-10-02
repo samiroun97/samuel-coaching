@@ -30,6 +30,8 @@ const RICH_ICON_SRC = {
   clients: "/icons-rich/clients.webp",
   // Tableau de présentation 3D (graphiques or) fourni par le client — en-tête Business.
   business: "/icons-rich/business-v4.webp",
+  // Étoile dorée entre deux lauriers, fournie par le client — en-tête Abonnement (CRM et espace client).
+  abonnement: "/icons-rich/abonnement.webp",
   // Fournies par le client — cartes de résumé de CRM > Programmes.
   bloc: "/icons-rich/bloc.webp",               // "Bloc en cours" (montre, haltères, gourde, pommes)
   nextSession: "/icons-rich/prochaine-seance.webp", // "Prochaine séance" (medecine balls 5/10 kg)
