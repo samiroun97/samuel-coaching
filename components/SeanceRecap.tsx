@@ -9,7 +9,7 @@ import { type RepKind, REP_KIND_SUFFIX, parseExercices, groupExerciceRuns } from
 import { loadSeanceLogs, computeExercicePRs } from "@/lib/workoutLog";
 import { analyzeSeance, type SeanceAnalysis } from "@/lib/seanceAnalysis";
 import { SeanceBody, type PreviewSeance } from "@/components/SeancePreview";
-import { RichIcon } from "@/components/RichIcon";
+import { BilanIcon } from "@/components/BilanIcon";
 import { Icon } from "@/components/Icon";
 import { Star } from "@/lib/solarIcons";
 import { Loader } from "@/components/Loader";
@@ -88,7 +88,7 @@ export function SeanceRecap({ seance, clientId, clientBodyweight }: {
               <span style={{ fontFamily: "var(--font-bebas)", color: ringColor }} className="text-lg tracking-wide leading-none">{pct}%</span>
             </div>
           ) : (
-            <RichIcon name="clipboardCheck" size={52} className="shrink-0 drop-shadow-[0_4px_10px_rgba(201,168,76,0.3)]"/>
+            <BilanIcon size={56}/>
           )}
           <div className="min-w-0">
             <p className="text-[0.62rem] tracking-[0.2em] uppercase text-[#c9a84c]">Bilan de séance</p>
