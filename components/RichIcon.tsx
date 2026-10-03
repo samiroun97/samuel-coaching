@@ -1,3 +1,5 @@
+import { LINE_GLYPHS, LineBadge } from "@/components/LineBadge";
+
 // Icônes illustrées (dégradé or/anthracite, style "Charcoal Gold") réservées aux emplacements
 // déjà accentués en doré et de taille généreuse — contrairement aux icônes Solar, leurs couleurs
 // sont fixes (pas de currentColor), donc inadaptées aux endroits avec état actif/thème dynamique.
@@ -54,6 +56,10 @@ const RICH_ICON_SRC = {
 export type RichIconName = keyof typeof RICH_ICON_SRC;
 
 export function RichIcon({ name, size = 24, className }: { name: RichIconName; size?: number; className?: string }) {
+  // Style épuré (trait doré dans un cercle) pour toutes les icônes qui ont un pictogramme ;
+  // seuls le menu rond de l’espace client et le badge de marque gardent leur image.
+  const glyph = LINE_GLYPHS[name];
+  if (glyph) return <LineBadge glyph={glyph} size={size} className={(className ?? "").replace(/drop-shadow-[[^]]*]/g, "")}/>;
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img src={RICH_ICON_SRC[name]} alt="" width={size} height={size} className={`shrink-0 object-contain ${className ?? ""}`} style={{ width: size, height: size }}/>
