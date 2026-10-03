@@ -184,6 +184,12 @@ export const LINE_GLYPHS: Record<string, (f: string) => ReactNode> = {
     <path d="M27 25h10M27 31h10M27 37h6" opacity="0.6"/>
   </>,
 };
+// Menu de l’espace client : mêmes pictogrammes que les en-têtes de rubrique.
+LINE_GLYPHS.navHome = LINE_GLYPHS.home;
+LINE_GLYPHS.navNutrition = LINE_GLYPHS.nutrition;
+LINE_GLYPHS.navActivity = LINE_GLYPHS.bloc;
+LINE_GLYPHS.navProgress = LINE_GLYPHS.progress;
+LINE_GLYPHS.navAccount = LINE_GLYPHS.account;
 
 export function LineBadge({ glyph, size = 52, className = "" }: { glyph: (f: string) => ReactNode; size?: number; className?: string }) {
   const id = useId().replace(/:/g, "");
@@ -201,9 +207,9 @@ export function LineBadge({ glyph, size = 52, className = "" }: { glyph: (f: str
       </defs>
       {!small && <>
         <circle cx="32" cy="32" r="30" fill={`url(#f${id})`}/>
-        <circle cx="32" cy="32" r="30" fill="none" stroke={stroke} strokeOpacity="0.55" strokeWidth="1"/>
+        <circle cx="32" cy="32" r="30" fill="none" stroke={stroke} strokeOpacity="0.55" strokeWidth={size < 44 ? 1.8 : 1}/>
       </>}
-      <g fill="none" stroke={stroke} strokeWidth={small ? 2.6 : 2.1} strokeLinecap="round" strokeLinejoin="round">
+      <g fill="none" stroke={stroke} strokeWidth={small ? 2.6 : size < 44 ? 2.7 : 2.1} strokeLinecap="round" strokeLinejoin="round">
         {glyph(stroke)}
       </g>
     </svg>

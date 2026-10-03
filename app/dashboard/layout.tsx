@@ -191,7 +191,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     : "text-[var(--t-text-30)] hover:text-[var(--t-text-60)] hover:bg-[var(--t-glass-bg)] border-transparent"
                 }`}>
                 {/* Icône 3D dorée : en couleur sur la page active, estompée ailleurs. */}
-                <RichIcon name={rich} size={26} className={`-my-1 transition-all ${active ? "" : "grayscale opacity-45"}`}/>
+                <RichIcon name={rich} size={30} className={`-my-1 transition-all ${active ? "" : "grayscale opacity-45"}`}/>
                 {label}
                 {showBadge && <span className="ml-auto w-2 h-2 rounded-full bg-[#e07070] shrink-0"/>}
               </Link>
@@ -235,7 +235,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <span className="absolute inset-x-1 top-1 bottom-1 rounded-xl bg-gradient-to-b from-[#c9a84c]/25 to-[#c9a84c]/[0.05] border border-[#c9a84c]/30 shadow-[0_0_16px_-2px_rgba(201,168,76,0.5)]"/>
               )}
               <div className={`relative transition-all duration-300 ${active ? "scale-110" : ""}`}>
-                <RichIcon name={rich} size={28} className={`transition-all ${active ? "" : "grayscale opacity-45"}`}/>
+                <RichIcon name={rich} size={34} className={`transition-all ${active ? "" : "grayscale opacity-45"}`}/>
                 {showBadge && <span className="absolute -top-0.5 -right-1.5 w-2 h-2 rounded-full bg-[#e07070] ring-2 ring-[var(--t-bg)]"/>}
               </div>
               <span className={`relative w-full text-center truncate px-0.5 text-[0.4rem] tracking-[0.02em] uppercase transition-all duration-300 ${

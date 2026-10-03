@@ -57,7 +57,7 @@ export type RichIconName = keyof typeof RICH_ICON_SRC;
 
 export function RichIcon({ name, size = 24, className }: { name: RichIconName; size?: number; className?: string }) {
   // Style épuré (trait doré dans un cercle) pour toutes les icônes qui ont un pictogramme ;
-  // seuls le menu rond de l’espace client et le badge de marque gardent leur image.
+  // seul le badge de marque (monogram) garde son image.
   const glyph = LINE_GLYPHS[name];
   if (glyph) return <LineBadge glyph={glyph} size={size} className={(className ?? "").replace(/drop-shadow-[[^]]*]/g, "")}/>;
   return (
