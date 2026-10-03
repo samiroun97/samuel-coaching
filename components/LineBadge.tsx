@@ -138,6 +138,51 @@ export const LINE_GLYPHS: Record<string, (f: string) => ReactNode> = {
     <path d="M32 21l3.2 6.6 7.3 1-5.3 5.1 1.3 7.2L32 37.5l-6.5 3.4 1.3-7.2-5.3-5.1 7.3-1z"/>
     <path d="M19.5 25c-3 6-2 13 4.5 18.5M44.5 25c3 6 2 13-4.5 18.5" opacity="0.6"/>
   </>,
+  home: () => <>
+    <path d="M18.5 31.5L32 20l13.5 11.5"/>
+    <path d="M23 28v17h18V28"/>
+    <path d="M29 45v-8h6v8" opacity="0.6"/>
+  </>,
+  nutrition: () => <>
+    <path d="M18 33h28c0 7.7-6.3 13-14 13s-14-5.3-14-13z"/>
+    <path d="M33 30c0-6 4-10.5 10-11.5 0 6-4 10.5-10 11.5z"/>
+    <path d="M33 30c-1-4-4-6.5-8.5-7.5" opacity="0.6"/>
+  </>,
+  progress: () => <>
+    <path d="M19 19v26h26" opacity="0.6"/>
+    <path d="M24 38l6-7 5 4 9-11"/>
+    <path d="M39 24h5v5"/>
+  </>,
+  account: () => <>
+    <circle cx="32" cy="26" r="6.5"/>
+    <path d="M20.5 45c0-6.5 5-11 11.5-11s11.5 4.5 11.5 11"/>
+  </>,
+  dashboard: () => <>
+    <rect x="19" y="19" width="11" height="13" rx="2.5"/>
+    <rect x="34" y="19" width="11" height="8" rx="2.5"/>
+    <rect x="19" y="36" width="11" height="9" rx="2.5"/>
+    <rect x="34" y="31" width="11" height="14" rx="2.5"/>
+  </>,
+  pipeline: () => <>
+    <path d="M18 20h28L36 32v10l-8 4V32z"/>
+    <path d="M23 25h18" opacity="0.6"/>
+  </>,
+  programme: f => <>
+    <rect x="20" y="17" width="24" height="30" rx="4"/>
+    <rect x="26.5" y="13.5" width="11" height="6" rx="2.5" fill={f} stroke="none"/>
+    <path d="M27.5 30h9M25.5 27v6M38.5 27v6"/>
+    <path d="M26 40h12" opacity="0.6"/>
+  </>,
+  plateforme: () => <>
+    <circle cx="32" cy="21" r="4"/>
+    <circle cx="21" cy="41" r="4"/>
+    <circle cx="43" cy="41" r="4"/>
+    <path d="M30 24.5l-7 13M34 24.5l7 13M25 41h14" opacity="0.6"/>
+  </>,
+  factures: () => <>
+    <path d="M22 17h20v29l-3.3-2-3.4 2-3.3-2-3.3 2-3.4-2-3.3 2z"/>
+    <path d="M27 25h10M27 31h10M27 37h6" opacity="0.6"/>
+  </>,
 };
 
 export function LineBadge({ glyph, size = 52, className = "" }: { glyph: (f: string) => ReactNode; size?: number; className?: string }) {

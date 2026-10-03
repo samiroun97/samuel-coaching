@@ -6,6 +6,7 @@ import { loadClientStatuses, statusFor, lastSeenLabel, STATUS_LEVEL_COLOR, type 
 import { Icon } from "@/components/Icon";
 import { MoreHorizontal, Clock, MessageCircle } from "@/lib/solarIcons";
 import { SplashScreen } from "@/components/Loader";
+import { SectionIcon } from "@/components/SectionIcon";
 
 // Board kanban façon CRM open source (Twenty, Plane, Attio) : une colonne par étape du
 // pipeline, une carte par client, glisser-déposer pour changer d'étape. Sur mobile (pas de
@@ -95,12 +96,15 @@ export function PipelineBoard({ variant = "page" }: { variant?: "page" | "sectio
     <div className={variant === "page" ? "p-4 md:p-8" : ""} onClick={() => setMenuFor(null)}>
       {/* Header */}
       {variant === "page" ? (
-        <div className="mb-6 md:mb-8 max-w-6xl">
+        <div className="mb-6 md:mb-8 max-w-6xl flex items-center gap-4">
+          <SectionIcon name="pipeline"/>
+          <div>
           <p className="text-[0.65rem] tracking-[0.35em] text-[#c9a84c] uppercase mb-1">Suivi clients</p>
           <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl md:text-5xl text-[var(--t-text)] tracking-wide">PIPELINE</h1>
           <p className="text-[var(--t-text-30)] text-xs mt-1">
             {total} client{total > 1 ? "s" : ""} · glisse une carte pour changer d&apos;étape
           </p>
+          </div>
         </div>
       ) : (
         <div className="flex items-center justify-between mb-4 max-w-6xl">

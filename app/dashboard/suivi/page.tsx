@@ -15,11 +15,11 @@ import { type WeightEntry, loadWeightHistory, upsertWeightEntry, deleteWeightEnt
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
 import { BilanIcon } from "@/components/BilanIcon";
-import { BrandBadge } from "@/components/BrandBadge";
 import { ChevronDown, ChevronLeft, ChevronRight, Check, Pencil, Plus, X } from "@/lib/solarIcons";
 import { mondayISOOf, todayISO } from "@/lib/planning";
 import { bmr, expenditure, neatFromSteps } from "@/lib/energy";
 import { Loader } from "@/components/Loader";
+import { SectionIcon } from "@/components/SectionIcon";
 
 type Profile      = { prenom?: string; sexe?: string; poids?: number; taille?: number; age?: number; objectifs?: string; objectif_type?: string; seances_par_semaine?: number; experience?: string; niveau_activite?: string };
 // Mensurations du check-in hebdo (colonnes de weekly_checkins, en cm).
@@ -641,7 +641,7 @@ export default function SuiviPage() {
 
       {/* Header — même ancrage de marque que la rubrique Activité (monogramme + eyebrow). */}
       <div className="mb-6 flex items-center gap-3.5">
-        <BrandBadge size={68} className="drop-shadow-[0_6px_16px_rgba(201,168,76,0.25)]"/>
+        <SectionIcon name="progress"/>
         <div>
           <p className="text-[0.7rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-1">Rubrique</p>
           <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl sm:text-5xl text-[var(--t-text)] tracking-wide leading-none">SUIVI</h1>

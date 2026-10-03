@@ -9,6 +9,7 @@ import { isPlatformAdmin } from "@/lib/coach";
 import { OperateurIaCorrections } from "@/components/OperateurIaCorrections";
 import { PLANS, type Plan } from "@/lib/plans";
 import { SplashScreen } from "@/components/Loader";
+import { SectionIcon } from "@/components/SectionIcon";
 
 type Kind = "operateur" | "coach" | "client" | "solo";
 type SubInfo = { plan: string | null; planLabel: string | null; subStatus: string | null; trialEndsAt: string | null; active: boolean | null };
@@ -188,9 +189,12 @@ export default function OperateurPage() {
     // page /operateur autonome, centrée à max-w-6xl, laissait des bandes sombres sur les côtés.
     <div className="flex-1 overflow-y-auto">
     <div className="px-4 md:px-8 py-5 md:py-7 max-w-6xl">
-      <div className="mb-6">
-        <p className="text-[0.5rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-1">Vue opérateur</p>
-        <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl md:text-5xl text-[var(--t-text)] tracking-wide leading-none">PLATEFORME</h1>
+      <div className="mb-6 flex items-center gap-4">
+        <SectionIcon name="plateforme"/>
+        <div>
+          <p className="text-[0.5rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-1">Vue opérateur</p>
+          <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl md:text-5xl text-[var(--t-text)] tracking-wide leading-none">PLATEFORME</h1>
+        </div>
       </div>
 
       <div className="flex rounded-xl border border-[var(--t-border-soft)] bg-[var(--t-surface)] p-1 mb-6 overflow-x-auto no-scrollbar">

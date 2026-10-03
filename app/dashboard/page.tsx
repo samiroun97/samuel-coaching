@@ -8,11 +8,11 @@ import { useSelectedDate } from "@/lib/useSelectedDate";
 import { syncSteps } from "@/lib/steps";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
-import { BrandBadge } from "@/components/BrandBadge";
 import { ClientNudges } from "@/components/ClientNudges";
 import { Check, Pencil, ChevronRight } from "@/lib/solarIcons";
 import { bmr, expenditure } from "@/lib/energy";
 import { SplashScreen } from "@/components/Loader";
+import { SectionIcon } from "@/components/SectionIcon";
 
 type Profile = {
   prenom: string; nom: string; age: number; poids: number; taille: number; sexe: string;
@@ -262,7 +262,7 @@ export default function AccueilPage() {
 
       {/* ── Header — même ancrage de marque que la rubrique Activité (monogramme + eyebrow). ── */}
       <div className="mb-4 sm:mb-6 flex items-center gap-3.5">
-        <BrandBadge size={68} className="drop-shadow-[0_6px_16px_rgba(201,168,76,0.25)]"/>
+        <SectionIcon name="home"/>
         <div>
           <p className="text-[0.7rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-1">Espace client</p>
           <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl sm:text-5xl text-[var(--t-text)] tracking-wide leading-none">

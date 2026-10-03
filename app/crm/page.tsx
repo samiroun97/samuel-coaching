@@ -10,6 +10,7 @@ import { MessageCircle, Clock, AlertCircle, FileText, TrendingUp, CheckCircle2, 
 import { apiPost } from "@/lib/apiClient";
 import { isPlatformAdmin } from "@/lib/coach";
 import { SplashScreen } from "@/components/Loader";
+import { SectionIcon } from "@/components/SectionIcon";
 
 type Client = { id: string; email: string; prenom: string; nom: string; status: string | null; subscription_end: string | null; pipeline_stage: string | null; updated_at: string };
 type Msg    = { from_email: string; to_email: string; content: string; created_at: string };
@@ -181,12 +182,15 @@ export default function CRMDashboard() {
   return (
     <div className="p-4 md:p-8 max-w-6xl flex flex-col">
       {/* Header */}
-      <div className="mb-6 md:mb-8">
+      <div className="mb-6 md:mb-8 flex items-center gap-4">
+        <SectionIcon name="dashboard"/>
+        <div>
         <p className="text-[0.65rem] tracking-[0.35em] text-[#c9a84c] uppercase mb-1">Plateforme coaching</p>
         <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl md:text-5xl text-[var(--t-text)] tracking-wide">DASHBOARD</h1>
         <p className="text-[var(--t-text-30)] text-xs mt-1 capitalize">
           {new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
         </p>
+        </div>
       </div>
 
       {/* Pipeline — répartition seule, le board détaillé est sur /crm/pipeline */}

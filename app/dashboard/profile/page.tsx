@@ -9,10 +9,10 @@ import { CalendarPicker } from "@/components/CalendarPicker";
 import { OBJECTIF_TYPES, OBJECTIF_TYPE_LABEL, type ObjectifType } from "@/lib/objectifTypes";
 import { uploadAvatar } from "@/lib/avatarUpload";
 import { Icon } from "@/components/Icon";
-import { BrandBadge } from "@/components/BrandBadge";
 import { Settings, ChevronRight, Pencil, MessageSquare, AlertCircle, Check, Star, FileText } from "@/lib/solarIcons";
 import { ModeSwitch } from "@/components/ModeSwitch";
 import { Loader } from "@/components/Loader";
+import { SectionIcon } from "@/components/SectionIcon";
 
 type Profile = {
   prenom: string; nom: string; age: number | null; poids: number | null; taille: number | null; sexe: string | null;
@@ -176,7 +176,7 @@ export default function ProfilePage() {
       <div className="flex items-start justify-between mb-8">
         {/* Même ancrage de marque que la rubrique Activité (monogramme + eyebrow). */}
         <div className="flex items-center gap-3.5">
-          <BrandBadge size={68} className="drop-shadow-[0_6px_16px_rgba(201,168,76,0.25)]"/>
+          <SectionIcon name="account"/>
           <div>
             <p className="text-[0.7rem] tracking-[0.3em] text-[#c9a84c] uppercase mb-1">Paramètres</p>
             <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-5xl text-[var(--t-text)] tracking-wide leading-none">COMPTE</h1>

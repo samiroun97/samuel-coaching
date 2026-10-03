@@ -29,6 +29,7 @@ import { type Mesocycle, loadActiveMesocycle, createMesocycle, deleteMesocycle, 
 import { Icon } from "@/components/Icon";
 import { ChevronLeft, ChevronDown, Trash2, X, Copy, Plus } from "@/lib/solarIcons";
 import { Loader, SplashScreen } from "@/components/Loader";
+import { SectionIcon } from "@/components/SectionIcon";
 
 const STAGE_CFG: Record<string, { label: string; color: string }> = {
   prospect:   { label: "Prospect",   color: "#888" },
@@ -454,8 +455,13 @@ export default function ProgrammesPage() {
       {/* ── Liste clients : lisible, statut programme en un coup d'œil ── */}
       <div className={`flex-col border-r border-[var(--t-border-soft)] bg-[var(--t-bg)] ${selected ? "hidden md:flex w-[280px] shrink-0" : "flex flex-1 md:max-w-md"}`}>
         <div className="px-4 md:px-5 pt-5 md:pt-6 pb-4 border-b border-[var(--t-border-soft)]">
-          <p className="text-[0.62rem] font-semibold tracking-[0.25em] text-[#c9a84c] uppercase mb-1">Plateforme coaching</p>
-          <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-[var(--t-text)] tracking-wide mb-3 leading-none">PROGRAMMES</h1>
+          <div className="flex items-center gap-3 mb-3">
+            <SectionIcon name="programme" size={60}/>
+            <div>
+              <p className="text-[0.62rem] font-semibold tracking-[0.25em] text-[#c9a84c] uppercase mb-1">Plateforme coaching</p>
+              <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl text-[var(--t-text)] tracking-wide leading-none">PROGRAMMES</h1>
+            </div>
+          </div>
           <div className="flex p-1 rounded-xl bg-[var(--t-surface)] shadow-[0_2px_12px_-8px_rgba(0,0,0,0.18)] border border-[var(--t-border-soft)]">
             {([["sans", "À programmer", sans.length, "#e09070"], ["avec", "En cours", avec.length, "#7eb8a0"]] as const).map(([k, label, n, color]) => (
               <button key={k} onClick={() => setFilter(k)}

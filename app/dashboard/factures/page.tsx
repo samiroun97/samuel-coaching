@@ -8,6 +8,7 @@ import {
 import { downloadInvoicePdf } from "@/components/business/actions";
 import { Empty, Pill, Section, btnGhost } from "@/components/business/ui";
 import { SplashScreen } from "@/components/Loader";
+import { SectionIcon } from "@/components/SectionIcon";
 
 // Côté client : solde de ses packs, prochaines séances et factures de son coach (lecture
 // seule, RLS client_reads_own_*). Téléchargement du PDF avec QR-facture pour payer.
@@ -47,7 +48,10 @@ export default function MesFacturesPage() {
 
   return (
     <div className="px-4 md:px-8 py-6 md:py-8 max-w-3xl flex flex-col gap-5">
-      <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-5xl text-[var(--t-text)] tracking-wide leading-none">SÉANCES & FACTURES</h1>
+      <div className="flex items-center gap-4">
+        <SectionIcon name="factures"/>
+        <h1 style={{ fontFamily: "var(--font-bebas)" }} className="text-4xl sm:text-5xl text-[var(--t-text)] tracking-wide leading-none">SÉANCES & FACTURES</h1>
+      </div>
       {loading ? <div className="flex justify-center py-16"><SplashScreen/></div> : (
         <>
           <Section title="Mes packs">
