@@ -1,4 +1,6 @@
+"use client";
 import { LINE_GLYPHS, LineBadge } from "@/components/LineBadge";
+import { useIconStyle } from "@/components/IconStyle";
 
 // Icônes illustrées (dégradé or/anthracite, style "Charcoal Gold") réservées aux emplacements
 // déjà accentués en doré et de taille généreuse — contrairement aux icônes Solar, leurs couleurs
@@ -58,7 +60,10 @@ export type RichIconName = keyof typeof RICH_ICON_SRC;
 export function RichIcon({ name, size = 24, className }: { name: RichIconName; size?: number; className?: string }) {
   // Style épuré (trait doré dans un cercle) pour toutes les icônes qui ont un pictogramme ;
   // seul le badge de marque (monogram) garde son image.
-  const glyph = LINE_GLYPHS[name];
+  // Espace client : illustrations 3D, sauf le menu (pictogrammes) et le téléchargement PDF.
+  const style = useIconStyle();
+  const keepLine = name.startsWith("nav") || name === "download";
+  const glyph = style === "3d" && !keepLine ? undefined : LINE_GLYPHS[name];
   if (glyph) return <LineBadge glyph={glyph} size={size} bare={name.startsWith("nav")} className={(className ?? "").replace(/drop-shadow-[[^]]*]/g, "")}/>;
   return (
     // eslint-disable-next-line @next/next/no-img-element

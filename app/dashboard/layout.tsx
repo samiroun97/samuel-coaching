@@ -12,6 +12,7 @@ import { LogOut } from "@/lib/solarIcons";
 import { SplashScreen } from "@/components/Loader";
 import { AmbientBackground } from "@/components/AmbientBackground";
 import { RichIcon, type RichIconName } from "@/components/RichIcon";
+import { IconStyleProvider } from "@/components/IconStyle";
 
 // "Séance" pointait autrefois vers /dashboard/programme/creer-ma-seance (page indépendante,
 // jamais retouchée lors de la refonte de l'écran d'entraînement) — un client qui partait de
@@ -165,7 +166,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     </div>
   );
 
-  if (isOnboarding) return <>{children}</>;
+  if (isOnboarding) return <><IconStyleProvider value="3d">{children}</IconStyleProvider></>;
 
   return (
     <div className="min-h-screen bg-[var(--t-bg)] flex w-full overflow-x-hidden isolate">
@@ -210,7 +211,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </aside>
 
       <main className="ml-0 md:ml-52 flex-1 min-w-0 w-full h-screen overflow-y-auto pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-0 print:ml-0 print:h-auto print:overflow-visible print:pb-0">
-        {children}
+        <IconStyleProvider value="3d">{children}</IconStyleProvider>
       </main>
 
       {/* Synchro multi-appareils interrompue — reste discret, les données sont conservées en local */}
