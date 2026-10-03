@@ -59,7 +59,7 @@ export function RichIcon({ name, size = 24, className }: { name: RichIconName; s
   // Style épuré (trait doré dans un cercle) pour toutes les icônes qui ont un pictogramme ;
   // seul le badge de marque (monogram) garde son image.
   const glyph = LINE_GLYPHS[name];
-  if (glyph) return <LineBadge glyph={glyph} size={size} className={(className ?? "").replace(/drop-shadow-[[^]]*]/g, "")}/>;
+  if (glyph) return <LineBadge glyph={glyph} size={size} bare={name.startsWith("nav")} className={(className ?? "").replace(/drop-shadow-[[^]]*]/g, "")}/>;
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img src={RICH_ICON_SRC[name]} alt="" width={size} height={size} className={`shrink-0 object-contain ${className ?? ""}`} style={{ width: size, height: size }}/>

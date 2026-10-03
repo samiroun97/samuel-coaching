@@ -191,9 +191,10 @@ LINE_GLYPHS.navActivity = LINE_GLYPHS.bloc;
 LINE_GLYPHS.navProgress = LINE_GLYPHS.progress;
 LINE_GLYPHS.navAccount = LINE_GLYPHS.account;
 
-export function LineBadge({ glyph, size = 52, className = "" }: { glyph: (f: string) => ReactNode; size?: number; className?: string }) {
+export function LineBadge({ glyph, size = 52, className = "", bare = false }: { glyph: (f: string) => ReactNode; size?: number; className?: string; bare?: boolean }) {
   const id = useId().replace(/:/g, "");
-  const small = size < 30;
+  // bare : pictogramme seul, sans cercle (menu de navigation).
+  const small = bare || size < 30;
   const stroke = `url(#g${id})`;
   return (
     <svg viewBox={small ? "12 12 40 40" : "0 0 64 64"} width={size} height={size} className={`shrink-0 ${className}`} aria-hidden="true">
