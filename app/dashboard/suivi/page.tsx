@@ -14,6 +14,7 @@ import { syncSteps } from "@/lib/steps";
 import { type WeightEntry, loadWeightHistory, upsertWeightEntry, deleteWeightEntry } from "@/lib/weightHistory";
 import { Icon } from "@/components/Icon";
 import { RichIcon } from "@/components/RichIcon";
+import { BilanIcon } from "@/components/BilanIcon";
 import { BrandBadge } from "@/components/BrandBadge";
 import { ChevronDown, ChevronLeft, ChevronRight, Check, Pencil, Plus, X } from "@/lib/solarIcons";
 import { mondayISOOf, todayISO } from "@/lib/planning";
@@ -752,7 +753,7 @@ export default function SuiviPage() {
           <div className="relative w-20 h-20 flex items-center justify-center shrink-0">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-lg pointer-events-none"
               style={{ width: 58, height: 58, backgroundColor: "#c9a84c", opacity: 0.35 }}/>
-            <RichIcon name="clipboardCheck" size={76} className="relative"/>
+            <BilanIcon size={68} className="relative"/>
           </div>
           <div className="min-w-0">
             <p style={{ fontFamily: "var(--font-bebas)" }} className="text-sm tracking-wider text-[#c9a84c]">Bilan de la semaine</p>

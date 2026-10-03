@@ -14,6 +14,7 @@ import { ProgrammeWeekView } from "@/components/ProgrammeWeekView";
 import { ProgrammeCalendar } from "@/components/ProgrammeCalendar";
 import { mesoWeekNum, addDays, mondayISOOf } from "@/lib/planning";
 import { RichIcon } from "@/components/RichIcon";
+import { BilanIcon } from "@/components/BilanIcon";
 import { type ProgressionRule, NO_PROGRESSION, applyProgression } from "@/lib/surchargeProgressive";
 import { ProgressionTable } from "@/components/ProgressionTable";
 import { type ProgrammeBiblio, listProgrammes, saveProgramme, deleteProgramme, seancesToProgramme, dateFor, mondayISO } from "@/lib/programmeBibliotheque";
@@ -646,10 +647,10 @@ export default function ProgrammesPage() {
               {empty && (
                 <div className="rounded-3xl border border-[#c9a84c]/25 bg-gradient-to-br from-[var(--t-surface-gold)] to-[var(--t-surface)] p-5 md:p-6 flex flex-col md:flex-row md:items-center gap-5 shadow-[0_10px_40px_-20px_rgba(201,168,76,0.5)]">
                   <div className="flex items-center gap-4 md:w-72 shrink-0">
-                    <RichIcon name="clipboardCheck" size={40} className="md:hidden"/>
+                    <BilanIcon size={44} className="md:hidden"/>
                     <div className="relative w-16 h-16 hidden md:flex items-center justify-center shrink-0">
                       <div className="absolute inset-2 rounded-full blur-lg bg-[#c9a84c] opacity-25"/>
-                      <RichIcon name="clipboardCheck" size={64} className="relative animate-levitate drop-shadow-[0_8px_12px_rgba(0,0,0,0.15)]"/>
+                      <BilanIcon size={64} className="relative animate-levitate"/>
                     </div>
                     <div>
                       <p style={{ fontFamily: "var(--font-bebas)" }} className="text-2xl leading-none tracking-wide text-[var(--t-text)]">Premier programme</p>
@@ -759,7 +760,7 @@ export default function ProgrammesPage() {
         <div className="flex-1 hidden md:flex flex-col items-center justify-center gap-4 p-8">
           <div className="relative w-24 h-24 flex items-center justify-center">
             <div className="absolute inset-3 rounded-full blur-xl bg-[#c9a84c] opacity-20"/>
-            <RichIcon name="clipboardCheck" size={88} className="relative animate-levitate drop-shadow-[0_10px_16px_rgba(0,0,0,0.15)]"/>
+            <BilanIcon size={88} className="relative animate-levitate"/>
           </div>
           <p style={{ fontFamily: "var(--font-bebas)" }} className="text-3xl tracking-wide text-[var(--t-text)]">Choisis un client</p>
           <p className="text-sm text-[var(--t-text-50)] text-center max-w-xs">
