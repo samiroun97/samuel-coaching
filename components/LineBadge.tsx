@@ -63,7 +63,10 @@ export const LINE_GLYPHS: Record<string, (f: string) => ReactNode> = {
     <circle cx="31" cy="34" r="12"/>
     <circle cx="31" cy="34" r="6.5"/>
     <circle cx="31" cy="34" r="1.8" fill={f} stroke="none"/>
-    <path d="M32 33l11-11M39.5 21.5h4v4"/>
+    {/* flèche plantée dans la cible : pointe au centre, empennage à l’extérieur */}
+    <path d="M44.5 20.5L33 32"/>
+    <path d="M33 32h4.5M33 32v-4.5"/>
+    <path d="M44.5 20.5h3.5M44.5 20.5v-3.5M41.8 23.2h3.5M41.8 23.2v-3.5" opacity="0.7"/>
   </>,
   waterBottle: () => <>
     <path d="M28 17h8"/>
